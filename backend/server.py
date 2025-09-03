@@ -97,6 +97,12 @@ class SalleReservation(BaseModel):
     creneau: str  # "MATIN" ou "APRES_MIDI"
     notes: Optional[str] = None
 
+class DemandeCongeCreate(BaseModel):
+    date_debut: str  # YYYY-MM-DD
+    date_fin: str  # YYYY-MM-DD
+    type_conge: str  # "CONGE_PAYE", "RTT", "MALADIE", etc.
+    motif: Optional[str] = ""
+
 class DemandeConge(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     utilisateur_id: str
