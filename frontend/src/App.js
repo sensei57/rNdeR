@@ -484,7 +484,10 @@ const CongeManager = () => {
 
   const handleApprobation = async (demandeId, approuve, commentaire = '') => {
     try {
-      await axios.put(`${API}/conges/${demandeId}/approuver?approuve=${approuve}&commentaire=${commentaire}`);
+      await axios.put(`${API}/conges/${demandeId}/approuver`, {
+        approuve: approuve,
+        commentaire: commentaire
+      });
       toast.success(approuve ? 'Demande approuvée' : 'Demande rejetée');
       fetchDemandes();
     } catch (error) {
