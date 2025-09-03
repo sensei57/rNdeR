@@ -332,19 +332,22 @@ async def get_demandes_conges(current_user: User = Depends(get_current_user)):
     
     return enriched_demandes
 
+class ApprobationRequest(BaseModel):
+    approuve: bool
+    commentaire: str = ""
+
 @api_router.put("/conges/{demande_id}/approuver")
 async def approuver_demande_conge(
     demande_id: str,
-    approuve: bool,
-    commentaire: str = "",
+    request: ApprobationRequest,
     current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
 ):
-    statut = "APPROUVE" if approuve else "REJETE"
+    statut = "APPROUVE" if request.approuve else "REJETE"
     update_data = {
         "statut": statut,
         "approuve_par": current_user.id,
         "date_approbation": datetime.now(timezone.utc),
-        "commentaire_approbation": commentaire
+        "commentaire_approbation": request.commentaire
     }
     
     result = await db.demandes_conges.update_one({"id": demande_id}, {"$set": update_data})
