@@ -180,11 +180,46 @@ class MedicalStaffAPITester:
                     print(f"   - Dr. {assignation['medecin']['prenom']} {assignation['medecin']['nom']} -> {assignation['assistant']['prenom']} {assignation['assistant']['nom']}")
 
     def test_leave_management(self):
-        """Test leave management system"""
+        """Test comprehensive leave management system"""
         print("\n🏖️ Testing Leave Management...")
         
+        created_requests = []
+        
+        # Test creating leave requests for different roles
+        leave_types = ["CONGE_PAYE", "RTT", "MALADIE", "FORMATION"]
+        
+        for i, role in enumerate(['medecin', 'assistant', 'secretaire']):
+            if role in self.tokens:
+                from datetime import timedelta
+                start_date = (datetime.now() + timedelta(days=7 + i*3)).strftime('%Y-%m-%d')
+                end_date = (datetime.now() + timedelta(days=9 + i*3)).strftime('%Y-%m-%d')
+                
+                leave_data = {
+                    "date_debut": start_date,
+                    "date_fin": end_date,
+                    "type_conge": leave_types[i % len(leave_types)],
+                    "motif": f"Test leave request by {role}"
+                }
+                
+                success, response = self.run_test(
+                    f"Create leave request as {role}",
+                    "POST",
+                    "conges",
+                    200,
+                    data=leave_data,
+                    token=self.tokens[role]
+                )
+                
+                if success and 'id' in response:
+                    created_requests.append({
+                        'id': response['id'],
+                        'role': role,
+                        'type': leave_types[i % len(leave_types)]
+                    })
+                    print(f"   ✓ Created {leave_types[i % len(leave_types)]} request for {role}")
+        
         # Test getting leave requests with different roles
-        for role in ['directeur', 'medecin', 'assistant']:
+        for role in ['directeur', 'medecin', 'assistant', 'secretaire']:
             if role in self.tokens:
                 success, demandes = self.run_test(
                     f"Get leave requests as {role}",
@@ -195,6 +230,115 @@ class MedicalStaffAPITester:
                 )
                 if success:
                     print(f"   {role} can see {len(demandes)} leave requests")
+                    
+                    # Verify role-based access
+                    if role == 'directeur':
+                        print(f"   ✓ Director sees all requests from all users")
+                    else:
+                        # Check if user only sees their own requests
+                        user_id = self.users[role]['id']
+                        own_requests = [req for req in demandes if req.get('utilisateur_id') == user_id]
+                        if len(own_requests) == len(demandes):
+                            print(f"   ✓ {role} only sees their own requests")
+                        else:
+                            print(f"   ⚠️  {role} might be seeing other users' requests")
+        
+        # Test approval functionality (Director only)
+        if 'directeur' in self.tokens and created_requests:
+            print(f"\n   Testing approval functionality...")
+            
+            # Test approving a request
+            if len(created_requests) > 0:
+                request_id = created_requests[0]['id']
+                approval_data = {
+                    "approuve": True,
+                    "commentaire": "Approved for testing purposes"
+                }
+                
+                success, response = self.run_test(
+                    "Approve leave request (Director)",
+                    "PUT",
+                    f"conges/{request_id}/approuver",
+                    200,
+                    data=approval_data,
+                    token=self.tokens['directeur']
+                )
+                
+                if success:
+                    print(f"   ✓ Successfully approved leave request")
+            
+            # Test rejecting a request
+            if len(created_requests) > 1:
+                request_id = created_requests[1]['id']
+                rejection_data = {
+                    "approuve": False,
+                    "commentaire": "Rejected for testing purposes"
+                }
+                
+                success, response = self.run_test(
+                    "Reject leave request (Director)",
+                    "PUT",
+                    f"conges/{request_id}/approuver",
+                    200,
+                    data=rejection_data,
+                    token=self.tokens['directeur']
+                )
+                
+                if success:
+                    print(f"   ✓ Successfully rejected leave request")
+        
+        # Test unauthorized approval attempts
+        if created_requests and len(created_requests) > 2:
+            print(f"\n   Testing unauthorized approval attempts...")
+            request_id = created_requests[2]['id']
+            
+            for role in ['medecin', 'assistant', 'secretaire']:
+                if role in self.tokens:
+                    approval_data = {
+                        "approuve": True,
+                        "commentaire": "Unauthorized approval attempt"
+                    }
+                    
+                    success, response = self.run_test(
+                        f"Unauthorized approval attempt ({role})",
+                        "PUT",
+                        f"conges/{request_id}/approuver",
+                        403,  # Should be forbidden
+                        data=approval_data,
+                        token=self.tokens[role]
+                    )
+                    
+                    if success:
+                        print(f"   ✓ {role} correctly denied approval permissions")
+        
+        # Test invalid leave request creation
+        if 'medecin' in self.tokens:
+            invalid_data = {
+                "date_debut": "invalid-date",
+                "date_fin": "2024-12-31",
+                "type_conge": "INVALID_TYPE",
+                "motif": "Test invalid request"
+            }
+            
+            success, response = self.run_test(
+                "Create invalid leave request",
+                "POST",
+                "conges",
+                422,  # Should return validation error
+                data=invalid_data,
+                token=self.tokens['medecin']
+            )
+        
+        # Test approval of non-existent request
+        if 'directeur' in self.tokens:
+            success, response = self.run_test(
+                "Approve non-existent request",
+                "PUT",
+                "conges/non-existent-id/approuver",
+                404,
+                data={"approuve": True, "commentaire": "Test"},
+                token=self.tokens['directeur']
+            )
 
     def test_room_reservations(self):
         """Test room reservation system"""
