@@ -314,10 +314,17 @@ async def get_demandes_conges(current_user: User = Depends(get_current_user)):
     else:
         demandes = await db.demandes_conges.find({"utilisateur_id": current_user.id}).to_list(1000)
     
-    # Enrich with user details
+    # Enrich with user details and clean data
     enriched_demandes = []
     for demande in demandes:
+        # Remove MongoDB _id field that causes serialization issues
+        if '_id' in demande:
+            del demande['_id']
+            
         utilisateur = await db.users.find_one({"id": demande["utilisateur_id"]})
+        if utilisateur and '_id' in utilisateur:
+            del utilisateur['_id']
+            
         enriched_demandes.append({
             **demande,
             "utilisateur": User(**utilisateur) if utilisateur else None
