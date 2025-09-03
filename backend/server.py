@@ -291,10 +291,19 @@ async def get_assignations(current_user: User = Depends(get_current_user)):
 # Leave management
 @api_router.post("/conges", response_model=DemandeConge)
 async def create_demande_conge(
-    demande: DemandeConge,
+    date_debut: str,
+    date_fin: str,
+    type_conge: str,
+    motif: str = "",
     current_user: User = Depends(get_current_user)
 ):
-    demande.utilisateur_id = current_user.id
+    demande = DemandeConge(
+        utilisateur_id=current_user.id,
+        date_debut=date_debut,
+        date_fin=date_fin,
+        type_conge=type_conge,
+        motif=motif if motif else None
+    )
     await db.demandes_conges.insert_one(demande.dict())
     return demande
 
