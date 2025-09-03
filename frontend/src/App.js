@@ -429,6 +429,13 @@ const PersonnelManager = () => {
 const CongeManager = () => {
   const [demandes, setDemandes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showNewDemandeModal, setShowNewDemandeModal] = useState(false);
+  const [newDemande, setNewDemande] = useState({
+    date_debut: '',
+    date_fin: '',
+    type_conge: '',
+    motif: ''
+  });
   const { user } = useAuth();
 
   useEffect(() => {
@@ -443,6 +450,35 @@ const CongeManager = () => {
       toast.error('Erreur lors du chargement des demandes');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateDemande = async (e) => {
+    e.preventDefault();
+    
+    if (!newDemande.date_debut || !newDemande.date_fin || !newDemande.type_conge) {
+      toast.error('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    try {
+      const demandeData = {
+        ...newDemande,
+        utilisateur_id: user.id
+      };
+      
+      await axios.post(`${API}/conges`, demandeData);
+      toast.success('Demande de congé créée avec succès');
+      setShowNewDemandeModal(false);
+      setNewDemande({
+        date_debut: '',
+        date_fin: '',
+        type_conge: '',
+        motif: ''
+      });
+      fetchDemandes();
+    } catch (error) {
+      toast.error('Erreur lors de la création de la demande');
     }
   };
 
@@ -465,6 +501,19 @@ const CongeManager = () => {
     }
   };
 
+  const getTypeCongeLabel = (type) => {
+    const types = {
+      'CONGE_PAYE': 'Congé payé',
+      'RTT': 'RTT',
+      'MALADIE': 'Congé maladie',
+      'FORMATION': 'Formation',
+      'MATERNITE': 'Congé maternité',
+      'PATERNITE': 'Congé paternité',
+      'SANS_SOLDE': 'Congé sans solde'
+    };
+    return types[type] || type;
+  };
+
   if (loading) {
     return <div className="flex justify-center p-8">Chargement...</div>;
   }
@@ -473,10 +522,93 @@ const CongeManager = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-800">Gestion des Congés</h2>
-        <Button className="flex items-center space-x-2">
-          <Plus className="h-4 w-4" />
-          <span>Nouvelle Demande</span>
-        </Button>
+        
+        <Dialog open={showNewDemandeModal} onOpenChange={setShowNewDemandeModal}>
+          <DialogTrigger asChild>
+            <Button className="flex items-center space-x-2">
+              <Plus className="h-4 w-4" />
+              <span>Nouvelle Demande</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Nouvelle Demande de Congé</DialogTitle>
+              <DialogDescription>
+                Remplissez les informations pour votre demande de congé
+              </DialogDescription>
+            </DialogHeader>
+            
+            <form onSubmit={handleCreateDemande} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="date_debut">Date de début *</Label>
+                  <Input
+                    id="date_debut"
+                    type="date"
+                    value={newDemande.date_debut}
+                    onChange={(e) => setNewDemande({...newDemande, date_debut: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="date_fin">Date de fin *</Label>
+                  <Input
+                    id="date_fin"
+                    type="date"
+                    value={newDemande.date_fin}
+                    onChange={(e) => setNewDemande({...newDemande, date_fin: e.target.value})}
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="type_conge">Type de congé *</Label>
+                <Select
+                  value={newDemande.type_conge}
+                  onValueChange={(value) => setNewDemande({...newDemande, type_conge: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionnez un type de congé" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CONGE_PAYE">Congé payé</SelectItem>
+                    <SelectItem value="RTT">RTT</SelectItem>
+                    <SelectItem value="MALADIE">Congé maladie</SelectItem>
+                    <SelectItem value="FORMATION">Formation</SelectItem>
+                    <SelectItem value="MATERNITE">Congé maternité</SelectItem>
+                    <SelectItem value="PATERNITE">Congé paternité</SelectItem>
+                    <SelectItem value="SANS_SOLDE">Congé sans solde</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="motif">Motif (optionnel)</Label>
+                <Textarea
+                  id="motif"
+                  placeholder="Précisez le motif de votre demande..."
+                  value={newDemande.motif}
+                  onChange={(e) => setNewDemande({...newDemande, motif: e.target.value})}
+                  rows={3}
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowNewDemandeModal(false)}
+                >
+                  Annuler
+                </Button>
+                <Button type="submit">
+                  Créer la demande
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="space-y-4">
@@ -494,10 +626,10 @@ const CongeManager = () => {
                     </Badge>
                   </div>
                   <p className="text-sm text-gray-600">
-                    <strong>Période:</strong> {demande.date_debut} au {demande.date_fin}
+                    <strong>Période:</strong> {new Date(demande.date_debut).toLocaleDateString('fr-FR')} au {new Date(demande.date_fin).toLocaleDateString('fr-FR')}
                   </p>
                   <p className="text-sm text-gray-600">
-                    <strong>Type:</strong> {demande.type_conge.replace('_', ' ')}
+                    <strong>Type:</strong> {getTypeCongeLabel(demande.type_conge)}
                   </p>
                   {demande.motif && (
                     <p className="text-sm text-gray-600">
@@ -507,6 +639,11 @@ const CongeManager = () => {
                   <p className="text-xs text-gray-500">
                     Demandé le: {new Date(demande.date_demande).toLocaleDateString('fr-FR')}
                   </p>
+                  {demande.commentaire_approbation && (
+                    <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                      <strong>Commentaire:</strong> {demande.commentaire_approbation}
+                    </p>
+                  )}
                 </div>
                 {user?.role === 'Directeur' && demande.statut === 'EN_ATTENTE' && (
                   <div className="flex space-x-2">
@@ -533,7 +670,11 @@ const CongeManager = () => {
         {demandes.length === 0 && (
           <Card>
             <CardContent className="text-center py-8">
+              <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500">Aucune demande de congé trouvée</p>
+              <p className="text-sm text-gray-400 mt-2">
+                Cliquez sur "Nouvelle Demande" pour créer votre première demande
+              </p>
             </CardContent>
           </Card>
         )}
