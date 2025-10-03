@@ -778,6 +778,586 @@ class MedicalStaffAPITester:
         if success:
             print(f"   Found {len(empty_notifications)} notifications for future date (expected: 0)")
 
+    def test_salles_management(self):
+        """Test comprehensive room/salle management system - NEW FEATURE"""
+        print("\n🏢 Testing Salles Management (NEW FEATURE)...")
+        
+        if 'directeur' not in self.tokens:
+            print("❌ Skipping salles tests - no directeur token")
+            return
+        
+        directeur_token = self.tokens['directeur']
+        created_salles = []
+        
+        # Test getting existing salles
+        success, existing_salles = self.run_test(
+            "Get existing salles",
+            "GET",
+            "salles",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   Found {len(existing_salles)} existing salles")
+            for salle in existing_salles:
+                print(f"   - {salle['nom']} ({salle['type_salle']}) at ({salle['position_x']}, {salle['position_y']})")
+        
+        # Test cabinet initialization if no salles exist
+        if not existing_salles or len(existing_salles) == 0:
+            success, response = self.run_test(
+                "Initialize cabinet with default salles",
+                "POST",
+                "cabinet/initialiser",
+                200,
+                token=directeur_token
+            )
+            
+            if success:
+                print(f"   ✓ Cabinet initialized successfully")
+                if 'salles_creees' in response:
+                    print(f"   Created {response['salles_creees']} salles")
+                
+                # Get salles again after initialization
+                success, initialized_salles = self.run_test(
+                    "Get salles after initialization",
+                    "GET",
+                    "salles",
+                    200,
+                    token=directeur_token
+                )
+                
+                if success:
+                    print(f"   Now have {len(initialized_salles)} salles after initialization")
+                    existing_salles = initialized_salles
+        
+        # Test creating a new salle
+        new_salle_data = {
+            "nom": "Test Salle",
+            "type_salle": "MEDECIN",
+            "position_x": 7,
+            "position_y": 7,
+            "couleur": "#FF5733"
+        }
+        
+        success, response = self.run_test(
+            "Create new salle",
+            "POST",
+            "salles",
+            200,
+            data=new_salle_data,
+            token=directeur_token
+        )
+        
+        if success and 'id' in response:
+            created_salles.append(response['id'])
+            print(f"   ✓ Created new salle: {response['nom']}")
+        
+        # Test creating duplicate salle (should fail)
+        success, response = self.run_test(
+            "Create duplicate salle (should fail)",
+            "POST",
+            "salles",
+            400,
+            data=new_salle_data,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✓ Duplicate salle creation correctly rejected")
+        
+        # Test updating a salle
+        if created_salles:
+            salle_id = created_salles[0]
+            update_data = {
+                "nom": "Updated Test Salle",
+                "couleur": "#33FF57",
+                "position_x": 8,
+                "position_y": 8
+            }
+            
+            success, response = self.run_test(
+                "Update salle",
+                "PUT",
+                f"salles/{salle_id}",
+                200,
+                data=update_data,
+                token=directeur_token
+            )
+            
+            if success:
+                print(f"   ✓ Salle updated successfully: {response['nom']}")
+        
+        # Test unauthorized salle creation (non-directeur)
+        if 'medecin' in self.tokens:
+            unauthorized_data = {
+                "nom": "Unauthorized Salle",
+                "type_salle": "MEDECIN",
+                "position_x": 9,
+                "position_y": 9
+            }
+            
+            success, response = self.run_test(
+                "Unauthorized salle creation (médecin)",
+                "POST",
+                "salles",
+                403,
+                data=unauthorized_data,
+                token=self.tokens['medecin']
+            )
+            
+            if success:
+                print(f"   ✓ Non-directeur correctly denied salle creation")
+        
+        # Test deleting a salle
+        if created_salles:
+            salle_id = created_salles[0]
+            success, response = self.run_test(
+                "Delete salle (soft delete)",
+                "DELETE",
+                f"salles/{salle_id}",
+                200,
+                token=directeur_token
+            )
+            
+            if success:
+                print(f"   ✓ Salle deleted successfully")
+        
+        return existing_salles
+
+    def test_configuration_management(self):
+        """Test cabinet configuration management - NEW FEATURE"""
+        print("\n⚙️ Testing Configuration Management (NEW FEATURE)...")
+        
+        if 'directeur' not in self.tokens:
+            print("❌ Skipping configuration tests - no directeur token")
+            return
+        
+        directeur_token = self.tokens['directeur']
+        
+        # Test getting current configuration
+        success, config = self.run_test(
+            "Get current configuration",
+            "GET",
+            "configuration",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   Current configuration:")
+            print(f"   - Max médecins/jour: {config.get('max_medecins_par_jour', 'N/A')}")
+            print(f"   - Max assistants/jour: {config.get('max_assistants_par_jour', 'N/A')}")
+            print(f"   - Horaires matin: {config.get('heures_ouverture_matin_debut', 'N/A')}-{config.get('heures_ouverture_matin_fin', 'N/A')}")
+            print(f"   - Horaires après-midi: {config.get('heures_ouverture_apres_midi_debut', 'N/A')}-{config.get('heures_ouverture_apres_midi_fin', 'N/A')}")
+        
+        # Test updating configuration
+        update_config_data = {
+            "max_medecins_par_jour": 8,
+            "max_assistants_par_jour": 4,
+            "heures_ouverture_matin_debut": "07:30",
+            "heures_ouverture_matin_fin": "12:30",
+            "heures_ouverture_apres_midi_debut": "13:30",
+            "heures_ouverture_apres_midi_fin": "18:30"
+        }
+        
+        success, response = self.run_test(
+            "Update configuration",
+            "PUT",
+            "configuration",
+            200,
+            data=update_config_data,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✓ Configuration updated successfully")
+            print(f"   - New max médecins/jour: {response.get('max_medecins_par_jour', 'N/A')}")
+        
+        # Test unauthorized configuration access
+        if 'medecin' in self.tokens:
+            success, response = self.run_test(
+                "Unauthorized configuration update (médecin)",
+                "PUT",
+                "configuration",
+                403,
+                data={"max_medecins_par_jour": 10},
+                token=self.tokens['medecin']
+            )
+            
+            if success:
+                print(f"   ✓ Non-directeur correctly denied configuration update")
+        
+        # Test configuration access by non-directeur (should be allowed for reading)
+        if 'medecin' in self.tokens:
+            success, response = self.run_test(
+                "Configuration read access (médecin)",
+                "GET",
+                "configuration",
+                200,
+                token=self.tokens['medecin']
+            )
+            
+            if success:
+                print(f"   ✓ Non-directeur can read configuration")
+        
+        return config
+
+    def test_demandes_travail(self):
+        """Test work day requests system - NEW FEATURE"""
+        print("\n📋 Testing Demandes de Travail (NEW FEATURE)...")
+        
+        created_demandes = []
+        today = datetime.now()
+        
+        # Test creating work requests as médecin
+        if 'medecin' in self.tokens:
+            from datetime import timedelta
+            
+            # Create request for tomorrow morning
+            tomorrow = (today + timedelta(days=1)).strftime('%Y-%m-%d')
+            demande_data = {
+                "date_demandee": tomorrow,
+                "creneau": "MATIN",
+                "motif": "Consultation spécialisée"
+            }
+            
+            success, response = self.run_test(
+                "Create work request - morning (médecin)",
+                "POST",
+                "demandes-travail",
+                200,
+                data=demande_data,
+                token=self.tokens['medecin']
+            )
+            
+            if success and 'id' in response:
+                created_demandes.append(response['id'])
+                print(f"   ✓ Morning work request created")
+            
+            # Create request for day after tomorrow - full day
+            day_after = (today + timedelta(days=2)).strftime('%Y-%m-%d')
+            demande_data_full = {
+                "date_demandee": day_after,
+                "creneau": "JOURNEE_COMPLETE",
+                "motif": "Journée complète de consultations"
+            }
+            
+            success, response = self.run_test(
+                "Create work request - full day (médecin)",
+                "POST",
+                "demandes-travail",
+                200,
+                data=demande_data_full,
+                token=self.tokens['medecin']
+            )
+            
+            if success and 'id' in response:
+                created_demandes.append(response['id'])
+                print(f"   ✓ Full day work request created")
+        
+        # Test creating duplicate request (should fail)
+        if 'medecin' in self.tokens:
+            duplicate_data = {
+                "date_demandee": tomorrow,
+                "creneau": "MATIN",
+                "motif": "Duplicate request"
+            }
+            
+            success, response = self.run_test(
+                "Create duplicate work request (should fail)",
+                "POST",
+                "demandes-travail",
+                400,
+                data=duplicate_data,
+                token=self.tokens['medecin']
+            )
+            
+            if success:
+                print(f"   ✓ Duplicate request correctly rejected")
+        
+        # Test unauthorized request creation (assistant)
+        if 'assistant' in self.tokens:
+            unauthorized_data = {
+                "date_demandee": tomorrow,
+                "creneau": "APRES_MIDI",
+                "motif": "Unauthorized request"
+            }
+            
+            success, response = self.run_test(
+                "Unauthorized work request (assistant)",
+                "POST",
+                "demandes-travail",
+                403,
+                data=unauthorized_data,
+                token=self.tokens['assistant']
+            )
+            
+            if success:
+                print(f"   ✓ Assistant correctly denied work request creation")
+        
+        # Test getting work requests as médecin (own requests only)
+        if 'medecin' in self.tokens:
+            success, demandes = self.run_test(
+                "Get work requests (médecin)",
+                "GET",
+                "demandes-travail",
+                200,
+                token=self.tokens['medecin']
+            )
+            
+            if success:
+                print(f"   Médecin can see {len(demandes)} work requests")
+                for demande in demandes:
+                    medecin = demande.get('medecin', {})
+                    print(f"   - {demande['date_demandee']} {demande['creneau']} ({demande['statut']}) - Dr. {medecin.get('prenom', '')} {medecin.get('nom', '')}")
+        
+        # Test getting work requests as directeur (all requests)
+        if 'directeur' in self.tokens:
+            success, all_demandes = self.run_test(
+                "Get all work requests (directeur)",
+                "GET",
+                "demandes-travail",
+                200,
+                token=self.tokens['directeur']
+            )
+            
+            if success:
+                print(f"   Directeur can see {len(all_demandes)} work requests from all médecins")
+        
+        # Test approval functionality (directeur only)
+        if 'directeur' in self.tokens and created_demandes:
+            # Approve first request
+            if len(created_demandes) > 0:
+                demande_id = created_demandes[0]
+                approval_data = {
+                    "approuve": True,
+                    "commentaire": "Approuvé pour test"
+                }
+                
+                success, response = self.run_test(
+                    "Approve work request (directeur)",
+                    "PUT",
+                    f"demandes-travail/{demande_id}/approuver",
+                    200,
+                    data=approval_data,
+                    token=self.tokens['directeur']
+                )
+                
+                if success:
+                    print(f"   ✓ Work request approved successfully")
+            
+            # Reject second request
+            if len(created_demandes) > 1:
+                demande_id = created_demandes[1]
+                rejection_data = {
+                    "approuve": False,
+                    "commentaire": "Rejeté pour test - cabinet complet"
+                }
+                
+                success, response = self.run_test(
+                    "Reject work request (directeur)",
+                    "PUT",
+                    f"demandes-travail/{demande_id}/approuver",
+                    200,
+                    data=rejection_data,
+                    token=self.tokens['directeur']
+                )
+                
+                if success:
+                    print(f"   ✓ Work request rejected successfully")
+        
+        # Test unauthorized approval (médecin)
+        if 'medecin' in self.tokens and created_demandes:
+            demande_id = created_demandes[0]
+            unauthorized_approval = {
+                "approuve": True,
+                "commentaire": "Unauthorized approval"
+            }
+            
+            success, response = self.run_test(
+                "Unauthorized approval (médecin)",
+                "PUT",
+                f"demandes-travail/{demande_id}/approuver",
+                403,
+                data=unauthorized_approval,
+                token=self.tokens['medecin']
+            )
+            
+            if success:
+                print(f"   ✓ Non-directeur correctly denied approval permissions")
+        
+        return created_demandes
+
+    def test_planning_semaine(self):
+        """Test weekly planning view - NEW FEATURE"""
+        print("\n📅 Testing Planning Semaine (NEW FEATURE)...")
+        
+        if 'directeur' not in self.tokens:
+            print("❌ Skipping weekly planning tests - no directeur token")
+            return
+        
+        directeur_token = self.tokens['directeur']
+        today = datetime.now()
+        
+        # Calculate Monday of current week
+        from datetime import timedelta
+        days_since_monday = today.weekday()
+        monday = today - timedelta(days=days_since_monday)
+        monday_str = monday.strftime('%Y-%m-%d')
+        
+        # Test getting weekly planning
+        success, planning_semaine = self.run_test(
+            f"Get weekly planning starting {monday_str}",
+            "GET",
+            f"planning/semaine/{monday_str}",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✓ Weekly planning retrieved successfully")
+            dates = planning_semaine.get('dates', [])
+            planning_data = planning_semaine.get('planning', {})
+            
+            print(f"   Week covers {len(dates)} days: {dates[0]} to {dates[-1]}")
+            
+            total_slots = 0
+            for date in dates:
+                day_planning = planning_data.get(date, {})
+                matin_slots = len(day_planning.get('MATIN', []))
+                apres_midi_slots = len(day_planning.get('APRES_MIDI', []))
+                total_slots += matin_slots + apres_midi_slots
+                
+                if matin_slots > 0 or apres_midi_slots > 0:
+                    print(f"   - {date}: {matin_slots} matin, {apres_midi_slots} après-midi")
+            
+            print(f"   Total planning slots for the week: {total_slots}")
+        
+        # Test with different week (next week)
+        next_monday = monday + timedelta(days=7)
+        next_monday_str = next_monday.strftime('%Y-%m-%d')
+        
+        success, next_week_planning = self.run_test(
+            f"Get next week planning starting {next_monday_str}",
+            "GET",
+            f"planning/semaine/{next_monday_str}",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✓ Next week planning retrieved successfully")
+            next_dates = next_week_planning.get('dates', [])
+            print(f"   Next week covers: {next_dates[0]} to {next_dates[-1]}")
+        
+        # Test unauthorized access
+        if 'assistant' in self.tokens:
+            success, response = self.run_test(
+                "Weekly planning access (assistant)",
+                "GET",
+                f"planning/semaine/{monday_str}",
+                200,  # Should be allowed for viewing
+                token=self.tokens['assistant']
+            )
+            
+            if success:
+                print(f"   ✓ Assistant can view weekly planning")
+        
+        return planning_semaine
+
+    def test_plan_cabinet(self):
+        """Test cabinet visual plan - NEW FEATURE"""
+        print("\n🏗️ Testing Plan Cabinet (NEW FEATURE)...")
+        
+        if 'directeur' not in self.tokens:
+            print("❌ Skipping cabinet plan tests - no directeur token")
+            return
+        
+        directeur_token = self.tokens['directeur']
+        today = datetime.now().strftime('%Y-%m-%d')
+        
+        # Test getting cabinet plan for morning
+        success, plan_matin = self.run_test(
+            f"Get cabinet plan for {today} morning",
+            "GET",
+            f"cabinet/plan/{today}",
+            200,
+            params={"creneau": "MATIN"},
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✓ Cabinet plan retrieved for morning")
+            salles = plan_matin.get('salles', [])
+            print(f"   Found {len(salles)} salles in cabinet plan")
+            
+            occupied_count = 0
+            for salle in salles:
+                if salle.get('occupation'):
+                    occupied_count += 1
+                    occupation = salle['occupation']
+                    employe = occupation.get('employe', {})
+                    print(f"   - {salle['nom']} ({salle['type_salle']}) occupied by {employe.get('prenom', '')} {employe.get('nom', '')}")
+            
+            print(f"   {occupied_count}/{len(salles)} salles occupied in the morning")
+        
+        # Test getting cabinet plan for afternoon
+        success, plan_apres_midi = self.run_test(
+            f"Get cabinet plan for {today} afternoon",
+            "GET",
+            f"cabinet/plan/{today}",
+            200,
+            params={"creneau": "APRES_MIDI"},
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✓ Cabinet plan retrieved for afternoon")
+            salles_pm = plan_apres_midi.get('salles', [])
+            
+            occupied_count_pm = 0
+            for salle in salles_pm:
+                if salle.get('occupation'):
+                    occupied_count_pm += 1
+            
+            print(f"   {occupied_count_pm}/{len(salles_pm)} salles occupied in the afternoon")
+        
+        # Test with future date (should show empty plan)
+        from datetime import timedelta
+        future_date = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
+        
+        success, future_plan = self.run_test(
+            f"Get cabinet plan for future date {future_date}",
+            "GET",
+            f"cabinet/plan/{future_date}",
+            200,
+            params={"creneau": "MATIN"},
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✓ Future cabinet plan retrieved (should be empty)")
+            future_salles = future_plan.get('salles', [])
+            future_occupied = sum(1 for s in future_salles if s.get('occupation'))
+            print(f"   {future_occupied}/{len(future_salles)} salles occupied in future (expected: 0)")
+        
+        # Test unauthorized access
+        if 'assistant' in self.tokens:
+            success, response = self.run_test(
+                "Cabinet plan access (assistant)",
+                "GET",
+                f"cabinet/plan/{today}",
+                200,  # Should be allowed for viewing
+                params={"creneau": "MATIN"},
+                token=self.tokens['assistant']
+            )
+            
+            if success:
+                print(f"   ✓ Assistant can view cabinet plan")
+        
+        return plan_matin
+
     def run_delete_test(self, name, endpoint, expected_status, token=None):
         """Helper method for DELETE requests"""
         url = f"{self.api_url}/{endpoint}"
