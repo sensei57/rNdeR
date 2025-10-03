@@ -389,10 +389,6 @@ async def get_demandes_conges(current_user: User = Depends(get_current_user)):
     
     return enriched_demandes
 
-class ApprobationRequest(BaseModel):
-    approuve: bool
-    commentaire: str = ""
-
 @api_router.put("/conges/{demande_id}/approuver")
 async def approuver_demande_conge(
     demande_id: str,
