@@ -88,6 +88,56 @@ class AssignationAssistant(BaseModel):
     date_assignation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     actif: bool = True
 
+# Planning Models
+class CreneauPlanning(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    date: str  # YYYY-MM-DD
+    creneau: str  # "MATIN" ou "APRES_MIDI"
+    employe_id: str
+    employe_role: str  # Role de l'employé
+    medecin_attribue_id: Optional[str] = None  # Pour les assistants : avec quel médecin
+    salle_attribuee: Optional[str] = None  # Salle de travail
+    salle_attente: Optional[str] = None  # Salle d'attente associée
+    horaire_debut: Optional[str] = None  # Pour secrétaires : "08:00"
+    horaire_fin: Optional[str] = None  # Pour secrétaires : "17:00"
+    notes: Optional[str] = None
+    date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CreneauPlanningCreate(BaseModel):
+    date: str
+    creneau: str
+    employe_id: str
+    medecin_attribue_id: Optional[str] = None
+    salle_attribuee: Optional[str] = None
+    salle_attente: Optional[str] = None
+    horaire_debut: Optional[str] = None
+    horaire_fin: Optional[str] = None
+    notes: Optional[str] = None
+
+# Chat Models
+class Message(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    expediteur_id: str
+    destinataire_id: Optional[str] = None  # None = message général
+    contenu: str
+    type_message: str = "GENERAL"  # "GENERAL" ou "PRIVE"
+    date_envoi: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    lu: bool = False
+
+class MessageCreate(BaseModel):
+    destinataire_id: Optional[str] = None
+    contenu: str
+    type_message: str = "GENERAL"
+
+# Notification Models
+class NotificationQuotidienne(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    employe_id: str
+    date: str  # YYYY-MM-DD
+    contenu: str
+    envoye: bool = False
+    date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 class SalleReservation(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     salle: str
@@ -123,6 +173,10 @@ class NoteGenerale(BaseModel):
     auteur_id: str
     date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     visible: bool = True
+
+class ApprobationRequest(BaseModel):
+    approuve: bool
+    commentaire: str = ""
 
 # Utility functions
 def verify_password(plain_password, hashed_password):
