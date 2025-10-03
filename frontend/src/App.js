@@ -1322,6 +1322,23 @@ const PlanningManager = () => {
         </div>
         
         <div className="flex items-center space-x-4">
+          <div className="flex space-x-2">
+            <Button
+              variant={viewMode === 'jour' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('jour')}
+            >
+              Vue Jour
+            </Button>
+            <Button
+              variant={viewMode === 'semaine' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('semaine')}
+            >
+              Vue Semaine
+            </Button>
+          </div>
+          
           <Input
             type="date"
             value={selectedDate}
