@@ -1889,10 +1889,16 @@ const Dashboard = () => {
       { id: 'planning', label: 'Planning', icon: Calendar },
       { id: 'conges', label: 'Congés', icon: Clock },
       { id: 'messages', label: 'Messages', icon: MessageSquare },
-      { id: 'documents', label: 'Documents', icon: FileText },
+      { id: 'plan-cabinet', label: 'Plan Cabinet', icon: MapPin },
     ];
 
+    // Ajouter demandes de travail pour médecins et directeur
+    if (user?.role === 'Médecin' || user?.role === 'Directeur') {
+      items.splice(3, 0, { id: 'demandes-travail', label: 'Demandes Travail', icon: CalendarDays });
+    }
+
     if (user?.role === 'Directeur') {
+      items.push({ id: 'salles', label: 'Gestion Salles', icon: Building2 });
       items.push({ id: 'admin', label: 'Administration', icon: Settings });
     }
 
