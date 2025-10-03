@@ -1392,8 +1392,8 @@ class MedicalStaffAPITester:
             return False, {}
 
 def main():
-    print("🏥 Testing Medical Staff Management API")
-    print("=" * 50)
+    print("🏥 Testing Medical Staff Management API - COMPREHENSIVE NEW FEATURES TEST")
+    print("=" * 70)
     
     tester = MedicalStaffAPITester()
     
@@ -1408,6 +1408,8 @@ def main():
     if not login_success:
         print("\n❌ Authentication tests failed. Cannot proceed with other tests.")
         return 1
+    
+    print(f"\n✅ Successfully authenticated all roles!")
     
     # Test protected routes and role-based access
     tester.test_protected_route_access()
@@ -1427,7 +1429,27 @@ def main():
     # Test general notes
     tester.test_general_notes()
     
-    # Test new planning system
+    # ===== NEW ADVANCED FEATURES TESTING =====
+    print("\n" + "="*50)
+    print("🚀 TESTING NEW ADVANCED FEATURES")
+    print("="*50)
+    
+    # Test NEW FEATURE: Salles Management
+    tester.test_salles_management()
+    
+    # Test NEW FEATURE: Configuration Management
+    tester.test_configuration_management()
+    
+    # Test NEW FEATURE: Demandes de Travail
+    tester.test_demandes_travail()
+    
+    # Test NEW FEATURE: Planning Semaine
+    tester.test_planning_semaine()
+    
+    # Test NEW FEATURE: Plan Cabinet
+    tester.test_plan_cabinet()
+    
+    # Test existing planning system (enhanced)
     tester.test_planning_system()
     
     # Test chat system
@@ -1437,16 +1459,20 @@ def main():
     tester.test_notification_system()
     
     # Print final results
-    print(f"\n📊 Test Results:")
+    print(f"\n" + "="*50)
+    print(f"📊 COMPREHENSIVE TEST RESULTS")
+    print(f"="*50)
     print(f"Tests run: {tester.tests_run}")
     print(f"Tests passed: {tester.tests_passed}")
     print(f"Success rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
     
     if tester.tests_passed == tester.tests_run:
-        print("🎉 All tests passed!")
+        print("🎉 ALL TESTS PASSED! New features are working perfectly!")
         return 0
     else:
-        print(f"⚠️  {tester.tests_run - tester.tests_passed} tests failed")
+        failed_tests = tester.tests_run - tester.tests_passed
+        print(f"⚠️  {failed_tests} tests failed")
+        print(f"💡 Check the failed tests above for issues that need to be addressed")
         return 1
 
 if __name__ == "__main__":
