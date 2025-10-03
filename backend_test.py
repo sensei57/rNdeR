@@ -847,6 +847,15 @@ def main():
     # Test general notes
     tester.test_general_notes()
     
+    # Test new planning system
+    tester.test_planning_system()
+    
+    # Test chat system
+    tester.test_chat_system()
+    
+    # Test notification system
+    tester.test_notification_system()
+    
     # Print final results
     print(f"\n📊 Test Results:")
     print(f"Tests run: {tester.tests_run}")
