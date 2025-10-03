@@ -867,6 +867,333 @@ async def get_my_today_notification(current_user: User = Depends(get_current_use
     
     return notification
 
+# Gestion des salles
+@api_router.post("/salles", response_model=Salle)
+async def create_salle(
+    salle_data: SalleCreate,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    # Vérifier si une salle avec ce nom existe déjà
+    existing = await db.salles.find_one({"nom": salle_data.nom, "actif": True})
+    if existing:
+        raise HTTPException(status_code=400, detail="Une salle avec ce nom existe déjà")
+    
+    salle = Salle(**salle_data.dict())
+    await db.salles.insert_one(salle.dict())
+    return salle
+
+@api_router.get("/salles", response_model=List[Salle])
+async def get_salles(
+    actif_seulement: bool = True,
+    current_user: User = Depends(get_current_user)
+):
+    query = {"actif": True} if actif_seulement else {}
+    salles = await db.salles.find(query).sort("nom", 1).to_list(1000)
+    
+    cleaned_salles = []
+    for salle in salles:
+        if '_id' in salle:
+            del salle['_id']
+        cleaned_salles.append(Salle(**salle))
+    
+    return cleaned_salles
+
+@api_router.put("/salles/{salle_id}", response_model=Salle)
+async def update_salle(
+    salle_id: str,
+    salle_data: SalleUpdate,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    update_data = {k: v for k, v in salle_data.dict().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="Aucune donnée à mettre à jour")
+    
+    result = await db.salles.update_one({"id": salle_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Salle non trouvée")
+    
+    updated_salle = await db.salles.find_one({"id": salle_id})
+    if '_id' in updated_salle:
+        del updated_salle['_id']
+    return Salle(**updated_salle)
+
+@api_router.delete("/salles/{salle_id}")
+async def delete_salle(
+    salle_id: str,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    # Soft delete - marquer comme inactif
+    result = await db.salles.update_one({"id": salle_id}, {"$set": {"actif": False}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Salle non trouvée")
+    
+    return {"message": "Salle supprimée avec succès"}
+
+# Configuration du cabinet
+@api_router.get("/configuration", response_model=ConfigurationCabinet)
+async def get_configuration(current_user: User = Depends(get_current_user)):
+    config = await db.configuration.find_one()
+    
+    if not config:
+        # Créer une configuration par défaut
+        default_config = ConfigurationCabinet()
+        await db.configuration.insert_one(default_config.dict())
+        return default_config
+    
+    if '_id' in config:
+        del config['_id']
+    return ConfigurationCabinet(**config)
+
+@api_router.put("/configuration", response_model=ConfigurationCabinet)
+async def update_configuration(
+    config_data: ConfigurationCabinetUpdate,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    update_data = {k: v for k, v in config_data.dict().items() if v is not None}
+    update_data['date_modification'] = datetime.now(timezone.utc)
+    
+    existing_config = await db.configuration.find_one()
+    
+    if existing_config:
+        result = await db.configuration.update_one({"id": existing_config["id"]}, {"$set": update_data})
+        updated_config = await db.configuration.find_one({"id": existing_config["id"]})
+    else:
+        # Créer nouvelle configuration
+        new_config = ConfigurationCabinet(**update_data)
+        await db.configuration.insert_one(new_config.dict())
+        updated_config = new_config.dict()
+    
+    if '_id' in updated_config:
+        del updated_config['_id']
+    return ConfigurationCabinet(**updated_config)
+
+# Demandes de jours de travail
+@api_router.post("/demandes-travail", response_model=DemandeJourTravail)
+async def create_demande_jour_travail(
+    demande_data: DemandeJourTravailCreate,
+    current_user: User = Depends(get_current_user)
+):
+    # Vérifier que l'utilisateur est médecin ou directeur
+    if current_user.role not in [ROLES["MEDECIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Seuls les médecins peuvent faire des demandes de jours de travail")
+    
+    # Vérifier si une demande existe déjà pour cette date/créneau
+    existing = await db.demandes_travail.find_one({
+        "medecin_id": current_user.id,
+        "date_demandee": demande_data.date_demandee,
+        "creneau": demande_data.creneau,
+        "statut": {"$ne": "REJETE"}
+    })
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="Une demande existe déjà pour cette date/créneau")
+    
+    demande = DemandeJourTravail(
+        medecin_id=current_user.id,
+        **demande_data.dict()
+    )
+    
+    await db.demandes_travail.insert_one(demande.dict())
+    return demande
+
+@api_router.get("/demandes-travail", response_model=List[Dict[str, Any]])
+async def get_demandes_jour_travail(
+    date_debut: Optional[str] = None,
+    date_fin: Optional[str] = None,
+    current_user: User = Depends(get_current_user)
+):
+    query = {}
+    
+    if current_user.role == ROLES["DIRECTEUR"]:
+        # Le directeur voit toutes les demandes
+        pass
+    else:
+        # Les médecins voient seulement leurs demandes
+        query["medecin_id"] = current_user.id
+    
+    if date_debut and date_fin:
+        query["date_demandee"] = {"$gte": date_debut, "$lte": date_fin}
+    elif date_debut:
+        query["date_demandee"] = {"$gte": date_debut}
+    
+    demandes = await db.demandes_travail.find(query).sort("date_demandee", 1).to_list(1000)
+    
+    # Enrichir avec les données des médecins
+    enriched_demandes = []
+    for demande in demandes:
+        if '_id' in demande:
+            del demande['_id']
+            
+        medecin = await db.users.find_one({"id": demande["medecin_id"]})
+        if medecin and '_id' in medecin:
+            del medecin['_id']
+        
+        enriched_demandes.append({
+            **demande,
+            "medecin": User(**medecin) if medecin else None
+        })
+    
+    return enriched_demandes
+
+@api_router.put("/demandes-travail/{demande_id}/approuver")
+async def approuver_demande_jour_travail(
+    demande_id: str,
+    request: ApprobationJourTravailRequest,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    # Récupérer la demande
+    demande = await db.demandes_travail.find_one({"id": demande_id})
+    if not demande:
+        raise HTTPException(status_code=404, detail="Demande non trouvée")
+    
+    if request.approuve:
+        # Vérifier la capacité du cabinet
+        config = await get_configuration(current_user)
+        
+        # Compter les médecins déjà validés pour cette date/créneau
+        date_demandee = demande["date_demandee"]
+        creneau = demande["creneau"]
+        
+        if creneau == "JOURNEE_COMPLETE":
+            # Vérifier matin et après-midi
+            demandes_matin = await db.demandes_travail.count_documents({
+                "date_demandee": date_demandee,
+                "creneau": {"$in": ["MATIN", "JOURNEE_COMPLETE"]},
+                "statut": "APPROUVE"
+            })
+            demandes_apres_midi = await db.demandes_travail.count_documents({
+                "date_demandee": date_demandee,
+                "creneau": {"$in": ["APRES_MIDI", "JOURNEE_COMPLETE"]},
+                "statut": "APPROUVE"
+            })
+            
+            if demandes_matin >= config.max_medecins_par_jour or demandes_apres_midi >= config.max_medecins_par_jour:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cabinet complet pour cette journée. Maximum : {config.max_medecins_par_jour} médecins par créneau"
+                )
+        else:
+            # Vérifier le créneau spécifique
+            demandes_existantes = await db.demandes_travail.count_documents({
+                "date_demandee": date_demandee,
+                "creneau": {"$in": [creneau, "JOURNEE_COMPLETE"]},
+                "statut": "APPROUVE"
+            })
+            
+            if demandes_existantes >= config.max_medecins_par_jour:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cabinet complet pour ce créneau. Maximum : {config.max_medecins_par_jour} médecins"
+                )
+    
+    statut = "APPROUVE" if request.approuve else "REJETE"
+    update_data = {
+        "statut": statut,
+        "approuve_par": current_user.id,
+        "date_approbation": datetime.now(timezone.utc),
+        "commentaire_approbation": request.commentaire
+    }
+    
+    result = await db.demandes_travail.update_one({"id": demande_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Demande non trouvée")
+    
+    return {"message": f"Demande {statut.lower()}e avec succès"}
+
+# Planning semaine
+@api_router.get("/planning/semaine/{date_debut}")
+async def get_planning_semaine(
+    date_debut: str,  # Date du lundi (YYYY-MM-DD)
+    current_user: User = Depends(get_current_user)
+):
+    from datetime import datetime, timedelta
+    
+    # Calculer les 7 jours de la semaine
+    date_start = datetime.strptime(date_debut, '%Y-%m-%d')
+    dates_semaine = [(date_start + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(7)]
+    
+    # Récupérer le planning pour toute la semaine
+    planning = await db.planning.find({"date": {"$in": dates_semaine}}).sort("date", 1).to_list(1000)
+    
+    # Organiser par jour
+    planning_par_jour = {date: {"MATIN": [], "APRES_MIDI": []} for date in dates_semaine}
+    
+    for creneau in planning:
+        if '_id' in creneau:
+            del creneau['_id']
+            
+        employe = await db.users.find_one({"id": creneau["employe_id"]})
+        if employe and '_id' in employe:
+            del employe['_id']
+            
+        medecin_attribue = None
+        if creneau.get("medecin_attribue_id"):
+            medecin_attribue = await db.users.find_one({"id": creneau["medecin_attribue_id"]})
+            if medecin_attribue and '_id' in medecin_attribue:
+                del medecin_attribue['_id']
+        
+        enriched_creneau = {
+            **creneau,
+            "employe": User(**employe) if employe else None,
+            "medecin_attribue": User(**medecin_attribue) if medecin_attribue else None
+        }
+        
+        if creneau["date"] in planning_par_jour:
+            planning_par_jour[creneau["date"]][creneau["creneau"]].append(enriched_creneau)
+    
+    return {
+        "dates": dates_semaine,
+        "planning": planning_par_jour
+    }
+
+# Plan du cabinet
+@api_router.get("/cabinet/plan/{date}")
+async def get_plan_cabinet(
+    date: str,
+    creneau: str = "MATIN",  # ou "APRES_MIDI"
+    current_user: User = Depends(get_current_user)
+):
+    # Récupérer toutes les salles
+    salles = await db.salles.find({"actif": True}).to_list(1000)
+    
+    # Récupérer le planning pour cette date/créneau
+    planning = await db.planning.find({"date": date, "creneau": creneau}).to_list(1000)
+    
+    # Créer un mapping salle -> employé
+    occupation_salles = {}
+    for creneau_planning in planning:
+        if creneau_planning.get("salle_attribuee"):
+            employe = await db.users.find_one({"id": creneau_planning["employe_id"]})
+            if employe and '_id' in employe:
+                del employe['_id']
+                
+            medecin_attribue = None
+            if creneau_planning.get("medecin_attribue_id"):
+                medecin_attribue = await db.users.find_one({"id": creneau_planning["medecin_attribue_id"]})
+                if medecin_attribue and '_id' in medecin_attribue:
+                    del medecin_attribue['_id']
+            
+            occupation_salles[creneau_planning["salle_attribuee"]] = {
+                "employe": User(**employe) if employe else None,
+                "medecin_attribue": User(**medecin_attribue) if medecin_attribue else None,
+                "notes": creneau_planning.get("notes")
+            }
+    
+    # Nettoyer les salles
+    salles_clean = []
+    for salle in salles:
+        if '_id' in salle:
+            del salle['_id']
+        salle_data = Salle(**salle).dict()
+        salle_data["occupation"] = occupation_salles.get(salle["nom"])
+        salles_clean.append(salle_data)
+    
+    return {
+        "salles": salles_clean,
+        "date": date,
+        "creneau": creneau
+    }
+
 # General notes
 @api_router.post("/notes", response_model=NoteGenerale)
 async def create_note_generale(
