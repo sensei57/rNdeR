@@ -1679,6 +1679,493 @@ const PlanningManager = () => {
   );
 };
 
+// Demandes de Travail Component
+const DemandesTravailManager = () => {
+  const [demandes, setDemandes] = useState([]);
+  const [showDemandeModal, setShowDemandeModal] = useState(false);
+  const [configuration, setConfiguration] = useState(null);
+  const [newDemande, setNewDemande] = useState({
+    date_demandee: '',
+    creneau: 'MATIN',
+    motif: ''
+  });
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    fetchDemandes();
+    fetchConfiguration();
+  }, []);
+
+  const fetchDemandes = async () => {
+    try {
+      const response = await axios.get(`${API}/demandes-travail`);
+      setDemandes(response.data);
+    } catch (error) {
+      toast.error('Erreur lors du chargement des demandes');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchConfiguration = async () => {
+    try {
+      const response = await axios.get(`${API}/configuration`);
+      setConfiguration(response.data);
+    } catch (error) {
+      console.error('Erreur lors du chargement de la configuration');
+    }
+  };
+
+  const handleCreateDemande = async (e) => {
+    e.preventDefault();
+    
+    if (!newDemande.date_demandee || !newDemande.creneau) {
+      toast.error('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/demandes-travail`, newDemande);
+      toast.success('Demande créée avec succès');
+      setShowDemandeModal(false);
+      resetForm();
+      fetchDemandes();
+    } catch (error) {
+      if (error.response?.status === 400) {
+        toast.error('Une demande existe déjà pour cette date/créneau');
+      } else {
+        toast.error('Erreur lors de la création de la demande');
+      }
+    }
+  };
+
+  const handleApprobation = async (demandeId, approuve, commentaire = '') => {
+    try {
+      await axios.put(`${API}/demandes-travail/${demandeId}/approuver`, {
+        approuve: approuve,
+        commentaire: commentaire
+      });
+      toast.success(approuve ? 'Demande approuvée' : 'Demande rejetée');
+      fetchDemandes();
+    } catch (error) {
+      if (error.response?.status === 400) {
+        toast.error(error.response.data.detail);
+      } else {
+        toast.error('Erreur lors de l\'approbation');
+      }
+    }
+  };
+
+  const resetForm = () => {
+    setNewDemande({
+      date_demandee: '',
+      creneau: 'MATIN',
+      motif: ''
+    });
+  };
+
+  const getStatutColor = (statut) => {
+    switch (statut) {
+      case 'APPROUVE': return 'bg-green-100 text-green-800';
+      case 'REJETE': return 'bg-red-100 text-red-800';
+      case 'EN_ATTENTE': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getCreneauLabel = (creneau) => {
+    const creneaux = {
+      'MATIN': 'Matin',
+      'APRES_MIDI': 'Après-midi',
+      'JOURNEE_COMPLETE': 'Journée complète'
+    };
+    return creneaux[creneau] || creneau;
+  };
+
+  // Calculer les statistiques pour le directeur
+  const getStatsJour = (date, creneau) => {
+    if (!configuration) return { current: 0, max: 0 };
+    
+    const demandesApprouvees = demandes.filter(d => 
+      d.date_demandee === date && 
+      d.statut === 'APPROUVE' && 
+      (d.creneau === creneau || d.creneau === 'JOURNEE_COMPLETE')
+    );
+    
+    return {
+      current: demandesApprouvees.length,
+      max: configuration.max_medecins_par_jour
+    };
+  };
+
+  if (loading) {
+    return <div className="flex justify-center p-8">Chargement...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Demandes de Jours de Travail</h2>
+          <p className="text-gray-600 mt-1">
+            {user?.role === 'Directeur' 
+              ? 'Gérez les demandes des médecins' 
+              : 'Demandez vos jours de travail'
+            }
+          </p>
+        </div>
+        
+        {(user?.role === 'Médecin' || user?.role === 'Directeur') && (
+          <Dialog open={showDemandeModal} onOpenChange={setShowDemandeModal}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center space-x-2">
+                <Plus className="h-4 w-4" />
+                <span>Nouvelle Demande</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Nouvelle Demande de Jour de Travail</DialogTitle>
+                <DialogDescription>
+                  Demandez un créneau de travail
+                </DialogDescription>
+              </DialogHeader>
+              
+              <form onSubmit={handleCreateDemande} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="date_demandee">Date souhaitée *</Label>
+                  <Input
+                    id="date_demandee"
+                    type="date"
+                    value={newDemande.date_demandee}
+                    onChange={(e) => setNewDemande({...newDemande, date_demandee: e.target.value})}
+                    required
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="creneau">Créneau *</Label>
+                  <Select
+                    value={newDemande.creneau}
+                    onValueChange={(value) => setNewDemande({...newDemande, creneau: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="MATIN">Matin uniquement</SelectItem>
+                      <SelectItem value="APRES_MIDI">Après-midi uniquement</SelectItem>
+                      <SelectItem value="JOURNEE_COMPLETE">Journée complète</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="motif">Motif (optionnel)</Label>
+                  <Textarea
+                    id="motif"
+                    placeholder="Précisez le motif de votre demande..."
+                    value={newDemande.motif}
+                    onChange={(e) => setNewDemande({...newDemande, motif: e.target.value})}
+                    rows={3}
+                  />
+                </div>
+                
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowDemandeModal(false)}
+                  >
+                    Annuler
+                  </Button>
+                  <Button type="submit">
+                    Créer la demande
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+
+      {/* Alerte capacité pour le directeur */}
+      {user?.role === 'Directeur' && configuration && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2 text-blue-800">
+              <AlertTriangle className="h-5 w-5" />
+              <span className="font-medium">Capacité Cabinet</span>
+            </div>
+            <p className="text-blue-700 text-sm mt-2">
+              Maximum {configuration.max_medecins_par_jour} médecins par créneau
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="space-y-4">
+        {demandes.map(demande => (
+          <Card key={demande.id}>
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between">
+                <div className="space-y-2 flex-1">
+                  <div className="flex items-center space-x-2">
+                    <h3 className="font-medium">
+                      Dr. {demande.medecin?.prenom} {demande.medecin?.nom}
+                    </h3>
+                    <Badge className={getStatutColor(demande.statut)}>
+                      {demande.statut.replace('_', ' ')}
+                    </Badge>
+                    
+                    {user?.role === 'Directeur' && demande.statut === 'EN_ATTENTE' && (
+                      <Badge variant="outline" className="text-xs">
+                        {(() => {
+                          const stats = getStatsJour(demande.date_demandee, demande.creneau);
+                          return `${stats.current}/${stats.max} médecins`;
+                        })()}
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                    <div>
+                      <strong>Date:</strong> {new Date(demande.date_demandee).toLocaleDateString('fr-FR')}
+                    </div>
+                    <div>
+                      <strong>Créneau:</strong> {getCreneauLabel(demande.creneau)}
+                    </div>
+                  </div>
+                  
+                  {demande.motif && (
+                    <p className="text-sm text-gray-600">
+                      <strong>Motif:</strong> {demande.motif}
+                    </p>
+                  )}
+                  
+                  <p className="text-xs text-gray-500">
+                    Demandé le: {new Date(demande.date_demande).toLocaleDateString('fr-FR')}
+                  </p>
+                  
+                  {demande.commentaire_approbation && (
+                    <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                      <strong>Commentaire:</strong> {demande.commentaire_approbation}
+                    </p>
+                  )}
+                </div>
+                
+                {user?.role === 'Directeur' && demande.statut === 'EN_ATTENTE' && (
+                  <div className="flex space-x-2 ml-4">
+                    <Button
+                      size="sm"
+                      onClick={() => handleApprobation(demande.id, true)}
+                      className="bg-green-600 hover:bg-green-700"
+                      disabled={(() => {
+                        const stats = getStatsJour(demande.date_demandee, demande.creneau);
+                        return stats.current >= stats.max;
+                      })()}
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleApprobation(demande.id, false)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        
+        {demandes.length === 0 && (
+          <Card>
+            <CardContent className="text-center py-8">
+              <CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">Aucune demande de jour de travail trouvée</p>
+              <p className="text-sm text-gray-400 mt-2">
+                {user?.role === 'Médecin' || user?.role === 'Directeur'
+                  ? 'Cliquez sur "Nouvelle Demande" pour créer votre première demande'
+                  : 'Les demandes apparaîtront ici une fois créées'
+                }
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Plan Cabinet Component  
+const PlanCabinetManager = () => {
+  const [planData, setPlanData] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedCreneau, setSelectedCreneau] = useState('MATIN');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPlanCabinet();
+  }, [selectedDate, selectedCreneau]);
+
+  const fetchPlanCabinet = async () => {
+    try {
+      const response = await axios.get(`${API}/cabinet/plan/${selectedDate}?creneau=${selectedCreneau}`);
+      setPlanData(response.data);
+    } catch (error) {
+      toast.error('Erreur lors du chargement du plan');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderSalle = (salle) => {
+    const occupation = salle.occupation;
+    const baseClasses = "absolute border-2 rounded-lg p-2 text-xs font-medium transition-all cursor-pointer hover:scale-105";
+    
+    let bgColor = 'bg-gray-100 border-gray-300';
+    let textColor = 'text-gray-600';
+    
+    if (occupation) {
+      switch (salle.type_salle) {
+        case 'MEDECIN':
+          bgColor = 'bg-blue-100 border-blue-400';
+          textColor = 'text-blue-800';
+          break;
+        case 'ASSISTANT':
+          bgColor = 'bg-green-100 border-green-400';
+          textColor = 'text-green-800';
+          break;
+        case 'ATTENTE':
+          bgColor = 'bg-yellow-100 border-yellow-400';
+          textColor = 'text-yellow-800';
+          break;
+      }
+    }
+    
+    // Positionner selon les coordonnées (chaque unité = 80px)
+    const style = {
+      left: `${salle.position_x * 80}px`,
+      top: `${salle.position_y * 80}px`,
+      width: '70px',
+      height: '60px',
+      backgroundColor: occupation ? salle.couleur + '20' : '#f3f4f6'
+    };
+    
+    return (
+      <div
+        key={salle.id}
+        className={`${baseClasses} ${bgColor} ${textColor}`}
+        style={style}
+        title={
+          occupation 
+            ? `${salle.nom} - ${occupation.employe?.prenom} ${occupation.employe?.nom}${occupation.medecin_attribue ? ` (avec Dr. ${occupation.medecin_attribue.prenom} ${occupation.medecin_attribue.nom})` : ''}`
+            : `${salle.nom} - Libre`
+        }
+      >
+        <div className="text-center">
+          <div className="font-bold">{salle.nom}</div>
+          {occupation && (
+            <div className="mt-1">
+              <div className="truncate">
+                {occupation.employe?.role === 'Médecin' ? 'Dr.' : ''} 
+                {occupation.employe?.prenom?.[0]}.{occupation.employe?.nom}
+              </div>
+              {occupation.medecin_attribue && (
+                <div className="text-xs opacity-75 truncate">
+                  avec Dr.{occupation.medecin_attribue.prenom?.[0]}.{occupation.medecin_attribue.nom}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  if (loading) {
+    return <div className="flex justify-center p-8">Chargement...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Plan du Cabinet</h2>
+          <p className="text-gray-600 mt-1">Vision en temps réel de l'occupation des salles</p>
+        </div>
+        
+        <div className="flex items-center space-x-4">
+          <Input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="w-auto"
+          />
+          
+          <Select value={selectedCreneau} onValueChange={setSelectedCreneau}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="MATIN">Matin</SelectItem>
+              <SelectItem value="APRES_MIDI">Après-midi</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {planData && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <MapPin className="h-5 w-5" />
+              <span>Plan du Cabinet - {selectedCreneau === 'MATIN' ? 'Matin' : 'Après-midi'}</span>
+              <span className="text-sm font-normal text-gray-500">
+                ({new Date(selectedDate).toLocaleDateString('fr-FR')})
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Container du plan avec position relative pour le positionnement absolu */}
+            <div className="relative bg-gray-50 rounded-lg p-4" style={{ height: '500px', width: '600px' }}>
+              {planData.salles.map(salle => renderSalle(salle))}
+              
+              {/* Légende */}
+              <div className="absolute bottom-4 right-4 bg-white p-3 rounded-lg shadow-lg border">
+                <h4 className="font-medium mb-2 text-sm">Légende</h4>
+                <div className="space-y-1 text-xs">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-blue-100 border border-blue-400 rounded"></div>
+                    <span>Médecin</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-green-100 border border-green-400 rounded"></div>
+                    <span>Assistant</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-yellow-100 border border-yellow-400 rounded"></div>
+                    <span>Attente</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-gray-100 border border-gray-300 rounded"></div>
+                    <span>Libre</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
 // Chat Component
 const ChatManager = () => {
   const [messages, setMessages] = useState([]);
