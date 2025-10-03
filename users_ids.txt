@@ -1,0 +1,4 @@
+Directeur: 59a7d1d6-0df9-49a5-829e-2393dbdeb231 - Pierre Martin
+Médecin: f904c43f-89d0-4c50-b09b-afb37093911b - Marie Dupont
+Assistant: a6315fe5-c545-4a65-a69f-f3181c1b65ed - Julie Moreau
+Secrétaire: 8cc2cae1-34aa-4b7f-9cbe-9cb245a8c5a3 - Sophie Leroy
