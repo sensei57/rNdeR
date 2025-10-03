@@ -1437,29 +1437,17 @@ const Dashboard = () => {
     switch (activeTab) {
       case 'personnel':
         return <PersonnelManager />;
+      case 'planning':
+        return <PlanningManager />;
       case 'conges':
         return <CongeManager />;
-      case 'planning':
-        return (
-          <div className="text-center py-12">
-            <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-600 mb-2">Planning</h3>
-            <p className="text-gray-500">Fonctionnalité en cours de développement</p>
-          </div>
-        );
+      case 'messages':
+        return <ChatManager />;
       case 'documents':
         return (
           <div className="text-center py-12">
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-600 mb-2">Documents</h3>
-            <p className="text-gray-500">Fonctionnalité en cours de développement</p>
-          </div>
-        );
-      case 'messages':
-        return (
-          <div className="text-center py-12">
-            <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-600 mb-2">Messages</h3>
             <p className="text-gray-500">Fonctionnalité en cours de développement</p>
           </div>
         );
