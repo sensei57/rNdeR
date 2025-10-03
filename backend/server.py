@@ -1223,6 +1223,68 @@ async def get_notes_generales(current_user: User = Depends(get_current_user)):
     
     return enriched_notes
 
+# Initialisation du cabinet
+@api_router.post("/cabinet/initialiser")
+async def initialiser_cabinet(
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    # Vérifier si des salles existent déjà
+    existing_salles = await db.salles.count_documents({"actif": True})
+    if existing_salles > 0:
+        return {"message": f"Cabinet déjà initialisé avec {existing_salles} salles"}
+    
+    # Définir les salles selon la description : carré avec disposition spécifique
+    salles_par_defaut = [
+        # Salles côté gauche (3 salles)
+        {"nom": "Salle G1", "type_salle": "MEDECIN", "position_x": 1, "position_y": 2, "couleur": "#3B82F6"},
+        {"nom": "Salle G2", "type_salle": "MEDECIN", "position_x": 1, "position_y": 3, "couleur": "#3B82F6"},
+        {"nom": "Salle G3", "type_salle": "MEDECIN", "position_x": 1, "position_y": 4, "couleur": "#3B82F6"},
+        
+        # Salles côté droit (3 salles)
+        {"nom": "Salle D1", "type_salle": "MEDECIN", "position_x": 5, "position_y": 2, "couleur": "#3B82F6"},
+        {"nom": "Salle D2", "type_salle": "MEDECIN", "position_x": 5, "position_y": 3, "couleur": "#3B82F6"},
+        {"nom": "Salle D3", "type_salle": "MEDECIN", "position_x": 5, "position_y": 4, "couleur": "#3B82F6"},
+        
+        # Salle en bas
+        {"nom": "Salle Sud", "type_salle": "MEDECIN", "position_x": 3, "position_y": 5, "couleur": "#3B82F6"},
+        
+        # Salles en haut (2 salles)
+        {"nom": "Salle N1", "type_salle": "MEDECIN", "position_x": 2, "position_y": 1, "couleur": "#3B82F6"},
+        {"nom": "Salle N2", "type_salle": "MEDECIN", "position_x": 4, "position_y": 1, "couleur": "#3B82F6"},
+        
+        # Salles au centre en triangle (3 salles)
+        {"nom": "Salle C1", "type_salle": "ASSISTANT", "position_x": 3, "position_y": 2, "couleur": "#10B981"},
+        {"nom": "Salle C2", "type_salle": "ASSISTANT", "position_x": 2, "position_y": 3, "couleur": "#10B981"},
+        {"nom": "Salle C3", "type_salle": "ASSISTANT", "position_x": 4, "position_y": 3, "couleur": "#10B981"},
+        
+        # Salles d'attente
+        {"nom": "Attente Principale", "type_salle": "ATTENTE", "position_x": 3, "position_y": 0, "couleur": "#F59E0B"},
+        {"nom": "Attente Secondaire", "type_salle": "ATTENTE", "position_x": 0, "position_y": 3, "couleur": "#F59E0B"},
+        {"nom": "Attente Urgences", "type_salle": "ATTENTE", "position_x": 6, "position_y": 3, "couleur": "#EF4444"},
+    ]
+    
+    # Créer toutes les salles
+    salles_creees = 0
+    for salle_data in salles_par_defaut:
+        salle = Salle(**salle_data)
+        await db.salles.insert_one(salle.dict())
+        salles_creees += 1
+    
+    # Créer configuration par défaut
+    config_existe = await db.configuration.count_documents({})
+    if config_existe == 0:
+        config_defaut = ConfigurationCabinet(
+            max_medecins_par_jour=6,  # Selon le nombre de salles médecins
+            max_assistants_par_jour=3  # Selon le nombre de salles assistants
+        )
+        await db.configuration.insert_one(config_defaut.dict())
+    
+    return {
+        "message": f"Cabinet initialisé avec succès",
+        "salles_creees": salles_creees,
+        "configuration": "Configuration par défaut créée"
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
