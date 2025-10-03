@@ -158,6 +158,45 @@ const LoginPage = () => {
   );
 };
 
+// Notification Component
+const NotificationToday = () => {
+  const [notification, setNotification] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTodayNotification();
+  }, []);
+
+  const fetchTodayNotification = async () => {
+    try {
+      const response = await axios.get(`${API}/notifications/me/today`);
+      setNotification(response.data);
+    } catch (error) {
+      console.error('Aucune notification pour aujourd\'hui');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading || !notification) return null;
+
+  return (
+    <Card className="mb-6 border-blue-200 bg-blue-50">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-medium text-blue-800 flex items-center space-x-2">
+          <CalendarDays className="h-4 w-4" />
+          <span>Planning du jour</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="text-sm text-blue-700 whitespace-pre-line">
+          {notification.contenu}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 // Dashboard Navigation
 const Navigation = () => {
   const { user, logout } = useAuth();
