@@ -1422,8 +1422,8 @@ const Dashboard = () => {
       { id: 'personnel', label: 'Personnel', icon: Users },
       { id: 'planning', label: 'Planning', icon: Calendar },
       { id: 'conges', label: 'Congés', icon: Clock },
-      { id: 'documents', label: 'Documents', icon: FileText },
       { id: 'messages', label: 'Messages', icon: MessageSquare },
+      { id: 'documents', label: 'Documents', icon: FileText },
     ];
 
     if (user?.role === 'Directeur') {
