@@ -138,6 +138,73 @@ class NotificationQuotidienne(BaseModel):
     envoye: bool = False
     date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+# Salle Management Models
+class Salle(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nom: str
+    type_salle: str  # "MEDECIN", "ASSISTANT", "ATTENTE"
+    position_x: int  # Position sur le plan
+    position_y: int
+    couleur: str = "#3B82F6"  # Couleur par défaut
+    actif: bool = True
+    date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class SalleCreate(BaseModel):
+    nom: str
+    type_salle: str
+    position_x: int
+    position_y: int
+    couleur: str = "#3B82F6"
+
+class SalleUpdate(BaseModel):
+    nom: Optional[str] = None
+    type_salle: Optional[str] = None
+    position_x: Optional[int] = None
+    position_y: Optional[int] = None
+    couleur: Optional[str] = None
+    actif: Optional[bool] = None
+
+# Configuration Cabinet Models
+class ConfigurationCabinet(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    max_medecins_par_jour: int = 4
+    max_assistants_par_jour: int = 6
+    heures_ouverture_matin_debut: str = "08:00"
+    heures_ouverture_matin_fin: str = "12:00"
+    heures_ouverture_apres_midi_debut: str = "14:00"
+    heures_ouverture_apres_midi_fin: str = "18:00"
+    date_modification: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ConfigurationCabinetUpdate(BaseModel):
+    max_medecins_par_jour: Optional[int] = None
+    max_assistants_par_jour: Optional[int] = None
+    heures_ouverture_matin_debut: Optional[str] = None
+    heures_ouverture_matin_fin: Optional[str] = None
+    heures_ouverture_apres_midi_debut: Optional[str] = None
+    heures_ouverture_apres_midi_fin: Optional[str] = None
+
+# Demande Jour Travail Models
+class DemandeJourTravail(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    medecin_id: str
+    date_demandee: str  # YYYY-MM-DD
+    creneau: str  # "MATIN", "APRES_MIDI", "JOURNEE_COMPLETE"
+    motif: Optional[str] = None
+    statut: str = "EN_ATTENTE"  # "EN_ATTENTE", "APPROUVE", "REJETE"
+    date_demande: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    approuve_par: Optional[str] = None
+    date_approbation: Optional[datetime] = None
+    commentaire_approbation: Optional[str] = None
+
+class DemandeJourTravailCreate(BaseModel):
+    date_demandee: str
+    creneau: str
+    motif: Optional[str] = None
+
+class ApprobationJourTravailRequest(BaseModel):
+    approuve: bool
+    commentaire: str = ""
+
 class SalleReservation(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     salle: str
