@@ -1538,6 +1538,7 @@ const Dashboard = () => {
 
           {/* Main Content */}
           <div className="flex-1">
+            <NotificationToday />
             {renderContent()}
           </div>
         </div>
