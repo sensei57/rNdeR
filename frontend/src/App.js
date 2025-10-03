@@ -1155,7 +1155,9 @@ const SallesManager = () => {
 // Planning Component
 const PlanningManager = () => {
   const [planning, setPlanning] = useState([]);
+  const [planningSemaine, setPlanningSemaine] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [viewMode, setViewMode] = useState('jour'); // 'jour' ou 'semaine'
   const [showPlanningModal, setShowPlanningModal] = useState(false);
   const [users, setUsers] = useState([]);
   const [medecins, setMedecins] = useState([]);
