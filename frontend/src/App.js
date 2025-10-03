@@ -725,6 +725,433 @@ const CongeManager = () => {
   );
 };
 
+// Gestion des Salles Component
+const SallesManager = () => {
+  const [salles, setSalles] = useState([]);
+  const [showSalleModal, setShowSalleModal] = useState(false);
+  const [editingSalle, setEditingSalle] = useState(null);
+  const [newSalle, setNewSalle] = useState({
+    nom: '',
+    type_salle: 'MEDECIN',
+    position_x: 3,
+    position_y: 3,
+    couleur: '#3B82F6'
+  });
+  const [configuration, setConfiguration] = useState(null);
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    fetchSalles();
+    fetchConfiguration();
+  }, []);
+
+  const fetchSalles = async () => {
+    try {
+      const response = await axios.get(`${API}/salles`);
+      setSalles(response.data);
+    } catch (error) {
+      toast.error('Erreur lors du chargement des salles');
+    }
+  };
+
+  const fetchConfiguration = async () => {
+    try {
+      const response = await axios.get(`${API}/configuration`);
+      setConfiguration(response.data);
+    } catch (error) {
+      console.error('Erreur lors du chargement de la configuration');
+    }
+  };
+
+  const handleCreateSalle = async (e) => {
+    e.preventDefault();
+    
+    try {
+      if (editingSalle) {
+        await axios.put(`${API}/salles/${editingSalle.id}`, newSalle);
+        toast.success('Salle modifiée avec succès');
+      } else {
+        await axios.post(`${API}/salles`, newSalle);
+        toast.success('Salle créée avec succès');
+      }
+      
+      setShowSalleModal(false);
+      setEditingSalle(null);
+      resetSalleForm();
+      fetchSalles();
+    } catch (error) {
+      toast.error('Erreur lors de la sauvegarde');
+    }
+  };
+
+  const handleDeleteSalle = async (salleId) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette salle ?')) return;
+    
+    try {
+      await axios.delete(`${API}/salles/${salleId}`);
+      toast.success('Salle supprimée');
+      fetchSalles();
+    } catch (error) {
+      toast.error('Erreur lors de la suppression');
+    }
+  };
+
+  const handleEditSalle = (salle) => {
+    setEditingSalle(salle);
+    setNewSalle({
+      nom: salle.nom,
+      type_salle: salle.type_salle,
+      position_x: salle.position_x,
+      position_y: salle.position_y,
+      couleur: salle.couleur
+    });
+    setShowSalleModal(true);
+  };
+
+  const resetSalleForm = () => {
+    setNewSalle({
+      nom: '',
+      type_salle: 'MEDECIN',
+      position_x: 3,
+      position_y: 3,
+      couleur: '#3B82F6'
+    });
+  };
+
+  const initialiserCabinet = async () => {
+    try {
+      await axios.post(`${API}/cabinet/initialiser`);
+      toast.success('Cabinet initialisé avec succès');
+      fetchSalles();
+    } catch (error) {
+      toast.error('Erreur lors de l\'initialisation');
+    }
+  };
+
+  const updateConfiguration = async (configData) => {
+    try {
+      await axios.put(`${API}/configuration`, configData);
+      toast.success('Configuration mise à jour');
+      fetchConfiguration();
+      setShowConfigModal(false);
+    } catch (error) {
+      toast.error('Erreur lors de la mise à jour');
+    }
+  };
+
+  const getTypeColor = (type) => {
+    switch (type) {
+      case 'MEDECIN': return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'ASSISTANT': return 'bg-green-100 text-green-800 border-green-300';
+      case 'ATTENTE': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+  };
+
+  if (user?.role !== 'Directeur') {
+    return (
+      <div className="text-center py-12">
+        <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-gray-600 mb-2">Gestion des Salles</h3>
+        <p className="text-gray-500">Accès réservé au Directeur</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Gestion des Salles</h2>
+          <p className="text-gray-600 mt-1">Configurez les salles et boxes du cabinet</p>
+        </div>
+        
+        <div className="flex space-x-3">
+          {salles.length === 0 && (
+            <Button
+              onClick={initialiserCabinet}
+              variant="outline"
+              className="flex items-center space-x-2"
+            >
+              <Building2 className="h-4 w-4" />
+              <span>Initialiser Cabinet</span>
+            </Button>
+          )}
+          
+          <Button
+            onClick={() => setShowConfigModal(true)}
+            variant="outline"
+            className="flex items-center space-x-2"
+          >
+            <Settings className="h-4 w-4" />
+            <span>Configuration</span>
+          </Button>
+          
+          <Dialog open={showSalleModal} onOpenChange={setShowSalleModal}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center space-x-2">
+                <Plus className="h-4 w-4" />
+                <span>Nouvelle Salle</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingSalle ? 'Modifier la Salle' : 'Nouvelle Salle'}
+                </DialogTitle>
+              </DialogHeader>
+              
+              <form onSubmit={handleCreateSalle} className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Nom de la salle *</Label>
+                  <Input
+                    value={newSalle.nom}
+                    onChange={(e) => setNewSalle({...newSalle, nom: e.target.value})}
+                    placeholder="Ex: Salle 1, Box A..."
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Type de salle *</Label>
+                  <Select
+                    value={newSalle.type_salle}
+                    onValueChange={(value) => setNewSalle({...newSalle, type_salle: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="MEDECIN">Salle Médecin</SelectItem>
+                      <SelectItem value="ASSISTANT">Salle Assistant</SelectItem>
+                      <SelectItem value="ATTENTE">Salle d'Attente</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Position X</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="10"
+                      value={newSalle.position_x}
+                      onChange={(e) => setNewSalle({...newSalle, position_x: parseInt(e.target.value)})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Position Y</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="10"
+                      value={newSalle.position_y}
+                      onChange={(e) => setNewSalle({...newSalle, position_y: parseInt(e.target.value)})}
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Couleur</Label>
+                  <Input
+                    type="color"
+                    value={newSalle.couleur}
+                    onChange={(e) => setNewSalle({...newSalle, couleur: e.target.value})}
+                    className="h-12"
+                  />
+                </div>
+                
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowSalleModal(false);
+                      setEditingSalle(null);
+                      resetSalleForm();
+                    }}
+                  >
+                    Annuler
+                  </Button>
+                  <Button type="submit">
+                    {editingSalle ? 'Modifier' : 'Créer'}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* Configuration Modal */}
+      <Dialog open={showConfigModal} onOpenChange={setShowConfigModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Configuration du Cabinet</DialogTitle>
+          </DialogHeader>
+          
+          {configuration && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Nombre maximum de médecins par jour</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={configuration.max_medecins_par_jour}
+                  onChange={(e) => setConfiguration({
+                    ...configuration,
+                    max_medecins_par_jour: parseInt(e.target.value)
+                  })}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Nombre maximum d'assistants par jour</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={configuration.max_assistants_par_jour}
+                  onChange={(e) => setConfiguration({
+                    ...configuration,
+                    max_assistants_par_jour: parseInt(e.target.value)
+                  })}
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Matin début</Label>
+                  <Input
+                    type="time"
+                    value={configuration.heures_ouverture_matin_debut}
+                    onChange={(e) => setConfiguration({
+                      ...configuration,
+                      heures_ouverture_matin_debut: e.target.value
+                    })}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Matin fin</Label>
+                  <Input
+                    type="time"
+                    value={configuration.heures_ouverture_matin_fin}
+                    onChange={(e) => setConfiguration({
+                      ...configuration,
+                      heures_ouverture_matin_fin: e.target.value
+                    })}
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Après-midi début</Label>
+                  <Input
+                    type="time"
+                    value={configuration.heures_ouverture_apres_midi_debut}
+                    onChange={(e) => setConfiguration({
+                      ...configuration,
+                      heures_ouverture_apres_midi_debut: e.target.value
+                    })}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Après-midi fin</Label>
+                  <Input
+                    type="time"
+                    value={configuration.heures_ouverture_apres_midi_fin}
+                    onChange={(e) => setConfiguration({
+                      ...configuration,
+                      heures_ouverture_apres_midi_fin: e.target.value
+                    })}
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowConfigModal(false)}
+                >
+                  Annuler
+                </Button>
+                <Button onClick={() => updateConfiguration(configuration)}>
+                  Sauvegarder
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Liste des salles */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {salles.map(salle => (
+          <Card key={salle.id} className="border">
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <div
+                      className="w-4 h-4 rounded"
+                      style={{ backgroundColor: salle.couleur }}
+                    ></div>
+                    <h3 className="font-medium">{salle.nom}</h3>
+                  </div>
+                  
+                  <Badge className={getTypeColor(salle.type_salle)}>
+                    {salle.type_salle}
+                  </Badge>
+                  
+                  <div className="text-sm text-gray-600">
+                    Position: X:{salle.position_x}, Y:{salle.position_y}
+                  </div>
+                </div>
+                
+                <div className="flex space-x-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleEditSalle(salle)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleDeleteSalle(salle.id)}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        
+        {salles.length === 0 && (
+          <Card className="col-span-full">
+            <CardContent className="text-center py-8">
+              <Building2 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-500 mb-4">Aucune salle configurée</p>
+              <Button onClick={initialiserCabinet} variant="outline">
+                Initialiser le Cabinet avec des Salles par Défaut
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Planning Component
 const PlanningManager = () => {
   const [planning, setPlanning] = useState([]);
