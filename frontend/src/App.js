@@ -1715,6 +1715,106 @@ const PlanningManager = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Vue Semaine */}
+      {viewMode === 'semaine' && planningSemaine && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Planning de la Semaine</span>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const currentDate = new Date(selectedDate);
+                    currentDate.setDate(currentDate.getDate() - 7);
+                    setSelectedDate(currentDate.toISOString().split('T')[0]);
+                  }}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-gray-600">
+                  {new Date(planningSemaine.dates[0]).toLocaleDateString('fr-FR')} - {new Date(planningSemaine.dates[6]).toLocaleDateString('fr-FR')}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const currentDate = new Date(selectedDate);
+                    currentDate.setDate(currentDate.getDate() + 7);
+                    setSelectedDate(currentDate.toISOString().split('T')[0]);
+                  }}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-7 gap-2">
+              {/* Headers jours */}
+              {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((jour, index) => (
+                <div key={jour} className="p-3 bg-gray-50 rounded-lg text-center font-medium">
+                  <div className="text-sm text-gray-600">{jour}</div>
+                  <div className="text-lg">
+                    {new Date(planningSemaine.dates[index]).getDate()}
+                  </div>
+                </div>
+              ))}
+              
+              {/* Créneaux par jour */}
+              {planningSemaine.dates.map(date => (
+                <div key={date} className="space-y-2">
+                  {/* Matin */}
+                  <div className="bg-blue-50 rounded-lg p-2 min-h-[100px]">
+                    <div className="text-xs font-medium text-blue-700 mb-2">Matin</div>
+                    <div className="space-y-1">
+                      {planningSemaine.planning[date]?.MATIN?.map(creneau => (
+                        <div
+                          key={creneau.id}
+                          className={`text-xs p-1 rounded border ${getRoleColor(creneau.employe_role)}`}
+                        >
+                          <div className="font-medium truncate">
+                            {creneau.employe?.prenom?.[0]}.{creneau.employe?.nom}
+                          </div>
+                          {creneau.salle_attribuee && (
+                            <div className="text-xs opacity-75">
+                              {creneau.salle_attribuee}
+                            </div>
+                          )}
+                        </div>
+                      )) || []}
+                    </div>
+                  </div>
+                  
+                  {/* Après-midi */}
+                  <div className="bg-orange-50 rounded-lg p-2 min-h-[100px]">
+                    <div className="text-xs font-medium text-orange-700 mb-2">Après-midi</div>
+                    <div className="space-y-1">
+                      {planningSemaine.planning[date]?.APRES_MIDI?.map(creneau => (
+                        <div
+                          key={creneau.id}
+                          className={`text-xs p-1 rounded border ${getRoleColor(creneau.employe_role)}`}
+                        >
+                          <div className="font-medium truncate">
+                            {creneau.employe?.prenom?.[0]}.{creneau.employe?.nom}
+                          </div>
+                          {creneau.salle_attribuee && (
+                            <div className="text-xs opacity-75">
+                              {creneau.salle_attribuee}
+                            </div>
+                          )}
+                        </div>
+                      )) || []}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
