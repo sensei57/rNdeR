@@ -1186,9 +1186,30 @@ const PlanningManager = () => {
 
   useEffect(() => {
     if (selectedDate) {
-      fetchPlanningByDate(selectedDate);
+      if (viewMode === 'jour') {
+        fetchPlanningByDate(selectedDate);
+      } else {
+        fetchPlanningSemaine(selectedDate);
+      }
     }
-  }, [selectedDate]);
+  }, [selectedDate, viewMode]);
+
+  const fetchPlanningSemaine = async (date) => {
+    try {
+      // Calculer le lundi de la semaine
+      const selectedDateObj = new Date(date);
+      const dayOfWeek = selectedDateObj.getDay();
+      const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Dimanche = 0, donc offset = 6
+      const monday = new Date(selectedDateObj);
+      monday.setDate(selectedDateObj.getDate() - mondayOffset);
+      const mondayStr = monday.toISOString().split('T')[0];
+      
+      const response = await axios.get(`${API}/planning/semaine/${mondayStr}`);
+      setPlanningSemaine(response.data);
+    } catch (error) {
+      console.error('Erreur lors du chargement du planning semaine:', error);
+    }
+  };
 
   const fetchData = async () => {
     try {
