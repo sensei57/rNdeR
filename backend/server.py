@@ -452,6 +452,354 @@ async def get_reservations_salles(
     
     return enriched_reservations
 
+# Planning endpoints
+@api_router.post("/planning", response_model=CreneauPlanning)
+async def create_creneau_planning(
+    creneau_data: CreneauPlanningCreate,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    # Vérifier que l'employé existe
+    employe = await db.users.find_one({"id": creneau_data.employe_id})
+    if not employe:
+        raise HTTPException(status_code=404, detail="Employé non trouvé")
+    
+    # Vérifier les conflits de planning
+    existing = await db.planning.find_one({
+        "date": creneau_data.date,
+        "creneau": creneau_data.creneau,
+        "employe_id": creneau_data.employe_id
+    })
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="L'employé a déjà un créneau programmé à cette date/heure")
+    
+    # Vérifier les conflits de salle
+    if creneau_data.salle_attribuee:
+        salle_occupee = await db.planning.find_one({
+            "date": creneau_data.date,
+            "creneau": creneau_data.creneau,
+            "salle_attribuee": creneau_data.salle_attribuee
+        })
+        
+        if salle_occupee:
+            raise HTTPException(status_code=400, detail="La salle est déjà occupée à ce créneau")
+    
+    creneau = CreneauPlanning(
+        **creneau_data.dict(),
+        employe_role=employe['role']
+    )
+    
+    await db.planning.insert_one(creneau.dict())
+    return creneau
+
+@api_router.get("/planning", response_model=List[Dict[str, Any]])
+async def get_planning(
+    date_debut: Optional[str] = None,
+    date_fin: Optional[str] = None,
+    current_user: User = Depends(get_current_user)
+):
+    query = {}
+    
+    if date_debut and date_fin:
+        query["date"] = {"$gte": date_debut, "$lte": date_fin}
+    elif date_debut:
+        query["date"] = {"$gte": date_debut}
+    
+    creneaux = await db.planning.find(query).sort("date", 1).to_list(1000)
+    
+    # Enrichir avec les données des employés
+    enriched_creneaux = []
+    for creneau in creneaux:
+        if '_id' in creneau:
+            del creneau['_id']
+            
+        employe = await db.users.find_one({"id": creneau["employe_id"]})
+        if employe and '_id' in employe:
+            del employe['_id']
+            
+        medecin_attribue = None
+        if creneau.get("medecin_attribue_id"):
+            medecin_attribue = await db.users.find_one({"id": creneau["medecin_attribue_id"]})
+            if medecin_attribue and '_id' in medecin_attribue:
+                del medecin_attribue['_id']
+        
+        enriched_creneaux.append({
+            **creneau,
+            "employe": User(**employe) if employe else None,
+            "medecin_attribue": User(**medecin_attribue) if medecin_attribue else None
+        })
+    
+    return enriched_creneaux
+
+@api_router.get("/planning/{date}", response_model=List[Dict[str, Any]])
+async def get_planning_by_date(
+    date: str,
+    current_user: User = Depends(get_current_user)
+):
+    creneaux = await db.planning.find({"date": date}).sort("creneau", 1).to_list(1000)
+    
+    enriched_creneaux = []
+    for creneau in creneaux:
+        if '_id' in creneau:
+            del creneau['_id']
+            
+        employe = await db.users.find_one({"id": creneau["employe_id"]})
+        if employe and '_id' in employe:
+            del employe['_id']
+            
+        medecin_attribue = None
+        if creneau.get("medecin_attribue_id"):
+            medecin_attribue = await db.users.find_one({"id": creneau["medecin_attribue_id"]})
+            if medecin_attribue and '_id' in medecin_attribue:
+                del medecin_attribue['_id']
+        
+        enriched_creneaux.append({
+            **creneau,
+            "employe": User(**employe) if employe else None,
+            "medecin_attribue": User(**medecin_attribue) if medecin_attribue else None
+        })
+    
+    return enriched_creneaux
+
+@api_router.put("/planning/{creneau_id}")
+async def update_creneau_planning(
+    creneau_id: str,
+    creneau_data: CreneauPlanningCreate,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    # Vérifier les conflits avant mise à jour
+    existing = await db.planning.find_one({
+        "date": creneau_data.date,
+        "creneau": creneau_data.creneau,
+        "employe_id": creneau_data.employe_id,
+        "id": {"$ne": creneau_id}
+    })
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="Conflit de planning détecté")
+    
+    result = await db.planning.update_one({"id": creneau_id}, {"$set": creneau_data.dict()})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Créneau non trouvé")
+    
+    return {"message": "Créneau mis à jour avec succès"}
+
+@api_router.delete("/planning/{creneau_id}")
+async def delete_creneau_planning(
+    creneau_id: str,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    result = await db.planning.delete_one({"id": creneau_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Créneau non trouvé")
+    
+    return {"message": "Créneau supprimé avec succès"}
+
+# Chat endpoints
+@api_router.post("/messages", response_model=Message)
+async def send_message(
+    message_data: MessageCreate,
+    current_user: User = Depends(get_current_user)
+):
+    message = Message(
+        expediteur_id=current_user.id,
+        destinataire_id=message_data.destinataire_id,
+        contenu=message_data.contenu,
+        type_message=message_data.type_message
+    )
+    
+    await db.messages.insert_one(message.dict())
+    return message
+
+@api_router.get("/messages", response_model=List[Dict[str, Any]])
+async def get_messages(
+    type_message: str = "GENERAL",
+    limit: int = 50,
+    current_user: User = Depends(get_current_user)
+):
+    query = {"type_message": type_message}
+    
+    if type_message == "PRIVE":
+        # Messages privés pour l'utilisateur courant
+        query = {
+            "$or": [
+                {"expediteur_id": current_user.id, "type_message": "PRIVE"},
+                {"destinataire_id": current_user.id, "type_message": "PRIVE"}
+            ]
+        }
+    
+    messages = await db.messages.find(query).sort("date_envoi", -1).limit(limit).to_list(limit)
+    
+    enriched_messages = []
+    for message in messages:
+        if '_id' in message:
+            del message['_id']
+            
+        expediteur = await db.users.find_one({"id": message["expediteur_id"]})
+        if expediteur and '_id' in expediteur:
+            del expediteur['_id']
+            
+        destinataire = None
+        if message.get("destinataire_id"):
+            destinataire = await db.users.find_one({"id": message["destinataire_id"]})
+            if destinataire and '_id' in destinataire:
+                del destinataire['_id']
+        
+        enriched_messages.append({
+            **message,
+            "expediteur": User(**expediteur) if expediteur else None,
+            "destinataire": User(**destinataire) if destinataire else None
+        })
+    
+    return enriched_messages
+
+@api_router.get("/messages/conversation/{user_id}", response_model=List[Dict[str, Any]])
+async def get_conversation(
+    user_id: str,
+    limit: int = 100,
+    current_user: User = Depends(get_current_user)
+):
+    query = {
+        "$or": [
+            {"expediteur_id": current_user.id, "destinataire_id": user_id},
+            {"expediteur_id": user_id, "destinataire_id": current_user.id}
+        ],
+        "type_message": "PRIVE"
+    }
+    
+    messages = await db.messages.find(query).sort("date_envoi", 1).limit(limit).to_list(limit)
+    
+    # Marquer les messages comme lus
+    await db.messages.update_many(
+        {"expediteur_id": user_id, "destinataire_id": current_user.id, "lu": False},
+        {"$set": {"lu": True}}
+    )
+    
+    enriched_messages = []
+    for message in messages:
+        if '_id' in message:
+            del message['_id']
+            
+        expediteur = await db.users.find_one({"id": message["expediteur_id"]})
+        if expediteur and '_id' in expediteur:
+            del expediteur['_id']
+            
+        destinataire = await db.users.find_one({"id": message["destinataire_id"]})
+        if destinataire and '_id' in destinataire:
+            del destinataire['_id']
+        
+        enriched_messages.append({
+            **message,
+            "expediteur": User(**expediteur) if expediteur else None,
+            "destinataire": User(**destinataire) if destinataire else None
+        })
+    
+    return enriched_messages
+
+# Notifications endpoints
+@api_router.post("/notifications/generate/{date}")
+async def generate_daily_notifications(
+    date: str,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    # Générer les notifications pour tous les employés pour une date donnée
+    creneaux = await db.planning.find({"date": date}).to_list(1000)
+    
+    notifications_created = 0
+    
+    for creneau in creneaux:
+        employe = await db.users.find_one({"id": creneau["employe_id"]})
+        if not employe:
+            continue
+        
+        # Vérifier si une notification existe déjà
+        existing_notif = await db.notifications.find_one({
+            "employe_id": creneau["employe_id"],
+            "date": date
+        })
+        
+        if existing_notif:
+            continue
+        
+        # Construire le contenu de la notification
+        contenu_parts = [f"Bonjour {employe['prenom']} {employe['nom']},"]
+        contenu_parts.append(f"Voici votre planning pour le {date} ({creneau['creneau']}) :")
+        
+        if creneau.get('salle_attribuee'):
+            contenu_parts.append(f"📍 Salle assignée : {creneau['salle_attribuee']}")
+        
+        if creneau.get('salle_attente'):
+            contenu_parts.append(f"🚪 Salle d'attente : {creneau['salle_attente']}")
+        
+        if creneau.get('medecin_attribue_id'):
+            medecin = await db.users.find_one({"id": creneau['medecin_attribue_id']})
+            if medecin:
+                contenu_parts.append(f"👨‍⚕️ Travail avec : Dr. {medecin['prenom']} {medecin['nom']}")
+        
+        if creneau.get('horaire_debut') and creneau.get('horaire_fin'):
+            contenu_parts.append(f"⏰ Horaires : {creneau['horaire_debut']} - {creneau['horaire_fin']}")
+        
+        if creneau.get('notes'):
+            contenu_parts.append(f"📝 Notes : {creneau['notes']}")
+        
+        contenu_parts.append("Bonne journée !")
+        
+        notification = NotificationQuotidienne(
+            employe_id=creneau["employe_id"],
+            date=date,
+            contenu="\n".join(contenu_parts)
+        )
+        
+        await db.notifications.insert_one(notification.dict())
+        notifications_created += 1
+    
+    return {"message": f"{notifications_created} notifications générées pour le {date}"}
+
+@api_router.get("/notifications/{date}")
+async def get_notifications_by_date(
+    date: str,
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role == ROLES["DIRECTEUR"]:
+        # Le directeur voit toutes les notifications
+        notifications = await db.notifications.find({"date": date}).to_list(1000)
+    else:
+        # Les autres voient seulement leurs notifications
+        notifications = await db.notifications.find({
+            "date": date,
+            "employe_id": current_user.id
+        }).to_list(1000)
+    
+    enriched_notifications = []
+    for notif in notifications:
+        if '_id' in notif:
+            del notif['_id']
+        
+        employe = await db.users.find_one({"id": notif["employe_id"]})
+        if employe and '_id' in employe:
+            del employe['_id']
+        
+        enriched_notifications.append({
+            **notif,
+            "employe": User(**employe) if employe else None
+        })
+    
+    return enriched_notifications
+
+@api_router.get("/notifications/me/today")
+async def get_my_today_notification(current_user: User = Depends(get_current_user)):
+    today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    
+    notification = await db.notifications.find_one({
+        "employe_id": current_user.id,
+        "date": today
+    })
+    
+    if notification and '_id' in notification:
+        del notification['_id']
+    
+    return notification
+
 # General notes
 @api_router.post("/notes", response_model=NoteGenerale)
 async def create_note_generale(
@@ -469,7 +817,11 @@ async def get_notes_generales(current_user: User = Depends(get_current_user)):
     # Enrich with author details
     enriched_notes = []
     for note in notes:
+        if '_id' in note:
+            del note['_id']
         auteur = await db.users.find_one({"id": note["auteur_id"]})
+        if auteur and '_id' in auteur:
+            del auteur['_id']
         enriched_notes.append({
             **note,
             "auteur": User(**auteur) if auteur else None
