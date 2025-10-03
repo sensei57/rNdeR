@@ -370,6 +370,447 @@ class MedicalStaffAPITester:
             if success:
                 print(f"   Found {len(notes)} general notes")
 
+    def test_planning_system(self):
+        """Test comprehensive planning system"""
+        print("\n📅 Testing Planning System...")
+        
+        if 'directeur' not in self.tokens:
+            print("❌ Skipping planning tests - no directeur token")
+            return
+        
+        directeur_token = self.tokens['directeur']
+        today = datetime.now().strftime('%Y-%m-%d')
+        created_creneaux = []
+        
+        # Get users for planning
+        success, users_data = self.run_test(
+            "Get users for planning",
+            "GET",
+            "users",
+            200,
+            token=directeur_token
+        )
+        
+        if not success or not users_data:
+            print("❌ Cannot get users for planning tests")
+            return
+        
+        # Find users by role
+        medecins = [u for u in users_data if u['role'] == 'Médecin']
+        assistants = [u for u in users_data if u['role'] == 'Assistant']
+        secretaires = [u for u in users_data if u['role'] == 'Secrétaire']
+        
+        print(f"   Found {len(medecins)} médecins, {len(assistants)} assistants, {len(secretaires)} secrétaires")
+        
+        # Test creating planning slots
+        if medecins:
+            medecin = medecins[0]
+            creneau_data = {
+                "date": today,
+                "creneau": "MATIN",
+                "employe_id": medecin['id'],
+                "salle_attribuee": "1",
+                "salle_attente": "Attente 1",
+                "notes": "Consultation générale"
+            }
+            
+            success, response = self.run_test(
+                "Create planning slot for médecin",
+                "POST",
+                "planning",
+                200,
+                data=creneau_data,
+                token=directeur_token
+            )
+            
+            if success and 'id' in response:
+                created_creneaux.append(response['id'])
+                print(f"   ✓ Created planning slot for Dr. {medecin['prenom']} {medecin['nom']}")
+        
+        # Test creating assistant slot with médecin assignment
+        if assistants and medecins:
+            assistant = assistants[0]
+            medecin = medecins[0]
+            creneau_data = {
+                "date": today,
+                "creneau": "MATIN",
+                "employe_id": assistant['id'],
+                "medecin_attribue_id": medecin['id'],
+                "salle_attribuee": "A",
+                "notes": "Assistance consultations"
+            }
+            
+            success, response = self.run_test(
+                "Create planning slot for assistant with médecin",
+                "POST",
+                "planning",
+                200,
+                data=creneau_data,
+                token=directeur_token
+            )
+            
+            if success and 'id' in response:
+                created_creneaux.append(response['id'])
+                print(f"   ✓ Created assistant slot with médecin assignment")
+        
+        # Test creating secrétaire slot with custom hours
+        if secretaires:
+            secretaire = secretaires[0]
+            creneau_data = {
+                "date": today,
+                "creneau": "MATIN",
+                "employe_id": secretaire['id'],
+                "horaire_debut": "08:00",
+                "horaire_fin": "12:00",
+                "notes": "Accueil patients"
+            }
+            
+            success, response = self.run_test(
+                "Create planning slot for secrétaire with hours",
+                "POST",
+                "planning",
+                200,
+                data=creneau_data,
+                token=directeur_token
+            )
+            
+            if success and 'id' in response:
+                created_creneaux.append(response['id'])
+                print(f"   ✓ Created secrétaire slot with custom hours")
+        
+        # Test conflict detection - try to create duplicate slot
+        if medecins:
+            medecin = medecins[0]
+            duplicate_data = {
+                "date": today,
+                "creneau": "MATIN",
+                "employe_id": medecin['id'],
+                "salle_attribuee": "2",
+                "notes": "Should conflict"
+            }
+            
+            success, response = self.run_test(
+                "Test employee conflict detection",
+                "POST",
+                "planning",
+                400,  # Should fail with conflict
+                data=duplicate_data,
+                token=directeur_token
+            )
+            
+            if success:
+                print(f"   ✓ Employee conflict correctly detected")
+        
+        # Test room conflict detection
+        if len(medecins) > 1:
+            medecin2 = medecins[1]
+            room_conflict_data = {
+                "date": today,
+                "creneau": "MATIN",
+                "employe_id": medecin2['id'],
+                "salle_attribuee": "1",  # Same room as first médecin
+                "notes": "Should conflict on room"
+            }
+            
+            success, response = self.run_test(
+                "Test room conflict detection",
+                "POST",
+                "planning",
+                400,  # Should fail with room conflict
+                data=room_conflict_data,
+                token=directeur_token
+            )
+            
+            if success:
+                print(f"   ✓ Room conflict correctly detected")
+        
+        # Test getting planning by date
+        success, planning_data = self.run_test(
+            f"Get planning for {today}",
+            "GET",
+            f"planning/{today}",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   Found {len(planning_data)} planning slots for today")
+            for slot in planning_data:
+                employe = slot.get('employe', {})
+                print(f"   - {employe.get('prenom', '')} {employe.get('nom', '')} ({slot.get('creneau', '')}) - Salle: {slot.get('salle_attribuee', 'N/A')}")
+        
+        # Test unauthorized planning creation (non-directeur)
+        if 'medecin' in self.tokens and medecins:
+            unauthorized_data = {
+                "date": today,
+                "creneau": "APRES_MIDI",
+                "employe_id": medecins[0]['id'],
+                "salle_attribuee": "3"
+            }
+            
+            success, response = self.run_test(
+                "Unauthorized planning creation (médecin)",
+                "POST",
+                "planning",
+                403,  # Should be forbidden
+                data=unauthorized_data,
+                token=self.tokens['medecin']
+            )
+            
+            if success:
+                print(f"   ✓ Non-directeur correctly denied planning creation")
+        
+        # Test deleting planning slots
+        if created_creneaux:
+            creneau_id = created_creneaux[0]
+            success, response = self.run_test(
+                "Delete planning slot",
+                "DELETE",
+                f"planning/{creneau_id}",
+                200,
+                token=directeur_token
+            )
+            
+            if success:
+                print(f"   ✓ Successfully deleted planning slot")
+        
+        return created_creneaux
+
+    def test_chat_system(self):
+        """Test comprehensive chat system"""
+        print("\n💬 Testing Chat System...")
+        
+        sent_messages = []
+        
+        # Test sending general message
+        if 'directeur' in self.tokens:
+            general_message_data = {
+                "contenu": "Message général de test du directeur",
+                "type_message": "GENERAL"
+            }
+            
+            success, response = self.run_test(
+                "Send general message (directeur)",
+                "POST",
+                "messages",
+                200,
+                data=general_message_data,
+                token=self.tokens['directeur']
+            )
+            
+            if success and 'id' in response:
+                sent_messages.append(response['id'])
+                print(f"   ✓ General message sent successfully")
+        
+        # Test sending private message
+        if 'medecin' in self.tokens and 'assistant' in self.tokens:
+            medecin_id = self.users['medecin']['id']
+            assistant_id = self.users['assistant']['id']
+            
+            private_message_data = {
+                "contenu": "Message privé de test du médecin à l'assistant",
+                "type_message": "PRIVE",
+                "destinataire_id": assistant_id
+            }
+            
+            success, response = self.run_test(
+                "Send private message (médecin to assistant)",
+                "POST",
+                "messages",
+                200,
+                data=private_message_data,
+                token=self.tokens['medecin']
+            )
+            
+            if success and 'id' in response:
+                sent_messages.append(response['id'])
+                print(f"   ✓ Private message sent successfully")
+        
+        # Test getting general messages
+        for role in ['directeur', 'medecin', 'assistant', 'secretaire']:
+            if role in self.tokens:
+                success, messages = self.run_test(
+                    f"Get general messages ({role})",
+                    "GET",
+                    "messages",
+                    200,
+                    params={"type_message": "GENERAL", "limit": 50},
+                    token=self.tokens[role]
+                )
+                
+                if success:
+                    print(f"   {role} can see {len(messages)} general messages")
+        
+        # Test getting private messages
+        for role in ['medecin', 'assistant']:
+            if role in self.tokens:
+                success, messages = self.run_test(
+                    f"Get private messages ({role})",
+                    "GET",
+                    "messages",
+                    200,
+                    params={"type_message": "PRIVE", "limit": 50},
+                    token=self.tokens[role]
+                )
+                
+                if success:
+                    print(f"   {role} can see {len(messages)} private messages")
+        
+        # Test conversation between two users
+        if 'medecin' in self.tokens and 'assistant' in self.tokens:
+            assistant_id = self.users['assistant']['id']
+            
+            success, conversation = self.run_test(
+                "Get conversation (médecin with assistant)",
+                "GET",
+                f"messages/conversation/{assistant_id}",
+                200,
+                token=self.tokens['medecin']
+            )
+            
+            if success:
+                print(f"   Found {len(conversation)} messages in conversation")
+        
+        # Test sending message without content (should fail)
+        if 'medecin' in self.tokens:
+            invalid_message_data = {
+                "contenu": "",
+                "type_message": "GENERAL"
+            }
+            
+            success, response = self.run_test(
+                "Send empty message (should fail)",
+                "POST",
+                "messages",
+                422,  # Should fail validation
+                data=invalid_message_data,
+                token=self.tokens['medecin']
+            )
+        
+        return sent_messages
+
+    def test_notification_system(self):
+        """Test comprehensive notification system"""
+        print("\n🔔 Testing Notification System...")
+        
+        if 'directeur' not in self.tokens:
+            print("❌ Skipping notification tests - no directeur token")
+            return
+        
+        directeur_token = self.tokens['directeur']
+        today = datetime.now().strftime('%Y-%m-%d')
+        
+        # First, ensure we have some planning data for notifications
+        planning_slots = self.test_planning_system()
+        
+        # Test generating notifications (Director only)
+        success, response = self.run_test(
+            f"Generate daily notifications for {today}",
+            "POST",
+            f"notifications/generate/{today}",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✓ Notifications generated successfully")
+            if 'message' in response:
+                print(f"   {response['message']}")
+        
+        # Test getting all notifications for date (Director)
+        success, all_notifications = self.run_test(
+            f"Get all notifications for {today} (Director)",
+            "GET",
+            f"notifications/{today}",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   Director can see {len(all_notifications)} notifications for {today}")
+            for notif in all_notifications:
+                employe = notif.get('employe', {})
+                print(f"   - Notification for {employe.get('prenom', '')} {employe.get('nom', '')}")
+        
+        # Test getting personal notification for today
+        for role in ['medecin', 'assistant', 'secretaire']:
+            if role in self.tokens:
+                success, my_notification = self.run_test(
+                    f"Get personal notification for today ({role})",
+                    "GET",
+                    "notifications/me/today",
+                    200,
+                    token=self.tokens[role]
+                )
+                
+                if success and my_notification:
+                    print(f"   ✓ {role} has personal notification for today")
+                    # Print first few lines of notification content
+                    content_lines = my_notification.get('contenu', '').split('\n')
+                    if content_lines:
+                        print(f"   Content preview: {content_lines[0]}")
+                elif success:
+                    print(f"   {role} has no notification for today")
+        
+        # Test unauthorized notification generation
+        if 'medecin' in self.tokens:
+            success, response = self.run_test(
+                "Unauthorized notification generation (médecin)",
+                "POST",
+                f"notifications/generate/{today}",
+                403,  # Should be forbidden
+                token=self.tokens['medecin']
+            )
+            
+            if success:
+                print(f"   ✓ Non-directeur correctly denied notification generation")
+        
+        # Test getting notifications for non-existent date
+        future_date = "2025-12-31"
+        success, empty_notifications = self.run_test(
+            f"Get notifications for future date {future_date}",
+            "GET",
+            f"notifications/{future_date}",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   Found {len(empty_notifications)} notifications for future date (expected: 0)")
+
+    def run_delete_test(self, name, endpoint, expected_status, token=None):
+        """Helper method for DELETE requests"""
+        url = f"{self.api_url}/{endpoint}"
+        headers = {'Content-Type': 'application/json'}
+        if token:
+            headers['Authorization'] = f'Bearer {token}'
+
+        self.tests_run += 1
+        print(f"\n🔍 Testing {name}...")
+        
+        try:
+            response = requests.delete(url, headers=headers)
+            success = response.status_code == expected_status
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                try:
+                    return success, response.json()
+                except:
+                    return success, {}
+            else:
+                print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
+                try:
+                    error_detail = response.json()
+                    print(f"   Error details: {error_detail}")
+                except:
+                    print(f"   Response text: {response.text}")
+                return False, {}
+
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
+
 def main():
     print("🏥 Testing Medical Staff Management API")
     print("=" * 50)
