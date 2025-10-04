@@ -183,6 +183,32 @@ class ConfigurationCabinetUpdate(BaseModel):
     heures_ouverture_apres_midi_debut: Optional[str] = None
     heures_ouverture_apres_midi_fin: Optional[str] = None
 
+# Semaine Type Models
+class SemaineType(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nom: str
+    description: Optional[str] = None
+    lundi: Optional[str] = None  # "MATIN", "APRES_MIDI", "JOURNEE_COMPLETE", "REPOS"
+    mardi: Optional[str] = None
+    mercredi: Optional[str] = None
+    jeudi: Optional[str] = None
+    vendredi: Optional[str] = None
+    samedi: Optional[str] = None
+    dimanche: Optional[str] = None
+    actif: bool = True
+    date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class SemaineTypeCreate(BaseModel):
+    nom: str
+    description: Optional[str] = None
+    lundi: Optional[str] = None
+    mardi: Optional[str] = None
+    mercredi: Optional[str] = None
+    jeudi: Optional[str] = None
+    vendredi: Optional[str] = None
+    samedi: Optional[str] = None
+    dimanche: Optional[str] = None
+
 # Demande Jour Travail Models
 class DemandeJourTravail(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -197,9 +223,11 @@ class DemandeJourTravail(BaseModel):
     commentaire_approbation: Optional[str] = None
 
 class DemandeJourTravailCreate(BaseModel):
-    date_demandee: str
-    creneau: str
+    date_demandee: Optional[str] = None  # Optionnel si semaine_type_id fourni
+    creneau: Optional[str] = None
     motif: Optional[str] = None
+    semaine_type_id: Optional[str] = None  # Pour demande de semaine type
+    date_debut_semaine: Optional[str] = None  # YYYY-MM-DD du lundi
 
 class ApprobationJourTravailRequest(BaseModel):
     approuve: bool
