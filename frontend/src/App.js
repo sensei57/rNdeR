@@ -2135,20 +2135,28 @@ const DemandesTravailManager = () => {
   const handleCreateDemande = async (e) => {
     e.preventDefault();
     
-    if (!newDemande.date_demandee || !newDemande.creneau) {
-      toast.error('Veuillez remplir tous les champs obligatoires');
-      return;
+    if (typedemande === 'individuelle') {
+      if (!newDemande.date_demandee || !newDemande.creneau) {
+        toast.error('Veuillez remplir tous les champs obligatoires');
+        return;
+      }
+    } else {
+      if (!newDemande.semaine_type_id || !newDemande.date_debut_semaine) {
+        toast.error('Veuillez sélectionner une semaine type et une date de début');
+        return;
+      }
     }
 
     try {
-      await axios.post(`${API}/demandes-travail`, newDemande);
-      toast.success('Demande créée avec succès');
+      const response = await axios.post(`${API}/demandes-travail`, newDemande);
+      const demandesCreees = Array.isArray(response.data) ? response.data.length : 1;
+      toast.success(`${demandesCreees} demande(s) créée(s) avec succès`);
       setShowDemandeModal(false);
       resetForm();
       fetchDemandes();
     } catch (error) {
       if (error.response?.status === 400) {
-        toast.error('Une demande existe déjà pour cette date/créneau');
+        toast.error(error.response.data.detail || 'Erreur lors de la création');
       } else {
         toast.error('Erreur lors de la création de la demande');
       }
