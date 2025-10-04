@@ -347,10 +347,115 @@ const PersonnelManager = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-800">Gestion du Personnel</h2>
         {user?.role === 'Directeur' && (
-          <Button className="flex items-center space-x-2">
-            <Plus className="h-4 w-4" />
-            <span>Nouveau Personnel</span>
-          </Button>
+          <Dialog open={showPersonnelModal} onOpenChange={setShowPersonnelModal}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center space-x-2">
+                <Plus className="h-4 w-4" />
+                <span>Nouveau Personnel</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Nouveau Personnel</DialogTitle>
+                <DialogDescription>
+                  Ajoutez un nouvel employé au cabinet médical
+                </DialogDescription>
+              </DialogHeader>
+              
+              <form onSubmit={handleCreatePersonnel} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="prenom">Prénom *</Label>
+                    <Input
+                      id="prenom"
+                      value={newPersonnel.prenom}
+                      onChange={(e) => setNewPersonnel({...newPersonnel, prenom: e.target.value})}
+                      required
+                      placeholder="Prénom"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="nom">Nom *</Label>
+                    <Input
+                      id="nom"
+                      value={newPersonnel.nom}
+                      onChange={(e) => setNewPersonnel({...newPersonnel, nom: e.target.value})}
+                      required
+                      placeholder="Nom de famille"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={newPersonnel.email}
+                    onChange={(e) => setNewPersonnel({...newPersonnel, email: e.target.value})}
+                    required
+                    placeholder="email@hopital.fr"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="role">Rôle *</Label>
+                  <Select
+                    value={newPersonnel.role}
+                    onValueChange={(value) => setNewPersonnel({...newPersonnel, role: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Médecin">Médecin</SelectItem>
+                      <SelectItem value="Assistant">Assistant</SelectItem>
+                      <SelectItem value="Secrétaire">Secrétaire</SelectItem>
+                      <SelectItem value="Directeur">Directeur</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="telephone">Téléphone</Label>
+                  <Input
+                    id="telephone"
+                    value={newPersonnel.telephone}
+                    onChange={(e) => setNewPersonnel({...newPersonnel, telephone: e.target.value})}
+                    placeholder="01 23 45 67 89"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="password">Mot de passe temporaire *</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={newPersonnel.password}
+                    onChange={(e) => setNewPersonnel({...newPersonnel, password: e.target.value})}
+                    required
+                    placeholder="Mot de passe"
+                  />
+                </div>
+                
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowPersonnelModal(false);
+                      resetPersonnelForm();
+                    }}
+                  >
+                    Annuler
+                  </Button>
+                  <Button type="submit">
+                    Créer le Personnel
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         )}
       </div>
 
