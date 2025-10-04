@@ -1680,7 +1680,13 @@ def main():
     # Test NEW FEATURE: Configuration Management
     tester.test_configuration_management()
     
-    # Test NEW FEATURE: Demandes de Travail
+    # Test NEW FEATURE: Semaines Types (Week Templates)
+    tester.test_semaines_types()
+    
+    # Test NEW FEATURE: Groupes Chat (Chat Groups)
+    tester.test_groupes_chat()
+    
+    # Test NEW FEATURE: Demandes de Travail (with week templates)
     tester.test_demandes_travail()
     
     # Test NEW FEATURE: Planning Semaine
