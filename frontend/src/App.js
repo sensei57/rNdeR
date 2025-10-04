@@ -1381,8 +1381,21 @@ const PlanningManager = () => {
 
   const fetchPlanningByDate = async (date) => {
     try {
-      const response = await axios.get(`${API}/planning/${date}`);
-      setPlanning(response.data);
+      const [planningRes, congesRes] = await Promise.all([
+        axios.get(`${API}/planning/${date}`),
+        axios.get(`${API}/conges`)
+      ]);
+      
+      setPlanning(planningRes.data);
+      
+      // Filtrer les congés approuvés pour la date sélectionnée
+      const congesDate = congesRes.data.filter(conge => 
+        conge.statut === 'APPROUVE' &&
+        new Date(conge.date_debut) <= new Date(date) &&
+        new Date(conge.date_fin) >= new Date(date)
+      );
+      setCongesApprouves(congesDate);
+      
     } catch (error) {
       console.error('Erreur lors du chargement du planning:', error);
     }
