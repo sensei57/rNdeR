@@ -797,9 +797,24 @@ async def send_message(
     message_data: MessageCreate,
     current_user: User = Depends(get_current_user)
 ):
+    # Validation selon le type de message
+    if message_data.type_message == "GROUPE":
+        if not message_data.groupe_id:
+            raise HTTPException(status_code=400, detail="ID du groupe requis")
+        
+        # Vérifier que l'utilisateur est membre du groupe
+        groupe = await db.groupes_chat.find_one({"id": message_data.groupe_id})
+        if not groupe or current_user.id not in groupe.get("membres", []):
+            raise HTTPException(status_code=403, detail="Vous n'êtes pas membre de ce groupe")
+    
+    elif message_data.type_message == "PRIVE":
+        if not message_data.destinataire_id:
+            raise HTTPException(status_code=400, detail="Destinataire requis pour un message privé")
+    
     message = Message(
         expediteur_id=current_user.id,
         destinataire_id=message_data.destinataire_id,
+        groupe_id=message_data.groupe_id,
         contenu=message_data.contenu,
         type_message=message_data.type_message
     )
