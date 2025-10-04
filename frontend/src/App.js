@@ -2184,8 +2184,11 @@ const DemandesTravailManager = () => {
     setNewDemande({
       date_demandee: '',
       creneau: 'MATIN',
-      motif: ''
+      motif: '',
+      semaine_type_id: '',
+      date_debut_semaine: ''
     });
+    setTypeDemande('individuelle');
   };
 
   const getStatutColor = (statut) => {
