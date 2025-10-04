@@ -707,6 +707,90 @@ async def delete_creneau_planning(
     
     return {"message": "Créneau supprimé avec succès"}
 
+# Groupes de chat endpoints
+@api_router.post("/groupes-chat", response_model=GroupeChat)
+async def create_groupe_chat(
+    groupe_data: GroupeChatCreate,
+    current_user: User = Depends(get_current_user)
+):
+    # Vérifier que tous les membres existent
+    for membre_id in groupe_data.membres:
+        membre = await db.users.find_one({"id": membre_id})
+        if not membre:
+            raise HTTPException(status_code=404, detail=f"Utilisateur {membre_id} non trouvé")
+    
+    # Ajouter le créateur aux membres s'il n'y est pas déjà
+    if current_user.id not in groupe_data.membres:
+        groupe_data.membres.append(current_user.id)
+    
+    groupe = GroupeChat(
+        createur_id=current_user.id,
+        **groupe_data.dict()
+    )
+    
+    await db.groupes_chat.insert_one(groupe.dict())
+    return groupe
+
+@api_router.get("/groupes-chat", response_model=List[Dict[str, Any]])
+async def get_groupes_chat(current_user: User = Depends(get_current_user)):
+    # Récupérer tous les groupes où l'utilisateur est membre
+    groupes = await db.groupes_chat.find({
+        "actif": True,
+        "membres": current_user.id
+    }).sort("date_creation", -1).to_list(1000)
+    
+    # Enrichir avec les détails des membres
+    enriched_groupes = []
+    for groupe in groupes:
+        if '_id' in groupe:
+            del groupe['_id']
+            
+        # Récupérer les détails des membres
+        membres_details = []
+        for membre_id in groupe.get("membres", []):
+            membre = await db.users.find_one({"id": membre_id})
+            if membre and '_id' in membre:
+                del membre['_id']
+            if membre:
+                membres_details.append(User(**membre))
+        
+        createur = await db.users.find_one({"id": groupe["createur_id"]})
+        if createur and '_id' in createur:
+            del createur['_id']
+        
+        enriched_groupes.append({
+            **groupe,
+            "membres_details": membres_details,
+            "createur": User(**createur) if createur else None
+        })
+    
+    return enriched_groupes
+
+@api_router.put("/groupes-chat/{groupe_id}/membres")
+async def update_membres_groupe(
+    groupe_id: str,
+    nouveaux_membres: List[str],
+    current_user: User = Depends(get_current_user)
+):
+    # Vérifier que l'utilisateur est membre ou créateur du groupe
+    groupe = await db.groupes_chat.find_one({"id": groupe_id})
+    if not groupe:
+        raise HTTPException(status_code=404, detail="Groupe non trouvé")
+    
+    if current_user.id not in groupe.get("membres", []) and current_user.id != groupe.get("createur_id"):
+        raise HTTPException(status_code=403, detail="Vous n'êtes pas membre de ce groupe")
+    
+    # Mettre à jour les membres
+    result = await db.groupes_chat.update_one(
+        {"id": groupe_id},
+        {"$set": {"membres": nouveaux_membres}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Groupe non trouvé")
+    
+    return {"message": "Membres mis à jour avec succès"}
+
 # Chat endpoints
 @api_router.post("/messages", response_model=Message)
 async def send_message(
