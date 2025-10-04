@@ -3008,16 +3008,27 @@ const ChatManager = () => {
               placeholder={
                 chatType === 'GENERAL' 
                   ? "Écrivez votre message à tous..." 
-                  : selectedUser 
-                    ? `Message pour ${selectedUser.prenom}...`
-                    : "Sélectionnez un destinataire..."
+                  : chatType === 'GROUPE'
+                    ? selectedGroupe
+                      ? `Message au groupe ${selectedGroupe.nom}...`
+                      : "Sélectionnez un groupe..."
+                    : selectedUser 
+                      ? `Message pour ${selectedUser.prenom}...`
+                      : "Sélectionnez un destinataire..."
               }
-              disabled={chatType === 'PRIVE' && !selectedUser}
+              disabled={
+                (chatType === 'PRIVE' && !selectedUser) ||
+                (chatType === 'GROUPE' && !selectedGroupe)
+              }
               className="flex-1"
             />
             <Button 
               type="submit"
-              disabled={!newMessage.trim() || (chatType === 'PRIVE' && !selectedUser)}
+              disabled={
+                !newMessage.trim() || 
+                (chatType === 'PRIVE' && !selectedUser) ||
+                (chatType === 'GROUPE' && !selectedGroupe)
+              }
             >
               <Send className="h-4 w-4" />
             </Button>
