@@ -114,18 +114,35 @@ class CreneauPlanningCreate(BaseModel):
     horaire_fin: Optional[str] = None
     notes: Optional[str] = None
 
+# Groupe Chat Models
+class GroupeChat(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nom: str
+    description: Optional[str] = None
+    createur_id: str
+    membres: List[str] = []  # IDs des utilisateurs membres
+    actif: bool = True
+    date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class GroupeChatCreate(BaseModel):
+    nom: str
+    description: Optional[str] = None
+    membres: List[str] = []
+
 # Chat Models
 class Message(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     expediteur_id: str
     destinataire_id: Optional[str] = None  # None = message général
+    groupe_id: Optional[str] = None  # Pour messages de groupe
     contenu: str
-    type_message: str = "GENERAL"  # "GENERAL" ou "PRIVE"
+    type_message: str = "GENERAL"  # "GENERAL", "PRIVE", "GROUPE"
     date_envoi: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     lu: bool = False
 
 class MessageCreate(BaseModel):
     destinataire_id: Optional[str] = None
+    groupe_id: Optional[str] = None
     contenu: str
     type_message: str = "GENERAL"
 
