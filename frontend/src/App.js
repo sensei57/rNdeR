@@ -2600,6 +2600,84 @@ const DemandesTravailManager = () => {
           </Card>
         )}
       </div>
+
+      {/* Modal Créer Semaine Type */}
+      <Dialog open={showSemaineTypeModal} onOpenChange={setShowSemaineTypeModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Créer Ma Semaine Type</DialogTitle>
+            <DialogDescription>
+              Définissez votre modèle de semaine personnalisé
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleCreateSemaineType} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="nom">Nom de la semaine type *</Label>
+                <Input
+                  id="nom"
+                  value={newSemaineType.nom}
+                  onChange={(e) => setNewSemaineType({...newSemaineType, nom: e.target.value})}
+                  placeholder="Ex: Ma semaine standard"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Input
+                  id="description"
+                  value={newSemaineType.description}
+                  onChange={(e) => setNewSemaineType({...newSemaineType, description: e.target.value})}
+                  placeholder="Description courte"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Planning hebdomadaire</Label>
+              <div className="grid grid-cols-2 gap-3">
+                {['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'].map(jour => (
+                  <div key={jour} className="space-y-2">
+                    <Label className="text-sm font-medium capitalize">{jour}</Label>
+                    <Select
+                      value={newSemaineType[jour]}
+                      onValueChange={(value) => setNewSemaineType({...newSemaineType, [jour]: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="REPOS">Repos</SelectItem>
+                        <SelectItem value="MATIN">Matin</SelectItem>
+                        <SelectItem value="APRES_MIDI">Après-midi</SelectItem>
+                        <SelectItem value="JOURNEE_COMPLETE">Journée complète</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowSemaineTypeModal(false);
+                  resetSemaineTypeForm();
+                }}
+              >
+                Annuler
+              </Button>
+              <Button type="submit">
+                Créer Ma Semaine Type
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
