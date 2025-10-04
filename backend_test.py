@@ -1003,12 +1003,228 @@ class MedicalStaffAPITester:
         
         return config
 
+    def test_semaines_types(self):
+        """Test week templates system - NEW FEATURE"""
+        print("\n📅 Testing Semaines Types (NEW FEATURE)...")
+        
+        if 'directeur' not in self.tokens:
+            print("❌ Skipping semaines types tests - no directeur token")
+            return
+        
+        directeur_token = self.tokens['directeur']
+        
+        # Test getting existing semaines types
+        success, existing_semaines = self.run_test(
+            "Get existing semaines types",
+            "GET",
+            "semaines-types",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   Found {len(existing_semaines)} existing semaines types")
+            for semaine in existing_semaines:
+                print(f"   - {semaine['nom']}: {semaine.get('description', 'No description')}")
+        
+        # Test initialization if no semaines exist
+        if not existing_semaines or len(existing_semaines) == 0:
+            success, response = self.run_test(
+                "Initialize default semaines types",
+                "POST",
+                "semaines-types/init",
+                200,
+                token=directeur_token
+            )
+            
+            if success:
+                print(f"   ✓ Semaines types initialized successfully")
+                if 'message' in response:
+                    print(f"   {response['message']}")
+                
+                # Get semaines again after initialization
+                success, initialized_semaines = self.run_test(
+                    "Get semaines after initialization",
+                    "GET",
+                    "semaines-types",
+                    200,
+                    token=directeur_token
+                )
+                
+                if success:
+                    print(f"   Now have {len(initialized_semaines)} semaines types")
+                    existing_semaines = initialized_semaines
+        
+        # Test creating custom semaine type
+        custom_semaine_data = {
+            "nom": "Test Semaine Personnalisée",
+            "description": "Semaine de test pour les API",
+            "lundi": "MATIN",
+            "mardi": "APRES_MIDI", 
+            "mercredi": "JOURNEE_COMPLETE",
+            "jeudi": "REPOS",
+            "vendredi": "MATIN",
+            "samedi": "REPOS",
+            "dimanche": "REPOS"
+        }
+        
+        success, response = self.run_test(
+            "Create custom semaine type",
+            "POST",
+            "semaines-types",
+            200,
+            data=custom_semaine_data,
+            token=directeur_token
+        )
+        
+        if success and 'id' in response:
+            print(f"   ✓ Custom semaine type created: {response['nom']}")
+        
+        # Test unauthorized access
+        if 'medecin' in self.tokens:
+            success, response = self.run_test(
+                "Unauthorized semaine type creation (médecin)",
+                "POST",
+                "semaines-types",
+                403,
+                data=custom_semaine_data,
+                token=self.tokens['medecin']
+            )
+            
+            if success:
+                print(f"   ✓ Non-directeur correctly denied semaine type creation")
+        
+        # Test reading access for non-directeur
+        if 'medecin' in self.tokens:
+            success, response = self.run_test(
+                "Read semaines types (médecin)",
+                "GET",
+                "semaines-types",
+                200,
+                token=self.tokens['medecin']
+            )
+            
+            if success:
+                print(f"   ✓ Médecin can read semaines types")
+        
+        return existing_semaines
+
+    def test_groupes_chat(self):
+        """Test chat groups system - NEW FEATURE"""
+        print("\n👥 Testing Groupes Chat (NEW FEATURE)...")
+        
+        created_groups = []
+        
+        # Test creating chat group as directeur
+        if 'directeur' in self.tokens and 'medecin' in self.tokens and 'assistant' in self.tokens:
+            medecin_id = self.users['medecin']['id']
+            assistant_id = self.users['assistant']['id']
+            
+            group_data = {
+                "nom": "Équipe Consultation",
+                "description": "Groupe pour coordination des consultations",
+                "membres": [medecin_id, assistant_id]
+            }
+            
+            success, response = self.run_test(
+                "Create chat group (directeur)",
+                "POST",
+                "groupes-chat",
+                200,
+                data=group_data,
+                token=self.tokens['directeur']
+            )
+            
+            if success and 'id' in response:
+                created_groups.append(response['id'])
+                print(f"   ✓ Chat group created: {response['nom']}")
+                print(f"   Members: {len(response.get('membres', []))} users")
+        
+        # Test getting user's groups
+        for role in ['directeur', 'medecin', 'assistant']:
+            if role in self.tokens:
+                success, groups = self.run_test(
+                    f"Get chat groups ({role})",
+                    "GET",
+                    "groupes-chat",
+                    200,
+                    token=self.tokens[role]
+                )
+                
+                if success:
+                    print(f"   {role} is member of {len(groups)} groups")
+                    for group in groups:
+                        membres_details = group.get('membres_details', [])
+                        print(f"   - {group['nom']}: {len(membres_details)} members")
+        
+        # Test sending group message
+        if created_groups and 'medecin' in self.tokens:
+            group_id = created_groups[0]
+            group_message_data = {
+                "contenu": "Message de test dans le groupe",
+                "type_message": "GROUPE",
+                "groupe_id": group_id
+            }
+            
+            success, response = self.run_test(
+                "Send group message (médecin)",
+                "POST",
+                "messages",
+                200,
+                data=group_message_data,
+                token=self.tokens['medecin']
+            )
+            
+            if success:
+                print(f"   ✓ Group message sent successfully")
+        
+        # Test getting group messages
+        if created_groups and 'assistant' in self.tokens:
+            group_id = created_groups[0]
+            success, messages = self.run_test(
+                "Get group messages (assistant)",
+                "GET",
+                "messages",
+                200,
+                params={"type_message": "GROUPE", "groupe_id": group_id, "limit": 50},
+                token=self.tokens['assistant']
+            )
+            
+            if success:
+                print(f"   Assistant can see {len(messages)} group messages")
+        
+        # Test unauthorized group message (non-member)
+        if created_groups and 'secretaire' in self.tokens:
+            group_id = created_groups[0]
+            unauthorized_message = {
+                "contenu": "Message non autorisé",
+                "type_message": "GROUPE",
+                "groupe_id": group_id
+            }
+            
+            success, response = self.run_test(
+                "Unauthorized group message (secrétaire)",
+                "POST",
+                "messages",
+                403,
+                data=unauthorized_message,
+                token=self.tokens['secretaire']
+            )
+            
+            if success:
+                print(f"   ✓ Non-member correctly denied group message")
+        
+        return created_groups
+
     def test_demandes_travail(self):
         """Test work day requests system - NEW FEATURE"""
         print("\n📋 Testing Demandes de Travail (NEW FEATURE)...")
         
         created_demandes = []
         today = datetime.now()
+        
+        # First test semaines types (needed for week template requests)
+        semaines_types = self.test_semaines_types()
         
         # Test creating work requests as médecin
         if 'medecin' in self.tokens:
@@ -1031,9 +1247,33 @@ class MedicalStaffAPITester:
                 token=self.tokens['medecin']
             )
             
-            if success and 'id' in response:
-                created_demandes.append(response['id'])
+            if success and isinstance(response, list) and len(response) > 0:
+                created_demandes.append(response[0]['id'])
                 print(f"   ✓ Morning work request created")
+            
+            # Test creating week template request
+            if semaines_types and len(semaines_types) > 0:
+                next_monday = today + timedelta(days=(7 - today.weekday()))
+                next_monday_str = next_monday.strftime('%Y-%m-%d')
+                
+                week_template_data = {
+                    "semaine_type_id": semaines_types[0]['id'],
+                    "date_debut_semaine": next_monday_str
+                }
+                
+                success, response = self.run_test(
+                    "Create week template request (médecin)",
+                    "POST",
+                    "demandes-travail",
+                    200,
+                    data=week_template_data,
+                    token=self.tokens['medecin']
+                )
+                
+                if success and isinstance(response, list):
+                    print(f"   ✓ Week template request created {len(response)} demandes")
+                    for demande in response:
+                        created_demandes.append(demande['id'])
             
             # Create request for day after tomorrow - full day
             day_after = (today + timedelta(days=2)).strftime('%Y-%m-%d')
@@ -1052,8 +1292,8 @@ class MedicalStaffAPITester:
                 token=self.tokens['medecin']
             )
             
-            if success and 'id' in response:
-                created_demandes.append(response['id'])
+            if success and isinstance(response, list) and len(response) > 0:
+                created_demandes.append(response[0]['id'])
                 print(f"   ✓ Full day work request created")
         
         # Test creating duplicate request (should fail)
