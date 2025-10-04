@@ -2947,10 +2947,14 @@ const ChatManager = () => {
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">
             {chatType === 'GENERAL' 
-              ? 'Chat Général - Tous les employés' 
-              : selectedUser 
-                ? `Conversation avec ${selectedUser.prenom} ${selectedUser.nom}`
-                : 'Sélectionnez un collègue'
+              ? 'Chat Général - Tous les employés'
+              : chatType === 'GROUPE'
+                ? selectedGroupe 
+                  ? `Groupe: ${selectedGroupe.nom} (${selectedGroupe.membres_details?.length || 0} membres)`
+                  : 'Sélectionnez un groupe'
+                : selectedUser 
+                  ? `Conversation avec ${selectedUser.prenom} ${selectedUser.nom}`
+                  : 'Sélectionnez un collègue'
             }
           </CardTitle>
         </CardHeader>
