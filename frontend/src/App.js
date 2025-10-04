@@ -2846,6 +2846,252 @@ const PlanCabinetManager = () => {
   );
 };
 
+// Coffre-Fort Component
+const CoffreFortManager = () => {
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploadDescription, setUploadDescription] = useState('');
+  const { user } = useAuth();
+
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
+
+  const fetchDocuments = async () => {
+    try {
+      const response = await axios.get(`${API}/documents`);
+      setDocuments(response.data);
+    } catch (error) {
+      toast.error('Erreur lors du chargement des documents');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUploadDocument = async (e) => {
+    e.preventDefault();
+    
+    if (!uploadFile) {
+      toast.error('Veuillez sélectionner un fichier');
+      return;
+    }
+
+    try {
+      // Dans un vrai système, on uploadrait le fichier
+      // Ici on simule juste l'enregistrement des métadonnées
+      const documentData = {
+        nom_fichier: `${Date.now()}-${uploadFile.name}`,
+        nom_original: uploadFile.name,
+        taille: uploadFile.size,
+        type_mime: uploadFile.type,
+        description: uploadDescription
+      };
+
+      await axios.post(`${API}/documents`, documentData);
+      toast.success('Document uploadé avec succès');
+      setShowUploadModal(false);
+      resetUploadForm();
+      fetchDocuments();
+    } catch (error) {
+      toast.error('Erreur lors de l\'upload');
+    }
+  };
+
+  const handleDeleteDocument = async (documentId) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce document ?')) return;
+
+    try {
+      await axios.delete(`${API}/documents/${documentId}`);
+      toast.success('Document supprimé');
+      fetchDocuments();
+    } catch (error) {
+      toast.error('Erreur lors de la suppression');
+    }
+  };
+
+  const resetUploadForm = () => {
+    setUploadFile(null);
+    setUploadDescription('');
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getFileIcon = (type) => {
+    if (type.includes('pdf')) return '📄';
+    if (type.includes('image')) return '🖼️';
+    if (type.includes('word') || type.includes('document')) return '📝';
+    if (type.includes('excel') || type.includes('spreadsheet')) return '📊';
+    if (type.includes('video')) return '🎥';
+    if (type.includes('audio')) return '🎵';
+    return '📁';
+  };
+
+  if (loading) {
+    return <div className="flex justify-center p-8">Chargement...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">
+            {user?.role === 'Directeur' ? 'Documents du Personnel' : 'Mon Coffre-Fort Personnel'}
+          </h2>
+          <p className="text-gray-600 mt-1">
+            {user?.role === 'Directeur' 
+              ? 'Accès à tous les documents du personnel'
+              : 'Vos documents personnels sécurisés'
+            }
+          </p>
+        </div>
+        
+        <Dialog open={showUploadModal} onOpenChange={setShowUploadModal}>
+          <DialogTrigger asChild>
+            <Button className="flex items-center space-x-2">
+              <Plus className="h-4 w-4" />
+              <span>Ajouter Document</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Ajouter un Document</DialogTitle>
+              <DialogDescription>
+                Uploadez un document dans votre coffre-fort personnel
+              </DialogDescription>
+            </DialogHeader>
+            
+            <form onSubmit={handleUploadDocument} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="file">Fichier *</Label>
+                <Input
+                  id="file"
+                  type="file"
+                  onChange={(e) => setUploadFile(e.target.files[0])}
+                  required
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.mp4,.mp3"
+                />
+                {uploadFile && (
+                  <div className="text-sm text-gray-600">
+                    {getFileIcon(uploadFile.type)} {uploadFile.name} ({formatFileSize(uploadFile.size)})
+                  </div>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Description (optionnelle)</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Description du document..."
+                  value={uploadDescription}
+                  onChange={(e) => setUploadDescription(e.target.value)}
+                  rows={3}
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowUploadModal(false);
+                    resetUploadForm();
+                  }}
+                >
+                  Annuler
+                </Button>
+                <Button type="submit">
+                  Uploader
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="space-y-4">
+        {documents.map(document => (
+          <Card key={document.id}>
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start space-x-4">
+                  <div className="text-2xl">
+                    {getFileIcon(document.type_mime)}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div>
+                      <h3 className="font-medium">{document.nom_original}</h3>
+                      <div className="flex items-center space-x-4 text-sm text-gray-600">
+                        <span>{formatFileSize(document.taille)}</span>
+                        <span>•</span>
+                        <span>{new Date(document.date_upload).toLocaleDateString('fr-FR')}</span>
+                        {user?.role === 'Directeur' && (
+                          <>
+                            <span>•</span>
+                            <Badge variant="outline">
+                              Propriétaire: {document.proprietaire_id}
+                            </Badge>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {document.description && (
+                      <p className="text-sm text-gray-600">
+                        {document.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex space-x-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      toast.info('Téléchargement simulé - fonctionnalité complète à implémenter');
+                    }}
+                  >
+                    Télécharger
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleDeleteDocument(document.id)}
+                    className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        
+        {documents.length === 0 && (
+          <Card>
+            <CardContent className="text-center py-12">
+              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500 mb-4">Aucun document trouvé</p>
+              <p className="text-sm text-gray-400">
+                Cliquez sur "Ajouter Document" pour uploader votre premier fichier
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Chat Component
 const ChatManager = () => {
   const [messages, setMessages] = useState([]);
