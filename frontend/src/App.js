@@ -2090,6 +2090,7 @@ const DemandesTravailManager = () => {
   useEffect(() => {
     fetchDemandes();
     fetchConfiguration();
+    fetchSemainesTypes();
   }, []);
 
   const fetchDemandes = async () => {
@@ -2100,6 +2101,25 @@ const DemandesTravailManager = () => {
       toast.error('Erreur lors du chargement des demandes');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSemainesTypes = async () => {
+    try {
+      const response = await axios.get(`${API}/semaines-types`);
+      setSemainesTypes(response.data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des semaines types');
+    }
+  };
+
+  const initSemainesTypes = async () => {
+    try {
+      await axios.post(`${API}/semaines-types/init`);
+      toast.success('Semaines types initialisées');
+      fetchSemainesTypes();
+    } catch (error) {
+      toast.error('Erreur lors de l\'initialisation');
     }
   };
 
