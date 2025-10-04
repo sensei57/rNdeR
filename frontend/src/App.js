@@ -1827,6 +1827,31 @@ const PlanningManager = () => {
                 </div>
               ))}
               
+              {/* Afficher les congés approuvés */}
+              {congesApprouves.map(conge => (
+                <div
+                  key={`conge-${conge.id}`}
+                  className="border rounded-lg p-3 bg-orange-100 text-orange-800 border-orange-300"
+                >
+                  <div className="space-y-1">
+                    <div className="font-medium flex items-center space-x-2">
+                      <span>🌴 {conge.utilisateur?.prenom} {conge.utilisateur?.nom}</span>
+                      <Badge className="bg-orange-200 text-orange-800">
+                        Congé {conge.type_conge.replace('_', ' ')}
+                      </Badge>
+                    </div>
+                    <div className="text-sm">
+                      Du {new Date(conge.date_debut).toLocaleDateString('fr-FR')} au {new Date(conge.date_fin).toLocaleDateString('fr-FR')}
+                    </div>
+                    {conge.motif && (
+                      <div className="text-sm italic">
+                        📝 {conge.motif}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              
               {planningMatin.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
                   <CalendarDays className="h-12 w-12 mx-auto mb-2 text-gray-300" />
