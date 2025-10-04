@@ -810,6 +810,7 @@ async def send_message(
 @api_router.get("/messages", response_model=List[Dict[str, Any]])
 async def get_messages(
     type_message: str = "GENERAL",
+    groupe_id: Optional[str] = None,
     limit: int = 50,
     current_user: User = Depends(get_current_user)
 ):
@@ -823,6 +824,16 @@ async def get_messages(
                 {"destinataire_id": current_user.id, "type_message": "PRIVE"}
             ]
         }
+    elif type_message == "GROUPE" and groupe_id:
+        # Messages du groupe spécifique
+        query = {
+            "type_message": "GROUPE",
+            "groupe_id": groupe_id
+        }
+        # Vérifier que l'utilisateur est membre du groupe
+        groupe = await db.groupes_chat.find_one({"id": groupe_id})
+        if not groupe or current_user.id not in groupe.get("membres", []):
+            raise HTTPException(status_code=403, detail="Vous n'êtes pas membre de ce groupe")
     
     messages = await db.messages.find(query).sort("date_envoi", -1).limit(limit).to_list(limit)
     
