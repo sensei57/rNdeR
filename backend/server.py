@@ -1565,6 +1565,232 @@ async def get_notes_generales(current_user: User = Depends(get_current_user)):
     
     return enriched_notes
 
+# Gestion des quotas employés
+@api_router.post("/quotas", response_model=QuotaEmploye)
+async def create_quota_employe(
+    quota_data: QuotaEmployeCreate,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    # Vérifier si un quota existe déjà pour cette semaine
+    existing = await db.quotas_employes.find_one({
+        "employe_id": quota_data.employe_id,
+        "semaine_debut": quota_data.semaine_debut
+    })
+    
+    if existing:
+        # Mettre à jour le quota existant
+        result = await db.quotas_employes.update_one(
+            {"id": existing["id"]},
+            {"$set": quota_data.dict()}
+        )
+        updated_quota = await db.quotas_employes.find_one({"id": existing["id"]})
+        if '_id' in updated_quota:
+            del updated_quota['_id']
+        return QuotaEmploye(**updated_quota)
+    else:
+        # Créer nouveau quota
+        quota = QuotaEmploye(**quota_data.dict())
+        await db.quotas_employes.insert_one(quota.dict())
+        return quota
+
+@api_router.get("/quotas/{semaine_debut}", response_model=List[Dict[str, Any]])
+async def get_quotas_semaine(
+    semaine_debut: str,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    quotas = await db.quotas_employes.find({"semaine_debut": semaine_debut}).to_list(1000)
+    
+    # Enrichir avec les données des employés
+    enriched_quotas = []
+    for quota in quotas:
+        if '_id' in quota:
+            del quota['_id']
+            
+        employe = await db.users.find_one({"id": quota["employe_id"]})
+        if employe and '_id' in employe:
+            del employe['_id']
+        
+        enriched_quotas.append({
+            **quota,
+            "employe": User(**employe) if employe else None
+        })
+    
+    return enriched_quotas
+
+@api_router.put("/quotas/{quota_id}/increment")
+async def increment_attribution(
+    quota_id: str,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    quota = await db.quotas_employes.find_one({"id": quota_id})
+    if not quota:
+        raise HTTPException(status_code=404, detail="Quota non trouvé")
+    
+    nouvelle_attribution = quota["demi_journees_attribuees"] + 1
+    if nouvelle_attribution > quota["demi_journees_requises"]:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Quota dépassé : {nouvelle_attribution}/{quota['demi_journees_requises']}"
+        )
+    
+    await db.quotas_employes.update_one(
+        {"id": quota_id},
+        {"$set": {"demi_journees_attribuees": nouvelle_attribution}}
+    )
+    
+    return {"message": f"Attribution mise à jour : {nouvelle_attribution}/{quota['demi_journees_requises']}"}
+
+@api_router.put("/quotas/{quota_id}/decrement")
+async def decrement_attribution(
+    quota_id: str,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    quota = await db.quotas_employes.find_one({"id": quota_id})
+    if not quota:
+        raise HTTPException(status_code=404, detail="Quota non trouvé")
+    
+    nouvelle_attribution = max(0, quota["demi_journees_attribuees"] - 1)
+    
+    await db.quotas_employes.update_one(
+        {"id": quota_id},
+        {"$set": {"demi_journees_attribuees": nouvelle_attribution}}
+    )
+    
+    return {"message": f"Attribution mise à jour : {nouvelle_attribution}/{quota['demi_journees_requises']}"}
+
+# Attribution Planning Directeur
+@api_router.post("/attributions")
+async def create_attribution_complete(
+    employe_id: str,
+    date: str,
+    creneau: str,
+    salle_attribuee: str,
+    medecin_ids: List[str] = [],
+    notes: str = "",
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    # Vérifier les conflits
+    existing = await db.planning.find_one({
+        "employe_id": employe_id,
+        "date": date,
+        "creneau": creneau
+    })
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="Employé déjà attribué à ce créneau")
+    
+    salle_occupee = await db.planning.find_one({
+        "salle_attribuee": salle_attribuee,
+        "date": date,
+        "creneau": creneau
+    })
+    
+    if salle_occupee:
+        raise HTTPException(status_code=400, detail="Salle déjà occupée")
+    
+    # Récupérer l'employé pour son rôle
+    employe = await db.users.find_one({"id": employe_id})
+    if not employe:
+        raise HTTPException(status_code=404, detail="Employé non trouvé")
+    
+    # Créer l'attribution
+    attribution_data = {
+        "date": date,
+        "creneau": creneau,
+        "employe_id": employe_id,
+        "salle_attribuee": salle_attribuee,
+        "notes": notes,
+        "employe_role": employe["role"]
+    }
+    
+    # Si c'est un assistant, associer aux médecins
+    if employe["role"] == "Assistant" and medecin_ids:
+        attribution_data["medecin_attribue_id"] = medecin_ids[0]  # Premier médecin principal
+    
+    creneau_planning = CreneauPlanning(**attribution_data)
+    await db.planning.insert_one(creneau_planning.dict())
+    
+    # Mettre à jour le quota
+    semaine_debut = get_monday_of_week(date)
+    quota = await db.quotas_employes.find_one({
+        "employe_id": employe_id,
+        "semaine_debut": semaine_debut
+    })
+    
+    if quota:
+        nouvelle_attribution = quota["demi_journees_attribuees"] + 1
+        await db.quotas_employes.update_one(
+            {"id": quota["id"]},
+            {"$set": {"demi_journees_attribuees": nouvelle_attribution}}
+        )
+    
+    return {"message": "Attribution créée avec succès", "attribution": creneau_planning}
+
+def get_monday_of_week(date_str):
+    from datetime import datetime, timedelta
+    date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+    days_since_monday = date_obj.weekday()
+    monday = date_obj - timedelta(days=days_since_monday)
+    return monday.strftime('%Y-%m-%d')
+
+# Permissions coffre-fort
+@api_router.post("/documents/permissions", response_model=PermissionDocument)
+async def create_permission_document(
+    permission_data: PermissionDocumentCreate,
+    current_user: User = Depends(get_current_user)
+):
+    # Vérifier les permissions pour créer une permission
+    if current_user.role != ROLES["DIRECTEUR"] and current_user.id != permission_data.proprietaire_id:
+        raise HTTPException(status_code=403, detail="Permission insuffisante")
+    
+    # Vérifier si la permission existe déjà
+    existing = await db.permissions_documents.find_one({
+        "proprietaire_id": permission_data.proprietaire_id,
+        "utilisateur_autorise_id": permission_data.utilisateur_autorise_id,
+        "actif": True
+    })
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="Permission déjà accordée")
+    
+    permission = PermissionDocument(
+        accorde_par=current_user.id,
+        **permission_data.dict()
+    )
+    
+    await db.permissions_documents.insert_one(permission.dict())
+    return permission
+
+@api_router.get("/documents/permissions/{proprietaire_id}", response_model=List[Dict[str, Any]])
+async def get_permissions_document(
+    proprietaire_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    # Vérifier les permissions
+    if current_user.role != ROLES["DIRECTEUR"] and current_user.id != proprietaire_id:
+        raise HTTPException(status_code=403, detail="Permission insuffisante")
+    
+    permissions = await db.permissions_documents.find({
+        "proprietaire_id": proprietaire_id,
+        "actif": True
+    }).to_list(1000)
+    
+    enriched_permissions = []
+    for perm in permissions:
+        if '_id' in perm:
+            del perm['_id']
+            
+        utilisateur = await db.users.find_one({"id": perm["utilisateur_autorise_id"]})
+        if utilisateur and '_id' in utilisateur:
+            del utilisateur['_id']
+        
+        enriched_permissions.append({
+            **perm,
+            "utilisateur_autorise": User(**utilisateur) if utilisateur else None
+        })
+    
+    return enriched_permissions
+
 # Coffre-fort documents personnels
 @api_router.post("/documents", response_model=DocumentPersonnel)
 async def upload_document_personnel(
