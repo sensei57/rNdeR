@@ -3548,6 +3548,7 @@ const Dashboard = () => {
     }
 
     if (user?.role === 'Directeur') {
+      items.push({ id: 'attributions', label: 'Attribution Planning', icon: CalendarDays });
       items.push({ id: 'salles', label: 'Gestion Salles', icon: Building2 });
       items.push({ id: 'admin', label: 'Administration', icon: Settings });
     }
