@@ -3262,6 +3262,8 @@ const Dashboard = () => {
         return <DemandesTravailManager />;
       case 'messages':
         return <ChatManager />;
+      case 'documents':
+        return <CoffreFortManager />;
       case 'plan-cabinet':
         return <PlanCabinetManager />;
       case 'salles':
