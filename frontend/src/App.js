@@ -1435,10 +1435,20 @@ const PlanningManager = () => {
         axios.get(`${API}/conges`)
       ]);
       
-      setPlanning(planningRes.data);
+      let planningData = planningRes.data;
+      let congesData = congesRes.data;
+      
+      // Filtrer selon les permissions
+      if (user?.role !== 'Directeur') {
+        // Les non-directeurs voient seulement leur propre planning
+        planningData = planningData.filter(p => p.employe_id === user.id);
+        congesData = congesData.filter(c => c.utilisateur_id === user.id);
+      }
+      
+      setPlanning(planningData);
       
       // Filtrer les congés approuvés pour la date sélectionnée
-      const congesDate = congesRes.data.filter(conge => 
+      const congesDate = congesData.filter(conge => 
         conge.statut === 'APPROUVE' &&
         new Date(conge.date_debut) <= new Date(date) &&
         new Date(conge.date_fin) >= new Date(date)
