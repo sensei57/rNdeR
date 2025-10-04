@@ -304,6 +304,40 @@ const PersonnelManager = () => {
       .map(a => a.assistant);
   };
 
+  const handleCreatePersonnel = async (e) => {
+    e.preventDefault();
+    
+    if (!newPersonnel.email || !newPersonnel.nom || !newPersonnel.prenom || !newPersonnel.password) {
+      toast.error('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/auth/register`, newPersonnel);
+      toast.success('Personnel créé avec succès');
+      setShowPersonnelModal(false);
+      resetPersonnelForm();
+      fetchData();
+    } catch (error) {
+      if (error.response?.status === 400) {
+        toast.error('Un utilisateur avec cet email existe déjà');
+      } else {
+        toast.error('Erreur lors de la création du personnel');
+      }
+    }
+  };
+
+  const resetPersonnelForm = () => {
+    setNewPersonnel({
+      email: '',
+      nom: '',
+      prenom: '',
+      role: 'Médecin',
+      telephone: '',
+      password: ''
+    });
+  };
+
   if (loading) {
     return <div className="flex justify-center p-8">Chargement...</div>;
   }
