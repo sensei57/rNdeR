@@ -261,6 +261,15 @@ const PersonnelManager = () => {
   const [users, setUsers] = useState([]);
   const [assignations, setAssignations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showPersonnelModal, setShowPersonnelModal] = useState(false);
+  const [newPersonnel, setNewPersonnel] = useState({
+    email: '',
+    nom: '',
+    prenom: '',
+    role: 'Médecin',
+    telephone: '',
+    password: ''
+  });
   const { user } = useAuth();
 
   useEffect(() => {
