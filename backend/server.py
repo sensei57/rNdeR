@@ -146,6 +146,25 @@ class MessageCreate(BaseModel):
     contenu: str
     type_message: str = "GENERAL"
 
+# Documents Coffre Fort Models
+class DocumentPersonnel(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    proprietaire_id: str
+    nom_fichier: str
+    nom_original: str
+    taille: int  # en bytes
+    type_mime: str
+    description: Optional[str] = None
+    date_upload: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    actif: bool = True
+
+class DocumentPersonnelCreate(BaseModel):
+    nom_fichier: str
+    nom_original: str
+    taille: int
+    type_mime: str
+    description: Optional[str] = None
+
 # Notification Models
 class NotificationQuotidienne(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
