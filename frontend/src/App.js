@@ -2730,7 +2730,8 @@ const ChatManager = () => {
       const messageData = {
         contenu: newMessage,
         type_message: chatType,
-        destinataire_id: chatType === 'PRIVE' ? selectedUser?.id : null
+        destinataire_id: chatType === 'PRIVE' ? selectedUser?.id : null,
+        groupe_id: chatType === 'GROUPE' ? selectedGroupe?.id : null
       };
       
       await axios.post(`${API}/messages`, messageData);
@@ -2740,6 +2741,33 @@ const ChatManager = () => {
     } catch (error) {
       toast.error('Erreur lors de l\'envoi');
     }
+  };
+
+  const handleCreateGroupe = async (e) => {
+    e.preventDefault();
+    
+    if (!newGroupe.nom || newGroupe.membres.length === 0) {
+      toast.error('Nom et membres requis');
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/groupes-chat`, newGroupe);
+      toast.success('Groupe créé avec succès');
+      setShowGroupModal(false);
+      resetGroupForm();
+      fetchGroupes();
+    } catch (error) {
+      toast.error('Erreur lors de la création du groupe');
+    }
+  };
+
+  const resetGroupForm = () => {
+    setNewGroupe({
+      nom: '',
+      description: '',
+      membres: []
+    });
   };
 
   const formatMessageTime = (date) => {
