@@ -1805,27 +1805,62 @@ async def upload_document_personnel(
     await db.documents_personnels.insert_one(document.dict())
     return document
 
-@api_router.get("/documents", response_model=List[DocumentPersonnel])
+@api_router.get("/documents", response_model=List[Dict[str, Any]])
 async def get_documents_personnels(
+    proprietaire_id: Optional[str] = None,
     current_user: User = Depends(get_current_user)
 ):
+    documents = []
+    
     if current_user.role == ROLES["DIRECTEUR"]:
-        # Le directeur peut voir tous les documents (pour administration)
-        documents = await db.documents_personnels.find({"actif": True}).sort("date_upload", -1).to_list(1000)
+        # Le directeur peut voir tous les documents
+        if proprietaire_id:
+            # Voir documents d'un employé spécifique
+            documents = await db.documents_personnels.find({
+                "proprietaire_id": proprietaire_id,
+                "actif": True
+            }).sort("date_upload", -1).to_list(1000)
+        else:
+            # Voir tous les documents
+            documents = await db.documents_personnels.find({"actif": True}).sort("date_upload", -1).to_list(1000)
     else:
-        # Les autres voient seulement leurs propres documents
-        documents = await db.documents_personnels.find({
+        # Voir ses propres documents
+        own_docs = await db.documents_personnels.find({
             "proprietaire_id": current_user.id,
             "actif": True
         }).sort("date_upload", -1).to_list(1000)
+        documents.extend(own_docs)
+        
+        # Voir les documents où on a des permissions
+        permissions = await db.permissions_documents.find({
+            "utilisateur_autorise_id": current_user.id,
+            "actif": True
+        }).to_list(1000)
+        
+        for perm in permissions:
+            shared_docs = await db.documents_personnels.find({
+                "proprietaire_id": perm["proprietaire_id"],
+                "actif": True
+            }).sort("date_upload", -1).to_list(1000)
+            documents.extend(shared_docs)
     
-    cleaned_documents = []
+    # Enrichir avec les données des propriétaires
+    enriched_documents = []
     for doc in documents:
         if '_id' in doc:
             del doc['_id']
-        cleaned_documents.append(DocumentPersonnel(**doc))
+            
+        proprietaire = await db.users.find_one({"id": doc["proprietaire_id"]})
+        if proprietaire and '_id' in proprietaire:
+            del proprietaire['_id']
+        
+        enriched_documents.append({
+            **doc,
+            "proprietaire": User(**proprietaire) if proprietaire else None,
+            "est_proprietaire": doc["proprietaire_id"] == current_user.id
+        })
     
-    return cleaned_documents
+    return enriched_documents
 
 @api_router.get("/documents/{document_id}")
 async def download_document_personnel(
