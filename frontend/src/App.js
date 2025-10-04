@@ -3233,12 +3233,13 @@ const Dashboard = () => {
       { id: 'planning', label: 'Planning', icon: Calendar },
       { id: 'conges', label: 'Congés', icon: Clock },
       { id: 'messages', label: 'Messages', icon: MessageSquare },
+      { id: 'documents', label: 'Mon Coffre-Fort', icon: FileText },
       { id: 'plan-cabinet', label: 'Plan Cabinet', icon: MapPin },
     ];
 
     // Ajouter demandes de travail pour médecins et directeur
     if (user?.role === 'Médecin' || user?.role === 'Directeur') {
-      items.splice(3, 0, { id: 'demandes-travail', label: 'Demandes Travail', icon: CalendarDays });
+      items.splice(4, 0, { id: 'demandes-travail', label: 'Demandes Travail', icon: CalendarDays });
     }
 
     if (user?.role === 'Directeur') {
