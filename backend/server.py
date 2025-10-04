@@ -1528,6 +1528,85 @@ async def get_notes_generales(current_user: User = Depends(get_current_user)):
     
     return enriched_notes
 
+# Coffre-fort documents personnels
+@api_router.post("/documents", response_model=DocumentPersonnel)
+async def upload_document_personnel(
+    document_data: DocumentPersonnelCreate,
+    current_user: User = Depends(get_current_user)
+):
+    document = DocumentPersonnel(
+        proprietaire_id=current_user.id,
+        **document_data.dict()
+    )
+    
+    await db.documents_personnels.insert_one(document.dict())
+    return document
+
+@api_router.get("/documents", response_model=List[DocumentPersonnel])
+async def get_documents_personnels(
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role == ROLES["DIRECTEUR"]:
+        # Le directeur peut voir tous les documents (pour administration)
+        documents = await db.documents_personnels.find({"actif": True}).sort("date_upload", -1).to_list(1000)
+    else:
+        # Les autres voient seulement leurs propres documents
+        documents = await db.documents_personnels.find({
+            "proprietaire_id": current_user.id,
+            "actif": True
+        }).sort("date_upload", -1).to_list(1000)
+    
+    cleaned_documents = []
+    for doc in documents:
+        if '_id' in doc:
+            del doc['_id']
+        cleaned_documents.append(DocumentPersonnel(**doc))
+    
+    return cleaned_documents
+
+@api_router.get("/documents/{document_id}")
+async def download_document_personnel(
+    document_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    document = await db.documents_personnels.find_one({"id": document_id})
+    if not document:
+        raise HTTPException(status_code=404, detail="Document non trouvé")
+    
+    # Vérifier les permissions
+    if document["proprietaire_id"] != current_user.id and current_user.role != ROLES["DIRECTEUR"]:
+        raise HTTPException(status_code=403, detail="Accès non autorisé à ce document")
+    
+    # Dans un vrai système, on retournerait le fichier
+    # Ici on retourne juste les informations
+    if '_id' in document:
+        del document['_id']
+    return DocumentPersonnel(**document)
+
+@api_router.delete("/documents/{document_id}")
+async def delete_document_personnel(
+    document_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    document = await db.documents_personnels.find_one({"id": document_id})
+    if not document:
+        raise HTTPException(status_code=404, detail="Document non trouvé")
+    
+    # Vérifier les permissions
+    if document["proprietaire_id"] != current_user.id and current_user.role != ROLES["DIRECTEUR"]:
+        raise HTTPException(status_code=403, detail="Accès non autorisé à ce document")
+    
+    # Soft delete
+    result = await db.documents_personnels.update_one(
+        {"id": document_id},
+        {"$set": {"actif": False}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Document non trouvé")
+    
+    return {"message": "Document supprimé avec succès"}
+
 # Initialisation du cabinet
 @api_router.post("/cabinet/initialiser")
 async def initialiser_cabinet(
