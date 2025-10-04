@@ -1566,38 +1566,36 @@ const PlanningManager = () => {
             </Button>
           </div>
           
-          {viewMode === 'jour' && (
-            <div className="flex space-x-2">
-              <Button
-                variant={filterRole === 'TOUS' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilterRole('TOUS')}
-              >
-                Tous
-              </Button>
-              <Button
-                variant={filterRole === 'Médecin' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilterRole('Médecin')}
-              >
-                Médecins
-              </Button>
-              <Button
-                variant={filterRole === 'Assistant' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilterRole('Assistant')}
-              >
-                Assistants
-              </Button>
-              <Button
-                variant={filterRole === 'Secrétaire' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilterRole('Secrétaire')}
-              >
-                Secrétaires
-              </Button>
-            </div>
-          )}
+          <div className="flex space-x-2">
+            <Button
+              variant={filterRole === 'TOUS' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterRole('TOUS')}
+            >
+              Tous
+            </Button>
+            <Button
+              variant={filterRole === 'Médecin' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterRole('Médecin')}
+            >
+              Médecins
+            </Button>
+            <Button
+              variant={filterRole === 'Assistant' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterRole('Assistant')}
+            >
+              Assistants
+            </Button>
+            <Button
+              variant={filterRole === 'Secrétaire' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterRole('Secrétaire')}
+            >
+              Secrétaires
+            </Button>
+          </div>
           
           <Input
             type="date"
