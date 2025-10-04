@@ -1391,15 +1391,36 @@ const PlanningManager = () => {
 
   const fetchData = async () => {
     try {
-      const [usersRes, medecinRes, assistantRes] = await Promise.all([
-        user?.role === 'Directeur' ? axios.get(`${API}/users`) : Promise.resolve({ data: [] }),
-        axios.get(`${API}/users/by-role/Médecin`),
-        axios.get(`${API}/users/by-role/Assistant`)
-      ]);
-      
-      setUsers(usersRes.data || []);
-      setMedecins(medecinRes.data);
-      setAssistants(assistantRes.data);
+      if (user?.role === 'Directeur') {
+        // Directeur voit tous les utilisateurs
+        const [usersRes, medecinRes, assistantRes] = await Promise.all([
+          axios.get(`${API}/users`),
+          axios.get(`${API}/users/by-role/Médecin`),
+          axios.get(`${API}/users/by-role/Assistant`)
+        ]);
+        
+        setUsers(usersRes.data);
+        setMedecins(medecinRes.data);
+        setAssistants(assistantRes.data);
+      } else {
+        // Les autres ne voient que les données pertinentes
+        setUsers([user]); // Seulement eux-mêmes dans la liste
+        
+        if (user?.role === 'Assistant') {
+          // Assistant voit les médecins avec qui il travaille
+          const assignationsRes = await axios.get(`${API}/assignations`);
+          const myAssignations = assignationsRes.data.filter(a => a.assistant_id === user.id);
+          const medecinIds = myAssignations.map(a => a.medecin_id);
+          
+          const medecinRes = await axios.get(`${API}/users/by-role/Médecin`);
+          const myMedecins = medecinRes.data.filter(m => medecinIds.includes(m.id));
+          setMedecins(myMedecins);
+          setAssistants([user]); // Seulement lui-même
+        } else {
+          setMedecins(user?.role === 'Médecin' ? [user] : []);
+          setAssistants([]);
+        }
+      }
     } catch (error) {
       toast.error('Erreur lors du chargement des données');
     } finally {
