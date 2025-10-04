@@ -2122,6 +2122,7 @@ const DemandesTravailManager = () => {
   const [demandes, setDemandes] = useState([]);
   const [semainesTypes, setSemainesTypes] = useState([]);
   const [showDemandeModal, setShowDemandeModal] = useState(false);
+  const [showSemaineTypeModal, setShowSemaineTypeModal] = useState(false);
   const [configuration, setConfiguration] = useState(null);
   const [typedemande, setTypeDemande] = useState('individuelle'); // 'individuelle' ou 'semaine'
   const [newDemande, setNewDemande] = useState({
@@ -2130,6 +2131,17 @@ const DemandesTravailManager = () => {
     motif: '',
     semaine_type_id: '',
     date_debut_semaine: ''
+  });
+  const [newSemaineType, setNewSemaineType] = useState({
+    nom: '',
+    description: '',
+    lundi: 'REPOS',
+    mardi: 'REPOS',
+    mercredi: 'REPOS',
+    jeudi: 'REPOS',
+    vendredi: 'REPOS',
+    samedi: 'REPOS',
+    dimanche: 'REPOS'
   });
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
