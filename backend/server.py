@@ -146,6 +146,43 @@ class MessageCreate(BaseModel):
     contenu: str
     type_message: str = "GENERAL"
 
+# Quota Employé Models
+class QuotaEmploye(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    employe_id: str
+    semaine_debut: str  # YYYY-MM-DD (lundi)
+    demi_journees_requises: int  # Nombre de demi-journées à travailler
+    demi_journees_attribuees: int = 0  # Compteur des attributions
+    horaire_debut: Optional[str] = None  # Pour secrétaires
+    horaire_pause_debut: Optional[str] = None
+    horaire_pause_fin: Optional[str] = None
+    horaire_fin: Optional[str] = None
+    date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class QuotaEmployeCreate(BaseModel):
+    employe_id: str
+    semaine_debut: str
+    demi_journees_requises: int
+    horaire_debut: Optional[str] = None
+    horaire_pause_debut: Optional[str] = None
+    horaire_pause_fin: Optional[str] = None
+    horaire_fin: Optional[str] = None
+
+# Permission Coffre-Fort Models
+class PermissionDocument(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    proprietaire_id: str  # Propriétaire du coffre-fort
+    utilisateur_autorise_id: str  # Utilisateur qui a accès
+    type_permission: str = "LECTURE"  # "LECTURE", "ECRITURE", "ADMIN"
+    accorde_par: str  # ID de qui a accordé la permission
+    date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    actif: bool = True
+
+class PermissionDocumentCreate(BaseModel):
+    proprietaire_id: str
+    utilisateur_autorise_id: str
+    type_permission: str = "LECTURE"
+
 # Documents Coffre Fort Models
 class DocumentPersonnel(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
