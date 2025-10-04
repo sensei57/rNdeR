@@ -2250,6 +2250,39 @@ const DemandesTravailManager = () => {
     setTypeDemande('individuelle');
   };
 
+  const handleCreateSemaineType = async (e) => {
+    e.preventDefault();
+    
+    if (!newSemaineType.nom) {
+      toast.error('Le nom de la semaine type est requis');
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/semaines-types`, newSemaineType);
+      toast.success('Semaine type créée avec succès');
+      setShowSemaineTypeModal(false);
+      resetSemaineTypeForm();
+      fetchSemainesTypes();
+    } catch (error) {
+      toast.error('Erreur lors de la création');
+    }
+  };
+
+  const resetSemaineTypeForm = () => {
+    setNewSemaineType({
+      nom: '',
+      description: '',
+      lundi: 'REPOS',
+      mardi: 'REPOS',
+      mercredi: 'REPOS',
+      jeudi: 'REPOS',
+      vendredi: 'REPOS',
+      samedi: 'REPOS',
+      dimanche: 'REPOS'
+    });
+  };
+
   const getStatutColor = (statut) => {
     switch (statut) {
       case 'APPROUVE': return 'bg-green-100 text-green-800';
