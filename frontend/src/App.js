@@ -2668,8 +2668,16 @@ const ChatManager = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedGroupe, setSelectedGroupe] = useState(null);
   const [users, setUsers] = useState([]);
+  const [groupes, setGroupes] = useState([]);
   const [chatType, setChatType] = useState('GENERAL');
+  const [showGroupModal, setShowGroupModal] = useState(false);
+  const [newGroupe, setNewGroupe] = useState({
+    nom: '',
+    description: '',
+    membres: []
+  });
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
