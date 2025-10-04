@@ -1473,8 +1473,13 @@ const PlanningManager = () => {
     return <div className="flex justify-center p-8">Chargement...</div>;
   }
 
-  const planningMatin = planning.filter(c => c.creneau === 'MATIN');
-  const planningApresMidi = planning.filter(c => c.creneau === 'APRES_MIDI');
+  // Filtrer le planning selon le rôle sélectionné
+  const filteredPlanning = filterRole === 'TOUS' 
+    ? planning 
+    : planning.filter(c => c.employe_role === filterRole);
+  
+  const planningMatin = filteredPlanning.filter(c => c.creneau === 'MATIN');
+  const planningApresMidi = filteredPlanning.filter(c => c.creneau === 'APRES_MIDI');
 
   return (
     <div className="space-y-6">
