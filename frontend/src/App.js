@@ -2260,44 +2260,115 @@ const DemandesTravailManager = () => {
               
               <form onSubmit={handleCreateDemande} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="date_demandee">Date souhaitée *</Label>
-                  <Input
-                    id="date_demandee"
-                    type="date"
-                    value={newDemande.date_demandee}
-                    onChange={(e) => setNewDemande({...newDemande, date_demandee: e.target.value})}
-                    required
-                    min={new Date().toISOString().split('T')[0]}
-                  />
+                  <Label>Type de demande</Label>
+                  <div className="flex space-x-2">
+                    <Button
+                      type="button"
+                      variant={typedemande === 'individuelle' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTypeDemande('individuelle')}
+                    >
+                      Demande Individuelle
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={typedemande === 'semaine' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTypeDemande('semaine')}
+                    >
+                      Semaine Type
+                    </Button>
+                  </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="creneau">Créneau *</Label>
-                  <Select
-                    value={newDemande.creneau}
-                    onValueChange={(value) => setNewDemande({...newDemande, creneau: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="MATIN">Matin uniquement</SelectItem>
-                      <SelectItem value="APRES_MIDI">Après-midi uniquement</SelectItem>
-                      <SelectItem value="JOURNEE_COMPLETE">Journée complète</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="motif">Motif (optionnel)</Label>
-                  <Textarea
-                    id="motif"
-                    placeholder="Précisez le motif de votre demande..."
-                    value={newDemande.motif}
-                    onChange={(e) => setNewDemande({...newDemande, motif: e.target.value})}
-                    rows={3}
-                  />
-                </div>
+
+                {typedemande === 'individuelle' ? (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="date_demandee">Date souhaitée *</Label>
+                      <Input
+                        id="date_demandee"
+                        type="date"
+                        value={newDemande.date_demandee}
+                        onChange={(e) => setNewDemande({...newDemande, date_demandee: e.target.value})}
+                        required
+                        min={new Date().toISOString().split('T')[0]}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="creneau">Créneau *</Label>
+                      <Select
+                        value={newDemande.creneau}
+                        onValueChange={(value) => setNewDemande({...newDemande, creneau: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="MATIN">Matin uniquement</SelectItem>
+                          <SelectItem value="APRES_MIDI">Après-midi uniquement</SelectItem>
+                          <SelectItem value="JOURNEE_COMPLETE">Journée complète</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="motif">Motif (optionnel)</Label>
+                      <Textarea
+                        id="motif"
+                        placeholder="Précisez le motif de votre demande..."
+                        value={newDemande.motif}
+                        onChange={(e) => setNewDemande({...newDemande, motif: e.target.value})}
+                        rows={3}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Semaine type *</Label>
+                      <Select
+                        value={newDemande.semaine_type_id}
+                        onValueChange={(value) => setNewDemande({...newDemande, semaine_type_id: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionnez une semaine type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {semainesTypes.map(semaine => (
+                            <SelectItem key={semaine.id} value={semaine.id}>
+                              {semaine.nom} - {semaine.description}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      {semainesTypes.length === 0 && user?.role === 'Directeur' && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={initSemainesTypes}
+                          className="w-full mt-2"
+                        >
+                          Initialiser Semaines Types
+                        </Button>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="date_debut_semaine">Date de début (Lundi) *</Label>
+                      <Input
+                        id="date_debut_semaine"
+                        type="date"
+                        value={newDemande.date_debut_semaine}
+                        onChange={(e) => setNewDemande({...newDemande, date_debut_semaine: e.target.value})}
+                        required={typedemande === 'semaine'}
+                        min={new Date().toISOString().split('T')[0]}
+                      />
+                    </div>
+                  </>
+                )}
                 
                 <div className="flex justify-end space-x-2 pt-4">
                   <Button
