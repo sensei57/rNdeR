@@ -2073,12 +2073,16 @@ const PlanningManager = () => {
 // Demandes de Travail Component
 const DemandesTravailManager = () => {
   const [demandes, setDemandes] = useState([]);
+  const [semainesTypes, setSemainesTypes] = useState([]);
   const [showDemandeModal, setShowDemandeModal] = useState(false);
   const [configuration, setConfiguration] = useState(null);
+  const [typedemande, setTypeDemande] = useState('individuelle'); // 'individuelle' ou 'semaine'
   const [newDemande, setNewDemande] = useState({
     date_demandee: '',
     creneau: 'MATIN',
-    motif: ''
+    motif: '',
+    semaine_type_id: '',
+    date_debut_semaine: ''
   });
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
