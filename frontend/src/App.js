@@ -3151,6 +3151,569 @@ const CoffreFortManager = () => {
   );
 };
 
+// Attribution Manager Component (Directeur seulement)
+const AttributionManager = () => {
+  const [selectedWeek, setSelectedWeek] = useState(new Date().toISOString().split('T')[0]);
+  const [quotas, setQuotas] = useState([]);
+  const [planning, setPlanning] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [salles, setSalles] = useState([]);
+  const [showQuotaModal, setShowQuotaModal] = useState(false);
+  const [showAttributionModal, setShowAttributionModal] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [newQuota, setNewQuota] = useState({
+    employe_id: '',
+    demi_journees_requises: 8,
+    horaire_debut: '08:00',
+    horaire_pause_debut: '12:00',
+    horaire_pause_fin: '14:00',
+    horaire_fin: '17:00'
+  });
+  const [attribution, setAttribution] = useState({
+    employe_id: '',
+    salle_attribuee: '',
+    medecin_ids: [],
+    notes: ''
+  });
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user?.role === 'Directeur') {
+      fetchData();
+    }
+  }, [selectedWeek]);
+
+  const fetchData = async () => {
+    try {
+      const mondayDate = getMondayOfWeek(selectedWeek);
+      
+      const [usersRes, sallesRes, quotasRes, planningRes] = await Promise.all([
+        axios.get(`${API}/users`),
+        axios.get(`${API}/salles`),
+        axios.get(`${API}/quotas/${mondayDate}`),
+        axios.get(`${API}/planning/semaine/${mondayDate}`)
+      ]);
+
+      setUsers(usersRes.data);
+      setSalles(sallesRes.data);
+      setQuotas(quotasRes.data);
+      setPlanning(planningRes.data);
+    } catch (error) {
+      toast.error('Erreur lors du chargement');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getMondayOfWeek = (dateStr) => {
+    const date = new Date(dateStr);
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(date.setDate(diff));
+    return monday.toISOString().split('T')[0];
+  };
+
+  const handleCreateQuota = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const quotaData = {
+        ...newQuota,
+        semaine_debut: getMondayOfWeek(selectedWeek)
+      };
+      
+      await axios.post(`${API}/quotas`, quotaData);
+      toast.success('Quota défini avec succès');
+      setShowQuotaModal(false);
+      resetQuotaForm();
+      fetchData();
+    } catch (error) {
+      toast.error('Erreur lors de la création du quota');
+    }
+  };
+
+  const handleCreateAttribution = async (e) => {
+    e.preventDefault();
+    
+    if (!selectedSlot || !attribution.employe_id || !attribution.salle_attribuee) {
+      toast.error('Veuillez remplir tous les champs requis');
+      return;
+    }
+
+    try {
+      const params = new URLSearchParams({
+        employe_id: attribution.employe_id,
+        date: selectedSlot.date,
+        creneau: selectedSlot.creneau,
+        salle_attribuee: attribution.salle_attribuee,
+        notes: attribution.notes
+      });
+      
+      if (attribution.medecin_ids.length > 0) {
+        attribution.medecin_ids.forEach(id => params.append('medecin_ids', id));
+      }
+
+      await axios.post(`${API}/attributions?${params.toString()}`);
+      toast.success('Attribution créée avec succès');
+      setShowAttributionModal(false);
+      resetAttributionForm();
+      fetchData();
+    } catch (error) {
+      if (error.response?.status === 400) {
+        toast.error(error.response.data.detail);
+      } else {
+        toast.error('Erreur lors de l\'attribution');
+      }
+    }
+  };
+
+  const resetQuotaForm = () => {
+    setNewQuota({
+      employe_id: '',
+      demi_journees_requises: 8,
+      horaire_debut: '08:00',
+      horaire_pause_debut: '12:00',
+      horaire_pause_fin: '14:00',
+      horaire_fin: '17:00'
+    });
+  };
+
+  const resetAttributionForm = () => {
+    setAttribution({
+      employe_id: '',
+      salle_attribuee: '',
+      medecin_ids: [],
+      notes: ''
+    });
+    setSelectedSlot(null);
+  };
+
+  const getQuotaForEmployee = (employeId) => {
+    return quotas.find(q => q.employe_id === employeId);
+  };
+
+  const getRoleColor = (role) => {
+    switch (role) {
+      case 'Médecin': return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'Assistant': return 'bg-green-100 text-green-800 border-green-300';
+      case 'Secrétaire': return 'bg-purple-100 text-purple-800 border-purple-300';
+      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+  };
+
+  if (user?.role !== 'Directeur') {
+    return (
+      <div className="text-center py-12">
+        <CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-gray-600 mb-2">Attribution Planning</h3>
+        <p className="text-gray-500">Accès réservé au Directeur</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return <div className="flex justify-center p-8">Chargement...</div>;
+  }
+
+  const daysOfWeek = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+  const weekDates = planning ? planning.dates : [];
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Attribution Planning Semaine</h2>
+          <p className="text-gray-600 mt-1">Gérez les attributions et quotas des employés</p>
+        </div>
+        
+        <div className="flex items-center space-x-4">
+          <Input
+            type="date"
+            value={selectedWeek}
+            onChange={(e) => setSelectedWeek(e.target.value)}
+            className="w-auto"
+          />
+          
+          <Button
+            onClick={() => setShowQuotaModal(true)}
+            variant="outline"
+            className="flex items-center space-x-2"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Définir Quota</span>
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-4 gap-6">
+        {/* Liste des employés avec quotas */}
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle className="text-lg">Employés & Quotas</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {users.map(employe => {
+              const quota = getQuotaForEmployee(employe.id);
+              const restant = quota ? quota.demi_journees_requises - quota.demi_journees_attribuees : 0;
+              
+              return (
+                <div key={employe.id} className={`p-3 rounded-lg border ${getRoleColor(employe.role)}`}>
+                  <div className="font-medium text-sm">
+                    {employe.prenom} {employe.nom}
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    {employe.role}
+                  </div>
+                  {quota ? (
+                    <div className="mt-2 space-y-1">
+                      <div className="text-xs">
+                        <span className="font-medium">
+                          {quota.demi_journees_attribuees}/{quota.demi_journees_requises}
+                        </span> demi-journées
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full ${
+                            restant === 0 ? 'bg-green-500' : restant < 0 ? 'bg-red-500' : 'bg-blue-500'
+                          }`}
+                          style={{
+                            width: `${Math.min(100, (quota.demi_journees_attribuees / quota.demi_journees_requises) * 100)}%`
+                          }}
+                        />
+                      </div>
+                      <div className={`text-xs ${restant < 0 ? 'text-red-600' : restant === 0 ? 'text-green-600' : 'text-gray-600'}`}>
+                        Reste: {restant} demi-journées
+                      </div>
+                      
+                      {employe.role === 'Secrétaire' && quota.horaire_debut && (
+                        <div className="text-xs text-gray-600 mt-1">
+                          Horaires: {quota.horaire_debut}-{quota.horaire_pause_debut}, {quota.horaire_pause_fin}-{quota.horaire_fin}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="mt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setNewQuota({...newQuota, employe_id: employe.id});
+                          setShowQuotaModal(true);
+                        }}
+                        className="text-xs h-6"
+                      >
+                        Définir quota
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+
+        {/* Planning semaine */}
+        <Card className="col-span-3">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Planning de la Semaine</span>
+              {planning && (
+                <span className="text-sm font-normal text-gray-600">
+                  {new Date(weekDates[0]).toLocaleDateString('fr-FR')} - {new Date(weekDates[6]).toLocaleDateString('fr-FR')}
+                </span>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {planning && (
+              <div className="grid grid-cols-7 gap-2">
+                {/* Headers jours */}
+                {daysOfWeek.map((jour, index) => (
+                  <div key={jour} className="p-2 bg-gray-50 rounded text-center font-medium text-sm">
+                    <div className="capitalize">{jour.slice(0, 3)}</div>
+                    <div className="text-xs text-gray-600">
+                      {new Date(weekDates[index]).getDate()}
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Créneaux par jour */}
+                {weekDates.map((date, dayIndex) => (
+                  <div key={date} className="space-y-1">
+                    {/* Matin */}
+                    <div 
+                      className="bg-blue-50 rounded p-2 min-h-[80px] cursor-pointer hover:bg-blue-100 border-2 border-dashed border-blue-200"
+                      onClick={() => {
+                        setSelectedSlot({ date, creneau: 'MATIN' });
+                        setShowAttributionModal(true);
+                      }}
+                    >
+                      <div className="text-xs font-medium text-blue-700 mb-1">Matin</div>
+                      <div className="space-y-1">
+                        {planning.planning[date]?.MATIN?.map(creneau => (
+                          <div key={creneau.id} className={`text-xs p-1 rounded ${getRoleColor(creneau.employe_role)}`}>
+                            <div className="font-medium truncate">
+                              {creneau.employe?.prenom?.[0]}.{creneau.employe?.nom}
+                            </div>
+                            {creneau.salle_attribuee && (
+                              <div className="truncate">
+                                📍 {creneau.salle_attribuee}
+                              </div>
+                            )}
+                          </div>
+                        )) || []}
+                      </div>
+                      {(!planning.planning[date]?.MATIN || planning.planning[date]?.MATIN.length === 0) && (
+                        <div className="text-xs text-blue-400 text-center">+ Attribuer</div>
+                      )}
+                    </div>
+                    
+                    {/* Après-midi */}
+                    <div 
+                      className="bg-orange-50 rounded p-2 min-h-[80px] cursor-pointer hover:bg-orange-100 border-2 border-dashed border-orange-200"
+                      onClick={() => {
+                        setSelectedSlot({ date, creneau: 'APRES_MIDI' });
+                        setShowAttributionModal(true);
+                      }}
+                    >
+                      <div className="text-xs font-medium text-orange-700 mb-1">Après-midi</div>
+                      <div className="space-y-1">
+                        {planning.planning[date]?.APRES_MIDI?.map(creneau => (
+                          <div key={creneau.id} className={`text-xs p-1 rounded ${getRoleColor(creneau.employe_role)}`}>
+                            <div className="font-medium truncate">
+                              {creneau.employe?.prenom?.[0]}.{creneau.employe?.nom}
+                            </div>
+                            {creneau.salle_attribuee && (
+                              <div className="truncate">
+                                📍 {creneau.salle_attribuee}
+                              </div>
+                            )}
+                          </div>
+                        )) || []}
+                      </div>
+                      {(!planning.planning[date]?.APRES_MIDI || planning.planning[date]?.APRES_MIDI.length === 0) && (
+                        <div className="text-xs text-orange-400 text-center">+ Attribuer</div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Modal Quota */}
+      <Dialog open={showQuotaModal} onOpenChange={setShowQuotaModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Définir Quota Employé</DialogTitle>
+          </DialogHeader>
+          
+          <form onSubmit={handleCreateQuota} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Employé *</Label>
+              <Select
+                value={newQuota.employe_id}
+                onValueChange={(value) => setNewQuota({...newQuota, employe_id: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner un employé" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map(employe => (
+                    <SelectItem key={employe.id} value={employe.id}>
+                      {employe.prenom} {employe.nom} ({employe.role})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Nombre de demi-journées par semaine *</Label>
+              <Input
+                type="number"
+                min="1"
+                max="14"
+                value={newQuota.demi_journees_requises}
+                onChange={(e) => setNewQuota({...newQuota, demi_journees_requises: parseInt(e.target.value)})}
+              />
+            </div>
+            
+            {/* Horaires pour secrétaires */}
+            {users.find(u => u.id === newQuota.employe_id)?.role === 'Secrétaire' && (
+              <div className="space-y-3 border-t pt-3">
+                <Label className="text-base font-medium">Horaires Secrétaire</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-sm">Début</Label>
+                    <Input
+                      type="time"
+                      value={newQuota.horaire_debut}
+                      onChange={(e) => setNewQuota({...newQuota, horaire_debut: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-sm">Pause début</Label>
+                    <Input
+                      type="time"
+                      value={newQuota.horaire_pause_debut}
+                      onChange={(e) => setNewQuota({...newQuota, horaire_pause_debut: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-sm">Pause fin</Label>
+                    <Input
+                      type="time"
+                      value={newQuota.horaire_pause_fin}
+                      onChange={(e) => setNewQuota({...newQuota, horaire_pause_fin: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-sm">Fin</Label>
+                    <Input
+                      type="time"
+                      value={newQuota.horaire_fin}
+                      onChange={(e) => setNewQuota({...newQuota, horaire_fin: e.target.value})}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setShowQuotaModal(false)}>
+                Annuler
+              </Button>
+              <Button type="submit">
+                Définir Quota
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Attribution */}
+      <Dialog open={showAttributionModal} onOpenChange={setShowAttributionModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              Attribution {selectedSlot && (
+                <>- {new Date(selectedSlot.date).toLocaleDateString('fr-FR')} {selectedSlot.creneau === 'MATIN' ? 'Matin' : 'Après-midi'}</>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <form onSubmit={handleCreateAttribution} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Employé *</Label>
+              <Select
+                value={attribution.employe_id}
+                onValueChange={(value) => setAttribution({...attribution, employe_id: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner un employé" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map(employe => {
+                    const quota = getQuotaForEmployee(employe.id);
+                    const canAssign = !quota || quota.demi_journees_attribuees < quota.demi_journees_requises;
+                    
+                    return (
+                      <SelectItem 
+                        key={employe.id} 
+                        value={employe.id}
+                        disabled={!canAssign}
+                      >
+                        {employe.prenom} {employe.nom} ({employe.role})
+                        {quota && ` - ${quota.demi_journees_attribuees}/${quota.demi_journees_requises}`}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Salle *</Label>
+              <Select
+                value={attribution.salle_attribuee}
+                onValueChange={(value) => setAttribution({...attribution, salle_attribuee: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner une salle" />
+                </SelectTrigger>
+                <SelectContent>
+                  {salles.map(salle => (
+                    <SelectItem key={salle.id} value={salle.nom}>
+                      {salle.nom} ({salle.type_salle})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Médecins pour assistants */}
+            {users.find(u => u.id === attribution.employe_id)?.role === 'Assistant' && (
+              <div className="space-y-2">
+                <Label>Médecin(s) assigné(s)</Label>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {users.filter(u => u.role === 'Médecin').map(medecin => (
+                    <label key={medecin.id} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={attribution.medecin_ids.includes(medecin.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setAttribution({
+                              ...attribution,
+                              medecin_ids: [...attribution.medecin_ids, medecin.id]
+                            });
+                          } else {
+                            setAttribution({
+                              ...attribution,
+                              medecin_ids: attribution.medecin_ids.filter(id => id !== medecin.id)
+                            });
+                          }
+                        }}
+                      />
+                      <span className="text-sm">
+                        Dr. {medecin.prenom} {medecin.nom}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Textarea
+                value={attribution.notes}
+                onChange={(e) => setAttribution({...attribution, notes: e.target.value})}
+                placeholder="Notes pour cette attribution..."
+                rows={2}
+              />
+            </div>
+            
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setShowAttributionModal(false)}>
+                Annuler
+              </Button>
+              <Button type="submit">
+                Attribuer
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
 // Chat Component
 const ChatManager = () => {
   const [messages, setMessages] = useState([]);
