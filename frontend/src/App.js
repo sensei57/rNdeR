@@ -2796,6 +2796,7 @@ const ChatManager = () => {
               onClick={() => {
                 setChatType('GENERAL');
                 setSelectedUser(null);
+                setSelectedGroupe(null);
               }}
             >
               Chat Général
@@ -2803,9 +2804,22 @@ const ChatManager = () => {
             <Button
               variant={chatType === 'PRIVE' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setChatType('PRIVE')}
+              onClick={() => {
+                setChatType('PRIVE');
+                setSelectedGroupe(null);
+              }}
             >
               Messages Privés
+            </Button>
+            <Button
+              variant={chatType === 'GROUPE' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setChatType('GROUPE');
+                setSelectedUser(null);
+              }}
+            >
+              Groupes
             </Button>
           </div>
           
@@ -2828,6 +2842,103 @@ const ChatManager = () => {
                 ))}
               </SelectContent>
             </Select>
+          )}
+          
+          {chatType === 'GROUPE' && (
+            <div className="flex items-center space-x-2">
+              <Select
+                value={selectedGroupe?.id || ''}
+                onValueChange={(value) => {
+                  const groupe = groupes.find(g => g.id === value);
+                  setSelectedGroupe(groupe);
+                }}
+              >
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Choisir un groupe" />
+                </SelectTrigger>
+                <SelectContent>
+                  {groupes.map(groupe => (
+                    <SelectItem key={groupe.id} value={groupe.id}>
+                      {groupe.nom} ({groupe.membres_details?.length || 0} membres)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Dialog open={showGroupModal} onOpenChange={setShowGroupModal}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Créer un Groupe</DialogTitle>
+                  </DialogHeader>
+                  
+                  <form onSubmit={handleCreateGroupe} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Nom du groupe *</Label>
+                      <Input
+                        value={newGroupe.nom}
+                        onChange={(e) => setNewGroupe({...newGroupe, nom: e.target.value})}
+                        placeholder="Équipe chirurgie..."
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <Textarea
+                        value={newGroupe.description}
+                        onChange={(e) => setNewGroupe({...newGroupe, description: e.target.value})}
+                        placeholder="Description du groupe..."
+                        rows={2}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Membres *</Label>
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {users.map(u => (
+                          <label key={u.id} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              checked={newGroupe.membres.includes(u.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setNewGroupe({
+                                    ...newGroupe,
+                                    membres: [...newGroupe.membres, u.id]
+                                  });
+                                } else {
+                                  setNewGroupe({
+                                    ...newGroupe,
+                                    membres: newGroupe.membres.filter(id => id !== u.id)
+                                  });
+                                }
+                              }}
+                            />
+                            <span className="text-sm">
+                              {u.prenom} {u.nom} ({u.role})
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end space-x-2">
+                      <Button type="button" variant="outline" onClick={() => setShowGroupModal(false)}>
+                        Annuler
+                      </Button>
+                      <Button type="submit">
+                        Créer Groupe
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
           )}
         </div>
       </div>
