@@ -995,8 +995,95 @@ async def update_configuration(
         del updated_config['_id']
     return ConfigurationCabinet(**updated_config)
 
+# Gestion des semaines types
+@api_router.post("/semaines-types", response_model=SemaineType)
+async def create_semaine_type(
+    semaine_data: SemaineTypeCreate,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    semaine = SemaineType(**semaine_data.dict())
+    await db.semaines_types.insert_one(semaine.dict())
+    return semaine
+
+@api_router.get("/semaines-types", response_model=List[SemaineType])
+async def get_semaines_types(current_user: User = Depends(get_current_user)):
+    semaines = await db.semaines_types.find({"actif": True}).sort("nom", 1).to_list(1000)
+    
+    cleaned_semaines = []
+    for semaine in semaines:
+        if '_id' in semaine:
+            del semaine['_id']
+        cleaned_semaines.append(SemaineType(**semaine))
+    
+    return cleaned_semaines
+
+@api_router.post("/semaines-types/init")
+async def init_semaines_types(
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    # Vérifier si des semaines types existent déjà
+    existing = await db.semaines_types.count_documents({"actif": True})
+    if existing > 0:
+        return {"message": f"Semaines types déjà initialisées ({existing} semaines)"}
+    
+    # Créer des semaines types par défaut
+    semaines_par_defaut = [
+        {
+            "nom": "Temps plein",
+            "description": "Travail du lundi au vendredi - journées complètes",
+            "lundi": "JOURNEE_COMPLETE",
+            "mardi": "JOURNEE_COMPLETE",
+            "mercredi": "JOURNEE_COMPLETE",
+            "jeudi": "JOURNEE_COMPLETE",
+            "vendredi": "JOURNEE_COMPLETE",
+            "samedi": "REPOS",
+            "dimanche": "REPOS"
+        },
+        {
+            "nom": "Temps partiel matin",
+            "description": "Travail du lundi au vendredi - matins uniquement",
+            "lundi": "MATIN",
+            "mardi": "MATIN",
+            "mercredi": "MATIN",
+            "jeudi": "MATIN",
+            "vendredi": "MATIN",
+            "samedi": "REPOS",
+            "dimanche": "REPOS"
+        },
+        {
+            "nom": "Temps partiel après-midi",
+            "description": "Travail du lundi au vendredi - après-midis uniquement",
+            "lundi": "APRES_MIDI",
+            "mardi": "APRES_MIDI",
+            "mercredi": "APRES_MIDI",
+            "jeudi": "APRES_MIDI",
+            "vendredi": "APRES_MIDI",
+            "samedi": "REPOS",
+            "dimanche": "REPOS"
+        },
+        {
+            "nom": "Week-end",
+            "description": "Travail week-end uniquement",
+            "lundi": "REPOS",
+            "mardi": "REPOS",
+            "mercredi": "REPOS",
+            "jeudi": "REPOS",
+            "vendredi": "REPOS",
+            "samedi": "JOURNEE_COMPLETE",
+            "dimanche": "JOURNEE_COMPLETE"
+        }
+    ]
+    
+    semaines_creees = 0
+    for semaine_data in semaines_par_defaut:
+        semaine = SemaineType(**semaine_data)
+        await db.semaines_types.insert_one(semaine.dict())
+        semaines_creees += 1
+    
+    return {"message": f"{semaines_creees} semaines types créées"}
+
 # Demandes de jours de travail
-@api_router.post("/demandes-travail", response_model=DemandeJourTravail)
+@api_router.post("/demandes-travail", response_model=List[DemandeJourTravail])
 async def create_demande_jour_travail(
     demande_data: DemandeJourTravailCreate,
     current_user: User = Depends(get_current_user)
@@ -1005,24 +1092,68 @@ async def create_demande_jour_travail(
     if current_user.role not in [ROLES["MEDECIN"], ROLES["DIRECTEUR"]]:
         raise HTTPException(status_code=403, detail="Seuls les médecins peuvent faire des demandes de jours de travail")
     
-    # Vérifier si une demande existe déjà pour cette date/créneau
-    existing = await db.demandes_travail.find_one({
-        "medecin_id": current_user.id,
-        "date_demandee": demande_data.date_demandee,
-        "creneau": demande_data.creneau,
-        "statut": {"$ne": "REJETE"}
-    })
+    demandes_creees = []
     
-    if existing:
-        raise HTTPException(status_code=400, detail="Une demande existe déjà pour cette date/créneau")
+    if demande_data.semaine_type_id:
+        # Demande de semaine type
+        semaine_type = await db.semaines_types.find_one({"id": demande_data.semaine_type_id})
+        if not semaine_type:
+            raise HTTPException(status_code=404, detail="Semaine type non trouvée")
+        
+        # Calculer les dates de la semaine
+        from datetime import datetime, timedelta
+        date_debut = datetime.strptime(demande_data.date_debut_semaine, '%Y-%m-%d')
+        
+        jours_semaine = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
+        
+        for i, jour in enumerate(jours_semaine):
+            creneau = semaine_type.get(jour)
+            if creneau and creneau != 'REPOS':
+                date_jour = (date_debut + timedelta(days=i)).strftime('%Y-%m-%d')
+                
+                # Vérifier si une demande existe déjà
+                existing = await db.demandes_travail.find_one({
+                    "medecin_id": current_user.id,
+                    "date_demandee": date_jour,
+                    "creneau": creneau,
+                    "statut": {"$ne": "REJETE"}
+                })
+                
+                if not existing:
+                    demande = DemandeJourTravail(
+                        medecin_id=current_user.id,
+                        date_demandee=date_jour,
+                        creneau=creneau,
+                        motif=f"Semaine type: {semaine_type['nom']}"
+                    )
+                    await db.demandes_travail.insert_one(demande.dict())
+                    demandes_creees.append(demande)
+    else:
+        # Demande individuelle
+        if not demande_data.date_demandee or not demande_data.creneau:
+            raise HTTPException(status_code=400, detail="Date et créneau requis pour une demande individuelle")
+        
+        existing = await db.demandes_travail.find_one({
+            "medecin_id": current_user.id,
+            "date_demandee": demande_data.date_demandee,
+            "creneau": demande_data.creneau,
+            "statut": {"$ne": "REJETE"}
+        })
+        
+        if existing:
+            raise HTTPException(status_code=400, detail="Une demande existe déjà pour cette date/créneau")
+        
+        demande = DemandeJourTravail(
+            medecin_id=current_user.id,
+            date_demandee=demande_data.date_demandee,
+            creneau=demande_data.creneau,
+            motif=demande_data.motif
+        )
+        
+        await db.demandes_travail.insert_one(demande.dict())
+        demandes_creees.append(demande)
     
-    demande = DemandeJourTravail(
-        medecin_id=current_user.id,
-        **demande_data.dict()
-    )
-    
-    await db.demandes_travail.insert_one(demande.dict())
-    return demande
+    return demandes_creees
 
 @api_router.get("/demandes-travail", response_model=List[Dict[str, Any]])
 async def get_demandes_jour_travail(
