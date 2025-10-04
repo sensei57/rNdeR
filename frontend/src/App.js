@@ -2683,8 +2683,9 @@ const ChatManager = () => {
 
   useEffect(() => {
     fetchUsers();
+    fetchGroupes();
     fetchMessages();
-  }, [chatType]);
+  }, [chatType, selectedGroupe]);
 
   const fetchUsers = async () => {
     try {
@@ -2695,9 +2696,23 @@ const ChatManager = () => {
     }
   };
 
+  const fetchGroupes = async () => {
+    try {
+      const response = await axios.get(`${API}/groupes-chat`);
+      setGroupes(response.data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des groupes');
+    }
+  };
+
   const fetchMessages = async () => {
     try {
-      const response = await axios.get(`${API}/messages?type_message=${chatType}&limit=100`);
+      let url = `${API}/messages?type_message=${chatType}&limit=100`;
+      if (chatType === 'GROUPE' && selectedGroupe) {
+        url += `&groupe_id=${selectedGroupe.id}`;
+      }
+      
+      const response = await axios.get(url);
       setMessages(response.data.reverse()); // Ordre chronologique
     } catch (error) {
       console.error('Erreur lors du chargement des messages');
