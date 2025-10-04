@@ -278,15 +278,43 @@ const PersonnelManager = () => {
 
   const fetchData = async () => {
     try {
-      const [usersRes, assignationsRes] = await Promise.all([
-        user?.role === 'Directeur' 
-          ? axios.get(`${API}/users`)
-          : axios.get(`${API}/users/by-role/${user?.role}`),
-        axios.get(`${API}/assignations`)
-      ]);
-      
-      setUsers(usersRes.data);
-      setAssignations(assignationsRes.data);
+      if (user?.role === 'Directeur') {
+        // Directeur voit tout le personnel et toutes les assignations
+        const [usersRes, assignationsRes] = await Promise.all([
+          axios.get(`${API}/users`),
+          axios.get(`${API}/assignations`)
+        ]);
+        setUsers(usersRes.data);
+        setAssignations(assignationsRes.data);
+      } else {
+        // Les autres voient seulement leurs informations et assignations pertinentes
+        const currentUserData = [user];
+        setUsers(currentUserData);
+        
+        if (user?.role === 'Assistant') {
+          // Assistant voit ses assignations et les médecins avec qui il travaille
+          const assignationsRes = await axios.get(`${API}/assignations`);
+          const myAssignations = assignationsRes.data.filter(a => a.assistant_id === user.id);
+          setAssignations(myAssignations);
+          
+          // Ajouter les médecins avec qui il travaille
+          const medecinIds = myAssignations.map(a => a.medecin_id);
+          const medecins = [];
+          for (const medecinId of medecinIds) {
+            try {
+              const medecinRes = await axios.get(`${API}/users/by-role/Médecin`);
+              const medecin = medecinRes.data.find(m => m.id === medecinId);
+              if (medecin) medecins.push(medecin);
+            } catch (error) {
+              console.error('Erreur médecin:', error);
+            }
+          }
+          setUsers([...currentUserData, ...medecins]);
+        } else {
+          // Médecins et secrétaires voient seulement eux-mêmes
+          setAssignations([]);
+        }
+      }
     } catch (error) {
       toast.error('Erreur lors du chargement des données');
     } finally {
