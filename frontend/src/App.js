@@ -1972,7 +1972,39 @@ const PlanningManager = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>Planning de la Semaine</span>
+              <div className="flex items-center space-x-4">
+                <span>Planning de la Semaine</span>
+                <div className="flex space-x-2">
+                  <Button
+                    variant={filterRole === 'TOUS' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFilterRole('TOUS')}
+                  >
+                    Tous
+                  </Button>
+                  <Button
+                    variant={filterRole === 'Médecin' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFilterRole('Médecin')}
+                  >
+                    Médecins
+                  </Button>
+                  <Button
+                    variant={filterRole === 'Assistant' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFilterRole('Assistant')}
+                  >
+                    Assistants
+                  </Button>
+                  <Button
+                    variant={filterRole === 'Secrétaire' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFilterRole('Secrétaire')}
+                  >
+                    Secrétaires
+                  </Button>
+                </div>
+              </div>
               <div className="flex items-center space-x-2">
                 <Button
                   variant="outline"
@@ -2014,54 +2046,69 @@ const PlanningManager = () => {
                 </div>
               ))}
               
-              {/* Créneaux par jour */}
-              {planningSemaine.dates.map(date => (
-                <div key={date} className="space-y-2">
-                  {/* Matin */}
-                  <div className="bg-blue-50 rounded-lg p-2 min-h-[100px]">
-                    <div className="text-xs font-medium text-blue-700 mb-2">Matin</div>
-                    <div className="space-y-1">
-                      {planningSemaine.planning[date]?.MATIN?.map(creneau => (
-                        <div
-                          key={creneau.id}
-                          className={`text-xs p-1 rounded border ${getRoleColor(creneau.employe_role)}`}
-                        >
-                          <div className="font-medium truncate">
-                            {creneau.employe?.prenom?.[0]}.{creneau.employe?.nom}
-                          </div>
-                          {creneau.salle_attribuee && (
-                            <div className="text-xs opacity-75">
-                              {creneau.salle_attribuee}
+              {/* Créneaux par jour avec filtrage */}
+              {planningSemaine.dates.map(date => {
+                // Filtrer les créneaux selon le rôle sélectionné
+                const planningMatinFiltered = filterRole === 'TOUS' 
+                  ? planningSemaine.planning[date]?.MATIN || []
+                  : (planningSemaine.planning[date]?.MATIN || []).filter(c => c.employe_role === filterRole);
+                
+                const planningApresMidiFiltered = filterRole === 'TOUS'
+                  ? planningSemaine.planning[date]?.APRES_MIDI || []
+                  : (planningSemaine.planning[date]?.APRES_MIDI || []).filter(c => c.employe_role === filterRole);
+                
+                return (
+                  <div key={date} className="space-y-2">
+                    {/* Matin */}
+                    <div className="bg-blue-50 rounded-lg p-2 min-h-[100px]">
+                      <div className="text-xs font-medium text-blue-700 mb-2">
+                        Matin ({planningMatinFiltered.length})
+                      </div>
+                      <div className="space-y-1">
+                        {planningMatinFiltered.map(creneau => (
+                          <div
+                            key={creneau.id}
+                            className={`text-xs p-1 rounded border ${getRoleColor(creneau.employe_role)}`}
+                          >
+                            <div className="font-medium truncate">
+                              {creneau.employe?.prenom?.[0]}.{creneau.employe?.nom}
                             </div>
-                          )}
-                        </div>
-                      )) || []}
+                            {creneau.salle_attribuee && (
+                              <div className="text-xs opacity-75">
+                                {creneau.salle_attribuee}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* Après-midi */}
+                    <div className="bg-orange-50 rounded-lg p-2 min-h-[100px]">
+                      <div className="text-xs font-medium text-orange-700 mb-2">
+                        Après-midi ({planningApresMidiFiltered.length})
+                      </div>
+                      <div className="space-y-1">
+                        {planningApresMidiFiltered.map(creneau => (
+                          <div
+                            key={creneau.id}
+                            className={`text-xs p-1 rounded border ${getRoleColor(creneau.employe_role)}`}
+                          >
+                            <div className="font-medium truncate">
+                              {creneau.employe?.prenom?.[0]}.{creneau.employe?.nom}
+                            </div>
+                            {creneau.salle_attribuee && (
+                              <div className="text-xs opacity-75">
+                                {creneau.salle_attribuee}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                  
-                  {/* Après-midi */}
-                  <div className="bg-orange-50 rounded-lg p-2 min-h-[100px]">
-                    <div className="text-xs font-medium text-orange-700 mb-2">Après-midi</div>
-                    <div className="space-y-1">
-                      {planningSemaine.planning[date]?.APRES_MIDI?.map(creneau => (
-                        <div
-                          key={creneau.id}
-                          className={`text-xs p-1 rounded border ${getRoleColor(creneau.employe_role)}`}
-                        >
-                          <div className="font-medium truncate">
-                            {creneau.employe?.prenom?.[0]}.{creneau.employe?.nom}
-                          </div>
-                          {creneau.salle_attribuee && (
-                            <div className="text-xs opacity-75">
-                              {creneau.salle_attribuee}
-                            </div>
-                          )}
-                        </div>
-                      )) || []}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
