@@ -156,6 +156,9 @@ frontend:
         - working: false
           agent: "testing"
           comment: "❌ CORRECTION ÉCHOUÉE - TEST FINAL RÉVÈLE QUE LES ERREURS REACT KEYS NE SONT PAS CORRIGÉES! 🔴 RÉSULTAT CRITIQUE: 27 erreurs React Keys détectées lors de l'ouverture du dropdown salles dans le modal Attribution. Toutes les erreurs concernent 'Test Salle' avec le message 'Encountered two children with the same key'. 🎯 PROBLÈME IDENTIFIÉ: La correction appliquée (key={salle.id || salle-${idx}-${salle.nom}}) ne fonctionne pas car il y a plusieurs entrées 'Test Salle' avec soit le même ID soit des IDs manquants. ✅ FONCTIONNALITÉS: Section accessible, 7 employés chargés, modals fonctionnels, 17 options dans dropdown salles. 📊 IMPACT: Les erreurs React Keys persistent et peuvent causer des dysfonctionnements. La correction doit être revue pour garantir des clés vraiment uniques."
+        - working: false
+          agent: "testing"
+          comment: "❌ TEST FINAL CONFIRME: REACT KEYS ERRORS TOUJOURS PRÉSENTES! 🔴 RÉSULTAT: 15 erreurs React Keys détectées lors du test exact demandé (connexion Directeur → Attribution Planning → clic créneau → ouverture dropdown salles). Toutes les erreurs concernent 'Updated Test Salle' avec message 'Encountered two children with the same key'. 🎯 ROOT CAUSE CONFIRMÉE: Plusieurs entrées 'Updated Test Salle' en base de données avec noms identiques, rendant la correction key=salle-item-${idx}-${salle.id || 'no-id'}-${salle.nom} inefficace car ${salle.nom} est identique. ✅ FONCTIONNALITÉS: Modal Attribution fonctionne, 17 salles dans dropdown. 📊 SOLUTION REQUISE: Utiliser une clé vraiment unique comme key=salle-item-${idx}-${Date.now()}-${Math.random()} ou nettoyer les données dupliquées."
 
 metadata:
   created_by: "main_agent"
