@@ -438,9 +438,14 @@ const PersonnelManager = () => {
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>Nouveau Personnel</DialogTitle>
+                <DialogTitle>
+                  {editingPersonnel ? 'Modifier Personnel' : 'Nouveau Personnel'}
+                </DialogTitle>
                 <DialogDescription>
-                  Ajoutez un nouvel employé au cabinet médical
+                  {editingPersonnel 
+                    ? 'Modifiez les informations de l\'employé'
+                    : 'Ajoutez un nouvel employé au cabinet médical'
+                  }
                 </DialogDescription>
               </DialogHeader>
               
@@ -476,27 +481,30 @@ const PersonnelManager = () => {
                     value={newPersonnel.email}
                     onChange={(e) => setNewPersonnel({...newPersonnel, email: e.target.value})}
                     required
+                    disabled={editingPersonnel} // Email non modifiable
                     placeholder="email@hopital.fr"
                   />
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="role">Rôle *</Label>
-                  <Select
-                    value={newPersonnel.role}
-                    onValueChange={(value) => setNewPersonnel({...newPersonnel, role: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Médecin">Médecin</SelectItem>
-                      <SelectItem value="Assistant">Assistant</SelectItem>
-                      <SelectItem value="Secrétaire">Secrétaire</SelectItem>
-                      <SelectItem value="Directeur">Directeur</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {!editingPersonnel && (
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Rôle *</Label>
+                    <Select
+                      value={newPersonnel.role}
+                      onValueChange={(value) => setNewPersonnel({...newPersonnel, role: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Médecin">Médecin</SelectItem>
+                        <SelectItem value="Assistant">Assistant</SelectItem>
+                        <SelectItem value="Secrétaire">Secrétaire</SelectItem>
+                        <SelectItem value="Directeur">Directeur</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 
                 <div className="space-y-2">
                   <Label htmlFor="telephone">Téléphone</Label>
@@ -508,17 +516,19 @@ const PersonnelManager = () => {
                   />
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="password">Mot de passe temporaire *</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={newPersonnel.password}
-                    onChange={(e) => setNewPersonnel({...newPersonnel, password: e.target.value})}
-                    required
-                    placeholder="Mot de passe"
-                  />
-                </div>
+                {!editingPersonnel && (
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Mot de passe temporaire *</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={newPersonnel.password}
+                      onChange={(e) => setNewPersonnel({...newPersonnel, password: e.target.value})}
+                      required
+                      placeholder="Mot de passe"
+                    />
+                  </div>
+                )}
                 
                 <div className="flex justify-end space-x-2 pt-4">
                   <Button
@@ -532,7 +542,7 @@ const PersonnelManager = () => {
                     Annuler
                   </Button>
                   <Button type="submit">
-                    Créer le Personnel
+                    {editingPersonnel ? 'Modifier' : 'Créer'} le Personnel
                   </Button>
                 </div>
               </form>
