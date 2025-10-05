@@ -779,6 +779,26 @@ const PersonnelManager = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Modal de confirmation de suppression */}
+      <Dialog open={deleteConfirm.show} onOpenChange={cancelDelete}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir supprimer {deleteConfirm.name} ? Cette action est irréversible.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end space-x-2 mt-4">
+            <Button variant="outline" onClick={cancelDelete}>
+              Annuler
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              Supprimer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
