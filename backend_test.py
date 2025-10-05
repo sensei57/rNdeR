@@ -1631,6 +1631,220 @@ class MedicalStaffAPITester:
             print(f"❌ Failed - Error: {str(e)}")
             return False, {}
 
+    def test_deletion_apis(self):
+        """Test deletion APIs that are reported as problematic by users"""
+        print("\n🗑️ Testing Deletion APIs (User Reported Issues)...")
+        
+        if 'directeur' not in self.tokens:
+            print("❌ Skipping deletion tests - no directeur token")
+            return
+        
+        directeur_token = self.tokens['directeur']
+        
+        # Test 1: Personnel Deletion (PUT /api/users/{user_id} with actif: false)
+        print("\n   Testing Personnel Deletion (Soft Delete)...")
+        
+        # First, get all users to find one to delete
+        success, users_data = self.run_test(
+            "Get users for deletion test",
+            "GET",
+            "users",
+            200,
+            token=directeur_token
+        )
+        
+        if success and users_data:
+            # Find a non-directeur user to test deletion
+            test_user = None
+            for user in users_data:
+                if user['role'] != 'Directeur' and user.get('actif', True):
+                    test_user = user
+                    break
+            
+            if test_user:
+                user_id = test_user['id']
+                print(f"   Testing deletion of user: {test_user['prenom']} {test_user['nom']} ({test_user['role']})")
+                
+                # Test soft delete by setting actif: false
+                delete_data = {"actif": False}
+                success, response = self.run_test(
+                    f"Soft delete user {test_user['prenom']} {test_user['nom']}",
+                    "PUT",
+                    f"users/{user_id}",
+                    200,
+                    data=delete_data,
+                    token=directeur_token
+                )
+                
+                if success:
+                    print(f"   ✅ User soft delete API working - Status: actif = {response.get('actif', 'unknown')}")
+                    
+                    # Verify the user is marked as inactive
+                    if response.get('actif') == False:
+                        print(f"   ✅ User correctly marked as inactive")
+                    else:
+                        print(f"   ❌ User not properly marked as inactive: actif = {response.get('actif')}")
+                    
+                    # Test reactivation to restore user
+                    reactivate_data = {"actif": True}
+                    success_reactivate, _ = self.run_test(
+                        f"Reactivate user {test_user['prenom']} {test_user['nom']}",
+                        "PUT",
+                        f"users/{user_id}",
+                        200,
+                        data=reactivate_data,
+                        token=directeur_token
+                    )
+                    
+                    if success_reactivate:
+                        print(f"   ✅ User reactivation successful (restored for other tests)")
+                else:
+                    print(f"   ❌ Personnel deletion API failed")
+            else:
+                print(f"   ⚠️  No suitable user found for deletion test")
+        else:
+            print(f"   ❌ Could not retrieve users for deletion test")
+        
+        # Test 2: Salle Deletion (DELETE /api/salles/{salle_id})
+        print("\n   Testing Salle Deletion (Soft Delete)...")
+        
+        # First, get all salles
+        success, salles_data = self.run_test(
+            "Get salles for deletion test",
+            "GET",
+            "salles",
+            200,
+            token=directeur_token
+        )
+        
+        if success and salles_data:
+            # Find an active salle to test deletion
+            test_salle = None
+            for salle in salles_data:
+                if salle.get('actif', True):
+                    test_salle = salle
+                    break
+            
+            if test_salle:
+                salle_id = test_salle['id']
+                print(f"   Testing deletion of salle: {test_salle['nom']} ({test_salle['type_salle']})")
+                
+                # Test soft delete using DELETE endpoint
+                success, response = self.run_delete_test(
+                    f"Soft delete salle {test_salle['nom']}",
+                    f"salles/{salle_id}",
+                    200,
+                    token=directeur_token
+                )
+                
+                if success:
+                    print(f"   ✅ Salle deletion API working - Response: {response.get('message', 'Success')}")
+                    
+                    # Verify the salle is marked as inactive by getting all salles (including inactive)
+                    success_verify, all_salles = self.run_test(
+                        "Verify salle soft delete (get all salles)",
+                        "GET",
+                        "salles",
+                        200,
+                        params={"actif_seulement": False},
+                        token=directeur_token
+                    )
+                    
+                    if success_verify:
+                        deleted_salle = None
+                        for salle in all_salles:
+                            if salle['id'] == salle_id:
+                                deleted_salle = salle
+                                break
+                        
+                        if deleted_salle and deleted_salle.get('actif') == False:
+                            print(f"   ✅ Salle correctly marked as inactive")
+                        else:
+                            print(f"   ❌ Salle not properly marked as inactive")
+                    
+                    # Test reactivation by updating the salle
+                    reactivate_data = {"actif": True}
+                    success_reactivate, _ = self.run_test(
+                        f"Reactivate salle {test_salle['nom']}",
+                        "PUT",
+                        f"salles/{salle_id}",
+                        200,
+                        data=reactivate_data,
+                        token=directeur_token
+                    )
+                    
+                    if success_reactivate:
+                        print(f"   ✅ Salle reactivation successful (restored for other tests)")
+                else:
+                    print(f"   ❌ Salle deletion API failed")
+            else:
+                print(f"   ⚠️  No suitable salle found for deletion test")
+        else:
+            print(f"   ❌ Could not retrieve salles for deletion test")
+        
+        # Test 3: Unauthorized deletion attempts
+        print("\n   Testing Unauthorized Deletion Attempts...")
+        
+        # Test personnel deletion with non-directeur token
+        if 'medecin' in self.tokens and users_data:
+            test_user = users_data[0] if users_data else None
+            if test_user:
+                success, response = self.run_test(
+                    "Unauthorized personnel deletion (médecin)",
+                    "PUT",
+                    f"users/{test_user['id']}",
+                    403,  # Should be forbidden
+                    data={"actif": False},
+                    token=self.tokens['medecin']
+                )
+                
+                if success:
+                    print(f"   ✅ Non-directeur correctly denied personnel deletion")
+        
+        # Test salle deletion with non-directeur token
+        if 'medecin' in self.tokens and salles_data:
+            test_salle = salles_data[0] if salles_data else None
+            if test_salle:
+                success, response = self.run_delete_test(
+                    "Unauthorized salle deletion (médecin)",
+                    f"salles/{test_salle['id']}",
+                    403,  # Should be forbidden
+                    token=self.tokens['medecin']
+                )
+                
+                if success:
+                    print(f"   ✅ Non-directeur correctly denied salle deletion")
+        
+        # Test 4: Deletion of non-existent resources
+        print("\n   Testing Deletion of Non-existent Resources...")
+        
+        # Test deleting non-existent user
+        success, response = self.run_test(
+            "Delete non-existent user",
+            "PUT",
+            "users/non-existent-user-id",
+            404,  # Should return not found
+            data={"actif": False},
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✅ Non-existent user deletion correctly returns 404")
+        
+        # Test deleting non-existent salle
+        success, response = self.run_delete_test(
+            "Delete non-existent salle",
+            "salles/non-existent-salle-id",
+            404,  # Should return not found
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✅ Non-existent salle deletion correctly returns 404")
+        
+        print(f"\n   🔍 Deletion APIs Testing Complete")
+        return True
+
 def main():
     print("🏥 Testing Medical Staff Management API - COMPREHENSIVE NEW FEATURES TEST")
     print("=" * 70)
