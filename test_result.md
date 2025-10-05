@@ -107,27 +107,33 @@ user_problem_statement: "Les boutons de suppression dans la gestion des salles +
 backend:
   - task: "API Suppression Personnel (PUT /api/users/{id})"
     implemented: true
-    working: "NA"  
+    working: true  
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Endpoint existe avec soft delete (actif: false). Besoin de tester si l'API fonctionne correctement."
+        - working: true
+          agent: "testing"
+          comment: "✅ API FONCTIONNE CORRECTEMENT - Tests complets réalisés: 1) Soft delete réussi (actif: false), 2) Vérification que l'utilisateur est marqué inactif, 3) Réactivation testée, 4) Contrôle d'accès Directeur uniquement, 5) Gestion erreur 404 pour utilisateurs inexistants. L'API répond correctement aux spécifications."
 
   - task: "API Suppression Salles (DELETE /api/salles/{id})"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py" 
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Endpoint existe avec soft delete. Besoin de tester si l'API fonctionne correctement."
+        - working: true
+          agent: "testing"
+          comment: "✅ API FONCTIONNE CORRECTEMENT - Tests complets réalisés: 1) Soft delete réussi via DELETE endpoint, 2) Vérification que la salle est marquée inactive (actif: false), 3) Réactivation testée via PUT, 4) Contrôle d'accès Directeur uniquement, 5) Gestion erreur 404 pour salles inexistantes. L'API répond correctement aux spécifications."
 
 frontend:
   - task: "Bouton Suppression Personnel"
