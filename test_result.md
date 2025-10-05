@@ -179,3 +179,5 @@ test_plan:
 agent_communication:
     - agent: "main"
       message: "Problème signalé: boutons de suppression non fonctionnels. Code frontend semble correct. Besoin de tester les APIs backend d'abord pour identifier si le problème est côté serveur ou client."
+    - agent: "testing"
+      message: "✅ TESTS BACKEND TERMINÉS - Les APIs de suppression fonctionnent parfaitement côté backend. PUT /api/users/{id} et DELETE /api/salles/{id} répondent correctement avec soft delete (actif: false). Authentification JWT Directeur requise et respectée. Le problème rapporté par l'utilisateur ne vient PAS du backend. Il faut maintenant vérifier le frontend: 1) Appels API corrects, 2) Gestion des réponses, 3) Mise à jour de l'interface après suppression."
