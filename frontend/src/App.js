@@ -1477,7 +1477,7 @@ const SallesManager = () => {
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => handleDeleteSalle(salle.id)}
+                    onClick={() => handleDeleteSalle(salle.id, salle.nom)}
                     className="text-red-600 hover:text-red-800"
                   >
                     <Trash2 className="h-4 w-4" />
