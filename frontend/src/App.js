@@ -1125,16 +1125,28 @@ const SallesManager = () => {
     }
   };
 
-  const handleDeleteSalle = async (salleId) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette salle ?')) return;
-    
+  const handleDeleteSalle = (salleId, salleNom) => {
+    setDeleteSalleConfirm({ 
+      show: true, 
+      id: salleId, 
+      name: salleNom || `Salle ${salleId}` 
+    });
+  };
+
+  const confirmDeleteSalle = async () => {
     try {
-      await axios.delete(`${API}/salles/${salleId}`);
+      await axios.delete(`${API}/salles/${deleteSalleConfirm.id}`);
       toast.success('Salle supprimée');
       fetchSalles();
     } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
       toast.error('Erreur lors de la suppression');
     }
+    setDeleteSalleConfirm({ show: false, id: '', name: '' });
+  };
+
+  const cancelDeleteSalle = () => {
+    setDeleteSalleConfirm({ show: false, id: '', name: '' });
   };
 
   const handleEditSalle = (salle) => {
