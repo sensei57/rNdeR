@@ -138,11 +138,11 @@ backend:
 frontend:
   - task: "Bouton Suppression Personnel"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high" 
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: false
           agent: "user"
@@ -150,6 +150,9 @@ frontend:
         - working: true
           agent: "testing"
           comment: "✅ BOUTONS PERSONNEL FONCTIONNENT CORRECTEMENT - Tests détaillés réalisés: 1) Boutons de suppression visibles et cliquables, 2) Dialog de confirmation s'affiche correctement ('Êtes-vous sûr de vouloir supprimer [nom] ?'), 3) API PUT /api/users/{id} appelée avec succès (200 OK), 4) Interface mise à jour après suppression (personnel retiré de la liste), 5) Backend logs confirment la réception des requêtes. Le problème rapporté par l'utilisateur ne se reproduit pas lors des tests - les boutons fonctionnent parfaitement."
+        - working: false
+          agent: "testing"
+          comment: "❌ PROBLÈME PARTIEL DÉTECTÉ APRÈS CORRECTIONS - Tests post-corrections révèlent: ✅ ASSISTANTS: Boutons suppression + dialog fonctionnels (2 boutons testés). ✅ SECRÉTAIRES: Boutons suppression + dialog fonctionnels (1 bouton testé). ❌ MÉDECINS: Boutons visibles (2 boutons détectés) mais dialog de confirmation ne s'affiche PAS lors du clic. Les corrections ont résolu le problème pour Assistants/Secrétaires mais pas pour Médecins. Problème spécifique à la section Médecins à investiguer."
 
   - task: "Bouton Suppression Salles" 
     implemented: true
