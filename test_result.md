@@ -138,7 +138,7 @@ backend:
 frontend:
   - task: "Bouton Suppression Personnel"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 2
     priority: "high" 
@@ -156,6 +156,9 @@ frontend:
         - working: false
           agent: "testing"
           comment: "❌ PROBLÈME MÉDECINS CONFIRMÉ - Test ciblé effectué: ✅ ASSISTANTS: Bouton suppression cliquable, console.log 'handleDeletePersonnel called' affiché, dialog de confirmation visible et fonctionnel. ❌ MÉDECINS: Boutons de suppression visibles mais NON CLIQUABLES - impossible de cliquer dessus avec Playwright (timeout sur tous les sélecteurs CSS testés). Le problème n'est PAS dans la fonction handleDeletePersonnel mais dans l'accessibilité/cliquabilité des boutons de suppression spécifiquement pour les Médecins. Problème d'interface utilisateur à corriger."
+        - working: true
+          agent: "testing"
+          comment: "✅ PROBLÈME RÉSOLU - TOUS LES BOUTONS FONCTIONNENT MAINTENANT! Tests finaux après corrections du layout: ✅ MÉDECINS: Boutons suppression cliquables, dialog de confirmation s'affiche correctement (4 boutons détectés, index 1 testé avec succès). ✅ ASSISTANTS: Boutons suppression fonctionnels, dialog de confirmation opérationnel (2 boutons rouges testés). ✅ SECRÉTAIRES: Boutons suppression fonctionnels, dialog de confirmation opérationnel (1 bouton rouge testé). Les corrections apportées par le main agent (changement structure HTML médecins, retrait justify-between, ajout mt-2) ont complètement résolu le problème. TOUS les boutons de suppression du personnel fonctionnent parfaitement maintenant."
 
   - task: "Bouton Suppression Salles" 
     implemented: true
