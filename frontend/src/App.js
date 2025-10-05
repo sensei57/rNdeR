@@ -3648,7 +3648,7 @@ const AttributionManager = () => {
                 
                 {/* Créneaux par jour */}
                 {weekDates.map((date, dayIndex) => (
-                  <div key={date} className="space-y-1">
+                  <div key={`day-${date}-${dayIndex}`} className="space-y-1">
                     {/* Matin */}
                     <div 
                       className="bg-blue-50 rounded p-2 min-h-[80px] cursor-pointer hover:bg-blue-100 border-2 border-dashed border-blue-200"
