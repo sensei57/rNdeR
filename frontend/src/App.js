@@ -398,7 +398,6 @@ const PersonnelManager = () => {
   };
 
   const handleDeletePersonnel = (personnelId, personnelNom) => {
-    console.log('handleDeletePersonnel called', personnelId, personnelNom);
     setDeleteConfirm({ 
       show: true, 
       type: 'personnel', 
