@@ -704,6 +704,27 @@ const PersonnelManager = () => {
                       <CardDescription>{secretaire.email}</CardDescription>
                     </div>
                   </div>
+                  
+                  {user?.role === 'Directeur' && (
+                    <div className="flex space-x-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleEditPersonnel(secretaire)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleDeletePersonnel(secretaire.id, `${secretaire.prenom} ${secretaire.nom}`)}
+                        className="h-8 w-8 p-0 text-red-600 hover:text-red-800 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-gray-600">
