@@ -572,18 +572,41 @@ const PersonnelManager = () => {
             {getUsersByRole('Médecin').map(medecin => (
               <Card key={medecin.id}>
                 <CardHeader className="pb-3">
-                  <div className="flex items-center space-x-3">
-                    <Avatar>
-                      <AvatarFallback className="bg-blue-500">
-                        {medecin.prenom?.[0]}{medecin.nom?.[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <CardTitle className="text-lg">
-                        Dr. {medecin.prenom} {medecin.nom}
-                      </CardTitle>
-                      <CardDescription>{medecin.email}</CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Avatar>
+                        <AvatarFallback className="bg-blue-500">
+                          {medecin.prenom?.[0]}{medecin.nom?.[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <CardTitle className="text-lg">
+                          Dr. {medecin.prenom} {medecin.nom}
+                        </CardTitle>
+                        <CardDescription>{medecin.email}</CardDescription>
+                      </div>
                     </div>
+                    
+                    {user?.role === 'Directeur' && (
+                      <div className="flex space-x-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEditPersonnel(medecin)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeletePersonnel(medecin.id, `${medecin.prenom} ${medecin.nom}`)}
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-800 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent>
