@@ -136,44 +136,17 @@ backend:
           comment: "✅ API FONCTIONNE CORRECTEMENT - Tests complets réalisés: 1) Soft delete réussi via DELETE endpoint, 2) Vérification que la salle est marquée inactive (actif: false), 3) Réactivation testée via PUT, 4) Contrôle d'accès Directeur uniquement, 5) Gestion erreur 404 pour salles inexistantes. L'API répond correctement aux spécifications."
 
 frontend:
-  - task: "Bouton Suppression Personnel"
+  - task: "Plan Cabinet - Améliorations Visuelles"
     implemented: true
-    working: true
+    working: "NA"
     file: "/app/frontend/src/App.js"
-    stuck_count: 2
+    stuck_count: 0
     priority: "high" 
-    needs_retesting: false
+    needs_retesting: true
     status_history:
-        - working: false
+        - working: "NA"
           agent: "user"
-          comment: "Utilisateur signale que les boutons de suppression du personnel ne fonctionnent pas."
-        - working: true
-          agent: "testing"
-          comment: "✅ BOUTONS PERSONNEL FONCTIONNENT CORRECTEMENT - Tests détaillés réalisés: 1) Boutons de suppression visibles et cliquables, 2) Dialog de confirmation s'affiche correctement ('Êtes-vous sûr de vouloir supprimer [nom] ?'), 3) API PUT /api/users/{id} appelée avec succès (200 OK), 4) Interface mise à jour après suppression (personnel retiré de la liste), 5) Backend logs confirment la réception des requêtes. Le problème rapporté par l'utilisateur ne se reproduit pas lors des tests - les boutons fonctionnent parfaitement."
-        - working: false
-          agent: "testing"
-          comment: "❌ PROBLÈME PARTIEL DÉTECTÉ APRÈS CORRECTIONS - Tests post-corrections révèlent: ✅ ASSISTANTS: Boutons suppression + dialog fonctionnels (2 boutons testés). ✅ SECRÉTAIRES: Boutons suppression + dialog fonctionnels (1 bouton testé). ❌ MÉDECINS: Boutons visibles (2 boutons détectés) mais dialog de confirmation ne s'affiche PAS lors du clic. Les corrections ont résolu le problème pour Assistants/Secrétaires mais pas pour Médecins. Problème spécifique à la section Médecins à investiguer."
-        - working: false
-          agent: "testing"
-          comment: "❌ PROBLÈME MÉDECINS CONFIRMÉ - Test ciblé effectué: ✅ ASSISTANTS: Bouton suppression cliquable, console.log 'handleDeletePersonnel called' affiché, dialog de confirmation visible et fonctionnel. ❌ MÉDECINS: Boutons de suppression visibles mais NON CLIQUABLES - impossible de cliquer dessus avec Playwright (timeout sur tous les sélecteurs CSS testés). Le problème n'est PAS dans la fonction handleDeletePersonnel mais dans l'accessibilité/cliquabilité des boutons de suppression spécifiquement pour les Médecins. Problème d'interface utilisateur à corriger."
-        - working: true
-          agent: "testing"
-          comment: "✅ PROBLÈME RÉSOLU - TOUS LES BOUTONS FONCTIONNENT MAINTENANT! Tests finaux après corrections du layout: ✅ MÉDECINS: Boutons suppression cliquables, dialog de confirmation s'affiche correctement (4 boutons détectés, index 1 testé avec succès). ✅ ASSISTANTS: Boutons suppression fonctionnels, dialog de confirmation opérationnel (2 boutons rouges testés). ✅ SECRÉTAIRES: Boutons suppression fonctionnels, dialog de confirmation opérationnel (1 bouton rouge testé). Les corrections apportées par le main agent (changement structure HTML médecins, retrait justify-between, ajout mt-2) ont complètement résolu le problème. TOUS les boutons de suppression du personnel fonctionnent parfaitement maintenant."
-
-  - task: "Bouton Suppression Salles" 
-    implemented: true
-    working: true
-    file: "/app/frontend/src/App.js"
-    stuck_count: 1
-    priority: "high"
-    needs_retesting: false
-    status_history:
-        - working: false
-          agent: "user"  
-          comment: "Utilisateur signale que les boutons de suppression des salles ne fonctionnent pas."
-        - working: true
-          agent: "testing"
-          comment: "✅ BOUTONS SALLES FONCTIONNENT CORRECTEMENT - Tests détaillés réalisés: 1) Boutons de suppression visibles et cliquables dans la section Gestion des Salles, 2) Dialog de confirmation s'affiche correctement, 3) API DELETE /api/salles/{id} appelée avec succès (200 OK), 4) Message de succès 'Salle supprimée' affiché, 5) Interface mise à jour après suppression, 6) Backend logs confirment DELETE requests réussis. Les boutons de suppression des salles fonctionnent parfaitement."
+          comment: "Utilisateur demande de tester les améliorations du Plan du Cabinet: 1) Taille des salles agrandie (70x60px → 110x90px), 2) Espacement augmenté (80px → 120px), 3) Container plus grand (600x500px → 900x700px), 4) Initiales visibles dans cercles blancs, 5) Informations supplémentaires sous les initiales. Tests requis: connexion Directeur, navigation Plan Cabinet, vérification améliorations visuelles, test hover, changement date/créneau, vérification affichage sans débordement."
 
 metadata:
   created_by: "main_agent"
