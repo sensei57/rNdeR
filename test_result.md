@@ -168,8 +168,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "API Suppression Personnel (PUT /api/users/{id})"
-    - "API Suppression Salles (DELETE /api/salles/{id})"
+    - "Bouton Suppression Personnel"
+    - "Bouton Suppression Salles"
   stuck_tasks:
     - "Bouton Suppression Personnel"
     - "Bouton Suppression Salles"
