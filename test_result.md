@@ -138,27 +138,33 @@ backend:
 frontend:
   - task: "Bouton Suppression Personnel"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 1
     priority: "high" 
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: false
           agent: "user"
           comment: "Utilisateur signale que les boutons de suppression du personnel ne fonctionnent pas."
+        - working: true
+          agent: "testing"
+          comment: "✅ BOUTONS PERSONNEL FONCTIONNENT CORRECTEMENT - Tests détaillés réalisés: 1) Boutons de suppression visibles et cliquables, 2) Dialog de confirmation s'affiche correctement ('Êtes-vous sûr de vouloir supprimer [nom] ?'), 3) API PUT /api/users/{id} appelée avec succès (200 OK), 4) Interface mise à jour après suppression (personnel retiré de la liste), 5) Backend logs confirment la réception des requêtes. Le problème rapporté par l'utilisateur ne se reproduit pas lors des tests - les boutons fonctionnent parfaitement."
 
   - task: "Bouton Suppression Salles" 
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: false
           agent: "user"  
           comment: "Utilisateur signale que les boutons de suppression des salles ne fonctionnent pas."
+        - working: true
+          agent: "testing"
+          comment: "✅ BOUTONS SALLES FONCTIONNENT CORRECTEMENT - Tests détaillés réalisés: 1) Boutons de suppression visibles et cliquables dans la section Gestion des Salles, 2) Dialog de confirmation s'affiche correctement, 3) API DELETE /api/salles/{id} appelée avec succès (200 OK), 4) Message de succès 'Salle supprimée' affiché, 5) Interface mise à jour après suppression, 6) Backend logs confirment DELETE requests réussis. Les boutons de suppression des salles fonctionnent parfaitement."
 
 metadata:
   created_by: "main_agent"
