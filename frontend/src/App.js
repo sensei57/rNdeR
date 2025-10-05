@@ -336,23 +336,75 @@ const PersonnelManager = () => {
   const handleCreatePersonnel = async (e) => {
     e.preventDefault();
     
-    if (!newPersonnel.email || !newPersonnel.nom || !newPersonnel.prenom || !newPersonnel.password) {
-      toast.error('Veuillez remplir tous les champs obligatoires');
-      return;
+    if (editingPersonnel) {
+      // Mode modification
+      if (!newPersonnel.email || !newPersonnel.nom || !newPersonnel.prenom) {
+        toast.error('Veuillez remplir tous les champs obligatoires');
+        return;
+      }
+
+      try {
+        const updateData = {
+          nom: newPersonnel.nom,
+          prenom: newPersonnel.prenom,
+          telephone: newPersonnel.telephone,
+          actif: true
+        };
+
+        await axios.put(`${API}/users/${editingPersonnel.id}`, updateData);
+        toast.success('Personnel modifié avec succès');
+        setShowPersonnelModal(false);
+        setEditingPersonnel(null);
+        resetPersonnelForm();
+        fetchData();
+      } catch (error) {
+        toast.error('Erreur lors de la modification du personnel');
+      }
+    } else {
+      // Mode création
+      if (!newPersonnel.email || !newPersonnel.nom || !newPersonnel.prenom || !newPersonnel.password) {
+        toast.error('Veuillez remplir tous les champs obligatoires');
+        return;
+      }
+
+      try {
+        await axios.post(`${API}/auth/register`, newPersonnel);
+        toast.success('Personnel créé avec succès');
+        setShowPersonnelModal(false);
+        resetPersonnelForm();
+        fetchData();
+      } catch (error) {
+        if (error.response?.status === 400) {
+          toast.error('Un utilisateur avec cet email existe déjà');
+        } else {
+          toast.error('Erreur lors de la création du personnel');
+        }
+      }
     }
+  };
+
+  const handleEditPersonnel = (personnel) => {
+    setEditingPersonnel(personnel);
+    setNewPersonnel({
+      email: personnel.email,
+      nom: personnel.nom,
+      prenom: personnel.prenom,
+      role: personnel.role,
+      telephone: personnel.telephone || '',
+      password: '' // Ne pas pré-remplir le mot de passe
+    });
+    setShowPersonnelModal(true);
+  };
+
+  const handleDeletePersonnel = async (personnelId, personnelNom) => {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer ${personnelNom} ?`)) return;
 
     try {
-      await axios.post(`${API}/auth/register`, newPersonnel);
-      toast.success('Personnel créé avec succès');
-      setShowPersonnelModal(false);
-      resetPersonnelForm();
+      await axios.put(`${API}/users/${personnelId}`, { actif: false });
+      toast.success('Personnel supprimé avec succès');
       fetchData();
     } catch (error) {
-      if (error.response?.status === 400) {
-        toast.error('Un utilisateur avec cet email existe déjà');
-      } else {
-        toast.error('Erreur lors de la création du personnel');
-      }
+      toast.error('Erreur lors de la suppression');
     }
   };
 
@@ -365,6 +417,7 @@ const PersonnelManager = () => {
       telephone: '',
       password: ''
     });
+    setEditingPersonnel(null);
   };
 
   if (loading) {
