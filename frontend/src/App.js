@@ -263,6 +263,7 @@ const PersonnelManager = () => {
   const [loading, setLoading] = useState(true);
   const [showPersonnelModal, setShowPersonnelModal] = useState(false);
   const [editingPersonnel, setEditingPersonnel] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, type: '', id: '', name: '' });
   const [newPersonnel, setNewPersonnel] = useState({
     email: '',
     nom: '',
