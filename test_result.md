@@ -138,15 +138,18 @@ backend:
 frontend:
   - task: "Attribution Planning - Diagnostic des erreurs"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high" 
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "user"
           comment: "L'utilisateur signale 'beaucoup d'erreurs dans la section attribution de planning'. Besoin de tester AttributionManager pour identifier: 1) Erreurs JavaScript console, 2) Problèmes d'affichage UI, 3) Fonctionnalités cassées (définition quota, attribution créneau), 4) Erreurs API calls, 5) Problèmes de chargement des données. Tests requis: connexion Directeur, navigation vers Attribution Planning, test des fonctions principales."
+        - working: false
+          agent: "testing"
+          comment: "❌ PROBLÈME CRITIQUE IDENTIFIÉ - Tests complets effectués sur AttributionManager: 🔴 ERREUR MAJEURE: 36 erreurs React Keys détectées ('Encountered two children with the same key') causant des problèmes de rendu des listes. ✅ FONCTIONNALITÉS: Section accessible, 9 employés chargés, 14 créneaux planning affichés, modals Définir Quota et Attribution fonctionnels. ⚠️ PROBLÈMES MINEURS: Titres de sections mal formatés (h3 manquants), champs horaires manquants dans modal quota, cases à cocher médecins manquantes dans modal attribution. 📊 IMPACT: Les erreurs React Keys peuvent causer des dysfonctionnements d'affichage et de performance. Nécessite correction urgente des keys uniques dans les listes d'éléments."
 
 metadata:
   created_by: "main_agent"
