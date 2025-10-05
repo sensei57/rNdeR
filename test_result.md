@@ -140,7 +140,7 @@ frontend:
     implemented: true
     working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high" 
     needs_retesting: false
     status_history:
@@ -150,6 +150,9 @@ frontend:
         - working: false
           agent: "testing"
           comment: "❌ PROBLÈME CRITIQUE IDENTIFIÉ - Tests complets effectués sur AttributionManager: 🔴 ERREUR MAJEURE: 36 erreurs React Keys détectées ('Encountered two children with the same key') causant des problèmes de rendu des listes. ✅ FONCTIONNALITÉS: Section accessible, 9 employés chargés, 14 créneaux planning affichés, modals Définir Quota et Attribution fonctionnels. ⚠️ PROBLÈMES MINEURS: Titres de sections mal formatés (h3 manquants), champs horaires manquants dans modal quota, cases à cocher médecins manquantes dans modal attribution. 📊 IMPACT: Les erreurs React Keys peuvent causer des dysfonctionnements d'affichage et de performance. Nécessite correction urgente des keys uniques dans les listes d'éléments."
+        - working: false
+          agent: "testing"
+          comment: "🔍 DIAGNOSTIC PRÉCIS EFFECTUÉ - Les corrections React Keys pour le planning principal ont RÉUSSI (plus d'erreurs sur les créneaux MATIN/APRÈS-MIDI). ❌ PROBLÈME RÉSIDUEL: 9 erreurs React Keys détectées dans le MODAL D'ATTRIBUTION uniquement, spécifiquement dans la liste des salles (dropdown 'Test Salle'). 🎯 LOCALISATION: Erreurs apparaissent à l'ouverture du modal attribution (ligne 3857: salles.map avec key={salle.id}). ✅ FONCTIONNALITÉS: Section principale fonctionne parfaitement, modals s'ouvrent/ferment correctement, 7 employés chargés, planning hebdomadaire affiché. 📊 IMPACT: Erreurs limitées au modal, n'affectent pas la fonctionnalité principale mais nécessitent correction pour éliminer complètement les erreurs console."
 
 metadata:
   created_by: "main_agent"
