@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Les boutons de suppression dans la gestion des salles + personnel ne fonctionnent pas"
+user_problem_statement: "Test des améliorations visuelles du Plan du Cabinet - salles plus grandes avec initiales visibles"
 
 backend:
   - task: "API Suppression Personnel (PUT /api/users/{id})"
