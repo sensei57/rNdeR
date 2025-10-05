@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test des améliorations visuelles du Plan du Cabinet - salles plus grandes avec initiales visibles"
+user_problem_statement: "L'utilisateur signale qu'il y a 'beaucoup d'erreurs dans la section attribution de planning'. Je dois identifier et diagnostiquer ces erreurs dans AttributionManager."
 
 backend:
   - task: "API Suppression Personnel (PUT /api/users/{id})"
