@@ -1500,6 +1500,26 @@ const SallesManager = () => {
           </Card>
         )}
       </div>
+      
+      {/* Modal de confirmation de suppression */}
+      <Dialog open={deleteSalleConfirm.show} onOpenChange={cancelDeleteSalle}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir supprimer {deleteSalleConfirm.name} ? Cette action est irréversible.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end space-x-2 mt-4">
+            <Button variant="outline" onClick={cancelDeleteSalle}>
+              Annuler
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteSalle}>
+              Supprimer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
