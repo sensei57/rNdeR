@@ -3687,8 +3687,8 @@ const AttributionManager = () => {
                     >
                       <div className="text-xs font-medium text-orange-700 mb-1">Après-midi</div>
                       <div className="space-y-1">
-                        {planning.planning[date]?.APRES_MIDI?.map(creneau => (
-                          <div key={creneau.id} className={`text-xs p-1 rounded ${getRoleColor(creneau.employe_role)}`}>
+                        {planning.planning[date]?.APRES_MIDI?.map((creneau, idx) => (
+                          <div key={`${date}-apresmidi-${creneau.id || idx}`} className={`text-xs p-1 rounded ${getRoleColor(creneau.employe_role)}`}>
                             <div className="font-medium truncate">
                               {creneau.employe?.prenom?.[0]}.{creneau.employe?.nom}
                             </div>
