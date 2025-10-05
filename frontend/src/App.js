@@ -3083,7 +3083,7 @@ const PlanCabinetManager = () => {
               {planData.salles.map(salle => renderSalle(salle))}
               
               {/* Légende */}
-              <div className="absolute bottom-4 right-4 bg-white p-3 rounded-lg shadow-lg border">
+              <div className="absolute bottom-6 right-6 bg-white p-4 rounded-lg shadow-lg border">
                 <h4 className="font-medium mb-2 text-sm">Légende</h4>
                 <div className="space-y-1 text-xs">
                   <div className="flex items-center space-x-2">
