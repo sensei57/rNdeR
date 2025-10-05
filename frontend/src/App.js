@@ -397,16 +397,29 @@ const PersonnelManager = () => {
     setShowPersonnelModal(true);
   };
 
-  const handleDeletePersonnel = async (personnelId, personnelNom) => {
-    if (!confirm(`Êtes-vous sûr de vouloir supprimer ${personnelNom} ?`)) return;
+  const handleDeletePersonnel = (personnelId, personnelNom) => {
+    setDeleteConfirm({ 
+      show: true, 
+      type: 'personnel', 
+      id: personnelId, 
+      name: personnelNom 
+    });
+  };
 
+  const confirmDelete = async () => {
     try {
-      await axios.put(`${API}/users/${personnelId}`, { actif: false });
+      await axios.put(`${API}/users/${deleteConfirm.id}`, { actif: false });
       toast.success('Personnel supprimé avec succès');
       fetchData();
     } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
       toast.error('Erreur lors de la suppression');
     }
+    setDeleteConfirm({ show: false, type: '', id: '', name: '' });
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm({ show: false, type: '', id: '', name: '' });
   };
 
   const resetPersonnelForm = () => {
