@@ -3079,7 +3079,7 @@ const PlanCabinetManager = () => {
           </CardHeader>
           <CardContent>
             {/* Container du plan avec position relative pour le positionnement absolu */}
-            <div className="relative bg-gray-50 rounded-lg p-4" style={{ height: '500px', width: '600px' }}>
+            <div className="relative bg-gray-50 rounded-lg p-6" style={{ height: '700px', width: '900px' }}>
               {planData.salles.map(salle => renderSalle(salle))}
               
               {/* Légende */}
