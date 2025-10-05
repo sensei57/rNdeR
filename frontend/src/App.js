@@ -2957,7 +2957,7 @@ const PlanCabinetManager = () => {
 
   const renderSalle = (salle) => {
     const occupation = salle.occupation;
-    const baseClasses = "absolute border-2 rounded-lg p-2 text-xs font-medium transition-all cursor-pointer hover:scale-105";
+    const baseClasses = "absolute border-2 rounded-lg p-3 text-sm font-medium transition-all cursor-pointer hover:scale-105 flex flex-col justify-center items-center";
     
     let bgColor = 'bg-gray-100 border-gray-300';
     let textColor = 'text-gray-600';
@@ -2979,13 +2979,21 @@ const PlanCabinetManager = () => {
       }
     }
     
-    // Positionner selon les coordonnées (chaque unité = 80px)
+    // Positionner selon les coordonnées (chaque unité = 120px pour des salles plus grandes)
     const style = {
-      left: `${salle.position_x * 80}px`,
-      top: `${salle.position_y * 80}px`,
-      width: '70px',
-      height: '60px',
+      left: `${salle.position_x * 120}px`,
+      top: `${salle.position_y * 120}px`,
+      width: '110px',
+      height: '90px',
       backgroundColor: occupation ? salle.couleur + '20' : '#f3f4f6'
+    };
+
+    // Générer les initiales pour l'affichage principal
+    const getInitiales = (employe) => {
+      if (!employe) return '';
+      const prenom = employe.prenom || '';
+      const nom = employe.nom || '';
+      return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
     };
     
     return (
@@ -2999,20 +3007,27 @@ const PlanCabinetManager = () => {
             : `${salle.nom} - Libre`
         }
       >
-        <div className="text-center">
-          <div className="font-bold">{salle.nom}</div>
-          {occupation && (
-            <div className="mt-1">
-              <div className="truncate">
+        <div className="text-center w-full">
+          <div className="font-bold text-base mb-1">{salle.nom}</div>
+          {occupation ? (
+            <div className="space-y-1">
+              {/* Initiales principales en gros */}
+              <div className="text-lg font-bold bg-white bg-opacity-70 rounded-full w-8 h-8 flex items-center justify-center mx-auto border">
+                {getInitiales(occupation.employe)}
+              </div>
+              {/* Informations complémentaires */}
+              <div className="text-xs">
                 {occupation.employe?.role === 'Médecin' ? 'Dr.' : ''} 
-                {occupation.employe?.prenom?.[0]}.{occupation.employe?.nom}
+                {occupation.employe?.prenom} {occupation.employe?.nom?.charAt(0)}.
               </div>
               {occupation.medecin_attribue && (
-                <div className="text-xs opacity-75 truncate">
-                  avec Dr.{occupation.medecin_attribue.prenom?.[0]}.{occupation.medecin_attribue.nom}
+                <div className="text-xs opacity-75">
+                  + Dr.{getInitiales(occupation.medecin_attribue)}
                 </div>
               )}
             </div>
+          ) : (
+            <div className="text-xs text-gray-500 mt-2">Libre</div>
           )}
         </div>
       </div>
