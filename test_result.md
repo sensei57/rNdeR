@@ -101,3 +101,75 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Les boutons de suppression dans la gestion des salles + personnel ne fonctionnent pas"
+
+backend:
+  - task: "API Suppression Personnel (PUT /api/users/{id})"
+    implemented: true
+    working: "NA"  
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Endpoint existe avec soft delete (actif: false). Besoin de tester si l'API fonctionne correctement."
+
+  - task: "API Suppression Salles (DELETE /api/salles/{id})"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py" 
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Endpoint existe avec soft delete. Besoin de tester si l'API fonctionne correctement."
+
+frontend:
+  - task: "Bouton Suppression Personnel"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 1
+    priority: "high" 
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "user"
+          comment: "Utilisateur signale que les boutons de suppression du personnel ne fonctionnent pas."
+
+  - task: "Bouton Suppression Salles" 
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "user"  
+          comment: "Utilisateur signale que les boutons de suppression des salles ne fonctionnent pas."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "API Suppression Personnel (PUT /api/users/{id})"
+    - "API Suppression Salles (DELETE /api/salles/{id})"
+  stuck_tasks:
+    - "Bouton Suppression Personnel"
+    - "Bouton Suppression Salles"
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "main"
+      message: "Problème signalé: boutons de suppression non fonctionnels. Code frontend semble correct. Besoin de tester les APIs backend d'abord pour identifier si le problème est côté serveur ou client."
