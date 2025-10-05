@@ -1883,6 +1883,14 @@ def main():
     # Test general notes
     tester.test_general_notes()
     
+    # ===== PRIORITY DELETION TESTING =====
+    print("\n" + "="*50)
+    print("🗑️ TESTING DELETION APIs (USER REPORTED ISSUES)")
+    print("="*50)
+    
+    # Test PRIORITY: Deletion APIs that users report as broken
+    tester.test_deletion_apis()
+    
     # ===== NEW ADVANCED FEATURES TESTING =====
     print("\n" + "="*50)
     print("🚀 TESTING NEW ADVANCED FEATURES")
