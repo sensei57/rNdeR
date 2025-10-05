@@ -140,7 +140,7 @@ frontend:
     implemented: true
     working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high" 
     needs_retesting: false
     status_history:
@@ -153,6 +153,9 @@ frontend:
         - working: false
           agent: "testing"
           comment: "🔍 DIAGNOSTIC PRÉCIS EFFECTUÉ - Les corrections React Keys pour le planning principal ont RÉUSSI (plus d'erreurs sur les créneaux MATIN/APRÈS-MIDI). ❌ PROBLÈME RÉSIDUEL: 9 erreurs React Keys détectées dans le MODAL D'ATTRIBUTION uniquement, spécifiquement dans la liste des salles (dropdown 'Test Salle'). 🎯 LOCALISATION: Erreurs apparaissent à l'ouverture du modal attribution (ligne 3857: salles.map avec key={salle.id}). ✅ FONCTIONNALITÉS: Section principale fonctionne parfaitement, modals s'ouvrent/ferment correctement, 7 employés chargés, planning hebdomadaire affiché. 📊 IMPACT: Erreurs limitées au modal, n'affectent pas la fonctionnalité principale mais nécessitent correction pour éliminer complètement les erreurs console."
+        - working: false
+          agent: "testing"
+          comment: "❌ CORRECTION ÉCHOUÉE - TEST FINAL RÉVÈLE QUE LES ERREURS REACT KEYS NE SONT PAS CORRIGÉES! 🔴 RÉSULTAT CRITIQUE: 27 erreurs React Keys détectées lors de l'ouverture du dropdown salles dans le modal Attribution. Toutes les erreurs concernent 'Test Salle' avec le message 'Encountered two children with the same key'. 🎯 PROBLÈME IDENTIFIÉ: La correction appliquée (key={salle.id || salle-${idx}-${salle.nom}}) ne fonctionne pas car il y a plusieurs entrées 'Test Salle' avec soit le même ID soit des IDs manquants. ✅ FONCTIONNALITÉS: Section accessible, 7 employés chargés, modals fonctionnels, 17 options dans dropdown salles. 📊 IMPACT: Les erreurs React Keys persistent et peuvent causer des dysfonctionnements. La correction doit être revue pour garantir des clés vraiment uniques."
 
 metadata:
   created_by: "main_agent"
