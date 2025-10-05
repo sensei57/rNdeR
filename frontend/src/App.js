@@ -1069,6 +1069,7 @@ const SallesManager = () => {
   const [salles, setSalles] = useState([]);
   const [showSalleModal, setShowSalleModal] = useState(false);
   const [editingSalle, setEditingSalle] = useState(null);
+  const [deleteSalleConfirm, setDeleteSalleConfirm] = useState({ show: false, id: '', name: '' });
   const [newSalle, setNewSalle] = useState({
     nom: '',
     type_salle: 'MEDECIN',
