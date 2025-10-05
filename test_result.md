@@ -173,12 +173,8 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Bouton Suppression Personnel"
-    - "Bouton Suppression Salles"
-  stuck_tasks:
-    - "Bouton Suppression Personnel"
-    - "Bouton Suppression Salles"
+  current_focus: []
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
