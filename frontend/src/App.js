@@ -3855,7 +3855,7 @@ const AttributionManager = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {salles.map((salle, idx) => (
-                    <SelectItem key={`salle-unique-${idx}-${salle.id || idx}`} value={salle.nom}>
+                    <SelectItem key={`salle-${idx}`} value={salle.nom}>
                       {salle.nom} ({salle.type_salle})
                     </SelectItem>
                   ))}
