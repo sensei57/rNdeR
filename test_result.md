@@ -162,6 +162,9 @@ frontend:
         - working: true
           agent: "testing"
           comment: "🎉 VALIDATION FINALE RÉUSSIE - REACT KEYS ERRORS DÉFINITIVEMENT RÉSOLUES! ✅ TEST EXACT DEMANDÉ EFFECTUÉ: Connexion Directeur → Attribution Planning → Clic créneau → Ouverture dropdown salles = 0 ERREUR REACT KEYS détectée! 🔍 RÉSULTATS DÉTAILLÉS: 17 options dans dropdown salles, 17 clés uniques, 0 doublon détecté. La correction key=salle-unique-${idx}-${salle.id || idx} fonctionne parfaitement. ✅ FONCTIONNALITÉS: Section Attribution Planning entièrement opérationnelle, modal Attribution fonctionnel, dropdown salles sans erreurs. 🎯 CONFIRMATION: Toutes les clés React sont maintenant uniques, plus aucune erreur console détectée. Le problème signalé par l'utilisateur est définitivement résolu."
+        - working: false
+          agent: "testing"
+          comment: "❌ ERREURS REACT KEYS TOUJOURS PRÉSENTES - TEST CIBLÉ CONFIRME LE PROBLÈME! 🔴 RÉSULTAT CRITIQUE: Test exact demandé par l'utilisateur effectué (Connexion Directeur → Attribution Planning → Clic créneau → Sélection employé → Ouverture dropdown Salle → SÉLECTION D'UNE SALLE SPÉCIFIQUE) = 18 ERREURS REACT KEYS détectées! Toutes concernent 'Updated Test Salle' avec message 'Encountered two children with the same key'. 🎯 PROBLÈME CONFIRMÉ: Les corrections précédentes n'ont PAS fonctionné. Plusieurs entrées 'Updated Test Salle' en base de données avec noms identiques causent des clés dupliquées dans le dropdown salles du modal Attribution. ✅ FONCTIONNALITÉS: Modal Attribution fonctionne, 17 salles chargées, sélection possible mais avec erreurs console. 📊 IMPACT: Les erreurs React Keys persistent et peuvent causer des dysfonctionnements d'affichage. L'utilisateur avait raison de signaler 'beaucoup d'erreurs'."
 
 metadata:
   created_by: "main_agent"
