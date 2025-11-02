@@ -178,7 +178,8 @@ metadata:
 test_plan:
   current_focus: 
     - "Attribution Planning - Diagnostic des erreurs"
-  stuck_tasks: []
+  stuck_tasks: 
+    - "Attribution Planning - Diagnostic des erreurs"
   test_all: false
   test_priority: "high_first"
 
