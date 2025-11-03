@@ -140,7 +140,7 @@ frontend:
     implemented: true
     working: true
     file: "/app/frontend/src/App.js"
-    stuck_count: 4
+    stuck_count: 0
     priority: "high" 
     needs_retesting: false
     status_history:
