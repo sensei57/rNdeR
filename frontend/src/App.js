@@ -3112,6 +3112,275 @@ const PlanCabinetManager = () => {
   );
 };
 
+const AdminManager = () => {
+  const { user, setUser } = useAuth();
+  const [allUsers, setAllUsers] = useState([]);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchAllUsers();
+  }, []);
+
+  const fetchAllUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API}/admin/users`);
+      setAllUsers(response.data);
+    } catch (error) {
+      toast.error('Erreur lors du chargement des utilisateurs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImpersonate = async (userId) => {
+    try {
+      const response = await axios.post(`${API}/admin/impersonate/${userId}`);
+      
+      // Sauvegarder le token et mettre à jour l'utilisateur
+      localStorage.setItem('token', response.data.access_token);
+      setUser(response.data.user);
+      
+      toast.success(`Connexion en tant que ${response.data.user.prenom} ${response.data.user.nom}`);
+    } catch (error) {
+      toast.error('Erreur lors de la connexion à ce compte');
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      toast.error('Le mot de passe doit contenir au moins 6 caractères');
+      return;
+    }
+
+    try {
+      await axios.put(`${API}/admin/users/${selectedUser.id}/password`, {
+        password: newPassword
+      });
+      
+      toast.success('Mot de passe modifié avec succès');
+      setShowPasswordModal(false);
+      setNewPassword('');
+      setSelectedUser(null);
+    } catch (error) {
+      toast.error('Erreur lors de la modification du mot de passe');
+    }
+  };
+
+  const handleToggleActive = async (userId) => {
+    try {
+      const response = await axios.put(`${API}/admin/users/${userId}/toggle-active`);
+      toast.success(response.data.message);
+      fetchAllUsers(); // Recharger la liste
+    } catch (error) {
+      toast.error('Erreur lors du changement de statut');
+    }
+  };
+
+  const getRoleColor = (role) => {
+    switch (role) {
+      case 'Directeur': return 'bg-purple-100 text-purple-800';
+      case 'Médecin': return 'bg-blue-100 text-blue-800';
+      case 'Assistant': return 'bg-green-100 text-green-800';
+      case 'Secrétaire': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (loading) {
+    return <div className="flex justify-center p-8">Chargement...</div>;
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Administration des Comptes</h2>
+        <div className="text-sm text-gray-500">
+          Total: {allUsers.length} comptes
+        </div>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Tous les Utilisateurs</CardTitle>
+          <CardDescription>
+            Gérez tous les comptes utilisateurs - Connexion, mots de passe et statuts
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left p-3">Utilisateur</th>
+                  <th className="text-left p-3">Email</th>
+                  <th className="text-left p-3">Rôle</th>
+                  <th className="text-left p-3">Statut</th>
+                  <th className="text-left p-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allUsers.map(userItem => (
+                  <tr 
+                    key={userItem.id} 
+                    className={`border-b hover:bg-gray-50 ${!userItem.actif ? 'opacity-50' : ''}`}
+                  >
+                    <td className="p-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium">
+                          {userItem.prenom?.[0]}{userItem.nom?.[0]}
+                        </div>
+                        <div>
+                          <div className="font-medium">
+                            {userItem.prenom} {userItem.nom}
+                          </div>
+                          {userItem.id === user?.id && (
+                            <span className="text-xs text-blue-600 font-medium">
+                              (C'est vous)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-3 text-gray-600">{userItem.email}</td>
+                    <td className="p-3">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${getRoleColor(userItem.role)}`}>
+                        {userItem.role}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        userItem.actif ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {userItem.actif ? 'Actif' : 'Inactif'}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <div className="flex space-x-2">
+                        {userItem.id !== user?.id && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleImpersonate(userItem.id)}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              <Eye className="h-3 w-3 mr-1" />
+                              Se connecter
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedUser(userItem);
+                                setShowPasswordModal(true);
+                              }}
+                              className="text-orange-600 hover:text-orange-800"
+                            >
+                              <Edit className="h-3 w-3 mr-1" />
+                              Mot de passe
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleToggleActive(userItem.id)}
+                              className={userItem.actif ? "text-red-600 hover:text-red-800" : "text-green-600 hover:text-green-800"}
+                            >
+                              {userItem.actif ? (
+                                <>
+                                  <X className="h-3 w-3 mr-1" />
+                                  Désactiver
+                                </>
+                              ) : (
+                                <>
+                                  <Check className="h-3 w-3 mr-1" />
+                                  Activer
+                                </>
+                              )}
+                            </Button>
+                          </>
+                        )}
+                        {userItem.id === user?.id && (
+                          <span className="text-xs text-gray-500 italic">
+                            Actions non disponibles sur votre propre compte
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {allUsers.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                Aucun utilisateur trouvé
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Modal de changement de mot de passe */}
+      <Dialog open={showPasswordModal} onOpenChange={setShowPasswordModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Modifier le mot de passe de {selectedUser?.prenom} {selectedUser?.nom}
+            </DialogTitle>
+            <DialogDescription>
+              Définissez un nouveau mot de passe pour cet utilisateur
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Nouveau mot de passe</Label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Minimum 6 caractères"
+                minLength={6}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowPasswordModal(false)}>
+                Annuler
+              </Button>
+              <Button onClick={handleResetPassword}>
+                Modifier le mot de passe
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Section d'informations */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Informations</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="flex items-center space-x-2 text-sm">
+            <Eye className="h-4 w-4 text-blue-600" />
+            <span><strong>Se connecter :</strong> Vous connecte directement au compte de l'utilisateur sans connaître son mot de passe</span>
+          </div>
+          <div className="flex items-center space-x-2 text-sm">
+            <Edit className="h-4 w-4 text-orange-600" />
+            <span><strong>Mot de passe :</strong> Réinitialise et définit un nouveau mot de passe pour l'utilisateur</span>
+          </div>
+          <div className="flex items-center space-x-2 text-sm">
+            <X className="h-4 w-4 text-red-600" />
+            <span><strong>Désactiver :</strong> Empêche l'utilisateur de se connecter sans supprimer son compte</span>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
 // Coffre-Fort Component
 const StocksManager = () => {
   const { user } = useAuth();
