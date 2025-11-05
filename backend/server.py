@@ -256,6 +256,64 @@ class ConfigurationCabinetUpdate(BaseModel):
     heures_ouverture_apres_midi_debut: Optional[str] = None
     heures_ouverture_apres_midi_fin: Optional[str] = None
 
+# Stock Management Models
+class CategorieStock(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nom: str
+    description: Optional[str] = None
+    couleur: str = "#3B82F6"
+    date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CategorieStockCreate(BaseModel):
+    nom: str
+    description: Optional[str] = None
+    couleur: str = "#3B82F6"
+
+class ArticleStock(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nom: str
+    description: Optional[str] = None
+    categorie_id: str
+    photo_url: Optional[str] = None
+    nombre_souhaite: int = 0
+    nombre_en_stock: int = 0
+    lien_commande: Optional[str] = None
+    date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    date_modification: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ArticleStockCreate(BaseModel):
+    nom: str
+    description: Optional[str] = None
+    categorie_id: str
+    photo_url: Optional[str] = None
+    nombre_souhaite: int = 0
+    nombre_en_stock: int = 0
+    lien_commande: Optional[str] = None
+
+class ArticleStockUpdate(BaseModel):
+    nom: Optional[str] = None
+    description: Optional[str] = None
+    categorie_id: Optional[str] = None
+    photo_url: Optional[str] = None
+    nombre_souhaite: Optional[int] = None
+    nombre_en_stock: Optional[int] = None
+    lien_commande: Optional[str] = None
+
+class PermissionStock(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    utilisateur_id: str
+    peut_voir: bool = True
+    peut_modifier: bool = False
+    peut_ajouter: bool = False
+    peut_supprimer: bool = False
+    date_attribution: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PermissionStockCreate(BaseModel):
+    utilisateur_id: str
+    peut_voir: bool = True
+    peut_modifier: bool = False
+    peut_ajouter: bool = False
+    peut_supprimer: bool = False
 # Semaine Type Models
 class SemaineType(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
