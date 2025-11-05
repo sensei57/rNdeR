@@ -1844,58 +1844,65 @@ const PlanningManager = () => {
         </div>
         
         <div className="flex items-center space-x-4">
-          <div className="flex space-x-2">
-            <Button
-              variant={viewMode === 'jour' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('jour')}
-            >
-              Vue Jour
-            </Button>
-            <Button
-              variant={viewMode === 'semaine' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('semaine')}
-            >
-              Vue Semaine
-            </Button>
-          </div>
+          {/* Mode d'affichage - Directeur a la vue semaine par défaut */}
+          {user?.role !== 'Directeur' && (
+            <div className="flex space-x-2">
+              <Button
+                variant={viewMode === 'jour' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('jour')}
+              >
+                Vue Jour
+              </Button>
+              <Button
+                variant={viewMode === 'semaine' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('semaine')}
+              >
+                Vue Semaine
+              </Button>
+            </div>
+          )}
           
-          <div className="flex space-x-2">
-            <Button
-              variant={filterRole === 'TOUS' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setFilterRole('TOUS')}
-            >
-              Tous
-            </Button>
-            <Button
-              variant={filterRole === 'Médecin' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setFilterRole('Médecin')}
-            >
-              Médecins
-            </Button>
-            <Button
-              variant={filterRole === 'Assistant' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setFilterRole('Assistant')}
-            >
-              Assistants
-            </Button>
-            <Button
-              variant={filterRole === 'Secrétaire' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setFilterRole('Secrétaire')}
-            >
-              Secrétaires
-            </Button>
-          </div>
+          {/* Filtre par rôle - Seulement pour le directeur */}
+          {user?.role === 'Directeur' && (
+            <div className="flex space-x-2">
+              <Button
+                variant={filterRole === 'TOUS' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilterRole('TOUS')}
+              >
+                Tous
+              </Button>
+              <Button
+                variant={filterRole === 'Médecin' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilterRole('Médecin')}
+              >
+                Médecins
+              </Button>
+              <Button
+                variant={filterRole === 'Assistant' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilterRole('Assistant')}
+              >
+                Assistants
+              </Button>
+              <Button
+                variant={filterRole === 'Secrétaire' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilterRole('Secrétaire')}
+              >
+                Secrétaires
+              </Button>
+            </div>
+          )}
           
+          {/* Sélecteur de date */}
           <Input
             type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
+            value={user?.role === 'Directeur' ? selectedWeek : selectedDate}
+            onChange={(e) => user?.role === 'Directeur' ? setSelectedWeek(e.target.value) : setSelectedDate(e.target.value)}
             className="w-auto"
           />
           
