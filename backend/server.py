@@ -2025,6 +2025,181 @@ async def initialiser_cabinet(
         "configuration": "Configuration par défaut créée"
     }
 
+# Stock Management Endpoints
+@api_router.get("/stocks/categories", response_model=List[CategorieStock])
+async def get_categories_stock(current_user: User = Depends(get_current_user)):
+    # Vérifier les permissions
+    if current_user.role != 'Directeur':
+        permission = await db.permissions_stock.find_one({"utilisateur_id": current_user.id})
+        if not permission or not permission.get('peut_voir', False):
+            raise HTTPException(status_code=403, detail="Accès non autorisé")
+    
+    categories = await db.categories_stock.find({}).to_list(length=None)
+    return [CategorieStock(**cat) for cat in categories]
+
+@api_router.post("/stocks/categories", response_model=CategorieStock)
+async def create_categorie_stock(
+    categorie: CategorieStockCreate,
+    current_user: User = Depends(get_current_user)
+):
+    # Vérifier les permissions  
+    if current_user.role != 'Directeur':
+        permission = await db.permissions_stock.find_one({"utilisateur_id": current_user.id})
+        if not permission or not permission.get('peut_ajouter', False):
+            raise HTTPException(status_code=403, detail="Accès non autorisé")
+    
+    categorie_dict = categorie.dict()
+    categorie_dict['id'] = str(uuid.uuid4())
+    categorie_dict['date_creation'] = datetime.now(timezone.utc)
+    
+    await db.categories_stock.insert_one(categorie_dict)
+    return CategorieStock(**categorie_dict)
+
+@api_router.get("/stocks/articles", response_model=List[Dict])
+async def get_articles_stock(current_user: User = Depends(get_current_user)):
+    # Vérifier les permissions
+    if current_user.role != 'Directeur':
+        permission = await db.permissions_stock.find_one({"utilisateur_id": current_user.id})
+        if not permission or not permission.get('peut_voir', False):
+            raise HTTPException(status_code=403, detail="Accès non autorisé")
+    
+    # Récupérer articles avec informations de catégorie
+    pipeline = [
+        {
+            "$lookup": {
+                "from": "categories_stock",
+                "localField": "categorie_id",
+                "foreignField": "id",
+                "as": "categorie"
+            }
+        },
+        {
+            "$unwind": {
+                "path": "$categorie",
+                "preserveNullAndEmptyArrays": True
+            }
+        },
+        {
+            "$addFields": {
+                "nombre_a_commander": {
+                    "$subtract": ["$nombre_souhaite", "$nombre_en_stock"]
+                }
+            }
+        }
+    ]
+    
+    articles = await db.articles_stock.aggregate(pipeline).to_list(length=None)
+    for article in articles:
+        if '_id' in article:
+            del article['_id']
+        if 'categorie' in article and '_id' in article['categorie']:
+            del article['categorie']['_id']
+    
+    return articles
+
+@api_router.post("/stocks/articles", response_model=ArticleStock)
+async def create_article_stock(
+    article: ArticleStockCreate,
+    current_user: User = Depends(get_current_user)
+):
+    # Vérifier les permissions
+    if current_user.role != 'Directeur':
+        permission = await db.permissions_stock.find_one({"utilisateur_id": current_user.id})
+        if not permission or not permission.get('peut_ajouter', False):
+            raise HTTPException(status_code=403, detail="Accès non autorisé")
+    
+    article_dict = article.dict()
+    article_dict['id'] = str(uuid.uuid4())
+    article_dict['date_creation'] = datetime.now(timezone.utc)
+    article_dict['date_modification'] = datetime.now(timezone.utc)
+    
+    await db.articles_stock.insert_one(article_dict)
+    return ArticleStock(**article_dict)
+
+@api_router.put("/stocks/articles/{article_id}", response_model=ArticleStock)
+async def update_article_stock(
+    article_id: str,
+    article_update: ArticleStockUpdate,
+    current_user: User = Depends(get_current_user)
+):
+    # Vérifier les permissions
+    if current_user.role != 'Directeur':
+        permission = await db.permissions_stock.find_one({"utilisateur_id": current_user.id})
+        if not permission or not permission.get('peut_modifier', False):
+            raise HTTPException(status_code=403, detail="Accès non autorisé")
+    
+    update_data = {k: v for k, v in article_update.dict().items() if v is not None}
+    update_data['date_modification'] = datetime.now(timezone.utc)
+    
+    result = await db.articles_stock.update_one({"id": article_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Article non trouvé")
+    
+    updated_article = await db.articles_stock.find_one({"id": article_id})
+    if '_id' in updated_article:
+        del updated_article['_id']
+    return ArticleStock(**updated_article)
+
+@api_router.delete("/stocks/articles/{article_id}")
+async def delete_article_stock(
+    article_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    # Vérifier les permissions
+    if current_user.role != 'Directeur':
+        permission = await db.permissions_stock.find_one({"utilisateur_id": current_user.id})
+        if not permission or not permission.get('peut_supprimer', False):
+            raise HTTPException(status_code=403, detail="Accès non autorisé")
+    
+    result = await db.articles_stock.delete_one({"id": article_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Article non trouvé")
+    
+    return {"message": "Article supprimé avec succès"}
+
+@api_router.get("/stocks/permissions", response_model=List[Dict])
+async def get_permissions_stock(current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))):
+    # Récupérer permissions avec informations utilisateur
+    pipeline = [
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "utilisateur_id", 
+                "foreignField": "id",
+                "as": "utilisateur"
+            }
+        },
+        {
+            "$unwind": {
+                "path": "$utilisateur",
+                "preserveNullAndEmptyArrays": True
+            }
+        }
+    ]
+    
+    permissions = await db.permissions_stock.aggregate(pipeline).to_list(length=None)
+    for perm in permissions:
+        if '_id' in perm:
+            del perm['_id']
+        if 'utilisateur' in perm and '_id' in perm['utilisateur']:
+            del perm['utilisateur']['_id']
+    
+    return permissions
+
+@api_router.post("/stocks/permissions", response_model=PermissionStock)
+async def create_permission_stock(
+    permission: PermissionStockCreate,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    permission_dict = permission.dict()
+    permission_dict['id'] = str(uuid.uuid4())
+    permission_dict['date_attribution'] = datetime.now(timezone.utc)
+    
+    # Supprimer ancienne permission si elle existe
+    await db.permissions_stock.delete_one({"utilisateur_id": permission.utilisateur_id})
+    
+    await db.permissions_stock.insert_one(permission_dict)
+    return PermissionStock(**permission_dict)
 # Include the router in the main app
 app.include_router(api_router)
 
