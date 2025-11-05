@@ -1524,17 +1524,31 @@ const SallesManager = () => {
 
 // Planning Component
 const PlanningManager = () => {
+  const { user } = useAuth();
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedWeek, setSelectedWeek] = useState(new Date().toISOString().split('T')[0]);
+  const [viewMode, setViewMode] = useState(user?.role === 'Directeur' ? 'semaine' : 'jour');
   const [planning, setPlanning] = useState([]);
   const [planningSemaine, setPlanningSemaine] = useState(null);
-  const [congesApprouves, setCongesApprouves] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [viewMode, setViewMode] = useState('jour'); // 'jour' ou 'semaine'
-  const [filterRole, setFilterRole] = useState('TOUS'); // 'TOUS', 'Médecin', 'Assistant', 'Secrétaire'
-  const [showPlanningModal, setShowPlanningModal] = useState(false);
   const [users, setUsers] = useState([]);
-  const [medecins, setMedecins] = useState([]);
-  const [assistants, setAssistants] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [salles, setSalles] = useState([]);
+  const [filterRole, setFilterRole] = useState('TOUS');
+  
+  // Modals
+  const [showPlanningModal, setShowPlanningModal] = useState(false);
+  const [showAttributionModal, setShowAttributionModal] = useState(false);
+  
+  // Pour l'attribution (Directeur uniquement)
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [attribution, setAttribution] = useState({
+    employe_id: '',
+    salle_attribuee: '',
+    medecin_ids: [],
+    notes: ''
+  });
+  
+  // Pour le créneau personnel (si nécessaire plus tard)
   const [newCreneau, setNewCreneau] = useState({
     date: new Date().toISOString().split('T')[0],
     creneau: 'MATIN',
@@ -1546,7 +1560,8 @@ const PlanningManager = () => {
     horaire_fin: '',
     notes: ''
   });
-  const { user } = useAuth();
+  
+  const [loading, setLoading] = useState(true);
 
   const sallesMedecins = ['1', '2', '3', '4', '5', '6'];
   const sallesAssistants = ['A', 'B', 'C', 'D', 'O', 'Blue'];
