@@ -2152,6 +2152,78 @@ async def delete_article_stock(
             raise HTTPException(status_code=403, detail="Accès non autorisé")
     
     result = await db.articles_stock.delete_one({"id": article_id})
+# Administration des comptes (Directeur uniquement)
+@api_router.get("/admin/users", response_model=List[Dict])
+async def get_all_users_for_admin(current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))):
+    users = await db.users.find({}).to_list(length=None)
+    for user in users:
+        if '_id' in user:
+            del user['_id']
+        # Ne pas exposer le mot de passe hashé
+        if 'password' in user:
+            del user['password']
+    return users
+
+@api_router.post("/admin/impersonate/{user_id}")
+async def impersonate_user(user_id: str, current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))):
+    # Vérifier que l'utilisateur cible existe
+    target_user = await db.users.find_one({"id": user_id})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    if '_id' in target_user:
+        del target_user['_id']
+    
+    # Créer un token pour l'utilisateur cible
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": target_user["email"]}, expires_delta=access_token_expires
+    )
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": User(**target_user)
+    }
+
+@api_router.put("/admin/users/{user_id}/password")
+async def reset_user_password(
+    user_id: str,
+    new_password: Dict[str, str],
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    if "password" not in new_password:
+        raise HTTPException(status_code=400, detail="Mot de passe requis")
+    
+    hashed_password = get_password_hash(new_password["password"])
+    
+    result = await db.users.update_one(
+        {"id": user_id}, 
+        {"$set": {"password": hashed_password}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    return {"message": "Mot de passe modifié avec succès"}
+
+@api_router.put("/admin/users/{user_id}/toggle-active")
+async def toggle_user_active(
+    user_id: str,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    new_status = not user.get('actif', True)
+    
+    result = await db.users.update_one(
+        {"id": user_id}, 
+        {"$set": {"actif": new_status}}
+    )
+    
+    return {"message": f"Utilisateur {'activé' if new_status else 'désactivé'} avec succès", "actif": new_status}
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Article non trouvé")
     
