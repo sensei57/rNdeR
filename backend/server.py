@@ -2227,6 +2227,50 @@ async def toggle_user_active(
         {"id": user_id}, 
         {"$set": {"actif": new_status}}
     )
+@api_router.delete("/admin/users/{user_id}/delete-permanently")
+async def delete_user_permanently(
+    user_id: str,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    # Vérifier que l'utilisateur cible existe
+    target_user = await db.users.find_one({"id": user_id})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    # Empêcher la suppression du Directeur actuel
+    if target_user.get("role") == "Directeur" and target_user["id"] == current_user.id:
+        raise HTTPException(status_code=403, detail="Vous ne pouvez pas supprimer votre propre compte")
+    
+    # Supprimer toutes les données liées à l'utilisateur
+    try:
+        # Supprimer l'utilisateur principal
+        await db.users.delete_one({"id": user_id})
+        
+        # Supprimer les données associées
+        await db.assignations.delete_many({"medecin_id": user_id})
+        await db.assignations.delete_many({"assistant_id": user_id})
+        await db.conges.delete_many({"utilisateur_id": user_id})
+        await db.planning.delete_many({"employe_id": user_id})
+        await db.quotas_employes.delete_many({"employe_id": user_id})
+        await db.messages.delete_many({"expediteur_id": user_id})
+        await db.documents_personnels.delete_many({"proprietaire_id": user_id})
+        await db.permissions_documents.delete_many({"utilisateur_id": user_id})
+        await db.permissions_stock.delete_many({"utilisateur_id": user_id})
+        await db.demandes_travail.delete_many({"medecin_id": user_id})
+        await db.semaines_type.delete_many({"medecin_id": user_id})
+        
+        return {
+            "message": f"Utilisateur {target_user.get('prenom', '')} {target_user.get('nom', '')} supprimé définitivement",
+            "deleted_user": {
+                "id": target_user["id"],
+                "nom": target_user.get("nom", ""),
+                "prenom": target_user.get("prenom", ""),
+                "email": target_user.get("email", "")
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression: {str(e)}")
     
     return {"message": f"Utilisateur {'activé' if new_status else 'désactivé'} avec succès", "actif": new_status}
 
