@@ -2683,6 +2683,9 @@ def main():
     # Test NEW FEATURE: Admin Management
     tester.test_admin_management()
     
+    # Test CRITICAL NEW FEATURE: Permanent User Deletion
+    tester.test_permanent_user_deletion()
+    
     # Test NEW FEATURE: Salles Management
     tester.test_salles_management()
     
