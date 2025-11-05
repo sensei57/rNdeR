@@ -2186,6 +2186,186 @@ class MedicalStaffAPITester:
         print(f"\n   🔍 Deletion APIs Testing Complete")
         return True
 
+    def test_user_reactivation_process(self):
+        """Test the specific user reactivation process for personnel visibility issue"""
+        print("\n🔄 Testing User Reactivation Process (PERSONNEL VISIBILITY FIX)...")
+        
+        if 'directeur' not in self.tokens:
+            print("❌ Skipping user reactivation tests - no directeur token")
+            return False
+        
+        directeur_token = self.tokens['directeur']
+        
+        # Step 1: Get all users via admin API
+        print("\n   Step 1: Getting all users via admin API...")
+        success, all_users = self.run_test(
+            "Get all users (admin API)",
+            "GET",
+            "admin/users",
+            200,
+            token=directeur_token
+        )
+        
+        if not success:
+            print("❌ Failed to get users - cannot continue reactivation test")
+            return False
+        
+        print(f"   Found {len(all_users)} total users")
+        
+        # Step 2: Identify inactive users (excluding director)
+        inactive_users = []
+        active_users = []
+        
+        for user in all_users:
+            if user['role'] != 'Directeur':
+                if not user.get('actif', True):
+                    inactive_users.append(user)
+                else:
+                    active_users.append(user)
+        
+        print(f"   Found {len(inactive_users)} inactive non-director users")
+        print(f"   Found {len(active_users)} active non-director users")
+        
+        # List inactive users
+        if inactive_users:
+            print("   Inactive users to reactivate:")
+            for user in inactive_users:
+                print(f"   - {user['prenom']} {user['nom']} ({user['role']}) - ID: {user['id']}")
+        
+        # Step 3: Test reactivation for each inactive user
+        reactivated_count = 0
+        failed_reactivations = []
+        
+        if inactive_users:
+            print(f"\n   Step 3: Reactivating {len(inactive_users)} inactive users...")
+            
+            for user in inactive_users:
+                user_id = user['id']
+                user_name = f"{user['prenom']} {user['nom']}"
+                
+                success, response = self.run_test(
+                    f"Reactivate user: {user_name}",
+                    "PUT",
+                    f"admin/users/{user_id}/toggle-active",
+                    200,
+                    token=directeur_token
+                )
+                
+                if success:
+                    new_status = response.get('actif', False)
+                    if new_status:
+                        reactivated_count += 1
+                        print(f"   ✅ Successfully reactivated: {user_name}")
+                    else:
+                        failed_reactivations.append(user_name)
+                        print(f"   ❌ Failed to reactivate: {user_name} (still inactive)")
+                else:
+                    failed_reactivations.append(user_name)
+                    print(f"   ❌ API call failed for: {user_name}")
+        else:
+            print("   ✅ No inactive users found - all personnel already active")
+        
+        # Step 4: Verify reactivation by getting users again
+        print(f"\n   Step 4: Verifying reactivation results...")
+        
+        success, updated_users = self.run_test(
+            "Get all users after reactivation",
+            "GET",
+            "admin/users",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            # Count active users by role
+            active_by_role = {}
+            for user in updated_users:
+                role = user['role']
+                if role != 'Directeur':
+                    if user.get('actif', True):
+                        active_by_role[role] = active_by_role.get(role, 0) + 1
+            
+            print("   Active personnel by role after reactivation:")
+            for role, count in active_by_role.items():
+                print(f"   - {role}: {count} active")
+        
+        # Step 5: Test personnel visibility via regular users API
+        print(f"\n   Step 5: Testing personnel visibility via /users/by-role...")
+        
+        roles_to_test = ["Médecin", "Assistant", "Secrétaire"]
+        total_visible_personnel = 0
+        
+        for role in roles_to_test:
+            success, role_users = self.run_test(
+                f"Get active {role}s",
+                "GET",
+                f"users/by-role/{role}",
+                200,
+                token=directeur_token
+            )
+            
+            if success:
+                visible_count = len(role_users)
+                total_visible_personnel += visible_count
+                print(f"   - {role}: {visible_count} visible in personnel section")
+                
+                # List visible personnel
+                for user in role_users:
+                    print(f"     • {user['prenom']} {user['nom']} (Active: {user.get('actif', True)})")
+        
+        # Summary
+        print(f"\n   📊 REACTIVATION SUMMARY:")
+        print(f"   - Users found: {len(all_users)}")
+        print(f"   - Inactive users before: {len(inactive_users)}")
+        print(f"   - Successfully reactivated: {reactivated_count}")
+        print(f"   - Failed reactivations: {len(failed_reactivations)}")
+        print(f"   - Total visible personnel now: {total_visible_personnel}")
+        
+        if failed_reactivations:
+            print(f"   ❌ Failed to reactivate: {', '.join(failed_reactivations)}")
+        
+        # Determine success
+        reactivation_success = (len(failed_reactivations) == 0) and (total_visible_personnel > 0)
+        
+        if reactivation_success:
+            print(f"   ✅ USER REACTIVATION SUCCESSFUL - Personnel should now be visible!")
+        else:
+            print(f"   ❌ USER REACTIVATION ISSUES DETECTED - Personnel may still not be visible")
+        
+        return reactivation_success
+
+    def run_user_reactivation_test_only(self):
+        """Run only the user reactivation test for the personnel visibility issue"""
+        print("🚀 Starting User Reactivation Test for Personnel Visibility...")
+        print(f"🌐 Base URL: {self.base_url}")
+        print(f"🔗 API URL: {self.api_url}")
+        
+        # Test authentication first
+        print("\n🔐 Testing Authentication...")
+        login_success = self.test_login('directeur', self.test_users['directeur']['email'], self.test_users['directeur']['password'])
+        
+        if not login_success:
+            print("❌ Failed to login as directeur - cannot continue with reactivation test")
+            return False
+        
+        # Run the specific reactivation test
+        reactivation_success = self.test_user_reactivation_process()
+        
+        # Print final summary
+        print(f"\n📊 Reactivation Test Summary:")
+        print(f"   Tests run: {self.tests_run}")
+        print(f"   Tests passed: {self.tests_passed}")
+        print(f"   Success rate: {(self.tests_passed/self.tests_run*100):.1f}%")
+        
+        if reactivation_success:
+            print("🎉 User reactivation test completed successfully!")
+            print("✅ Personnel should now be visible in the Gestion du Personnel section")
+        else:
+            print("❌ User reactivation test failed or had issues")
+            print("⚠️  Personnel may still not be visible - further investigation needed")
+        
+        return reactivation_success
+
 def main():
     print("🏥 Testing Medical Staff Management API - COMPREHENSIVE NEW FEATURES TEST")
     print("=" * 70)
