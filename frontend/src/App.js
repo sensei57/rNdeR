@@ -2646,7 +2646,6 @@ const PlanningManager = () => {
             )}
           </CardContent>
         </Card>
-        )}
         
         {/* Planning Journée complète */}
         {planningJournee.length > 0 && (
