@@ -2028,16 +2028,16 @@ const PlanningManager = () => {
                           </SelectTrigger>
                           <SelectContent>
                             <optgroup label="Salles Médecins">
-                              {sallesMedecins.map(salle => (
-                                <SelectItem key={`med-${salle}`} value={salle}>
-                                  Salle {salle}
+                              {salles.filter(s => s.type_salle === 'MEDECIN').map(salle => (
+                                <SelectItem key={`med-${salle.id}`} value={salle.nom}>
+                                  {salle.nom}
                                 </SelectItem>
                               ))}
                             </optgroup>
                             <optgroup label="Salles Assistants">
-                              {sallesAssistants.map(salle => (
-                                <SelectItem key={`ass-${salle}`} value={salle}>
-                                  Salle {salle}
+                              {salles.filter(s => s.type_salle === 'ASSISTANT').map(salle => (
+                                <SelectItem key={`ass-${salle.id}`} value={salle.nom}>
+                                  {salle.nom}
                                 </SelectItem>
                               ))}
                             </optgroup>
