@@ -3171,6 +3171,26 @@ const AdminManager = () => {
       setSelectedUser(null);
     } catch (error) {
       toast.error('Erreur lors de la modification du mot de passe');
+  const handleUpdateEmail = async () => {
+    if (!newEmail || !newEmail.includes('@')) {
+      toast.error('Veuillez entrer une adresse email valide');
+      return;
+    }
+
+    try {
+      const response = await axios.put(`${API}/admin/users/${selectedUser.id}/email`, {
+        email: newEmail
+      });
+      
+      toast.success(response.data.message);
+      fetchAllUsers(); // Recharger la liste
+      setShowEmailModal(false);
+      setNewEmail('');
+      setSelectedUser(null);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la modification de l\'email');
+    }
+  };
     }
   };
 
