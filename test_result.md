@@ -258,15 +258,18 @@ frontend:
 
   - task: "Gestion du Personnel - Personnel non visible"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "user"
           comment: "L'utilisateur signale qu'il ne voit plus le personnel dans la section 'Gestion du Personnel'. Besoin de diagnostiquer: 1) Connexion Directeur, 2) Navigation vers Personnel, 3) Vérifier affichage onglets (Médecins, Assistants, Secrétaires), 4) Erreurs JavaScript console, 5) Récupération données API, 6) Identifier si problème d'affichage ou de données. Tests urgents requis pour identifier la cause."
+        - working: false
+          agent: "testing"
+          comment: "❌ PROBLÈME CRITIQUE IDENTIFIÉ - ROOT CAUSE TROUVÉE! 🔍 DIAGNOSTIC COMPLET EFFECTUÉ: 1) ✅ Section Personnel accessible, 2) ✅ Onglets (Médecins, Assistants, Secrétaires) présents et fonctionnels, 3) ✅ API /users fonctionne (200 OK, 9 utilisateurs récupérés), 4) ✅ Aucune erreur JavaScript console. 🔴 PROBLÈME ROOT CAUSE: TOUS LES UTILISATEURS NON-DIRECTEUR SONT INACTIFS! API retourne 9 utilisateurs mais 0 médecin actif, 0 assistant actif, 0 secrétaire actif. Seul Pierre Martin (Directeur) est actif=true. Les autres (Marie Dupont-Médecin, Julie Moreau-Assistant, etc.) ont actif=false. 📊 IMPACT: La fonction getUsersByRole() filtre par u.actif=true, donc aucune carte personnel ne s'affiche dans les onglets. ✅ FONCTIONNALITÉS: Interface OK, APIs OK, filtrage fonctionne correctement. 🎯 SOLUTION REQUISE: Réactiver les utilisateurs en base de données (actif=true) ou modifier le filtrage pour inclure les utilisateurs inactifs."
 
 metadata:
   created_by: "main_agent"
