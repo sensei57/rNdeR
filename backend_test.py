@@ -2240,6 +2240,12 @@ def main():
     print("🚀 TESTING NEW ADVANCED FEATURES")
     print("="*50)
     
+    # Test NEW FEATURE: Stock Management
+    tester.test_stock_management()
+    
+    # Test NEW FEATURE: Admin Management
+    tester.test_admin_management()
+    
     # Test NEW FEATURE: Salles Management
     tester.test_salles_management()
     
