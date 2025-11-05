@@ -1906,34 +1906,34 @@ const PlanningManager = () => {
             </div>
           )}
           
-          {/* Filtre par rôle - Seulement pour le directeur */}
+          {/* Filtre par rôle - Sélection multiple pour le directeur */}
           {user?.role === 'Directeur' && (
             <div className="flex space-x-2">
               <Button
-                variant={filterRole === 'TOUS' ? 'default' : 'outline'}
+                variant={filterRole.includes('TOUS') ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setFilterRole('TOUS')}
+                onClick={() => handleRoleToggle('TOUS')}
               >
                 Tous
               </Button>
               <Button
-                variant={filterRole === 'Médecin' ? 'default' : 'outline'}
+                variant={filterRole.includes('Médecin') ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setFilterRole('Médecin')}
+                onClick={() => handleRoleToggle('Médecin')}
               >
                 Médecins
               </Button>
               <Button
-                variant={filterRole === 'Assistant' ? 'default' : 'outline'}
+                variant={filterRole.includes('Assistant') ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setFilterRole('Assistant')}
+                onClick={() => handleRoleToggle('Assistant')}
               >
                 Assistants
               </Button>
               <Button
-                variant={filterRole === 'Secrétaire' ? 'default' : 'outline'}
+                variant={filterRole.includes('Secrétaire') ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setFilterRole('Secrétaire')}
+                onClick={() => handleRoleToggle('Secrétaire')}
               >
                 Secrétaires
               </Button>
