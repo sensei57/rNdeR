@@ -338,15 +338,18 @@ test_plan:
 frontend:
   - task: "Fusion Planning et Attribution Planning"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "user"
           comment: "L'utilisateur a fusionné les sections 'Planning' et 'Attribution Planning'. Changements: 1) Supprimé 'Attribution Planning' du menu Directeur, 2) Modifié PlanningManager pour supporter deux modes - Directeur (vue globale avec attribution créneaux) et Autres employés (vue personnelle). Tests requis: 1) Directeur - navigation Planning, vue globale, filtres par rôle, pas de section Attribution Planning, 2) Employé - navigation Planning, vue personnelle, boutons Vue Jour/Vue Semaine, 3) Vérifier API /planning/semaine fonctionne, 4) Aucune erreur JavaScript."
+        - working: true
+          agent: "testing"
+          comment: "🎉 FUSION PLANNING RÉUSSIE - TESTS COMPLETS VALIDÉS! ✅ CORRECTIONS APPLIQUÉES: Variables manquantes ajoutées (medecins, assistants, congesApprouves) + correction salles filtering (sallesMedecins, sallesAssistants, sallesAttente). ✅ TEST DIRECTEUR: 1) Connexion Pierre Martin réussie, 2) Menu 'Attribution Planning' correctement supprimé, 3) Section 'Planning Interactif' accessible, 4) Filtres par rôle présents (Tous, Médecins, Assistants, Secrétaires), 5) Pas de boutons Vue Jour/Vue Semaine (correct), 6) Vue globale semaine par défaut avec planning multi-employés. ✅ TEST EMPLOYÉ: 1) Connexion Julie Moreau (Assistant) réussie, 2) Section 'Planning Interactif' accessible, 3) Boutons Vue Jour/Vue Semaine présents (correct), 4) Pas de filtres par rôle (correct), 5) Vue personnelle montrant uniquement son planning. ✅ API VALIDATION: Endpoint /api/planning/semaine/2025-11-03 fonctionne (200 OK). ✅ RÉSULTAT: La fusion des sections Planning et Attribution Planning fonctionne parfaitement selon les spécifications - Directeur a vue globale avec attribution, employés ont vue personnelle."
 
 agent_communication:
     - agent: "testing"
