@@ -2229,10 +2229,6 @@ async def toggle_user_active(
     )
     
     return {"message": f"Utilisateur {'activé' if new_status else 'désactivé'} avec succès", "actif": new_status}
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Article non trouvé")
-    
-    return {"message": "Article supprimé avec succès"}
 
 @api_router.get("/stocks/permissions", response_model=List[Dict])
 async def get_permissions_stock(current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))):
