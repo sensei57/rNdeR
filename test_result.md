@@ -242,15 +242,18 @@ backend:
 
   - task: "Administration Comptes - Suppression Définitive (DELETE /api/admin/users/{user_id}/delete-permanently)"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Nouvelle API critique pour suppression définitive des utilisateurs avec suppression de toutes les données associées. Tests de sécurité et fonctionnalité requis."
+        - working: true
+          agent: "testing"
+          comment: "✅ API SUPPRESSION DÉFINITIVE FONCTIONNELLE ET SÉCURISÉE - Tests complets réalisés: 1) ✅ Sécurité: Directeur ne peut pas supprimer son propre compte, accès non-autorisé bloqué, 2) ✅ Gestion erreurs: 404 pour utilisateurs inexistants, 3) ✅ Fonctionnalité: Suppression complète utilisateur + toutes données associées (assignations, congés, planning, quotas, messages, documents, permissions, demandes travail, semaines type), 4) ✅ Vérification: Utilisateur complètement supprimé de la base, connexion impossible après suppression, 5) ✅ Structure réponse JSON correcte avec informations utilisateur supprimé. CORRECTION APPLIQUÉE: Fix collection 'conges' → 'demandes_conges' + ajout suppression messages destinataire. L'API fonctionne parfaitement selon spécifications sécuritaires."
 
 frontend:
   - task: "Attribution Planning - Diagnostic des erreurs"
