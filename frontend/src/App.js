@@ -2518,6 +2518,108 @@ const PlanningManager = () => {
                         </div>
                         
                         {creneau.salle_attribuee && (
+        
+        {/* Planning Journée complète */}
+        {planningJournee.length > 0 && (
+          <Card>
+            <CardHeader className="bg-gradient-to-r from-green-50 to-green-100">
+              <CardTitle className="flex items-center space-x-2">
+                <CalendarDays className="h-5 w-5 text-green-600" />
+                <span>Journée complète</span>
+                <Badge variant="secondary" className="ml-2">
+                  {planningJournee.length} créneaux
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              {user?.role === 'Directeur' ? (
+                // Vue directeur : colonnes par rôle
+                <div className={`grid gap-4 ${getRoleGroups(planningJournee).length === 1 ? 'grid-cols-1' : 
+                  getRoleGroups(planningJournee).length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                  {getRoleGroups(planningJournee).map(group => (
+                    <div key={group.role} className="space-y-3">
+                      <h4 className="font-medium text-sm text-gray-600 border-b pb-1">
+                        {group.role}s ({group.creneaux.length})
+                      </h4>
+                      {group.creneaux.map(creneau => (
+                        <div
+                          key={creneau.id}
+                          className={`border rounded-lg p-3 ${getRoleColor(creneau.employe_role)}`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="space-y-1">
+                              <div className="font-medium">
+                                {getEmployeInfo(creneau.employe)}
+                              </div>
+                              
+                              {creneau.salle_attribuee && (
+                                <div className="text-sm text-gray-600">
+                                  📍 Salle: {creneau.salle_attribuee}
+                                </div>
+                              )}
+                              
+                              {creneau.notes && (
+                                <div className="text-sm text-gray-600 italic">
+                                  📝 {creneau.notes}
+                                </div>
+                              )}
+                            </div>
+                            
+                            {user?.role === 'Directeur' && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleDeleteCreneau(creneau.id)}
+                                className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      {group.creneaux.length === 0 && (
+                        <div className="text-center py-4 text-gray-400 text-sm">
+                          Aucun {group.role.toLowerCase()}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                // Vue employé : liste simple
+                <div className="space-y-3">
+                  {planningJournee.map(creneau => (
+                    <div
+                      key={creneau.id}
+                      className={`border rounded-lg p-3 ${getRoleColor(creneau.employe_role)}`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <div className="font-medium">
+                            {getEmployeInfo(creneau.employe)}
+                          </div>
+                          
+                          {creneau.salle_attribuee && (
+                            <div className="text-sm text-gray-600">
+                              📍 Salle: {creneau.salle_attribuee}
+                            </div>
+                          )}
+                          
+                          {creneau.notes && (
+                            <div className="text-sm text-gray-600 italic">
+                              📝 {creneau.notes}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
                           <div className="text-sm text-gray-600">
                             📍 Salle: {creneau.salle_attribuee}
                           </div>
