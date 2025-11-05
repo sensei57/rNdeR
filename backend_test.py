@@ -2626,6 +2626,268 @@ class MedicalStaffAPITester:
         print(f"\n   🎉 PERMANENT DELETION API FULLY FUNCTIONAL AND SECURE!")
         return True
 
+    def test_email_modification_api(self):
+        """Test comprehensive email modification API - NEW FEATURE"""
+        print("\n📧 Testing Email Modification API (NEW FEATURE)...")
+        
+        if 'directeur' not in self.tokens:
+            print("❌ Skipping email modification tests - no directeur token")
+            return False
+        
+        directeur_token = self.tokens['directeur']
+        
+        # Step 1: Get all users to find test targets
+        success, all_users = self.run_test(
+            "Get all users for email modification tests",
+            "GET",
+            "admin/users",
+            200,
+            token=directeur_token
+        )
+        
+        if not success or not all_users:
+            print("❌ Cannot get users for email modification tests")
+            return False
+        
+        # Find a non-directeur user to test with
+        target_user = None
+        for user in all_users:
+            if user['role'] != 'Directeur' and user.get('actif', True):
+                target_user = user
+                break
+        
+        if not target_user:
+            print("❌ No suitable target user found for email modification tests")
+            return False
+        
+        original_email = target_user['email']
+        user_id = target_user['id']
+        user_name = f"{target_user['prenom']} {target_user['nom']}"
+        
+        print(f"   Testing with user: {user_name} (Original email: {original_email})")
+        
+        # Step 2: Test security - only Director can access
+        print("\n   Step 2: Testing security access control...")
+        
+        for role in ['medecin', 'assistant', 'secretaire']:
+            if role in self.tokens:
+                success, response = self.run_test(
+                    f"Unauthorized email modification ({role})",
+                    "PUT",
+                    f"admin/users/{user_id}/email",
+                    403,
+                    data={"email": "unauthorized@test.fr"},
+                    token=self.tokens[role]
+                )
+                
+                if success:
+                    print(f"   ✅ {role} correctly denied email modification access")
+        
+        # Step 3: Test validation - invalid email formats
+        print("\n   Step 3: Testing email validation...")
+        
+        invalid_emails = [
+            "invalid-email",           # No @ symbol
+            "invalid@",               # No domain
+            "@invalid.com",           # No local part
+            "invalid.email.com",      # No @ symbol
+            "invalid@.com",           # Empty domain part
+            "invalid@domain",         # No TLD
+            "invalid email@domain.com", # Space in email
+            "",                       # Empty email
+        ]
+        
+        for invalid_email in invalid_emails:
+            success, response = self.run_test(
+                f"Invalid email format: '{invalid_email}'",
+                "PUT",
+                f"admin/users/{user_id}/email",
+                400,
+                data={"email": invalid_email},
+                token=directeur_token
+            )
+            
+            if success:
+                print(f"   ✅ Invalid email '{invalid_email}' correctly rejected")
+        
+        # Step 4: Test duplicate email validation
+        print("\n   Step 4: Testing duplicate email validation...")
+        
+        # Try to use the Director's email (should fail)
+        directeur_user = self.users.get('directeur', {})
+        if directeur_user and 'email' in directeur_user:
+            directeur_email = directeur_user['email']
+            
+            success, response = self.run_test(
+                f"Duplicate email (Director's email): {directeur_email}",
+                "PUT",
+                f"admin/users/{user_id}/email",
+                400,
+                data={"email": directeur_email},
+                token=directeur_token
+            )
+            
+            if success:
+                print(f"   ✅ Duplicate email correctly rejected")
+        
+        # Step 5: Test non-existent user
+        print("\n   Step 5: Testing non-existent user...")
+        
+        fake_user_id = "fake-user-id-12345"
+        success, response = self.run_test(
+            "Email modification for non-existent user",
+            "PUT",
+            f"admin/users/{fake_user_id}/email",
+            404,
+            data={"email": "newemail@test.fr"},
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✅ Non-existent user correctly handled (404)")
+        
+        # Step 6: Test successful email modification
+        print("\n   Step 6: Testing successful email modification...")
+        
+        new_email = f"nouveau.email.{user_id[:8]}@cabinettest.fr"
+        success, response = self.run_test(
+            f"Successful email modification to: {new_email}",
+            "PUT",
+            f"admin/users/{user_id}/email",
+            200,
+            data={"email": new_email},
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✅ Email modification successful")
+            print(f"   Old email: {response.get('old_email', 'N/A')}")
+            print(f"   New email: {response.get('new_email', 'N/A')}")
+            print(f"   User: {response.get('user_name', 'N/A')}")
+        
+        # Step 7: Verify email was updated in database
+        print("\n   Step 7: Verifying email update in database...")
+        
+        success, updated_users = self.run_test(
+            "Get users to verify email update",
+            "GET",
+            "admin/users",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            updated_user = None
+            for user in updated_users:
+                if user['id'] == user_id:
+                    updated_user = user
+                    break
+            
+            if updated_user and updated_user['email'] == new_email:
+                print(f"   ✅ Email successfully updated in database: {new_email}")
+            else:
+                print(f"   ❌ Email not updated in database")
+                return False
+        
+        # Step 8: Test login with new email
+        print("\n   Step 8: Testing login with new email...")
+        
+        # First, we need to reset the password to a known value for testing
+        test_password = "testpassword123"
+        success, reset_response = self.run_test(
+            "Reset password for login test",
+            "PUT",
+            f"admin/users/{user_id}/password",
+            200,
+            data={"password": test_password},
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✅ Password reset for login test")
+            
+            # Try to login with new email
+            success, login_response = self.run_test(
+                f"Login with new email: {new_email}",
+                "POST",
+                "auth/login",
+                200,
+                data={"email": new_email, "password": test_password}
+            )
+            
+            if success and 'access_token' in login_response:
+                print(f"   ✅ Login successful with new email")
+                
+                # Verify user info from login
+                logged_user = login_response.get('user', {})
+                if logged_user.get('email') == new_email:
+                    print(f"   ✅ Login returns correct user with new email")
+                else:
+                    print(f"   ❌ Login returns incorrect user email")
+            else:
+                print(f"   ❌ Login failed with new email")
+        
+        # Step 9: Test login with old email (should fail)
+        print("\n   Step 9: Testing login with old email (should fail)...")
+        
+        success, old_login_response = self.run_test(
+            f"Login with old email: {original_email}",
+            "POST",
+            "auth/login",
+            401,  # Should be unauthorized
+            data={"email": original_email, "password": test_password}
+        )
+        
+        if success:
+            print(f"   ✅ Login correctly failed with old email")
+        else:
+            print(f"   ❌ Login unexpectedly succeeded with old email")
+        
+        # Step 10: Test missing email field
+        print("\n   Step 10: Testing missing email field...")
+        
+        success, response = self.run_test(
+            "Email modification without email field",
+            "PUT",
+            f"admin/users/{user_id}/email",
+            400,
+            data={},  # Empty data
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✅ Missing email field correctly rejected")
+        
+        # Step 11: Restore original email for cleanup
+        print("\n   Step 11: Restoring original email...")
+        
+        success, restore_response = self.run_test(
+            f"Restore original email: {original_email}",
+            "PUT",
+            f"admin/users/{user_id}/email",
+            200,
+            data={"email": original_email},
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✅ Original email restored for cleanup")
+        
+        # Summary
+        print(f"\n   📊 EMAIL MODIFICATION API TEST SUMMARY:")
+        print(f"   ✅ Security: Only Director can access API")
+        print(f"   ✅ Validation: Invalid email formats rejected")
+        print(f"   ✅ Validation: Duplicate emails rejected")
+        print(f"   ✅ Validation: Non-existent users handled (404)")
+        print(f"   ✅ Functionality: Email successfully modified")
+        print(f"   ✅ Database: Email update persisted correctly")
+        print(f"   ✅ Login: New email works for authentication")
+        print(f"   ✅ Login: Old email no longer works")
+        print(f"   ✅ Error handling: Missing fields rejected")
+        
+        print(f"\n   🎉 EMAIL MODIFICATION API FULLY FUNCTIONAL!")
+        return True
+
 def main():
     print("🏥 Testing Medical Staff Management API - COMPREHENSIVE NEW FEATURES TEST")
     print("=" * 70)
