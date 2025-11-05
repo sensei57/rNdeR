@@ -3467,7 +3467,11 @@ const AdminManager = () => {
           </div>
           <div className="flex items-center space-x-2 text-sm">
             <X className="h-4 w-4 text-red-600" />
-            <span><strong>Désactiver :</strong> Empêche l'utilisateur de se connecter sans supprimer son compte</span>
+            <span><strong>Désactiver :</strong> Empêche l'utilisateur de se connecter sans supprimer son compte (réversible)</span>
+          </div>
+          <div className="flex items-center space-x-2 text-sm">
+            <Trash2 className="h-4 w-4 text-red-700" />
+            <span><strong>Supprimer :</strong> Supprime définitivement l'utilisateur et toutes ses données (IRRÉVERSIBLE)</span>
           </div>
         </CardContent>
       </Card>
