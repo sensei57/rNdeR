@@ -1869,13 +1869,26 @@ const PlanningManager = () => {
     return <div className="flex justify-center p-8">Chargement...</div>;
   }
 
-  // Filtrer le planning selon le rôle sélectionné
-  const filteredPlanning = filterRole === 'TOUS' 
+  // Filtrer le planning selon les rôles sélectionnés
+  const filteredPlanning = filterRole.includes('TOUS') 
     ? planning 
-    : planning.filter(c => c.employe_role === filterRole);
+    : planning.filter(c => filterRole.includes(c.employe_role));
   
   const planningMatin = filteredPlanning.filter(c => c.creneau === 'MATIN');
   const planningApresMidi = filteredPlanning.filter(c => c.creneau === 'APRES_MIDI');
+  const planningJournee = filteredPlanning.filter(c => c.creneau === 'JOURNEE');
+
+  // Créer des groupes par rôle pour l'affichage en colonnes
+  const getRoleGroups = (planningData) => {
+    const roles = filterRole.includes('TOUS') 
+      ? ['Médecin', 'Assistant', 'Secrétaire']
+      : filterRole.filter(r => r !== 'TOUS');
+    
+    return roles.map(role => ({
+      role,
+      creneaux: planningData.filter(c => c.employe_role === role)
+    }));
+  };
 
   return (
     <div className="space-y-6">
