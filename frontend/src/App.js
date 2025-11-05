@@ -4848,13 +4848,7 @@ const Dashboard = () => {
       case 'salles':
         return <SallesManager />;
       case 'admin':
-        return (
-          <div className="text-center py-12">
-            <Settings className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-600 mb-2">Administration</h3>
-            <p className="text-gray-500">Fonctionnalité en cours de développement</p>
-          </div>
-        );
+        return <AdminManager />;
       default:
         return <PersonnelManager />;
     }
