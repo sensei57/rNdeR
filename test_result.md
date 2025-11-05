@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "L'utilisateur signale qu'il ne voit plus le personnel dans la section 'Gestion du Personnel'. Je dois diagnostiquer ce problème urgent."
+user_problem_statement: "L'utilisateur signale qu'il y a une erreur quand il va dans la section Administration. Je dois diagnostiquer ce problème urgent."
 
 backend:
   - task: "API Suppression Personnel (PUT /api/users/{id})"
