@@ -1563,23 +1563,23 @@ const PlanningManager = () => {
   
   const [loading, setLoading] = useState(true);
 
-  const sallesMedecins = ['1', '2', '3', '4', '5', '6'];
-  const sallesAssistants = ['A', 'B', 'C', 'D', 'O', 'Blue'];
-  const sallesAttente = ['Attente 1', 'Attente 2', 'Attente 3', 'Attente 4', 'Attente 5', 'Attente 6'];
-
   useEffect(() => {
     fetchData();
   }, []);
 
   useEffect(() => {
-    if (selectedDate) {
+    if (user?.role === 'Directeur') {
+      if (viewMode === 'semaine') {
+        fetchPlanningSemaine(selectedWeek);
+      }
+    } else {
       if (viewMode === 'jour') {
         fetchPlanningByDate(selectedDate);
-      } else {
+      } else if (viewMode === 'semaine') {
         fetchPlanningSemaine(selectedDate);
       }
     }
-  }, [selectedDate, viewMode]);
+  }, [selectedDate, selectedWeek, viewMode, user?.role]);
 
   const fetchPlanningSemaine = async (date) => {
     try {
