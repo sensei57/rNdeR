@@ -296,8 +296,7 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Administration Comptes - Suppression Définitive (DELETE /api/admin/users/{user_id}/delete-permanently)"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
