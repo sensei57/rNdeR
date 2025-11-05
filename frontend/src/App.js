@@ -3116,9 +3116,11 @@ const AdminManager = () => {
   const { user, setUser } = useAuth();
   const [allUsers, setAllUsers] = useState([]);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [newPassword, setNewPassword] = useState('');
+  const [newEmail, setNewEmail] = useState('');
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [loading, setLoading] = useState(false);
 
