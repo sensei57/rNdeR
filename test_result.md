@@ -288,7 +288,8 @@ metadata:
 
 test_plan:
   current_focus: 
-    - "Attribution Planning - Diagnostic des erreurs"
+    - "Gestion des Stocks - Articles (POST/GET/PUT/DELETE /api/stocks/articles)"
+    - "Administration Comptes - Impersonate (POST /api/admin/impersonate/{user_id})"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
