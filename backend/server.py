@@ -2249,7 +2249,7 @@ async def delete_user_permanently(
         # Supprimer les données associées
         await db.assignations.delete_many({"medecin_id": user_id})
         await db.assignations.delete_many({"assistant_id": user_id})
-        await db.conges.delete_many({"utilisateur_id": user_id})
+        await db.demandes_conges.delete_many({"utilisateur_id": user_id})
         await db.planning.delete_many({"employe_id": user_id})
         await db.quotas_employes.delete_many({"employe_id": user_id})
         await db.messages.delete_many({"expediteur_id": user_id})
