@@ -1940,13 +1940,38 @@ const PlanningManager = () => {
             </div>
           )}
           
-          {/* Sélecteur de date */}
-          <Input
-            type="date"
-            value={user?.role === 'Directeur' ? selectedWeek : selectedDate}
-            onChange={(e) => user?.role === 'Directeur' ? setSelectedWeek(e.target.value) : setSelectedDate(e.target.value)}
-            className="w-auto"
-          />
+          {/* Navigation et sélecteur de date */}
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateWeek('prev')}
+              className="px-2"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Input
+              type="date"
+              value={user?.role === 'Directeur' ? selectedWeek : selectedDate}
+              onChange={(e) => user?.role === 'Directeur' ? setSelectedWeek(e.target.value) : setSelectedDate(e.target.value)}
+              className="w-auto"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateWeek('next')}
+              className="px-2"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToToday}
+            >
+              Aujourd'hui
+            </Button>
+          </div>
           
           {user?.role === 'Directeur' && (
             <>
