@@ -4349,6 +4349,8 @@ const Dashboard = () => {
         return <PlanCabinetManager />;
       case 'attributions':
         return <AttributionManager />;
+      case 'stocks':
+        return <StocksManager />;
       case 'salles':
         return <SallesManager />;
       case 'admin':
