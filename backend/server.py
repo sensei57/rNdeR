@@ -2182,7 +2182,7 @@ async def impersonate_user(user_id: str, current_user: User = Depends(require_ro
     # Créer un token pour l'utilisateur cible
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": target_user["email"]}, expires_delta=access_token_expires
+        data={"sub": target_user["id"]}, expires_delta=access_token_expires
     )
     
     return {
