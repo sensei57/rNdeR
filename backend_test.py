@@ -2470,5 +2470,28 @@ def main():
         print(f"💡 Check the failed tests above for issues that need to be addressed")
         return 1
 
+def run_reactivation_only():
+    """Run only the user reactivation test"""
+    print("🏥 Testing User Reactivation for Personnel Visibility Issue")
+    print("=" * 70)
+    
+    tester = MedicalStaffAPITester()
+    success = tester.run_user_reactivation_test_only()
+    
+    if success:
+        print("\n🎉 REACTIVATION TEST SUCCESSFUL!")
+        print("✅ All inactive users have been reactivated")
+        print("✅ Personnel should now be visible in Gestion du Personnel")
+        return 0
+    else:
+        print("\n❌ REACTIVATION TEST FAILED!")
+        print("⚠️  Some users may still be inactive")
+        print("⚠️  Personnel visibility issue may persist")
+        return 1
+
 if __name__ == "__main__":
-    sys.exit(main())
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "--reactivation-only":
+        sys.exit(run_reactivation_only())
+    else:
+        sys.exit(main())
