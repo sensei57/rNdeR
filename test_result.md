@@ -329,7 +329,13 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Planning Interactif - Sélection multiple des rôles"
+    - "Planning Interactif - Affichage en colonnes par rôle"
+    - "Planning Interactif - Navigation par flèches"
+    - "Planning Interactif - Bouton Aujourd'hui"
+    - "Planning Interactif - Option Journée complète"
+    - "Planning Interactif - Liaison médecin-assistant"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
