@@ -3546,6 +3546,10 @@ const AdminManager = () => {
             <span><strong>Mot de passe :</strong> Réinitialise et définit un nouveau mot de passe pour l'utilisateur</span>
           </div>
           <div className="flex items-center space-x-2 text-sm">
+            <Edit className="h-4 w-4 text-purple-600" />
+            <span><strong>Email :</strong> Modifie l'adresse email de connexion de l'utilisateur</span>
+          </div>
+          <div className="flex items-center space-x-2 text-sm">
             <X className="h-4 w-4 text-red-600" />
             <span><strong>Désactiver :</strong> Empêche l'utilisateur de se connecter sans supprimer son compte (réversible)</span>
           </div>
