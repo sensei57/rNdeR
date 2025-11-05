@@ -3322,6 +3322,18 @@ const AdminManager = () => {
                                 </>
                               )}
                             </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => {
+                                setSelectedUser(userItem);
+                                setShowDeleteModal(true);
+                              }}
+                              className="text-white"
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Supprimer
+                            </Button>
                           </>
                         )}
                         {userItem.id === user?.id && (
