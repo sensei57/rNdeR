@@ -276,8 +276,7 @@ metadata:
 
 test_plan:
   current_focus: 
-    - "Gestion des Stocks - Articles (POST/GET/PUT/DELETE /api/stocks/articles)"
-    - "Administration Comptes - Impersonate (POST /api/admin/impersonate/{user_id})"
+    - "Gestion du Personnel - Personnel non visible"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
