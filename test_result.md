@@ -329,10 +329,24 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Fusion Planning et Attribution Planning"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
+
+frontend:
+  - task: "Fusion Planning et Attribution Planning"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "L'utilisateur a fusionné les sections 'Planning' et 'Attribution Planning'. Changements: 1) Supprimé 'Attribution Planning' du menu Directeur, 2) Modifié PlanningManager pour supporter deux modes - Directeur (vue globale avec attribution créneaux) et Autres employés (vue personnelle). Tests requis: 1) Directeur - navigation Planning, vue globale, filtres par rôle, pas de section Attribution Planning, 2) Employé - navigation Planning, vue personnelle, boutons Vue Jour/Vue Semaine, 3) Vérifier API /planning/semaine fonctionne, 4) Aucune erreur JavaScript."
 
 agent_communication:
     - agent: "testing"
