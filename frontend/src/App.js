@@ -2575,6 +2575,78 @@ const PlanningManager = () => {
                         </div>
                         
                         {creneau.salle_attribuee && (
+                          <div className="text-sm text-gray-600">
+                            🚪 Salle: {creneau.salle_attribuee}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              // Vue employé : liste simple
+              <div className="space-y-3">
+                {planningApresMidi.map(creneau => (
+                  <div
+                    key={creneau.id}
+                    className={`border rounded-lg p-3 ${getRoleColor(creneau.employe_role)}`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <div className="font-medium">
+                          {getEmployeInfo(creneau.employe)}
+                        </div>
+                        
+                        {creneau.salle_attribuee && (
+                          <div className="text-sm text-gray-600">
+                            🚪 Salle: {creneau.salle_attribuee}
+                          </div>
+                        )}
+                        
+                        {creneau.salle_attente && (
+                          <div className="text-sm text-gray-600">
+                            🚪 Attente: {creneau.salle_attente}
+                          </div>
+                        )}
+                        
+                        {creneau.medecin_attribue && (
+                          <div className="text-sm text-gray-600">
+                            👨‍⚕️ Avec: Dr. {creneau.medecin_attribue.prenom} {creneau.medecin_attribue.nom}
+                          </div>
+                        )}
+                        
+                        {creneau.horaire_debut && creneau.horaire_fin && (
+                          <div className="text-sm text-gray-600">
+                            ⏰ {creneau.horaire_debut} - {creneau.horaire_fin}
+                          </div>
+                        )}
+                        
+                        {creneau.notes && (
+                          <div className="text-sm text-gray-600 italic">
+                            📝 {creneau.notes}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {user?.role === 'Directeur' && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteCreneau(creneau.id)}
+                          className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        )}
         
         {/* Planning Journée complète */}
         {planningJournee.length > 0 && (
