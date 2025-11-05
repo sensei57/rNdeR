@@ -563,9 +563,8 @@ class MedicalStaffAPITester:
         # Test deleting planning slots
         if created_creneaux:
             creneau_id = created_creneaux[0]
-            success, response = self.run_test(
+            success, response = self.run_delete_test(
                 "Delete planning slot",
-                "DELETE",
                 f"planning/{creneau_id}",
                 200,
                 token=directeur_token
