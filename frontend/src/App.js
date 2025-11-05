@@ -1581,20 +1581,57 @@ const PlanningManager = () => {
     }
   }, [selectedDate, selectedWeek, viewMode, user?.role]);
 
+  const getMondayOfWeek = (date) => {
+    const selectedDate = new Date(date);
+    const day = selectedDate.getDay();
+    const diff = selectedDate.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(selectedDate.setDate(diff));
+  };
+
+  const getWeekDates = (mondayDate) => {
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(mondayDate);
+      date.setDate(mondayDate.getDate() + i);
+      dates.push(date.toISOString().split('T')[0]);
+    }
+    return dates;
+  };
+
   const fetchPlanningSemaine = async (date) => {
     try {
-      // Calculer le lundi de la semaine
-      const selectedDateObj = new Date(date);
-      const dayOfWeek = selectedDateObj.getDay();
-      const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Dimanche = 0, donc offset = 6
-      const monday = new Date(selectedDateObj);
-      monday.setDate(selectedDateObj.getDate() - mondayOffset);
-      const mondayStr = monday.toISOString().split('T')[0];
+      const mondayDate = getMondayOfWeek(date);
+      const mondayStr = mondayDate.toISOString().split('T')[0];
       
-      const response = await axios.get(`${API}/planning/semaine/${mondayStr}`);
-      setPlanningSemaine(response.data);
+      if (user?.role === 'Directeur') {
+        // Vue globale pour le directeur
+        const [usersRes, sallesRes, planningRes] = await Promise.all([
+          axios.get(`${API}/users`),
+          axios.get(`${API}/salles`),
+          axios.get(`${API}/planning/semaine/${mondayStr}`)
+        ]);
+        
+        setUsers(usersRes.data.filter(u => u.actif));
+        setSalles(sallesRes.data);
+        setPlanningSemaine(planningRes.data);
+      } else {
+        // Vue personnelle pour les employés
+        const response = await axios.get(`${API}/planning/semaine/${mondayStr}`);
+        const personalPlanning = response.data;
+        personalPlanning.planning = Object.fromEntries(
+          Object.entries(personalPlanning.planning).map(([date, slots]) => [
+            date,
+            {
+              MATIN: slots.MATIN?.filter(slot => slot.employe_id === user.id) || [],
+              APRES_MIDI: slots.APRES_MIDI?.filter(slot => slot.employe_id === user.id) || []
+            }
+          ])
+        );
+        setPlanningSemaine(personalPlanning);
+      }
     } catch (error) {
       console.error('Erreur lors du chargement du planning semaine:', error);
+      toast.error('Erreur lors du chargement du planning');
     }
   };
 
