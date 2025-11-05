@@ -356,6 +356,78 @@ frontend:
           agent: "testing"
           comment: "🎉 FUSION PLANNING RÉUSSIE - TESTS COMPLETS VALIDÉS! ✅ CORRECTIONS APPLIQUÉES: Variables manquantes ajoutées (medecins, assistants, congesApprouves) + correction salles filtering (sallesMedecins, sallesAssistants, sallesAttente). ✅ TEST DIRECTEUR: 1) Connexion Pierre Martin réussie, 2) Menu 'Attribution Planning' correctement supprimé, 3) Section 'Planning Interactif' accessible, 4) Filtres par rôle présents (Tous, Médecins, Assistants, Secrétaires), 5) Pas de boutons Vue Jour/Vue Semaine (correct), 6) Vue globale semaine par défaut avec planning multi-employés. ✅ TEST EMPLOYÉ: 1) Connexion Julie Moreau (Assistant) réussie, 2) Section 'Planning Interactif' accessible, 3) Boutons Vue Jour/Vue Semaine présents (correct), 4) Pas de filtres par rôle (correct), 5) Vue personnelle montrant uniquement son planning. ✅ API VALIDATION: Endpoint /api/planning/semaine/2025-11-03 fonctionne (200 OK). ✅ RÉSULTAT: La fusion des sections Planning et Attribution Planning fonctionne parfaitement selon les spécifications - Directeur a vue globale avec attribution, employés ont vue personnelle."
 
+  - task: "Planning Interactif - Sélection multiple des rôles"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "Nouvelle fonctionnalité: Les filtres permettent maintenant de sélectionner plusieurs rôles en même temps (Médecins + Assistants par exemple). Tests requis: 1) Se connecter comme Directeur, 2) Naviguer vers Planning, 3) Tester la sélection de 'Médecins' puis ajouter 'Assistants', 4) Vérifier que les deux restent actifs simultanément."
+
+  - task: "Planning Interactif - Affichage en colonnes par rôle"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "Nouvelle fonctionnalité: Le planning matin/après-midi est maintenant séparé en colonnes selon les rôles sélectionnés (1, 2 ou 3 colonnes). Tests requis: Vérifier que l'affichage se divise en colonnes selon les rôles sélectionnés dans les filtres."
+
+  - task: "Planning Interactif - Navigation par flèches"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "Nouvelle fonctionnalité: Boutons précédent/suivant pour naviguer entre les semaines. Tests requis: Tester les boutons flèche gauche/droite pour changer de semaine."
+
+  - task: "Planning Interactif - Bouton Aujourd'hui"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "Nouvelle fonctionnalité: Bouton 'Aujourd'hui' pour revenir rapidement à la date actuelle. Tests requis: Tester le bouton 'Aujourd'hui'."
+
+  - task: "Planning Interactif - Option Journée complète"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "Nouvelle fonctionnalité: Nouveau créneau 'Journée complète' disponible en plus de matin/après-midi. Tests requis: Créer un nouveau créneau avec l'option 'Journée complète' et vérifier qu'une nouvelle section apparaît."
+
+  - task: "Planning Interactif - Liaison médecin-assistant"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "Nouvelle fonctionnalité: Dans le modal d'attribution, possibilité de lier un médecin avec un assistant et vice versa. Tests requis: 1) Créer une attribution avec un médecin et associer un assistant, 2) Créer une attribution avec un assistant et associer un médecin."
+
 agent_communication:
     - agent: "testing"
       message: "🎉 FUSION PLANNING ET ATTRIBUTION PLANNING COMPLÈTEMENT RÉUSSIE! ✅ CORRECTIONS CRITIQUES APPLIQUÉES: Variables JavaScript manquantes ajoutées (medecins, assistants, congesApprouves, salles filtering) - erreurs 'sallesMedecins is not defined' résolues. ✅ TESTS COMPLETS VALIDÉS: 1) DIRECTEUR (Pierre Martin): Menu 'Attribution Planning' supprimé ✓, Section 'Planning Interactif' avec vue globale ✓, Filtres par rôle (Tous/Médecins/Assistants/Secrétaires) ✓, Pas de Vue Jour/Semaine ✓, Planning semaine multi-employés ✓. 2) EMPLOYÉ (Julie Moreau Assistant): Section 'Planning Interactif' avec vue personnelle ✓, Boutons Vue Jour/Vue Semaine ✓, Pas de filtres par rôle ✓, Planning personnel uniquement ✓. 3) API: /planning/semaine endpoint fonctionne (200 OK) ✓. 🎯 RÉSULTAT: La fusion fonctionne parfaitement - Directeur a vue globale avec attribution créneaux, employés ont vue personnelle. Objectif utilisateur atteint avec succès!"
