@@ -5291,8 +5291,6 @@ const Dashboard = () => {
         return <CoffreFortManager />;
       case 'plan-cabinet':
         return <PlanCabinetManager />;
-      case 'attributions':
-        return <AttributionManager />;
       case 'stocks':
         return <StocksManager />;
       case 'salles':
