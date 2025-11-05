@@ -3181,6 +3181,25 @@ const AdminManager = () => {
       toast.error('Erreur lors du changement de statut');
     }
   };
+  const handleDeleteUser = async () => {
+    const expectedText = `SUPPRIMER ${selectedUser?.prenom} ${selectedUser?.nom}`;
+    
+    if (deleteConfirmText !== expectedText) {
+      toast.error(`Vous devez taper exactement: ${expectedText}`);
+      return;
+    }
+
+    try {
+      const response = await axios.delete(`${API}/admin/users/${selectedUser.id}/delete-permanently`);
+      toast.success(response.data.message);
+      fetchAllUsers(); // Recharger la liste
+      setShowDeleteModal(false);
+      setDeleteConfirmText('');
+      setSelectedUser(null);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la suppression');
+    }
+  };
 
   const getRoleColor = (role) => {
     switch (role) {
