@@ -2227,6 +2227,48 @@ async def toggle_user_active(
         {"id": user_id}, 
         {"$set": {"actif": new_status}}
     )
+@api_router.put("/admin/users/{user_id}/email")
+async def update_user_email(
+    user_id: str,
+    email_data: Dict[str, str],
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    if "email" not in email_data:
+        raise HTTPException(status_code=400, detail="Email requis")
+    
+    new_email = email_data["email"].strip().lower()
+    
+    # Vérifier que l'email est valide
+    import re
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_pattern, new_email):
+        raise HTTPException(status_code=400, detail="Format d'email invalide")
+    
+    # Vérifier que l'email n'est pas déjà utilisé
+    existing_user = await db.users.find_one({"email": new_email})
+    if existing_user and existing_user["id"] != user_id:
+        raise HTTPException(status_code=400, detail="Cet email est déjà utilisé par un autre utilisateur")
+    
+    # Vérifier que l'utilisateur existe
+    user_to_update = await db.users.find_one({"id": user_id})
+    if not user_to_update:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    # Mettre à jour l'email
+    result = await db.users.update_one(
+        {"id": user_id}, 
+        {"$set": {"email": new_email}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    return {
+        "message": "Email modifié avec succès",
+        "old_email": user_to_update.get("email", ""),
+        "new_email": new_email,
+        "user_name": f"{user_to_update.get('prenom', '')} {user_to_update.get('nom', '')}"
+    }
 @api_router.delete("/admin/users/{user_id}/delete-permanently")
 async def delete_user_permanently(
     user_id: str,
