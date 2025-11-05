@@ -2234,6 +2234,63 @@ const PlanningManager = () => {
                   ))}
                 </select>
               </div>
+              {/* Liaison médecin-assistant */}
+              <div className="space-y-2">
+                <Label>Liaison médecin-assistant (optionnel)</Label>
+                <select
+                  className="w-full p-2 border rounded"
+                  value={attribution.medecin_ids[0] || ''}
+                  onChange={(e) => {
+                    const selectedEmploye = users.find(u => u.id === attribution.employe_id);
+                    if (e.target.value && selectedEmploye) {
+                      if (selectedEmploye.role === 'Médecin') {
+                        // Si l'employé est un médecin, sélectionner les assistants
+                        setAttribution({...attribution, medecin_ids: e.target.value ? [e.target.value] : []});
+                      } else if (selectedEmploye.role === 'Assistant') {
+                        // Si l'employé est un assistant, sélectionner le médecin
+                        setAttribution({...attribution, medecin_ids: e.target.value ? [e.target.value] : []});
+                      }
+                    }
+                  }}
+                >
+                  <option value="">Aucune liaison</option>
+                  {(() => {
+                    const selectedEmploye = users.find(u => u.id === attribution.employe_id);
+                    if (!selectedEmploye) return null;
+                    
+                    if (selectedEmploye.role === 'Médecin') {
+                      // Si médecin sélectionné, proposer les assistants
+                      return users.filter(u => u.role === 'Assistant').map(assistant => (
+                        <option key={assistant.id} value={assistant.id}>
+                          {assistant.prenom} {assistant.nom} (Assistant)
+                        </option>
+                      ));
+                    } else if (selectedEmploye.role === 'Assistant') {
+                      // Si assistant sélectionné, proposer les médecins
+                      return users.filter(u => u.role === 'Médecin').map(medecin => (
+                        <option key={medecin.id} value={medecin.id}>
+                          Dr. {medecin.prenom} {medecin.nom} (Médecin)
+                        </option>
+                      ));
+                    }
+                    return null;
+                  })()}
+                </select>
+                {(() => {
+                  const selectedEmploye = users.find(u => u.id === attribution.employe_id);
+                  if (!selectedEmploye) return null;
+                  
+                  const helperText = selectedEmploye.role === 'Médecin' 
+                    ? "Sélectionnez un assistant à associer à ce médecin"
+                    : selectedEmploye.role === 'Assistant' 
+                    ? "Sélectionnez un médecin à associer à cet assistant"
+                    : null;
+                    
+                  return helperText && (
+                    <div className="text-xs text-gray-500">{helperText}</div>
+                  );
+                })()}
+              </div>
 
               <div className="space-y-2">
                 <Label>Notes</Label>
