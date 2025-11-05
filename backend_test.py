@@ -925,6 +925,350 @@ class MedicalStaffAPITester:
         
         return existing_salles
 
+    def test_stock_management(self):
+        """Test comprehensive stock management system - NEW FEATURE"""
+        print("\n📦 Testing Stock Management (NEW FEATURE)...")
+        
+        if 'directeur' not in self.tokens:
+            print("❌ Skipping stock tests - no directeur token")
+            return
+        
+        directeur_token = self.tokens['directeur']
+        created_categories = []
+        created_articles = []
+        
+        # Test 1: Create stock category
+        category_data = {
+            "nom": "Matériel Médical",
+            "description": "Équipements et consommables médicaux",
+            "couleur": "#4CAF50"
+        }
+        
+        success, response = self.run_test(
+            "Create stock category",
+            "POST",
+            "stocks/categories",
+            200,
+            data=category_data,
+            token=directeur_token
+        )
+        
+        if success and 'id' in response:
+            created_categories.append(response['id'])
+            print(f"   ✓ Stock category created: {response['nom']}")
+        
+        # Test 2: Get stock categories
+        success, categories = self.run_test(
+            "Get stock categories",
+            "GET",
+            "stocks/categories",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   Found {len(categories)} stock categories")
+            for cat in categories:
+                print(f"   - {cat['nom']}: {cat.get('description', 'No description')}")
+        
+        # Test 3: Create stock article
+        if created_categories:
+            article_data = {
+                "nom": "Seringues 10ml",
+                "description": "Seringues jetables stériles 10ml",
+                "categorie_id": created_categories[0],
+                "nombre_souhaite": 100,
+                "nombre_en_stock": 25,
+                "lien_commande": "https://example.com/order"
+            }
+            
+            success, response = self.run_test(
+                "Create stock article",
+                "POST",
+                "stocks/articles",
+                200,
+                data=article_data,
+                token=directeur_token
+            )
+            
+            if success and 'id' in response:
+                created_articles.append(response['id'])
+                print(f"   ✓ Stock article created: {response['nom']}")
+        
+        # Test 4: Get stock articles with calculation
+        success, articles = self.run_test(
+            "Get stock articles with calculation",
+            "GET",
+            "stocks/articles",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   Found {len(articles)} stock articles")
+            for article in articles:
+                nombre_a_commander = article.get('nombre_a_commander', 0)
+                print(f"   - {article['nom']}: Stock {article['nombre_en_stock']}/{article['nombre_souhaite']} (À commander: {nombre_a_commander})")
+        
+        # Test 5: Update stock article
+        if created_articles:
+            article_id = created_articles[0]
+            update_data = {
+                "nombre_en_stock": 50,
+                "nombre_souhaite": 120
+            }
+            
+            success, response = self.run_test(
+                "Update stock article",
+                "PUT",
+                f"stocks/articles/{article_id}",
+                200,
+                data=update_data,
+                token=directeur_token
+            )
+            
+            if success:
+                print(f"   ✓ Stock article updated: Stock {response['nombre_en_stock']}/{response['nombre_souhaite']}")
+        
+        # Test 6: Test permissions - non-directeur access
+        if 'medecin' in self.tokens:
+            success, response = self.run_test(
+                "Unauthorized stock access (médecin without permission)",
+                "GET",
+                "stocks/categories",
+                403,
+                token=self.tokens['medecin']
+            )
+            
+            if success:
+                print(f"   ✓ Non-directeur correctly denied stock access without permission")
+        
+        # Test 7: Create stock permission for médecin
+        if 'medecin' in self.tokens:
+            medecin_id = self.users['medecin']['id']
+            permission_data = {
+                "utilisateur_id": medecin_id,
+                "peut_voir": True,
+                "peut_modifier": True,
+                "peut_ajouter": False,
+                "peut_supprimer": False
+            }
+            
+            success, response = self.run_test(
+                "Create stock permission for médecin",
+                "POST",
+                "stocks/permissions",
+                200,
+                data=permission_data,
+                token=directeur_token
+            )
+            
+            if success:
+                print(f"   ✓ Stock permission created for médecin")
+        
+        # Test 8: Get stock permissions
+        success, permissions = self.run_test(
+            "Get stock permissions",
+            "GET",
+            "stocks/permissions",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   Found {len(permissions)} stock permissions")
+            for perm in permissions:
+                user = perm.get('utilisateur', {})
+                print(f"   - {user.get('prenom', '')} {user.get('nom', '')}: voir={perm['peut_voir']}, modifier={perm['peut_modifier']}")
+        
+        # Test 9: Test médecin access with permission
+        if 'medecin' in self.tokens:
+            success, categories_with_perm = self.run_test(
+                "Médecin access with permission",
+                "GET",
+                "stocks/categories",
+                200,
+                token=self.tokens['medecin']
+            )
+            
+            if success:
+                print(f"   ✓ Médecin can now access stock with permission")
+        
+        # Test 10: Delete stock article
+        if created_articles:
+            article_id = created_articles[0]
+            success, response = self.run_test(
+                "Delete stock article",
+                "DELETE",
+                f"stocks/articles/{article_id}",
+                200,
+                token=directeur_token
+            )
+            
+            if success:
+                print(f"   ✓ Stock article deleted successfully")
+        
+        return {"categories": created_categories, "articles": created_articles}
+
+    def test_admin_management(self):
+        """Test comprehensive admin management system - NEW FEATURE"""
+        print("\n👑 Testing Admin Management (NEW FEATURE)...")
+        
+        if 'directeur' not in self.tokens:
+            print("❌ Skipping admin tests - no directeur token")
+            return
+        
+        directeur_token = self.tokens['directeur']
+        
+        # Test 1: Get all users for admin
+        success, all_users = self.run_test(
+            "Get all users for admin",
+            "GET",
+            "admin/users",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   Found {len(all_users)} users in admin panel")
+            for user in all_users:
+                status = "Actif" if user.get('actif', True) else "Inactif"
+                print(f"   - {user['prenom']} {user['nom']} ({user['role']}) - {status}")
+        
+        # Test 2: Test impersonate functionality
+        if all_users:
+            # Find a non-directeur user to impersonate
+            target_user = None
+            for user in all_users:
+                if user['role'] != 'Directeur' and user.get('actif', True):
+                    target_user = user
+                    break
+            
+            if target_user:
+                success, impersonate_response = self.run_test(
+                    f"Impersonate user {target_user['prenom']} {target_user['nom']}",
+                    "POST",
+                    f"admin/impersonate/{target_user['id']}",
+                    200,
+                    token=directeur_token
+                )
+                
+                if success and 'access_token' in impersonate_response:
+                    print(f"   ✓ Successfully impersonated {target_user['prenom']} {target_user['nom']}")
+                    impersonate_token = impersonate_response['access_token']
+                    
+                    # Test using impersonated token
+                    success, user_info = self.run_test(
+                        "Get user info with impersonated token",
+                        "GET",
+                        "users/me",
+                        200,
+                        token=impersonate_token
+                    )
+                    
+                    if success:
+                        print(f"   ✓ Impersonated token works: {user_info['prenom']} {user_info['nom']} ({user_info['role']})")
+        
+        # Test 3: Reset user password
+        if all_users:
+            target_user = None
+            for user in all_users:
+                if user['role'] != 'Directeur':
+                    target_user = user
+                    break
+            
+            if target_user:
+                new_password_data = {
+                    "password": "nouveaumotdepasse123"
+                }
+                
+                success, response = self.run_test(
+                    f"Reset password for {target_user['prenom']} {target_user['nom']}",
+                    "PUT",
+                    f"admin/users/{target_user['id']}/password",
+                    200,
+                    data=new_password_data,
+                    token=directeur_token
+                )
+                
+                if success:
+                    print(f"   ✓ Password reset successful for {target_user['prenom']} {target_user['nom']}")
+        
+        # Test 4: Toggle user active status
+        if all_users:
+            target_user = None
+            for user in all_users:
+                if user['role'] != 'Directeur':
+                    target_user = user
+                    break
+            
+            if target_user:
+                success, response = self.run_test(
+                    f"Toggle active status for {target_user['prenom']} {target_user['nom']}",
+                    "PUT",
+                    f"admin/users/{target_user['id']}/toggle-active",
+                    200,
+                    token=directeur_token
+                )
+                
+                if success:
+                    new_status = response.get('actif', True)
+                    status_text = "activé" if new_status else "désactivé"
+                    print(f"   ✓ User {status_text}: {target_user['prenom']} {target_user['nom']}")
+                    
+                    # Toggle back to original state
+                    success, restore_response = self.run_test(
+                        f"Restore active status for {target_user['prenom']} {target_user['nom']}",
+                        "PUT",
+                        f"admin/users/{target_user['id']}/toggle-active",
+                        200,
+                        token=directeur_token
+                    )
+                    
+                    if success:
+                        print(f"   ✓ User status restored")
+        
+        # Test 5: Unauthorized admin access
+        if 'medecin' in self.tokens:
+            success, response = self.run_test(
+                "Unauthorized admin access (médecin)",
+                "GET",
+                "admin/users",
+                403,
+                token=self.tokens['medecin']
+            )
+            
+            if success:
+                print(f"   ✓ Non-directeur correctly denied admin access")
+        
+        # Test 6: Test invalid user operations
+        fake_user_id = "fake-user-id-12345"
+        
+        success, response = self.run_test(
+            "Impersonate non-existent user",
+            "POST",
+            f"admin/impersonate/{fake_user_id}",
+            404,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✓ Non-existent user impersonation correctly rejected")
+        
+        success, response = self.run_test(
+            "Reset password for non-existent user",
+            "PUT",
+            f"admin/users/{fake_user_id}/password",
+            404,
+            data={"password": "test123"},
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✓ Non-existent user password reset correctly rejected")
+        
+        return all_users
+
     def test_configuration_management(self):
         """Test cabinet configuration management - NEW FEATURE"""
         print("\n⚙️ Testing Configuration Management (NEW FEATURE)...")
