@@ -2152,6 +2152,11 @@ async def delete_article_stock(
             raise HTTPException(status_code=403, detail="Accès non autorisé")
     
     result = await db.articles_stock.delete_one({"id": article_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Article non trouvé")
+    
+    return {"message": "Article supprimé avec succès"}
+
 # Administration des comptes (Directeur uniquement)
 @api_router.get("/admin/users", response_model=List[Dict])
 async def get_all_users_for_admin(current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))):
