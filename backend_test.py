@@ -912,9 +912,8 @@ class MedicalStaffAPITester:
         # Test deleting a salle
         if created_salles:
             salle_id = created_salles[0]
-            success, response = self.run_test(
+            success, response = self.run_delete_test(
                 "Delete salle (soft delete)",
-                "DELETE",
                 f"salles/{salle_id}",
                 200,
                 token=directeur_token
