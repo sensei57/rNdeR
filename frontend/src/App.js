@@ -3329,6 +3329,19 @@ const AdminManager = () => {
                             <Button
                               size="sm"
                               variant="outline"
+                              onClick={() => {
+                                setSelectedUser(userItem);
+                                setNewEmail(userItem.email);
+                                setShowEmailModal(true);
+                              }}
+                              className="text-purple-600 hover:text-purple-800"
+                            >
+                              <Edit className="h-3 w-3 mr-1" />
+                              Email
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
                               onClick={() => handleToggleActive(userItem.id)}
                               className={userItem.actif ? "text-red-600 hover:text-red-800" : "text-green-600 hover:text-green-800"}
                             >
