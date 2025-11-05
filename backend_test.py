@@ -1097,9 +1097,8 @@ class MedicalStaffAPITester:
         # Test 10: Delete stock article
         if created_articles:
             article_id = created_articles[0]
-            success, response = self.run_test(
+            success, response = self.run_delete_test(
                 "Delete stock article",
-                "DELETE",
                 f"stocks/articles/{article_id}",
                 200,
                 token=directeur_token
