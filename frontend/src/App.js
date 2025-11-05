@@ -1566,6 +1566,45 @@ const PlanningManager = () => {
   
   const [loading, setLoading] = useState(true);
 
+  // Fonctions pour gestion des filtres multiples
+  const handleRoleToggle = (role) => {
+    setFilterRole(prev => {
+      if (role === 'TOUS') {
+        return ['TOUS'];
+      }
+      
+      const filtered = prev.filter(r => r !== 'TOUS');
+      if (filtered.includes(role)) {
+        const newRoles = filtered.filter(r => r !== role);
+        return newRoles.length === 0 ? ['TOUS'] : newRoles;
+      } else {
+        return [...filtered, role];
+      }
+    });
+  };
+
+  // Fonctions de navigation
+  const goToToday = () => {
+    const today = new Date().toISOString().split('T')[0];
+    if (user?.role === 'Directeur') {
+      setSelectedWeek(today);
+    } else {
+      setSelectedDate(today);
+    }
+  };
+
+  const navigateWeek = (direction) => {
+    const currentDate = new Date(user?.role === 'Directeur' ? selectedWeek : selectedDate);
+    const newDate = new Date(currentDate);
+    newDate.setDate(currentDate.getDate() + (direction === 'prev' ? -7 : 7));
+    const newDateStr = newDate.toISOString().split('T')[0];
+    
+    if (user?.role === 'Directeur') {
+      setSelectedWeek(newDateStr);
+    } else {
+      setSelectedDate(newDateStr);
+    }
+  };
   useEffect(() => {
     fetchData();
   }, []);
