@@ -2253,6 +2253,7 @@ async def delete_user_permanently(
         await db.planning.delete_many({"employe_id": user_id})
         await db.quotas_employes.delete_many({"employe_id": user_id})
         await db.messages.delete_many({"expediteur_id": user_id})
+        await db.messages.delete_many({"destinataire_id": user_id})
         await db.documents_personnels.delete_many({"proprietaire_id": user_id})
         await db.permissions_documents.delete_many({"utilisateur_id": user_id})
         await db.permissions_stock.delete_many({"utilisateur_id": user_id})
