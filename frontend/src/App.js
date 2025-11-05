@@ -2023,6 +2023,7 @@ const PlanningManager = () => {
                           <SelectContent>
                             <SelectItem value="MATIN">Matin</SelectItem>
                             <SelectItem value="APRES_MIDI">Après-midi</SelectItem>
+                            <SelectItem value="JOURNEE">Journée complète</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
