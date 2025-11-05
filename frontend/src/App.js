@@ -2211,7 +2211,7 @@ const PlanningManager = () => {
                   required
                 >
                   <option value="">Sélectionner un employé</option>
-                  {users.filter(u => filterRole === 'TOUS' || u.role === filterRole).map(employe => (
+                  {users.filter(u => filterRole.includes('TOUS') || filterRole.includes(u.role)).map(employe => (
                     <option key={employe.id} value={employe.id}>
                       {employe.prenom} {employe.nom} ({employe.role})
                     </option>
