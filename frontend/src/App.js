@@ -3171,6 +3171,9 @@ const AdminManager = () => {
       setSelectedUser(null);
     } catch (error) {
       toast.error('Erreur lors de la modification du mot de passe');
+    }
+  };
+
   const handleUpdateEmail = async () => {
     if (!newEmail || !newEmail.includes('@')) {
       toast.error('Veuillez entrer une adresse email valide');
