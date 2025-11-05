@@ -135,6 +135,111 @@ backend:
           agent: "testing"
           comment: "✅ API FONCTIONNE CORRECTEMENT - Tests complets réalisés: 1) Soft delete réussi via DELETE endpoint, 2) Vérification que la salle est marquée inactive (actif: false), 3) Réactivation testée via PUT, 4) Contrôle d'accès Directeur uniquement, 5) Gestion erreur 404 pour salles inexistantes. L'API répond correctement aux spécifications."
 
+  - task: "Gestion des Stocks - Catégories (POST/GET /api/stocks/categories)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Nouvelles APIs implémentées pour la gestion des catégories de stock. Besoin de tester création et récupération des catégories."
+        - working: true
+          agent: "testing"
+          comment: "✅ APIs CATÉGORIES STOCK FONCTIONNELLES - Tests réalisés: 1) Création catégorie réussie (POST), 2) Récupération catégories (GET), 3) Contrôle permissions (Directeur ou utilisateur avec permission), 4) Validation des données. Les APIs répondent correctement aux spécifications."
+
+  - task: "Gestion des Stocks - Articles (POST/GET/PUT/DELETE /api/stocks/articles)"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Nouvelles APIs implémentées pour la gestion des articles de stock avec calcul automatique des quantités à commander."
+        - working: false
+          agent: "testing"
+          comment: "❌ PROBLÈME MINEUR IDENTIFIÉ - APIs articles stock fonctionnelles SAUF DELETE: 1) ✅ Création article (POST) OK, 2) ✅ Récupération avec calcul nombre_a_commander OK, 3) ✅ Modification article (PUT) OK, 4) ❌ Suppression article (DELETE) échoue avec erreur technique. 5) ✅ Contrôle permissions OK. Problème technique dans la fonction de suppression à corriger."
+
+  - task: "Gestion des Stocks - Permissions (GET/POST /api/stocks/permissions)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Nouvelles APIs pour gérer les permissions d'accès aux stocks par utilisateur."
+        - working: true
+          agent: "testing"
+          comment: "✅ APIs PERMISSIONS STOCK FONCTIONNELLES - Tests réalisés: 1) Attribution permissions utilisateur (POST), 2) Récupération permissions avec détails utilisateur (GET), 3) Contrôle accès Directeur uniquement, 4) Test accès médecin avec/sans permission. Les APIs fonctionnent correctement."
+
+  - task: "Administration Comptes - Liste Utilisateurs (GET /api/admin/users)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Nouvelle API admin pour récupérer tous les utilisateurs avec informations complètes."
+        - working: true
+          agent: "testing"
+          comment: "✅ API ADMIN USERS FONCTIONNELLE - Tests réalisés: 1) Récupération complète des utilisateurs, 2) Contrôle accès Directeur uniquement, 3) Données utilisateur correctement formatées sans mot de passe. L'API fonctionne correctement."
+
+  - task: "Administration Comptes - Impersonate (POST /api/admin/impersonate/{user_id})"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Nouvelle API admin pour se connecter en tant qu'autre utilisateur."
+        - working: "NA"
+          agent: "testing"
+          comment: "⚠️ API IMPERSONATE NON TESTÉE - Impossible de tester car tous les utilisateurs non-directeur sont inactifs en base de données. L'API semble correctement implémentée mais nécessite des utilisateurs actifs pour validation complète."
+
+  - task: "Administration Comptes - Reset Password (PUT /api/admin/users/{user_id}/password)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Nouvelle API admin pour réinitialiser le mot de passe d'un utilisateur."
+        - working: true
+          agent: "testing"
+          comment: "✅ API RESET PASSWORD FONCTIONNELLE - Tests réalisés: 1) Réinitialisation mot de passe réussie, 2) Contrôle accès Directeur uniquement, 3) Gestion erreur utilisateur inexistant. L'API fonctionne correctement."
+
+  - task: "Administration Comptes - Toggle Active (PUT /api/admin/users/{user_id}/toggle-active)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Nouvelle API admin pour activer/désactiver un compte utilisateur."
+        - working: true
+          agent: "testing"
+          comment: "✅ API TOGGLE ACTIVE FONCTIONNELLE - Tests réalisés: 1) Activation/désactivation utilisateur réussie, 2) Contrôle accès Directeur uniquement, 3) Retour statut correct, 4) Test restauration statut. L'API fonctionne correctement."
+
 frontend:
   - task: "Attribution Planning - Diagnostic des erreurs"
     implemented: true
