@@ -255,6 +255,18 @@ backend:
           agent: "testing"
           comment: "✅ API SUPPRESSION DÉFINITIVE FONCTIONNELLE ET SÉCURISÉE - Tests complets réalisés: 1) ✅ Sécurité: Directeur ne peut pas supprimer son propre compte, accès non-autorisé bloqué, 2) ✅ Gestion erreurs: 404 pour utilisateurs inexistants, 3) ✅ Fonctionnalité: Suppression complète utilisateur + toutes données associées (assignations, congés, planning, quotas, messages, documents, permissions, demandes travail, semaines type), 4) ✅ Vérification: Utilisateur complètement supprimé de la base, connexion impossible après suppression, 5) ✅ Structure réponse JSON correcte avec informations utilisateur supprimé. CORRECTION APPLIQUÉE: Fix collection 'conges' → 'demandes_conges' + ajout suppression messages destinataire. L'API fonctionne parfaitement selon spécifications sécuritaires."
 
+  - task: "Administration Comptes - Modification Email (PUT /api/admin/users/{user_id}/email)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Nouvelle API pour modification d'email des utilisateurs. Tests requis: 1) Sécurité - seul Directeur peut accéder, 2) Validation - email invalide/déjà utilisé/utilisateur inexistant, 3) Fonctionnalité - modification email et vérification base de données, 4) Test connexion - nouveau/ancien email."
+
 frontend:
   - task: "Attribution Planning - Diagnostic des erreurs"
     implemented: true
