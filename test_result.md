@@ -257,15 +257,18 @@ backend:
 
   - task: "Administration Comptes - Modification Email (PUT /api/admin/users/{user_id}/email)"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Nouvelle API pour modification d'email des utilisateurs. Tests requis: 1) Sécurité - seul Directeur peut accéder, 2) Validation - email invalide/déjà utilisé/utilisateur inexistant, 3) Fonctionnalité - modification email et vérification base de données, 4) Test connexion - nouveau/ancien email."
+        - working: true
+          agent: "testing"
+          comment: "✅ API MODIFICATION EMAIL ENTIÈREMENT FONCTIONNELLE! Tests complets réalisés: 1) ✅ Sécurité: Seul Directeur peut accéder (403 pour autres rôles), 2) ✅ Validation: 8 formats email invalides correctement rejetés (sans @, domaine manquant, etc.), 3) ✅ Validation: Email dupliqué correctement rejeté (400), 4) ✅ Gestion erreurs: Utilisateur inexistant (404), champ email manquant (400), 5) ✅ Fonctionnalité: Email modifié avec succès et persisté en base, 6) ✅ Connexion: Utilisateur peut se connecter avec nouvel email, 7) ✅ Connexion: Ancien email ne fonctionne plus (401), 8) ✅ Structure réponse JSON correcte avec ancien/nouveau email et nom utilisateur. CORRECTION APPLIQUÉE: Fix password_hash field dans reset password API. L'API fonctionne parfaitement selon toutes les spécifications demandées."
 
 frontend:
   - task: "Attribution Planning - Diagnostic des erreurs"
