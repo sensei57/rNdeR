@@ -3194,8 +3194,6 @@ const AdminManager = () => {
       toast.error(error.response?.data?.detail || 'Erreur lors de la modification de l\'email');
     }
   };
-    }
-  };
 
   const handleToggleActive = async (userId) => {
     try {
