@@ -1534,6 +1534,7 @@ const PlanningManager = () => {
   const [salles, setSalles] = useState([]);
   const [medecins, setMedecins] = useState([]);
   const [assistants, setAssistants] = useState([]);
+  const [congesApprouves, setCongesApprouves] = useState([]);
   const [filterRole, setFilterRole] = useState('TOUS');
   
   // Modals
