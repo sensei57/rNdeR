@@ -240,6 +240,18 @@ backend:
           agent: "testing"
           comment: "✅ API TOGGLE ACTIVE FONCTIONNELLE - Tests réalisés: 1) Activation/désactivation utilisateur réussie, 2) Contrôle accès Directeur uniquement, 3) Retour statut correct, 4) Test restauration statut. L'API fonctionne correctement."
 
+  - task: "Administration Comptes - Suppression Définitive (DELETE /api/admin/users/{user_id}/delete-permanently)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Nouvelle API critique pour suppression définitive des utilisateurs avec suppression de toutes les données associées. Tests de sécurité et fonctionnalité requis."
+
 frontend:
   - task: "Attribution Planning - Diagnostic des erreurs"
     implemented: true
