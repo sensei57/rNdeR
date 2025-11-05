@@ -2945,6 +2945,9 @@ def main():
     # Test NEW FEATURE: Admin Management
     tester.test_admin_management()
     
+    # Test NEW FEATURE: Email Modification API
+    tester.test_email_modification_api()
+    
     # Test CRITICAL NEW FEATURE: Permanent User Deletion
     tester.test_permanent_user_deletion()
     
