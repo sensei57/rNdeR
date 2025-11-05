@@ -2269,7 +2269,7 @@ const PlanningManager = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="space-y-6">
         {/* Planning Matin */}
         <Card>
           <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100">
@@ -2282,8 +2282,16 @@ const PlanningManager = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4">
-            <div className="space-y-3">
-              {planningMatin.map(creneau => (
+            {user?.role === 'Directeur' ? (
+              // Vue directeur : colonnes par rôle
+              <div className={`grid gap-4 ${getRoleGroups(planningMatin).length === 1 ? 'grid-cols-1' : 
+                getRoleGroups(planningMatin).length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                {getRoleGroups(planningMatin).map(group => (
+                  <div key={group.role} className="space-y-3">
+                    <h4 className="font-medium text-sm text-gray-600 border-b pb-1">
+                      {group.role}s ({group.creneaux.length})
+                    </h4>
+                    {group.creneaux.map(creneau => (
                 <div
                   key={creneau.id}
                   className={`border rounded-lg p-3 ${getRoleColor(creneau.employe_role)}`}
