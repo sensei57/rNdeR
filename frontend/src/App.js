@@ -3113,6 +3113,500 @@ const PlanCabinetManager = () => {
 };
 
 // Coffre-Fort Component
+const StocksManager = () => {
+  const { user } = useAuth();
+  const [categories, setCategories] = useState([]);
+  const [articles, setArticles] = useState([]);
+  const [permissions, setPermissions] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showArticleModal, setShowArticleModal] = useState(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [editingArticle, setEditingArticle] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const [newCategory, setNewCategory] = useState({
+    nom: '',
+    description: '',
+    couleur: '#3B82F6'
+  });
+
+  const [newArticle, setNewArticle] = useState({
+    nom: '',
+    description: '',
+    categorie_id: '',
+    photo_url: '',
+    nombre_souhaite: 0,
+    nombre_en_stock: 0,
+    lien_commande: ''
+  });
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [categoriesRes, articlesRes] = await Promise.all([
+        axios.get(`${API}/stocks/categories`),
+        axios.get(`${API}/stocks/articles`)
+      ]);
+      
+      setCategories(categoriesRes.data);
+      setArticles(articlesRes.data);
+
+      if (user?.role === 'Directeur') {
+        const permissionsRes = await axios.get(`${API}/stocks/permissions`);
+        setPermissions(permissionsRes.data);
+      }
+    } catch (error) {
+      toast.error('Erreur lors du chargement des données');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateCategory = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API}/stocks/categories`, newCategory);
+      toast.success('Catégorie créée avec succès');
+      fetchData();
+      setShowCategoryModal(false);
+      resetCategoryForm();
+    } catch (error) {
+      toast.error('Erreur lors de la création de la catégorie');
+    }
+  };
+
+  const handleCreateArticle = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingArticle) {
+        await axios.put(`${API}/stocks/articles/${editingArticle.id}`, newArticle);
+        toast.success('Article modifié avec succès');
+      } else {
+        await axios.post(`${API}/stocks/articles`, newArticle);
+        toast.success('Article créé avec succès');
+      }
+      fetchData();
+      setShowArticleModal(false);
+      resetArticleForm();
+    } catch (error) {
+      toast.error('Erreur lors de la sauvegarde de l\'article');
+    }
+  };
+
+  const handleDeleteArticle = async (articleId) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cet article ?')) return;
+    
+    try {
+      await axios.delete(`${API}/stocks/articles/${articleId}`);
+      toast.success('Article supprimé avec succès');
+      fetchData();
+    } catch (error) {
+      toast.error('Erreur lors de la suppression');
+    }
+  };
+
+  const handleEditArticle = (article) => {
+    setEditingArticle(article);
+    setNewArticle({
+      nom: article.nom,
+      description: article.description || '',
+      categorie_id: article.categorie_id,
+      photo_url: article.photo_url || '',
+      nombre_souhaite: article.nombre_souhaite,
+      nombre_en_stock: article.nombre_en_stock,
+      lien_commande: article.lien_commande || ''
+    });
+    setShowArticleModal(true);
+  };
+
+  const resetCategoryForm = () => {
+    setNewCategory({
+      nom: '',
+      description: '',
+      couleur: '#3B82F6'
+    });
+  };
+
+  const resetArticleForm = () => {
+    setEditingArticle(null);
+    setNewArticle({
+      nom: '',
+      description: '',
+      categorie_id: '',
+      photo_url: '',
+      nombre_souhaite: 0,
+      nombre_en_stock: 0,
+      lien_commande: ''
+    });
+  };
+
+  const handleImageClick = (imageUrl, articleNom) => {
+    setSelectedImage({ url: imageUrl, nom: articleNom });
+    setShowImageModal(true);
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setNewArticle({...newArticle, photo_url: event.target.result});
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const filteredArticles = selectedCategory === 'all' 
+    ? articles 
+    : articles.filter(article => article.categorie_id === selectedCategory);
+
+  const getBadgeColor = (nombreACommander) => {
+    if (nombreACommander <= 0) return 'bg-green-100 text-green-800';
+    if (nombreACommander <= 5) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-red-100 text-red-800';
+  };
+
+  if (loading) {
+    return <div className="flex justify-center p-8">Chargement...</div>;
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Gestion des Stocks</h2>
+        <div className="space-x-2">
+          <Button onClick={() => setShowCategoryModal(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nouvelle Catégorie
+          </Button>
+          <Button onClick={() => setShowArticleModal(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nouvel Article
+          </Button>
+          {user?.role === 'Directeur' && (
+            <Button variant="outline" onClick={() => setShowPermissionModal(true)}>
+              <Settings className="h-4 w-4 mr-2" />
+              Permissions
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Filtres par catégorie */}
+      <div className="flex space-x-2 overflow-x-auto">
+        <Button
+          variant={selectedCategory === 'all' ? 'default' : 'outline'}
+          onClick={() => setSelectedCategory('all')}
+          size="sm"
+        >
+          Toutes les catégories ({articles.length})
+        </Button>
+        {categories.map(category => (
+          <Button
+            key={category.id}
+            variant={selectedCategory === category.id ? 'default' : 'outline'}
+            onClick={() => setSelectedCategory(category.id)}
+            size="sm"
+            style={{ 
+              backgroundColor: selectedCategory === category.id ? category.couleur : 'transparent',
+              borderColor: category.couleur,
+              color: selectedCategory === category.id ? 'white' : category.couleur
+            }}
+          >
+            {category.nom} ({articles.filter(a => a.categorie_id === category.id).length})
+          </Button>
+        ))}
+      </div>
+
+      {/* Tableau des articles */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Articles de Stock</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left p-2">Photo</th>
+                  <th className="text-left p-2">Article</th>
+                  <th className="text-left p-2">Catégorie</th>
+                  <th className="text-left p-2">Stock Actuel</th>
+                  <th className="text-left p-2">Souhaité</th>
+                  <th className="text-left p-2">À Commander</th>
+                  <th className="text-left p-2">Lien</th>
+                  <th className="text-left p-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredArticles.map(article => (
+                  <tr key={article.id} className="border-b hover:bg-gray-50">
+                    <td className="p-2">
+                      {article.photo_url ? (
+                        <img
+                          src={article.photo_url}
+                          alt={article.nom}
+                          className="w-12 h-12 object-cover rounded cursor-pointer border"
+                          onClick={() => handleImageClick(article.photo_url, article.nom)}
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+                          <Package className="h-6 w-6 text-gray-400" />
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-2">
+                      <div 
+                        className="font-medium cursor-pointer hover:text-blue-600"
+                        onClick={() => article.photo_url && handleImageClick(article.photo_url, article.nom)}
+                      >
+                        {article.nom}
+                      </div>
+                      {article.description && (
+                        <div className="text-xs text-gray-500">{article.description}</div>
+                      )}
+                    </td>
+                    <td className="p-2">
+                      {article.categorie ? (
+                        <span 
+                          className="px-2 py-1 rounded text-xs font-medium"
+                          style={{ 
+                            backgroundColor: article.categorie.couleur + '20',
+                            color: article.categorie.couleur
+                          }}
+                        >
+                          {article.categorie.nom}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-xs">Sans catégorie</span>
+                      )}
+                    </td>
+                    <td className="p-2 text-center">{article.nombre_en_stock}</td>
+                    <td className="p-2 text-center">{article.nombre_souhaite}</td>
+                    <td className="p-2 text-center">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${getBadgeColor(article.nombre_a_commander)}`}>
+                        {article.nombre_a_commander > 0 ? article.nombre_a_commander : '✓'}
+                      </span>
+                    </td>
+                    <td className="p-2">
+                      {article.lien_commande && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => window.open(article.lien_commande, '_blank')}
+                        >
+                          <Link className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </td>
+                    <td className="p-2">
+                      <div className="flex space-x-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEditArticle(article)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteArticle(article.id)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {filteredArticles.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                Aucun article trouvé dans cette catégorie
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Modal Nouvelle Catégorie */}
+      <Dialog open={showCategoryModal} onOpenChange={setShowCategoryModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Nouvelle Catégorie</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateCategory} className="space-y-4">
+            <div>
+              <Label>Nom de la catégorie</Label>
+              <Input
+                value={newCategory.nom}
+                onChange={(e) => setNewCategory({...newCategory, nom: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Input
+                value={newCategory.description}
+                onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label>Couleur</Label>
+              <Input
+                type="color"
+                value={newCategory.couleur}
+                onChange={(e) => setNewCategory({...newCategory, couleur: e.target.value})}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setShowCategoryModal(false)}>
+                Annuler
+              </Button>
+              <Button type="submit">Créer</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Nouvel Article */}
+      <Dialog open={showArticleModal} onOpenChange={setShowArticleModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{editingArticle ? 'Modifier' : 'Nouvel'} Article</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateArticle} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Nom de l'article</Label>
+                <Input
+                  value={newArticle.nom}
+                  onChange={(e) => setNewArticle({...newArticle, nom: e.target.value})}
+                  required
+                />
+              </div>
+              <div>
+                <Label>Catégorie</Label>
+                <select
+                  className="w-full p-2 border rounded"
+                  value={newArticle.categorie_id}
+                  onChange={(e) => setNewArticle({...newArticle, categorie_id: e.target.value})}
+                  required
+                >
+                  <option value="">Sélectionner une catégorie</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.nom}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            <div>
+              <Label>Description</Label>
+              <Input
+                value={newArticle.description}
+                onChange={(e) => setNewArticle({...newArticle, description: e.target.value})}
+              />
+            </div>
+
+            <div>
+              <Label>Photo de l'article</Label>
+              <div className="flex items-center space-x-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                >
+                  <Upload className="h-4 w-4" />
+                </Button>
+              </div>
+              {newArticle.photo_url && (
+                <img 
+                  src={newArticle.photo_url} 
+                  alt="Aperçu" 
+                  className="mt-2 w-20 h-20 object-cover rounded border"
+                />
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Nombre en stock</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={newArticle.nombre_en_stock}
+                  onChange={(e) => setNewArticle({...newArticle, nombre_en_stock: parseInt(e.target.value) || 0})}
+                />
+              </div>
+              <div>
+                <Label>Nombre souhaité</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={newArticle.nombre_souhaite}
+                  onChange={(e) => setNewArticle({...newArticle, nombre_souhaite: parseInt(e.target.value) || 0})}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label>Lien de commande</Label>
+              <Input
+                type="url"
+                value={newArticle.lien_commande}
+                onChange={(e) => setNewArticle({...newArticle, lien_commande: e.target.value})}
+                placeholder="https://..."
+              />
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setShowArticleModal(false)}>
+                Annuler
+              </Button>
+              <Button type="submit">
+                {editingArticle ? 'Modifier' : 'Créer'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal d'affichage d'image */}
+      <Dialog open={showImageModal} onOpenChange={setShowImageModal}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>{selectedImage?.nom}</DialogTitle>
+          </DialogHeader>
+          {selectedImage && (
+            <div className="flex justify-center">
+              <img 
+                src={selectedImage.url} 
+                alt={selectedImage.nom}
+                className="max-w-full max-h-96 object-contain rounded"
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
 const CoffreFortManager = () => {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
