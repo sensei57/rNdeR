@@ -3450,11 +3450,15 @@ const AttributionManager = () => {
     }
 
     try {
+      // Find the salle name from the ID
+      const selectedSalle = salles.find(s => s.id === attribution.salle_attribuee);
+      const salleNom = selectedSalle ? selectedSalle.nom : attribution.salle_attribuee;
+      
       const params = new URLSearchParams({
         employe_id: attribution.employe_id,
         date: selectedSlot.date,
         creneau: selectedSlot.creneau,
-        salle_attribuee: attribution.salle_attribuee,
+        salle_attribuee: salleNom,
         notes: attribution.notes
       });
       
