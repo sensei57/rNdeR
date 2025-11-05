@@ -1705,6 +1705,55 @@ const PlanningManager = () => {
       console.error('Erreur lors du chargement du planning:', error);
     }
   };
+  // Fonctions pour l'attribution (Directeur uniquement)
+  const handleSlotClick = (date, period) => {
+    if (user?.role !== 'Directeur') return;
+    
+    setSelectedSlot({ date, period });
+    setAttribution({
+      employe_id: '',
+      salle_attribuee: '',
+      medecin_ids: [],
+      notes: ''
+    });
+    setShowAttributionModal(true);
+  };
+
+  const handleCreateAttribution = async (e) => {
+    e.preventDefault();
+    
+    if (!attribution.employe_id || !selectedSlot) {
+      toast.error('Veuillez sélectionner un employé');
+      return;
+    }
+
+    try {
+      const creneauData = {
+        date: selectedSlot.date,
+        creneau: selectedSlot.period,
+        employe_id: attribution.employe_id,
+        salle_attribuee: attribution.salle_attribuee,
+        notes: attribution.notes
+      };
+
+      await axios.post(`${API}/planning`, creneauData);
+      toast.success('Attribution créée avec succès');
+      setShowAttributionModal(false);
+      fetchPlanningSemaine(selectedWeek);
+    } catch (error) {
+      toast.error('Erreur lors de la création de l\'attribution');
+    }
+  };
+
+  const resetAttributionForm = () => {
+    setAttribution({
+      employe_id: '',
+      salle_attribuee: '',
+      medecin_ids: [],
+      notes: ''
+    });
+    setSelectedSlot(null);
+  };
 
   const handleCreateCreneau = async (e) => {
     e.preventDefault();
