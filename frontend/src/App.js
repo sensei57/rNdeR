@@ -3390,6 +3390,66 @@ const AdminManager = () => {
           </div>
         </DialogContent>
       </Dialog>
+      {/* Modal de suppression définitive */}
+      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-red-600">
+              ⚠️ Supprimer définitivement {selectedUser?.prenom} {selectedUser?.nom}
+            </DialogTitle>
+            <DialogDescription className="space-y-2">
+              <div className="font-semibold text-red-600">
+                ATTENTION : Cette action est IRRÉVERSIBLE !
+              </div>
+              <div>
+                Cette action supprimera définitivement :
+              </div>
+              <ul className="list-disc pl-6 text-sm space-y-1">
+                <li>Le compte utilisateur</li>
+                <li>Tout l'historique des congés</li>
+                <li>Les plannings et assignations</li>
+                <li>Les messages et documents</li>
+                <li>Les quotas et demandes de travail</li>
+                <li>Toutes les permissions</li>
+              </ul>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="bg-red-50 border border-red-200 p-3 rounded">
+              <Label className="text-red-800 font-medium">
+                Pour confirmer, tapez exactement : 
+                <span className="font-bold">SUPPRIMER {selectedUser?.prenom} {selectedUser?.nom}</span>
+              </Label>
+              <Input
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder={`SUPPRIMER ${selectedUser?.prenom} ${selectedUser?.nom}`}
+                className="mt-2 border-red-300 focus:border-red-500"
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteConfirmText('');
+                  setSelectedUser(null);
+                }}
+              >
+                Annuler
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleDeleteUser}
+                disabled={deleteConfirmText !== `SUPPRIMER ${selectedUser?.prenom} ${selectedUser?.nom}`}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Supprimer définitivement
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Section d'informations */}
       <Card>
