@@ -4313,7 +4313,6 @@ const Dashboard = () => {
       { id: 'conges', label: 'Congés', icon: Clock },
       { id: 'messages', label: 'Messages', icon: MessageSquare },
       { id: 'documents', label: 'Mon Coffre-Fort', icon: FileText },
-      { id: 'plan-cabinet', label: 'Plan Cabinet', icon: MapPin },
     ];
 
     // Ajouter demandes de travail pour médecins et directeur
@@ -4323,6 +4322,8 @@ const Dashboard = () => {
 
     if (user?.role === 'Directeur') {
       items.push({ id: 'attributions', label: 'Attribution Planning', icon: CalendarDays });
+      items.push({ id: 'plan-cabinet', label: 'Plan Cabinet', icon: MapPin });
+      items.push({ id: 'stocks', label: 'Gestion Stocks', icon: Building2 });
       items.push({ id: 'salles', label: 'Gestion Salles', icon: Building2 });
       items.push({ id: 'admin', label: 'Administration', icon: Settings });
     }
