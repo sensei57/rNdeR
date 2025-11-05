@@ -2111,6 +2111,78 @@ const PlanningManager = () => {
                   </form>
                 </DialogContent>
               </Dialog>
+      {/* Modal d'attribution pour le Directeur */}
+      {user?.role === 'Directeur' && (
+        <Dialog open={showAttributionModal} onOpenChange={setShowAttributionModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                Attribuer un créneau - {selectedSlot?.date} {selectedSlot?.period === 'MATIN' ? 'Matin' : 'Après-midi'}
+              </DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCreateAttribution} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Employé *</Label>
+                <select
+                  className="w-full p-2 border rounded"
+                  value={attribution.employe_id}
+                  onChange={(e) => setAttribution({...attribution, employe_id: e.target.value})}
+                  required
+                >
+                  <option value="">Sélectionner un employé</option>
+                  {users.filter(u => filterRole === 'TOUS' || u.role === filterRole).map(employe => (
+                    <option key={employe.id} value={employe.id}>
+                      {employe.prenom} {employe.nom} ({employe.role})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Salle</Label>
+                <select
+                  className="w-full p-2 border rounded"
+                  value={attribution.salle_attribuee}
+                  onChange={(e) => setAttribution({...attribution, salle_attribuee: e.target.value})}
+                >
+                  <option value="">Aucune salle</option>
+                  {salles.map(salle => (
+                    <option key={salle.id} value={salle.nom}>
+                      {salle.nom} ({salle.type_salle})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Notes</Label>
+                <Textarea
+                  placeholder="Notes additionnelles..."
+                  value={attribution.notes}
+                  onChange={(e) => setAttribution({...attribution, notes: e.target.value})}
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowAttributionModal(false);
+                    resetAttributionForm();
+                  }}
+                >
+                  Annuler
+                </Button>
+                <Button type="submit">
+                  Attribuer
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
             </>
           )}
         </div>
