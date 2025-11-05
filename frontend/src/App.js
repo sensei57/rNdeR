@@ -3426,6 +3426,51 @@ const AdminManager = () => {
         </DialogContent>
       </Dialog>
       {/* Modal de suppression définitive */}
+      {/* Modal de modification d'email */}
+      <Dialog open={showEmailModal} onOpenChange={setShowEmailModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Modifier l'email de {selectedUser?.prenom} {selectedUser?.nom}
+            </DialogTitle>
+            <DialogDescription>
+              Définissez une nouvelle adresse email pour cet utilisateur
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Email actuel</Label>
+              <Input
+                value={selectedUser?.email || ''}
+                disabled
+                className="bg-gray-50"
+              />
+            </div>
+            <div>
+              <Label>Nouvel email</Label>
+              <Input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="exemple@hopital.fr"
+              />
+            </div>
+            <div className="bg-blue-50 border border-blue-200 p-3 rounded">
+              <div className="text-sm text-blue-800">
+                <strong>Note :</strong> L'utilisateur devra utiliser ce nouvel email pour se connecter.
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowEmailModal(false)}>
+                Annuler
+              </Button>
+              <Button onClick={handleUpdateEmail}>
+                Modifier l'email
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
         <DialogContent>
           <DialogHeader>
