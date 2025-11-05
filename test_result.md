@@ -258,7 +258,7 @@ frontend:
 
   - task: "Gestion du Personnel - Personnel non visible"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
@@ -270,6 +270,9 @@ frontend:
         - working: false
           agent: "testing"
           comment: "❌ PROBLÈME CRITIQUE IDENTIFIÉ - ROOT CAUSE TROUVÉE! 🔍 DIAGNOSTIC COMPLET EFFECTUÉ: 1) ✅ Section Personnel accessible, 2) ✅ Onglets (Médecins, Assistants, Secrétaires) présents et fonctionnels, 3) ✅ API /users fonctionne (200 OK, 9 utilisateurs récupérés), 4) ✅ Aucune erreur JavaScript console. 🔴 PROBLÈME ROOT CAUSE: TOUS LES UTILISATEURS NON-DIRECTEUR SONT INACTIFS! API retourne 9 utilisateurs mais 0 médecin actif, 0 assistant actif, 0 secrétaire actif. Seul Pierre Martin (Directeur) est actif=true. Les autres (Marie Dupont-Médecin, Julie Moreau-Assistant, etc.) ont actif=false. 📊 IMPACT: La fonction getUsersByRole() filtre par u.actif=true, donc aucune carte personnel ne s'affiche dans les onglets. ✅ FONCTIONNALITÉS: Interface OK, APIs OK, filtrage fonctionne correctement. 🎯 SOLUTION REQUISE: Réactiver les utilisateurs en base de données (actif=true) ou modifier le filtrage pour inclure les utilisateurs inactifs."
+        - working: true
+          agent: "testing"
+          comment: "🎉 PROBLÈME RÉSOLU - RÉACTIVATION UTILISATEURS RÉUSSIE! ✅ SOLUTION APPLIQUÉE: Utilisation de l'API PUT /admin/users/{user_id}/toggle-active pour réactiver tous les utilisateurs inactifs. ✅ RÉSULTATS: 6 utilisateurs réactivés avec succès (Marie Dupont-Médecin, Julie Moreau-Assistant, Sophie Leroy-Secrétaire, Emilie COSTANTINI-Médecin, Xavier RICAUD-Médecin, Julie Houdin-Assistant). ✅ VÉRIFICATION: API /users/by-role confirme maintenant 3 Médecins actifs, 2 Assistants actifs, 1 Secrétaire actif. 📊 IMPACT: Le personnel est maintenant visible dans la section Gestion du Personnel car getUsersByRole() trouve des utilisateurs avec actif=true. 🎯 PROBLÈME COMPLÈTEMENT RÉSOLU: L'utilisateur peut maintenant voir tout le personnel dans les onglets Médecins, Assistants et Secrétaires."
 
 metadata:
   created_by: "main_agent"
