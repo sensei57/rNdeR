@@ -521,6 +521,61 @@ async def get_users_by_role(
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
     return current_user
 
+@api_router.put("/users/me/email")
+async def update_my_email(
+    email_data: Dict[str, str],
+    current_user: User = Depends(get_current_user)
+):
+    """Permet à un utilisateur de changer son propre email"""
+    new_email = email_data.get('email')
+    
+    if not new_email or '@' not in new_email:
+        raise HTTPException(status_code=400, detail="Email invalide")
+    
+    # Vérifier si l'email existe déjà
+    existing_user = await db.users.find_one({"email": new_email})
+    if existing_user and existing_user['id'] != current_user.id:
+        raise HTTPException(status_code=400, detail="Cet email est déjà utilisé")
+    
+    # Mettre à jour l'email
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$set": {"email": new_email}}
+    )
+    
+    return {"message": "Email mis à jour avec succès", "email": new_email}
+
+@api_router.put("/users/me/password")
+async def update_my_password(
+    password_data: Dict[str, str],
+    current_user: User = Depends(get_current_user)
+):
+    """Permet à un utilisateur de changer son propre mot de passe"""
+    current_password = password_data.get('current_password')
+    new_password = password_data.get('new_password')
+    
+    if not current_password or not new_password:
+        raise HTTPException(status_code=400, detail="Mot de passe actuel et nouveau requis")
+    
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Le mot de passe doit contenir au moins 6 caractères")
+    
+    # Récupérer l'utilisateur avec son mot de passe
+    user = await db.users.find_one({"id": current_user.id})
+    
+    # Vérifier le mot de passe actuel
+    if not verify_password(current_password, user.get('password_hash')):
+        raise HTTPException(status_code=400, detail="Mot de passe actuel incorrect")
+    
+    # Hasher et mettre à jour le nouveau mot de passe
+    new_password_hash = get_password_hash(new_password)
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$set": {"password_hash": new_password_hash}}
+    )
+    
+    return {"message": "Mot de passe mis à jour avec succès"}
+
 @api_router.put("/users/{user_id}", response_model=User)
 async def update_user(
     user_id: str,
