@@ -2060,6 +2060,7 @@ const PlanningManager = () => {
                             employe_id: value,
                             // Reset fields when changing employee
                             medecin_attribue_id: '',
+                            medecin_ids: [],
                             salle_attribuee: '',
                             salle_attente: '',
                             horaire_debut: employe?.role === 'Secrétaire' ? '08:00' : '',
