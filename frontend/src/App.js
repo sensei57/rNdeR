@@ -5545,6 +5545,203 @@ const ChatManager = () => {
   );
 };
 
+// Mon Profil Component
+const MonProfilManager = () => {
+  const { user } = useAuth();
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+
+  const handleUpdateEmail = async () => {
+    if (!newEmail || !newEmail.includes('@')) {
+      toast.error('Veuillez entrer une adresse email valide');
+      return;
+    }
+
+    try {
+      await axios.put(`${API}/users/me/email`, { email: newEmail });
+      toast.success('Email mis à jour avec succès. Veuillez vous reconnecter.');
+      setShowEmailModal(false);
+      setNewEmail('');
+      // Rediriger vers la page de connexion après 2 secondes
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 2000);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la mise à jour de l\'email');
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (!passwordData.currentPassword || !passwordData.newPassword) {
+      toast.error('Veuillez remplir tous les champs');
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error('Les mots de passe ne correspondent pas');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      toast.error('Le mot de passe doit contenir au moins 6 caractères');
+      return;
+    }
+
+    try {
+      await axios.put(`${API}/users/me/password`, {
+        current_password: passwordData.currentPassword,
+        new_password: passwordData.newPassword
+      });
+      toast.success('Mot de passe mis à jour avec succès');
+      setShowPasswordModal(false);
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la mise à jour du mot de passe');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800">Mon Profil</h2>
+        <p className="text-gray-600 mt-1">Gérez vos informations personnelles</p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Informations du compte</CardTitle>
+          <CardDescription>Vos informations personnelles</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-sm text-gray-500">Prénom</Label>
+              <p className="text-lg font-medium">{user?.prenom}</p>
+            </div>
+            <div>
+              <Label className="text-sm text-gray-500">Nom</Label>
+              <p className="text-lg font-medium">{user?.nom}</p>
+            </div>
+            <div>
+              <Label className="text-sm text-gray-500">Rôle</Label>
+              <Badge variant="outline">{user?.role}</Badge>
+            </div>
+            <div>
+              <Label className="text-sm text-gray-500">Email</Label>
+              <div className="flex items-center space-x-2">
+                <p className="text-lg font-medium">{user?.email}</p>
+                <Button size="sm" variant="outline" onClick={() => setShowEmailModal(true)}>
+                  <Edit className="h-3 w-3 mr-1" />
+                  Modifier
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Sécurité</CardTitle>
+          <CardDescription>Gérez votre mot de passe</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button onClick={() => setShowPasswordModal(true)}>
+            Changer mon mot de passe
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Modal de modification d'email */}
+      <Dialog open={showEmailModal} onOpenChange={setShowEmailModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier mon email</DialogTitle>
+            <DialogDescription>
+              Vous devrez vous reconnecter après la modification
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Email actuel</Label>
+              <Input value={user?.email} disabled />
+            </div>
+            <div>
+              <Label>Nouvel email</Label>
+              <Input
+                type="email"
+                placeholder="nouveau@email.com"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowEmailModal(false)}>
+                Annuler
+              </Button>
+              <Button onClick={handleUpdateEmail}>
+                Modifier l'email
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de modification de mot de passe */}
+      <Dialog open={showPasswordModal} onOpenChange={setShowPasswordModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Changer mon mot de passe</DialogTitle>
+            <DialogDescription>
+              Entrez votre mot de passe actuel et choisissez-en un nouveau
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Mot de passe actuel</Label>
+              <Input
+                type="password"
+                value={passwordData.currentPassword}
+                onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label>Nouveau mot de passe</Label>
+              <Input
+                type="password"
+                value={passwordData.newPassword}
+                onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label>Confirmer le nouveau mot de passe</Label>
+              <Input
+                type="password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowPasswordModal(false)}>
+                Annuler
+              </Button>
+              <Button onClick={handleUpdatePassword}>
+                Changer le mot de passe
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
 // Main Dashboard
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('personnel');
