@@ -4116,6 +4116,7 @@ const StocksManager = () => {
                   <th className="text-left p-2">Photo</th>
                   <th className="text-left p-2">Article</th>
                   <th className="text-left p-2">Catégorie</th>
+                  <th className="text-left p-2">Lieu</th>
                   <th className="text-left p-2">Stock Actuel</th>
                   <th className="text-left p-2">Souhaité</th>
                   <th className="text-left p-2">À Commander</th>
