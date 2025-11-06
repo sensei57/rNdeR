@@ -358,75 +358,93 @@ frontend:
 
   - task: "Planning Interactif - Sélection multiple des rôles"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "user"
           comment: "Nouvelle fonctionnalité: Les filtres permettent maintenant de sélectionner plusieurs rôles en même temps (Médecins + Assistants par exemple). Tests requis: 1) Se connecter comme Directeur, 2) Naviguer vers Planning, 3) Tester la sélection de 'Médecins' puis ajouter 'Assistants', 4) Vérifier que les deux restent actifs simultanément."
+        - working: false
+          agent: "testing"
+          comment: "❌ ERREUR JAVASCRIPT CRITIQUE BLOQUE LES TESTS - L'application ne se charge pas à cause d'une erreur de syntaxe JSX dans App.js ligne 2417:19 'Unexpected token, expected comma'. Erreur: 'Adjacent JSX elements must be wrapped in an enclosing tag'. Corrections partielles appliquées (suppression boutons delete dupliqués, correction template literals) mais erreur persiste. L'interface Planning Interactif est inaccessible tant que cette erreur n'est pas résolue."
 
   - task: "Planning Interactif - Affichage en colonnes par rôle"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "user"
           comment: "Nouvelle fonctionnalité: Le planning matin/après-midi est maintenant séparé en colonnes selon les rôles sélectionnés (1, 2 ou 3 colonnes). Tests requis: Vérifier que l'affichage se divise en colonnes selon les rôles sélectionnés dans les filtres."
+        - working: false
+          agent: "testing"
+          comment: "❌ ERREUR JAVASCRIPT CRITIQUE BLOQUE LES TESTS - Impossible de tester cette fonctionnalité car l'application ne se charge pas à cause de l'erreur JSX. La fonctionnalité semble implémentée (boutons filtres Médecins/Assistants/Secrétaires visibles dans le code) mais non testable."
 
   - task: "Planning Interactif - Navigation par flèches"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "user"
           comment: "Nouvelle fonctionnalité: Boutons précédent/suivant pour naviguer entre les semaines. Tests requis: Tester les boutons flèche gauche/droite pour changer de semaine."
+        - working: false
+          agent: "testing"
+          comment: "❌ ERREUR JAVASCRIPT CRITIQUE BLOQUE LES TESTS - Impossible de tester la navigation par flèches car l'application ne se charge pas. Les boutons ChevronLeft/ChevronRight et fonction navigateWeek sont implémentés dans le code mais non testables."
 
   - task: "Planning Interactif - Bouton Aujourd'hui"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "user"
           comment: "Nouvelle fonctionnalité: Bouton 'Aujourd'hui' pour revenir rapidement à la date actuelle. Tests requis: Tester le bouton 'Aujourd'hui'."
+        - working: false
+          agent: "testing"
+          comment: "❌ ERREUR JAVASCRIPT CRITIQUE BLOQUE LES TESTS - Impossible de tester le bouton 'Aujourd'hui' car l'application ne se charge pas. Le bouton et la fonction goToToday sont implémentés dans le code mais non testables."
 
   - task: "Planning Interactif - Option Journée complète"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "user"
           comment: "Nouvelle fonctionnalité: Nouveau créneau 'Journée complète' disponible en plus de matin/après-midi. Tests requis: Créer un nouveau créneau avec l'option 'Journée complète' et vérifier qu'une nouvelle section apparaît."
+        - working: false
+          agent: "testing"
+          comment: "❌ ERREUR JAVASCRIPT CRITIQUE BLOQUE LES TESTS - Impossible de tester l'option 'Journée complète' car l'application ne se charge pas. L'option JOURNEE est implémentée dans le SelectItem du modal 'Nouveau Créneau' mais non testable."
 
   - task: "Planning Interactif - Liaison médecin-assistant"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "user"
           comment: "Nouvelle fonctionnalité: Dans le modal d'attribution, possibilité de lier un médecin avec un assistant et vice versa. Tests requis: 1) Créer une attribution avec un médecin et associer un assistant, 2) Créer une attribution avec un assistant et associer un médecin."
+        - working: false
+          agent: "testing"
+          comment: "❌ ERREUR JAVASCRIPT CRITIQUE BLOQUE LES TESTS - Impossible de tester la liaison médecin-assistant car l'application ne se charge pas. La fonctionnalité est implémentée dans le modal d'attribution (lignes 2237-2293) avec logique conditionnelle pour proposer assistants/médecins selon le rôle sélectionné, mais non testable."
 
 agent_communication:
     - agent: "testing"
