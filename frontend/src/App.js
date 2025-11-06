@@ -1610,21 +1610,6 @@ const PlanningManager = () => {
     }
   };
 
-  const fetchData = async () => {
-    try {
-      if (user?.role === 'Directeur') {
-        const [usersRes, sallesRes] = await Promise.all([
-          axios.get(`${API}/users`),
-          axios.get(`${API}/salles`)
-        ]);
-        setUsers(usersRes.data);
-        setSalles(sallesRes.data);
-      }
-    } catch (error) {
-      console.error('Erreur chargement données:', error);
-    }
-  };
-
   useEffect(() => {
     fetchData();
   }, []);
