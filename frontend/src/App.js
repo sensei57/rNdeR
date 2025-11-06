@@ -5774,6 +5774,8 @@ const Dashboard = () => {
 
   const renderContent = () => {
     switch (activeTab) {
+      case 'profil':
+        return <MonProfilManager />;
       case 'personnel':
         return <PersonnelManager />;
       case 'planning':
