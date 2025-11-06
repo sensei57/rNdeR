@@ -1987,7 +1987,7 @@ const PlanningManager = () => {
           </div>
           
           {user?.role === 'Directeur' && (
-            <>
+            <div>
               <Button
                 onClick={generateNotifications}
                 variant="outline"
