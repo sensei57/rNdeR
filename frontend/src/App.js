@@ -2902,6 +2902,7 @@ const PlanningManager = () => {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   );
 };
