@@ -336,7 +336,13 @@ test_plan:
     - "Planning Interactif - Bouton Aujourd'hui"
     - "Planning Interactif - Option Journée complète"
     - "Planning Interactif - Liaison médecin-assistant"
-  stuck_tasks: []
+  stuck_tasks: 
+    - "Planning Interactif - Sélection multiple des rôles"
+    - "Planning Interactif - Affichage en colonnes par rôle"
+    - "Planning Interactif - Navigation par flèches"
+    - "Planning Interactif - Bouton Aujourd'hui"
+    - "Planning Interactif - Option Journée complète"
+    - "Planning Interactif - Liaison médecin-assistant"
   test_all: false
   test_priority: "high_first"
 
