@@ -4082,6 +4082,27 @@ const StocksManager = () => {
         ))}
       </div>
 
+      {/* Filtres par lieu */}
+      <div className="flex space-x-2 overflow-x-auto">
+        <Button
+          variant={selectedLieu === 'all' ? 'default' : 'outline'}
+          onClick={() => setSelectedLieu('all')}
+          size="sm"
+        >
+          Tous les lieux
+        </Button>
+        {lieux.map(lieu => (
+          <Button
+            key={lieu}
+            variant={selectedLieu === lieu ? 'default' : 'outline'}
+            onClick={() => setSelectedLieu(lieu)}
+            size="sm"
+          >
+            {lieu} ({articles.filter(a => a.lieu === lieu).length})
+          </Button>
+        ))}
+      </div>
+
       {/* Tableau des articles */}
       <Card>
         <CardHeader>
