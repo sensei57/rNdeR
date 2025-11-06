@@ -2300,6 +2300,8 @@ const PlanningManager = () => {
           </DialogContent>
         </Dialog>
           )}
+        </div>
+      </div>
 
         {/* Planning Matin */}
         <Card>
