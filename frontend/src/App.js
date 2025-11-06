@@ -4306,6 +4306,15 @@ const StocksManager = () => {
             </div>
 
             <div>
+              <Label>Lieu</Label>
+              <Input
+                value={newArticle.lieu}
+                onChange={(e) => setNewArticle({...newArticle, lieu: e.target.value})}
+                placeholder="Ex: Armoire A, Salle de soins, Réfrigérateur..."
+              />
+            </div>
+
+            <div>
               <Label>Photo de l'article</Label>
               <div className="flex items-center space-x-2">
                 <Input
