@@ -2079,25 +2079,41 @@ const PlanningManager = () => {
                       </Select>
                     </div>
                     
-                    {/* Médecin attribué (pour assistants) */}
+                    {/* Médecins attribués (pour assistants) - Sélection multiple */}
                     {users.find(u => u.id === newCreneau.employe_id)?.role === 'Assistant' && (
                       <div className="space-y-2">
-                        <Label>Médecin attribué</Label>
-                        <Select
-                          value={newCreneau.medecin_attribue_id}
-                          onValueChange={(value) => setNewCreneau({...newCreneau, medecin_attribue_id: value})}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionnez un médecin" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {medecins.map(medecin => (
-                              <SelectItem key={medecin.id} value={medecin.id}>
+                        <Label>Médecins attribués (plusieurs possibles)</Label>
+                        <div className="border rounded p-3 space-y-2">
+                          {medecins.map(medecin => (
+                            <div key={medecin.id} className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                id={`medecin-${medecin.id}`}
+                                checked={newCreneau.medecin_ids.includes(medecin.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setNewCreneau({
+                                      ...newCreneau,
+                                      medecin_ids: [...newCreneau.medecin_ids, medecin.id]
+                                    });
+                                  } else {
+                                    setNewCreneau({
+                                      ...newCreneau,
+                                      medecin_ids: newCreneau.medecin_ids.filter(id => id !== medecin.id)
+                                    });
+                                  }
+                                }}
+                                className="w-4 h-4"
+                              />
+                              <label htmlFor={`medecin-${medecin.id}`} className="cursor-pointer">
                                 Dr. {medecin.prenom} {medecin.nom}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                              </label>
+                            </div>
+                          ))}
+                          {medecins.length === 0 && (
+                            <p className="text-sm text-gray-500">Aucun médecin disponible</p>
+                          )}
+                        </div>
                       </div>
                     )}
                     
