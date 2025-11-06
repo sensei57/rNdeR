@@ -3970,6 +3970,7 @@ const StocksManager = () => {
       nom: article.nom,
       description: article.description || '',
       categorie_id: article.categorie_id,
+      lieu: article.lieu || '',
       photo_url: article.photo_url || '',
       nombre_souhaite: article.nombre_souhaite,
       nombre_en_stock: article.nombre_en_stock,
