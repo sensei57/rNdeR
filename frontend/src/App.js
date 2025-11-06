@@ -3869,6 +3869,7 @@ const StocksManager = () => {
   const [articles, setArticles] = useState([]);
   const [permissions, setPermissions] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedLieu, setSelectedLieu] = useState('all');
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showArticleModal, setShowArticleModal] = useState(false);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
@@ -3887,6 +3888,7 @@ const StocksManager = () => {
     nom: '',
     description: '',
     categorie_id: '',
+    lieu: '',
     photo_url: '',
     nombre_souhaite: 0,
     nombre_en_stock: 0,
