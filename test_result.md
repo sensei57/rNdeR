@@ -402,7 +402,7 @@ frontend:
     implemented: true
     working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -412,6 +412,9 @@ frontend:
         - working: false
           agent: "testing"
           comment: "❌ ERREUR JAVASCRIPT CRITIQUE BLOQUE LES TESTS - Impossible de tester la navigation par flèches car l'application ne se charge pas. Les boutons ChevronLeft/ChevronRight et fonction navigateWeek sont implémentés dans le code mais non testables."
+        - working: false
+          agent: "testing"
+          comment: "❌ ERREUR JSX CRITIQUE BLOQUE TOUJOURS LES TESTS - Impossible de tester la navigation par flèches car l'application ne se charge pas. Erreur 'Adjacent JSX elements must be wrapped in an enclosing tag' ligne 2323:12 persiste. Fonctionnalité implémentée (ChevronLeft/ChevronRight, navigateWeek) mais non testable."
 
   - task: "Planning Interactif - Bouton Aujourd'hui"
     implemented: true
