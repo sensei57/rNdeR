@@ -2530,8 +2530,8 @@ const PlanningManager = () => {
                     )}
                   </div>
                 </div>
-                    ))}
-                    {group.creneaux.length === 0 && (
+                  ))}
+                  {group.creneaux.length === 0 && (
                       <div className="text-center py-4 text-gray-400 text-sm">
                         Aucun {group.role.toLowerCase()}
                       </div>
