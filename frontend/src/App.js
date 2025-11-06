@@ -2446,6 +2446,43 @@ const PlanningManager = () => {
                   </div>
                 )}
               </div>
+            ) : (
+              // Vue employé : liste simple
+              <div className="space-y-3">
+                {planningMatin.map(creneau => (
+                  <div
+                    key={creneau.id}
+                    className={`border rounded-lg p-3 ${getRoleColor(creneau.employe_role)}`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <div className="font-medium">
+                          {getEmployeInfo(creneau.employe)}
+                        </div>
+                        
+                        {creneau.salle_attribuee && (
+                          <div className="text-sm text-gray-600">
+                            📍 Salle: {creneau.salle_attribuee}
+                          </div>
+                        )}
+                        
+                        {creneau.notes && (
+                          <div className="text-sm text-gray-600 italic">
+                            📝 {creneau.notes}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {planningMatin.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    <CalendarDays className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                    <p>Aucun créneau programmé le matin</p>
+                  </div>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>
