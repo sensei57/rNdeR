@@ -1987,7 +1987,7 @@ const PlanningManager = () => {
           </div>
           
           {user?.role === 'Directeur' && (
-            <div className="flex items-center space-x-2">
+            <>
               <Button
                 onClick={generateNotifications}
                 variant="outline"
