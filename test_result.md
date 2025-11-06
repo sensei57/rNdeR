@@ -360,7 +360,7 @@ frontend:
     implemented: true
     working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -370,6 +370,9 @@ frontend:
         - working: false
           agent: "testing"
           comment: "❌ ERREUR JAVASCRIPT CRITIQUE BLOQUE LES TESTS - L'application ne se charge pas à cause d'une erreur de syntaxe JSX dans App.js ligne 2417:19 'Unexpected token, expected comma'. Erreur: 'Adjacent JSX elements must be wrapped in an enclosing tag'. Corrections partielles appliquées (suppression boutons delete dupliqués, correction template literals) mais erreur persiste. L'interface Planning Interactif est inaccessible tant que cette erreur n'est pas résolue."
+        - working: false
+          agent: "testing"
+          comment: "❌ ERREUR JSX PERSISTANTE APRÈS MULTIPLES TENTATIVES DE CORRECTION - Erreur 'Adjacent JSX elements must be wrapped in an enclosing tag' ligne 2323:12 dans PlanningManager. Tentatives effectuées: 1) Correction indentation React Fragment, 2) Remplacement fragment par div, 3) Restructuration éléments JSX, 4) Ajout wrappers containers. L'erreur persiste malgré corrections syntaxiques. APPLICATION INACCESSIBLE - Impossible de tester les nouvelles fonctionnalités Planning Interactif tant que cette erreur JSX critique n'est pas résolue par le main agent."
 
   - task: "Planning Interactif - Affichage en colonnes par rôle"
     implemented: true
