@@ -2341,8 +2341,10 @@ const PlanningManager = () => {
           <CardContent className="p-4">
             {user?.role === 'Directeur' ? (
               // Vue directeur : colonnes par rôle
-              <div className={`grid gap-4 ${getRoleGroups(planningMatin).length === 1 ? 'grid-cols-1' : 
-                getRoleGroups(planningMatin).length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+              <div className={`grid gap-4 ${
+                getRoleGroups(planningMatin).length === 1 ? 'grid-cols-1' : 
+                getRoleGroups(planningMatin).length === 2 ? 'grid-cols-2' : 'grid-cols-3'
+              }`}>
                 {getRoleGroups(planningMatin).map(group => (
                   <div key={group.role} className="space-y-3">
                     <h4 className="font-medium text-sm text-gray-600 border-b pb-1">
