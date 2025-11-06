@@ -3992,6 +3992,7 @@ const StocksManager = () => {
       nom: '',
       description: '',
       categorie_id: '',
+      lieu: '',
       photo_url: '',
       nombre_souhaite: 0,
       nombre_en_stock: 0,
