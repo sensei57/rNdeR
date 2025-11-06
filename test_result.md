@@ -381,7 +381,7 @@ frontend:
     implemented: true
     working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 2
+    stuck_count: 3
     priority: "high"
     needs_retesting: false
     status_history:
@@ -394,6 +394,9 @@ frontend:
         - working: false
           agent: "testing"
           comment: "❌ TOUJOURS BLOQUÉ PAR ERREUR JSX CRITIQUE - Impossible de tester l'affichage en colonnes par rôle car l'application ne se charge pas. Erreur JSX persistante ligne 2323:12 empêche le chargement de l'interface Planning Interactif. Fonctionnalité semble correctement implémentée dans le code mais non testable."
+        - working: false
+          agent: "testing"
+          comment: "❌ ERREUR JSX CRITIQUE BLOQUE TOUJOURS LES TESTS - Impossible de tester l'affichage en colonnes car l'application ne se charge pas. Erreur 'Adjacent JSX elements must be wrapped in an enclosing tag' ligne 2323:12 persiste malgré corrections. Fonctionnalité implémentée dans le code (grid-cols-1/2/3 selon getRoleGroups) mais non testable tant que l'erreur JSX n'est pas résolue."
 
   - task: "Planning Interactif - Navigation par flèches"
     implemented: true
