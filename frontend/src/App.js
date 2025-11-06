@@ -2624,9 +2624,9 @@ const PlanningManager = () => {
           </CardContent>
         </Card>
         
-        {/* Planning Journée complète */}
-        {planningJournee.length > 0 && (
-          <Card>
+      {/* Planning Journée complète */}
+      {planningJournee.length > 0 && (
+        <Card>
             <CardHeader className="bg-gradient-to-r from-green-50 to-green-100">
               <CardTitle className="flex items-center space-x-2">
                 <CalendarDays className="h-5 w-5 text-green-600" />
