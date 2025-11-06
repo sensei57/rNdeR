@@ -2323,8 +2323,7 @@ const PlanningManager = () => {
           </DialogContent>
         </Dialog>
           )}
-        </div>
-        
+
         {/* Planning Matin */}
         <Card>
           <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100">
