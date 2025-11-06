@@ -2336,18 +2336,8 @@ const PlanningManager = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4">
-            {user?.role === 'Directeur' ? (
-              // Vue directeur : colonnes par rôle
-              <div className={`grid gap-4 ${
-                getRoleGroups(planningMatin).length === 1 ? 'grid-cols-1' : 
-                getRoleGroups(planningMatin).length === 2 ? 'grid-cols-2' : 'grid-cols-3'
-              }`}>
-                {getRoleGroups(planningMatin).map(group => (
-                  <div key={group.role} className="space-y-3">
-                    <h4 className="font-medium text-sm text-gray-600 border-b pb-1">
-                      {group.role}s ({group.creneaux.length})
-                    </h4>
-                    {group.creneaux.map(creneau => (
+            <div className="space-y-3">
+              {planningMatin.map(creneau => (
                 <div
                   key={creneau.id}
                   className={`border rounded-lg p-3 ${getRoleColor(creneau.employe_role)}`}
@@ -2355,30 +2345,12 @@ const PlanningManager = () => {
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <div className="font-medium">
-                        {getEmployeInfo(creneau.employe)}
+                        {creneau.employe?.prenom} {creneau.employe?.nom} ({creneau.employe?.role})
                       </div>
                       
                       {creneau.salle_attribuee && (
                         <div className="text-sm text-gray-600">
                           📍 Salle: {creneau.salle_attribuee}
-                        </div>
-                      )}
-                      
-                      {creneau.salle_attente && (
-                        <div className="text-sm text-gray-600">
-                          🚪 Attente: {creneau.salle_attente}
-                        </div>
-                      )}
-                      
-                      {creneau.medecin_attribue && (
-                        <div className="text-sm text-gray-600">
-                          👨‍⚕️ Avec: Dr. {creneau.medecin_attribue.prenom} {creneau.medecin_attribue.nom}
-                        </div>
-                      )}
-                      
-                      {creneau.horaire_debut && creneau.horaire_fin && (
-                        <div className="text-sm text-gray-600">
-                          ⏰ {creneau.horaire_debut} - {creneau.horaire_fin}
                         </div>
                       )}
                       
@@ -2399,91 +2371,17 @@ const PlanningManager = () => {
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
+                  </div>
                 </div>
-                  ))}
-                  {group.creneaux.length === 0 && (
-                      <div className="text-center py-4 text-gray-400 text-sm">
-                        Aucun {group.role.toLowerCase()}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              // Vue employé : liste simple
-              <div className="space-y-3">
-                {planningMatin.map(creneau => (
-                  <div
-                    key={creneau.id}
-                    className={`border rounded-lg p-3 ${getRoleColor(creneau.employe_role)}`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <div className="font-medium">
-                          {getEmployeInfo(creneau.employe)}
-                        </div>
-                        
-                        {creneau.salle_attribuee && (
-                          <div className="text-sm text-gray-600">
-                            📍 Salle: {creneau.salle_attribuee}
-                          </div>
-                        )}
-                        
-                        {creneau.notes && (
-                          <div className="text-sm text-gray-600 italic">
-                            📝 {creneau.notes}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                {planningMatin.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <CalendarDays className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                    <p>Aucun créneau programmé le matin</p>
-                  </div>
-                )}
-              </div>
-            ) : (
-              // Vue employé : liste simple
-              <div className="space-y-3">
-                {planningMatin.map(creneau => (
-                  <div
-                    key={creneau.id}
-                    className={`border rounded-lg p-3 ${getRoleColor(creneau.employe_role)}`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <div className="font-medium">
-                          {getEmployeInfo(creneau.employe)}
-                        </div>
-                        
-                        {creneau.salle_attribuee && (
-                          <div className="text-sm text-gray-600">
-                            📍 Salle: {creneau.salle_attribuee}
-                          </div>
-                        )}
-                        
-                        {creneau.notes && (
-                          <div className="text-sm text-gray-600 italic">
-                            📝 {creneau.notes}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                {planningMatin.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <CalendarDays className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                    <p>Aucun créneau programmé le matin</p>
-                  </div>
-                )}
-              </div>
-            )}
+              ))}
+              
+              {planningMatin.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <CalendarDays className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                  <p>Aucun créneau programmé le matin</p>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
