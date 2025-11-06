@@ -2178,7 +2178,7 @@ const PlanningManager = () => {
                               <SelectValue placeholder="Sélectionnez une salle d'attente" />
                             </SelectTrigger>
                             <SelectContent>
-                              {salles.filter(s => s.type_salle === 'Attente').map(salle => (
+                              {salles.filter(s => s.type_salle === 'ATTENTE').map(salle => (
                                 <SelectItem key={salle.id} value={salle.nom}>
                                   {salle.nom}
                                 </SelectItem>
