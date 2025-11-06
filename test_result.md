@@ -360,7 +360,7 @@ frontend:
     implemented: true
     working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 2
+    stuck_count: 3
     priority: "high"
     needs_retesting: false
     status_history:
@@ -373,6 +373,9 @@ frontend:
         - working: false
           agent: "testing"
           comment: "❌ ERREUR JSX PERSISTANTE APRÈS MULTIPLES TENTATIVES DE CORRECTION - Erreur 'Adjacent JSX elements must be wrapped in an enclosing tag' ligne 2323:12 dans PlanningManager. Tentatives effectuées: 1) Correction indentation React Fragment, 2) Remplacement fragment par div, 3) Restructuration éléments JSX, 4) Ajout wrappers containers. L'erreur persiste malgré corrections syntaxiques. APPLICATION INACCESSIBLE - Impossible de tester les nouvelles fonctionnalités Planning Interactif tant que cette erreur JSX critique n'est pas résolue par le main agent."
+        - working: false
+          agent: "testing"
+          comment: "❌ ERREUR JSX CRITIQUE TOUJOURS NON RÉSOLUE - Malgré corrections appliquées (JSX fragment manquant ligne 1990-2323, remplacement <> par <div>), l'erreur 'Adjacent JSX elements must be wrapped in an enclosing tag' persiste à ligne 2323:12. L'application ne se charge toujours pas. DIAGNOSTIC: Erreur structurelle complexe dans PlanningManager nécessitant analyse approfondie. IMPOSSIBLE DE TESTER les nouvelles fonctionnalités Planning Interactif. RECOMMANDATION URGENTE: Main agent doit utiliser WEBSEARCH TOOL pour résoudre cette erreur JSX persistante ou restructurer complètement le composant PlanningManager."
 
   - task: "Planning Interactif - Affichage en colonnes par rôle"
     implemented: true
