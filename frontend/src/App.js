@@ -2168,7 +2168,8 @@ const PlanningManager = () => {
                   </form>
                 </DialogContent>
               </Dialog>
-            )}
+            </div>
+          )}
       
       {/* Modal d'attribution pour le Directeur */}
       {user?.role === 'Directeur' && (
