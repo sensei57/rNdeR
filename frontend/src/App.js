@@ -2141,26 +2141,21 @@ const PlanningManager = () => {
                               </>
                             )}
                             
-                            {/* Boxes pour assistants */}
+                            {/* Salles pour assistants - depuis la gestion des salles (type ASSISTANT) */}
                             {users.find(u => u.id === newCreneau.employe_id)?.role === 'Assistant' && (
                               <>
-                                {salles.filter(s => ['BOXE A', 'BOXE B', 'BOXE C', 'BOXE D', 'BOXE O'].includes(s.nom)).map(salle => (
+                                {salles.filter(s => s.type_salle === 'ASSISTANT').map(salle => (
                                   <SelectItem key={salle.id} value={salle.nom}>
                                     {salle.nom}
-                                  </SelectItem>
-                                ))}
-                                {salles.filter(s => s.nom === "Salle d'attente Bleu").map(salle => (
-                                  <SelectItem key={salle.id} value={salle.nom}>
-                                    Box Bleu
                                   </SelectItem>
                                 ))}
                               </>
                             )}
                             
-                            {/* Salles normales pour médecins */}
+                            {/* Salles pour médecins - depuis la gestion des salles (type MEDECIN) */}
                             {users.find(u => u.id === newCreneau.employe_id)?.role === 'Médecin' && (
                               <>
-                                {salles.filter(s => s.type_salle === 'Box' || s.type_salle === 'Consultation').map(salle => (
+                                {salles.filter(s => s.type_salle === 'MEDECIN').map(salle => (
                                   <SelectItem key={salle.id} value={salle.nom}>
                                     {salle.nom}
                                   </SelectItem>
