@@ -5749,6 +5749,7 @@ const Dashboard = () => {
 
   const getMenuItems = () => {
     const items = [
+      { id: 'profil', label: 'Mon Profil', icon: Users },
       { id: 'personnel', label: 'Personnel', icon: Users },
       { id: 'planning', label: 'Planning', icon: Calendar },
       { id: 'conges', label: 'Congés', icon: Clock },
