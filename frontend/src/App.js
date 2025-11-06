@@ -2727,22 +2727,9 @@ const PlanningManager = () => {
             </CardContent>
           </Card>
         )}
-                          <div className="text-sm text-gray-600">
-                            📍 Salle: {creneau.salle_attribuee}
-                          </div>
-                        )}
-                        
-                        {creneau.notes && (
-                          <div className="text-sm text-gray-600 italic">
-                            📝 {creneau.notes}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                {planningApresMidi.length === 0 && (
+
+      {/* Vue Semaine */}
+      {viewMode === 'semaine' && planningSemaine && (
                   <div className="text-center py-8 text-gray-500">
                     <CalendarDays className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                     <p>Aucun créneau programmé l'après-midi</p>
