@@ -274,6 +274,7 @@ class ArticleStock(BaseModel):
     nom: str
     description: Optional[str] = None
     categorie_id: str
+    lieu: Optional[str] = None
     photo_url: Optional[str] = None
     nombre_souhaite: int = 0
     nombre_en_stock: int = 0
@@ -285,6 +286,7 @@ class ArticleStockCreate(BaseModel):
     nom: str
     description: Optional[str] = None
     categorie_id: str
+    lieu: Optional[str] = None
     photo_url: Optional[str] = None
     nombre_souhaite: int = 0
     nombre_en_stock: int = 0
@@ -294,6 +296,7 @@ class ArticleStockUpdate(BaseModel):
     nom: Optional[str] = None
     description: Optional[str] = None
     categorie_id: Optional[str] = None
+    lieu: Optional[str] = None
     photo_url: Optional[str] = None
     nombre_souhaite: Optional[int] = None
     nombre_en_stock: Optional[int] = None
