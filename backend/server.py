@@ -95,7 +95,8 @@ class CreneauPlanning(BaseModel):
     creneau: str  # "MATIN" ou "APRES_MIDI"
     employe_id: str
     employe_role: str  # Role de l'employé
-    medecin_attribue_id: Optional[str] = None  # Pour les assistants : avec quel médecin
+    medecin_attribue_id: Optional[str] = None  # Pour les assistants : avec quel médecin (ancien champ, gardé pour compatibilité)
+    medecin_ids: List[str] = []  # Pour les assistants : plusieurs médecins possibles
     salle_attribuee: Optional[str] = None  # Salle de travail
     salle_attente: Optional[str] = None  # Salle d'attente associée
     horaire_debut: Optional[str] = None  # Pour secrétaires : "08:00"
@@ -108,6 +109,7 @@ class CreneauPlanningCreate(BaseModel):
     creneau: str
     employe_id: str
     medecin_attribue_id: Optional[str] = None
+    medecin_ids: List[str] = []
     salle_attribuee: Optional[str] = None
     salle_attente: Optional[str] = None
     horaire_debut: Optional[str] = None
