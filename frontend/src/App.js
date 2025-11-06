@@ -2451,8 +2451,8 @@ const PlanningManager = () => {
           </CardContent>
         </Card>
 
-        {/* Planning Après-midi */}
-        <Card>
+      {/* Planning Après-midi */}
+      <Card>
           <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100">
             <CardTitle className="flex items-center space-x-2">
               <CalendarDays className="h-5 w-5 text-orange-600" />
