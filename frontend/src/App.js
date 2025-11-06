@@ -2728,9 +2728,9 @@ const PlanningManager = () => {
           </Card>
         )}
 
-      {/* Vue Semaine */}
-      {viewMode === 'semaine' && planningSemaine && (
-        <Card>
+        {/* Vue Semaine */}
+        {viewMode === 'semaine' && planningSemaine && (
+          <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
