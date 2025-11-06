@@ -2112,42 +2112,68 @@ const PlanningManager = () => {
                             <SelectValue placeholder="Sélectionnez une salle" />
                           </SelectTrigger>
                           <SelectContent>
-                            <optgroup label="Salles Médecins">
-                              {salles.filter(s => s.type_salle === 'MEDECIN').map(salle => (
-                                <SelectItem key={`med-${salle.id}`} value={salle.nom}>
-                                  {salle.nom}
-                                </SelectItem>
-                              ))}
-                            </optgroup>
-                            <optgroup label="Salles Assistants">
-                              {salles.filter(s => s.type_salle === 'ASSISTANT').map(salle => (
-                                <SelectItem key={`ass-${salle.id}`} value={salle.nom}>
-                                  {salle.nom}
-                                </SelectItem>
-                              ))}
-                            </optgroup>
+                            {/* Postes pour secrétaires */}
+                            {users.find(u => u.id === newCreneau.employe_id)?.role === 'Secrétaire' && (
+                              <>
+                                {['P1', 'P2', 'P3', 'P4', 'P5', 'P6'].map(poste => (
+                                  <SelectItem key={poste} value={poste}>
+                                    Poste {poste}
+                                  </SelectItem>
+                                ))}
+                              </>
+                            )}
+                            
+                            {/* Boxes pour assistants */}
+                            {users.find(u => u.id === newCreneau.employe_id)?.role === 'Assistant' && (
+                              <>
+                                {salles.filter(s => ['BOXE A', 'BOXE B', 'BOXE C', 'BOXE D', 'BOXE O'].includes(s.nom)).map(salle => (
+                                  <SelectItem key={salle.id} value={salle.nom}>
+                                    {salle.nom}
+                                  </SelectItem>
+                                ))}
+                                {salles.filter(s => s.nom === "Salle d'attente Bleu").map(salle => (
+                                  <SelectItem key={salle.id} value={salle.nom}>
+                                    Box Bleu
+                                  </SelectItem>
+                                ))}
+                              </>
+                            )}
+                            
+                            {/* Salles normales pour médecins */}
+                            {users.find(u => u.id === newCreneau.employe_id)?.role === 'Médecin' && (
+                              <>
+                                {salles.filter(s => s.type_salle === 'Box' || s.type_salle === 'Consultation').map(salle => (
+                                  <SelectItem key={salle.id} value={salle.nom}>
+                                    {salle.nom}
+                                  </SelectItem>
+                                ))}
+                              </>
+                            )}
                           </SelectContent>
                         </Select>
                       </div>
                       
-                      <div className="space-y-2">
-                        <Label>Salle d'attente</Label>
-                        <Select
-                          value={newCreneau.salle_attente}
-                          onValueChange={(value) => setNewCreneau({...newCreneau, salle_attente: value})}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionnez une salle d'attente" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {salles.filter(s => s.type_salle === 'ATTENTE').map(salle => (
-                              <SelectItem key={salle.id} value={salle.nom}>
-                                {salle.nom}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      {/* Salle d'attente - cachée pour secrétaires et assistants */}
+                      {users.find(u => u.id === newCreneau.employe_id)?.role === 'Médecin' && (
+                        <div className="space-y-2">
+                          <Label>Salle d'attente</Label>
+                          <Select
+                            value={newCreneau.salle_attente}
+                            onValueChange={(value) => setNewCreneau({...newCreneau, salle_attente: value})}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Sélectionnez une salle d'attente" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {salles.filter(s => s.type_salle === 'Attente').map(salle => (
+                                <SelectItem key={salle.id} value={salle.nom}>
+                                  {salle.nom}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
                     </div>
                     
                     {/* Horaires pour secrétaires */}
