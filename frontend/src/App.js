@@ -1539,8 +1539,36 @@ const SallesManager = () => {
 const PlanningManager = () => {
   const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedWeek, setSelectedWeek] = useState(new Date().toISOString().split('T')[0]);
   const [planning, setPlanning] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState('semaine');
+  const [filterRole, setFilterRole] = useState(['TOUS']);
+  const [users, setUsers] = useState([]);
+  const [salles, setSalles] = useState([]);
+  const [medecins, setMedecins] = useState([]);
+  const [assistants, setAssistants] = useState([]);
+  const [congesApprouves, setCongesApprouves] = useState([]);
+  const [planningSemaine, setPlanningSemaine] = useState(null);
+  const [showPlanningModal, setShowPlanningModal] = useState(false);
+  const [showAttributionModal, setShowAttributionModal] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [newCreneau, setNewCreneau] = useState({
+    date: new Date().toISOString().split('T')[0],
+    creneau: 'MATIN',
+    employe_id: '',
+    salle_attribuee: '',
+    salle_attente: '',
+    horaire_debut: '',
+    horaire_fin: '',
+    notes: ''
+  });
+  const [attribution, setAttribution] = useState({
+    employe_id: '',
+    salle_attribuee: '',
+    medecin_ids: [],
+    notes: ''
+  });
 
   // Fonctions pour gestion des filtres multiples
   const handleRoleToggle = (role) => {
