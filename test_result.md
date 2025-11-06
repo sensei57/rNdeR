@@ -378,7 +378,7 @@ frontend:
     implemented: true
     working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -388,6 +388,9 @@ frontend:
         - working: false
           agent: "testing"
           comment: "❌ ERREUR JAVASCRIPT CRITIQUE BLOQUE LES TESTS - Impossible de tester cette fonctionnalité car l'application ne se charge pas à cause de l'erreur JSX. La fonctionnalité semble implémentée (boutons filtres Médecins/Assistants/Secrétaires visibles dans le code) mais non testable."
+        - working: false
+          agent: "testing"
+          comment: "❌ TOUJOURS BLOQUÉ PAR ERREUR JSX CRITIQUE - Impossible de tester l'affichage en colonnes par rôle car l'application ne se charge pas. Erreur JSX persistante ligne 2323:12 empêche le chargement de l'interface Planning Interactif. Fonctionnalité semble correctement implémentée dans le code mais non testable."
 
   - task: "Planning Interactif - Navigation par flèches"
     implemented: true
