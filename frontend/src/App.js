@@ -4016,9 +4016,13 @@ const StocksManager = () => {
     }
   };
 
-  const filteredArticles = selectedCategory === 'all' 
-    ? articles 
-    : articles.filter(article => article.categorie_id === selectedCategory);
+  // Filtrer par catégorie et par lieu
+  const filteredArticles = articles
+    .filter(article => selectedCategory === 'all' || article.categorie_id === selectedCategory)
+    .filter(article => selectedLieu === 'all' || article.lieu === selectedLieu);
+
+  // Obtenir la liste unique des lieux
+  const lieux = [...new Set(articles.map(a => a.lieu).filter(Boolean))];
 
   const getBadgeColor = (nombreACommander) => {
     if (nombreACommander <= 0) return 'bg-green-100 text-green-800';
