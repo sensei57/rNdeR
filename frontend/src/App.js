@@ -97,27 +97,34 @@ const AuthProvider = ({ children }) => {
 
 // Login Component
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('directeur@hopital.fr');
+  const [password, setPassword] = useState('password123');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    await login(email, password);
-    setLoading(false);
+    
+    try {
+      await login(email, password);
+    } catch (error) {
+      console.error('Erreur de connexion:', error);
+      toast.error('Email ou mot de passe incorrect');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-gray-800">
-            Gestion Personnel Médical
+        <CardHeader className="space-y-1 text-center">
+          <CardTitle className="text-3xl font-bold text-blue-600">
+            Gestion Médicale
           </CardTitle>
           <CardDescription>
-            Connectez-vous pour accéder au système
+            Système de gestion du personnel médical
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -127,10 +134,11 @@ const LoginPage = () => {
               <Input
                 id="email"
                 type="email"
+                placeholder="votre@email.fr"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="votre.email@hopital.fr"
+                disabled={loading}
               />
             </div>
             <div className="space-y-2">
@@ -141,16 +149,21 @@ const LoginPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                placeholder="••••••••"
+                disabled={loading}
               />
             </div>
             <Button 
               type="submit" 
-              className="w-full" 
+              className="w-full bg-blue-600 hover:bg-blue-700" 
               disabled={loading}
             >
               {loading ? 'Connexion...' : 'Se connecter'}
             </Button>
+            
+            <div className="mt-4 p-3 bg-blue-50 rounded-md">
+              <p className="text-sm text-blue-700 font-medium">Comptes de test :</p>
+              <p className="text-xs text-blue-600">Directeur: directeur@hopital.fr / password123</p>
+            </div>
           </form>
         </CardContent>
       </Card>
