@@ -4167,6 +4167,13 @@ const StocksManager = () => {
                         <span className="text-gray-400 text-xs">Sans catégorie</span>
                       )}
                     </td>
+                    <td className="p-2">
+                      {article.lieu ? (
+                        <span className="text-sm">{article.lieu}</span>
+                      ) : (
+                        <span className="text-gray-400 text-xs">Non spécifié</span>
+                      )}
+                    </td>
                     <td className="p-2 text-center">{article.nombre_en_stock}</td>
                     <td className="p-2 text-center">{article.nombre_souhaite}</td>
                     <td className="p-2 text-center">
