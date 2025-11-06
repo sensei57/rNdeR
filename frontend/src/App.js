@@ -2320,6 +2320,7 @@ const PlanningManager = () => {
             </form>
           </DialogContent>
         </Dialog>
+            </>
           )}
         </div>
       </div>
