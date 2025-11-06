@@ -2192,6 +2192,8 @@ const PlanningManager = () => {
                   </form>
                 </DialogContent>
               </Dialog>
+            )}
+      
       {/* Modal d'attribution pour le Directeur */}
       {user?.role === 'Directeur' && (
         <Dialog open={showAttributionModal} onOpenChange={setShowAttributionModal}>
