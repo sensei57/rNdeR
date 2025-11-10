@@ -26,10 +26,10 @@ async def init_full_database():
     # Check if users already exist
     user_count = await db.users.count_documents({})
     
+    print("\n👥 Création des utilisateurs...")
+    
     if user_count == 0:
-        print("\n👥 Création des utilisateurs...")
-        
-        # Create users
+        # Create all users
         users = [
             {
                 "id": str(uuid.uuid4()),
