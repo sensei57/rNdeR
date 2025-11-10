@@ -1604,16 +1604,10 @@ const PlanningManager = () => {
   }, []);
 
   useEffect(() => {
-    if (user?.role === 'Directeur') {
-      if (viewMode === 'semaine') {
-        fetchPlanningSemaine(selectedWeek);
-      }
-    } else {
-      if (viewMode === 'jour') {
-        fetchPlanningByDate(selectedDate);
-      } else if (viewMode === 'semaine') {
-        fetchPlanningSemaine(selectedDate);
-      }
+    if (viewMode === 'jour') {
+      fetchPlanningByDate(selectedDate);
+    } else if (viewMode === 'semaine') {
+      fetchPlanningSemaine(selectedWeek);
     }
   }, [selectedDate, selectedWeek, viewMode, user?.role]);
 
