@@ -1586,6 +1586,27 @@ const PlanningManager = () => {
     }
   };
 
+  const handleRoleToggle = (role) => {
+    setFilterRole(prev => {
+      if (prev.includes(role)) {
+        // Si déjà sélectionné, on le retire (sauf si c'est le dernier)
+        const newFilter = prev.filter(r => r !== role);
+        return newFilter.length > 0 ? newFilter : prev; // Garder au moins un rôle
+      } else {
+        // Si pas sélectionné, on l'ajoute
+        return [...prev, role];
+      }
+    });
+  };
+
+  const selectAllRoles = () => {
+    setFilterRole(['Médecin', 'Assistant', 'Secrétaire']);
+  };
+
+  const deselectAllRoles = () => {
+    setFilterRole([]);
+  };
+
   const navigateWeek = (direction) => {
     const currentDate = new Date(viewMode === 'semaine' ? selectedWeek : selectedDate);
     const newDate = new Date(currentDate);
