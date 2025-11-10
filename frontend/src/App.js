@@ -2960,6 +2960,12 @@ const DemandesTravailManager = () => {
   const handleCreateDemande = async (e) => {
     e.preventDefault();
     
+    // Vérifier si un médecin est sélectionné pour le directeur
+    if (user?.role === 'Directeur' && !medecinSelectionne) {
+      toast.error('Veuillez sélectionner un médecin');
+      return;
+    }
+    
     if (typedemande === 'individuelle') {
       if (!newDemande.date_demandee || !newDemande.creneau) {
         toast.error('Veuillez remplir tous les champs obligatoires');
@@ -2973,7 +2979,11 @@ const DemandesTravailManager = () => {
     }
 
     try {
-      const response = await axios.post(`${API}/demandes-travail`, newDemande);
+      const demandeData = {
+        ...newDemande,
+        medecin_id: user?.role === 'Directeur' ? medecinSelectionne : undefined
+      };
+      const response = await axios.post(`${API}/demandes-travail`, demandeData);
       const demandesCreees = Array.isArray(response.data) ? response.data.length : 1;
       toast.success(`${demandesCreees} demande(s) créée(s) avec succès`);
       setShowDemandeModal(false);
