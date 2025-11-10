@@ -1664,25 +1664,40 @@ const PlanningManager = () => {
         
         setUsers(usersRes.data.filter(u => u.actif));
         setSalles(sallesRes.data);
-        setPlanningSemaine(planningRes.data);
+        
+        // Vérifier que la structure est correcte
+        if (planningRes.data && planningRes.data.dates && planningRes.data.planning) {
+          setPlanningSemaine(planningRes.data);
+        } else {
+          console.error('Structure de planning invalide:', planningRes.data);
+          setPlanningSemaine(null);
+        }
       } else {
         // Vue personnelle pour les employés
         const response = await axios.get(`${API}/planning/semaine/${mondayStr}`);
         const personalPlanning = response.data;
-        personalPlanning.planning = Object.fromEntries(
-          Object.entries(personalPlanning.planning).map(([date, slots]) => [
-            date,
-            {
-              MATIN: slots.MATIN?.filter(slot => slot.employe_id === user.id) || [],
-              APRES_MIDI: slots.APRES_MIDI?.filter(slot => slot.employe_id === user.id) || []
-            }
-          ])
-        );
-        setPlanningSemaine(personalPlanning);
+        
+        // Vérifier que la structure est correcte
+        if (personalPlanning && personalPlanning.dates && personalPlanning.planning) {
+          personalPlanning.planning = Object.fromEntries(
+            Object.entries(personalPlanning.planning).map(([date, slots]) => [
+              date,
+              {
+                MATIN: slots.MATIN?.filter(slot => slot.employe_id === user.id) || [],
+                APRES_MIDI: slots.APRES_MIDI?.filter(slot => slot.employe_id === user.id) || []
+              }
+            ])
+          );
+          setPlanningSemaine(personalPlanning);
+        } else {
+          console.error('Structure de planning invalide:', personalPlanning);
+          setPlanningSemaine(null);
+        }
       }
     } catch (error) {
       console.error('Erreur lors du chargement du planning semaine:', error);
       toast.error('Erreur lors du chargement du planning');
+      setPlanningSemaine(null);
     }
   };
 
