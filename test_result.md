@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Tester rapidement les endpoints principaux de l'application pour vérifier qu'il n'y a plus d'erreurs de chargement. L'utilisateur signale des erreurs lors du chargement des salles/données/planning. J'ai corrigé les salles en ajoutant les champs manquants et ajouté les utilisateurs manquants."
+user_problem_statement: "TEST RAPIDE - Vérifier que l'erreur de planning est corrigée. L'utilisateur avait une erreur 'Cannot read properties of undefined (reading 'length')' sur la page Planning. Main agent a corrigé 2 problèmes: 1) Ajout de vérifications de sécurité sur planningSemaine.dates, 2) Correction de la fonction getRoleGroups pour retourner {roles: [], groups: {}} au lieu d'un simple tableau. Test ultra-rapide requis avec identifiants Directeur: directeur@cabinet.fr / admin123."
 
 backend:
   - task: "Tests Rapides Endpoints Principaux (GET /api/salles, /api/users, /api/configuration, /api/planning/semaine)"
