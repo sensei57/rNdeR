@@ -2813,9 +2813,9 @@ const PlanningManager = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    const currentDate = new Date(selectedDate);
+                    const currentDate = new Date(selectedWeek);
                     currentDate.setDate(currentDate.getDate() - 7);
-                    setSelectedDate(currentDate.toISOString().split('T')[0]);
+                    setSelectedWeek(currentDate.toISOString().split('T')[0]);
                   }}
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -2827,9 +2827,9 @@ const PlanningManager = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    const currentDate = new Date(selectedDate);
+                    const currentDate = new Date(selectedWeek);
                     currentDate.setDate(currentDate.getDate() + 7);
-                    setSelectedDate(currentDate.toISOString().split('T')[0]);
+                    setSelectedWeek(currentDate.toISOString().split('T')[0]);
                   }}
                 >
                   <ChevronRight className="h-4 w-4" />
