@@ -1394,6 +1394,9 @@ async def create_demande_jour_travail(
     if current_user.role not in [ROLES["MEDECIN"], ROLES["DIRECTEUR"]]:
         raise HTTPException(status_code=403, detail="Seuls les médecins peuvent faire des demandes de jours de travail")
     
+    # Déterminer l'ID du médecin concerné
+    medecin_id = demande_data.medecin_id if demande_data.medecin_id and current_user.role == ROLES["DIRECTEUR"] else current_user.id
+    
     demandes_creees = []
     
     if demande_data.semaine_type_id:
