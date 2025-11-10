@@ -1955,30 +1955,30 @@ const PlanningManager = () => {
           {user?.role === 'Directeur' && (
             <div className="flex space-x-2">
               <Button
-                variant={filterRole.includes('TOUS') ? 'default' : 'outline'}
+                variant={filterRole === 'TOUS' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => handleRoleToggle('TOUS')}
+                onClick={() => setFilterRole('TOUS')}
               >
                 Tous
               </Button>
               <Button
-                variant={filterRole.includes('Médecin') ? 'default' : 'outline'}
+                variant={filterRole === 'Médecin' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => handleRoleToggle('Médecin')}
+                onClick={() => setFilterRole('Médecin')}
               >
                 Médecins
               </Button>
               <Button
-                variant={filterRole.includes('Assistant') ? 'default' : 'outline'}
+                variant={filterRole === 'Assistant' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => handleRoleToggle('Assistant')}
+                onClick={() => setFilterRole('Assistant')}
               >
                 Assistants
               </Button>
               <Button
-                variant={filterRole.includes('Secrétaire') ? 'default' : 'outline'}
+                variant={filterRole === 'Secrétaire' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => handleRoleToggle('Secrétaire')}
+                onClick={() => setFilterRole('Secrétaire')}
               >
                 Secrétaires
               </Button>
