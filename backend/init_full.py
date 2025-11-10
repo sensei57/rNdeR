@@ -128,7 +128,9 @@ async def init_full_database():
             {
                 "id": str(uuid.uuid4()),
                 "nom": "Cabinet 1",
-                "type": "MEDECIN",
+                "type_salle": "MEDECIN",
+                "position_x": 100,
+                "position_y": 100,
                 "couleur": "#3B82F6",
                 "actif": True,
                 "date_creation": datetime.now(timezone.utc)
@@ -136,7 +138,9 @@ async def init_full_database():
             {
                 "id": str(uuid.uuid4()),
                 "nom": "Cabinet 2",
-                "type": "MEDECIN",
+                "type_salle": "MEDECIN",
+                "position_x": 300,
+                "position_y": 100,
                 "couleur": "#10B981",
                 "actif": True,
                 "date_creation": datetime.now(timezone.utc)
@@ -144,7 +148,9 @@ async def init_full_database():
             {
                 "id": str(uuid.uuid4()),
                 "nom": "Salle de soin 1",
-                "type": "ASSISTANT",
+                "type_salle": "ASSISTANT",
+                "position_x": 100,
+                "position_y": 300,
                 "couleur": "#F59E0B",
                 "actif": True,
                 "date_creation": datetime.now(timezone.utc)
@@ -152,7 +158,9 @@ async def init_full_database():
             {
                 "id": str(uuid.uuid4()),
                 "nom": "Salle de soin 2",
-                "type": "ASSISTANT",
+                "type_salle": "ASSISTANT",
+                "position_x": 300,
+                "position_y": 300,
                 "couleur": "#EF4444",
                 "actif": True,
                 "date_creation": datetime.now(timezone.utc)
@@ -160,7 +168,9 @@ async def init_full_database():
             {
                 "id": str(uuid.uuid4()),
                 "nom": "Salle d'attente",
-                "type": "ATTENTE",
+                "type_salle": "ATTENTE",
+                "position_x": 200,
+                "position_y": 200,
                 "couleur": "#8B5CF6",
                 "actif": True,
                 "date_creation": datetime.now(timezone.utc)
