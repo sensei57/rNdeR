@@ -12,12 +12,11 @@ class MedicalStaffAPITester:
         self.tests_run = 0
         self.tests_passed = 0
         
-        # Test users provided
+        # Test users provided - Updated with correct credentials
         self.test_users = {
-            "directeur": {"email": "directeur@hopital.fr", "password": "directeur123"},
-            "medecin": {"email": "medecin1@hopital.fr", "password": "medecin123"},
-            "assistant": {"email": "assistant1@hopital.fr", "password": "assistant123"},
-            "secretaire": {"email": "secretaire1@hopital.fr", "password": "secretaire123"}
+            "directeur": {"email": "directeur@cabinet.fr", "password": "admin123"},
+            "medecin": {"email": "dr.dupont@cabinet.fr", "password": "medecin123"},
+            "assistant": {"email": "assistant1@cabinet.fr", "password": "assistant123"}
         }
 
     def run_test(self, name, method, endpoint, expected_status, data=None, token=None, params=None):
