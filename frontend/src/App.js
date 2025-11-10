@@ -3049,7 +3049,7 @@ const PlanningManager = () => {
                 <div key={jour} className="p-3 bg-gray-50 rounded-lg text-center font-medium">
                   <div className="text-sm text-gray-600">{jour}</div>
                   <div className="text-lg">
-                    {new Date(planningSemaine.dates[index]).getDate()}
+                    {planningSemaine.dates && planningSemaine.dates[index] ? new Date(planningSemaine.dates[index]).getDate() : '-'}
                   </div>
                 </div>
               ))}
