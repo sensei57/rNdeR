@@ -3104,9 +3104,37 @@ def run_reactivation_only():
         print("⚠️  Personnel visibility issue may persist")
         return 1
 
+def quick_main():
+    """Quick test of main endpoints as requested by user"""
+    print("🏥 QUICK TEST - Medical Staff Management API")
+    print("Testing main loading endpoints to verify no loading errors...")
+    print("=" * 60)
+    
+    tester = MedicalStaffAPITester()
+    
+    # Run quick endpoint tests
+    success = tester.test_quick_endpoints()
+    
+    # Print final results
+    print(f"\n" + "="*50)
+    print(f"📊 QUICK TEST RESULTS")
+    print(f"="*50)
+    print(f"Tests run: {tester.tests_run}")
+    print(f"Tests passed: {tester.tests_passed}")
+    print(f"Success rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    
+    if success and tester.tests_passed == tester.tests_run:
+        print("🎉 ALL QUICK TESTS PASSED! No loading errors detected!")
+        return 0
+    else:
+        print("❌ SOME TESTS FAILED! Loading errors detected.")
+        return 1
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1 and sys.argv[1] == "--reactivation-only":
         sys.exit(run_reactivation_only())
+    elif len(sys.argv) > 1 and sys.argv[1] == "--quick":
+        sys.exit(quick_main())
     else:
         sys.exit(main())
