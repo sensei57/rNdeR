@@ -1542,7 +1542,7 @@ const PlanningManager = () => {
   const [selectedWeek, setSelectedWeek] = useState(new Date().toISOString().split('T')[0]);
   const [planning, setPlanning] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState('semaine');
+  const [viewMode, setViewMode] = useState('jour');
   const [filterRole, setFilterRole] = useState('TOUS');
   const [users, setUsers] = useState([]);
   const [salles, setSalles] = useState([]);
