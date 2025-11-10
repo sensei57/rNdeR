@@ -1418,7 +1418,7 @@ async def create_demande_jour_travail(
                 
                 # Vérifier si une demande existe déjà
                 existing = await db.demandes_travail.find_one({
-                    "medecin_id": current_user.id,
+                    "medecin_id": medecin_id,
                     "date_demandee": date_jour,
                     "creneau": creneau,
                     "statut": {"$ne": "REJETE"}
@@ -1426,7 +1426,7 @@ async def create_demande_jour_travail(
                 
                 if not existing:
                     demande = DemandeJourTravail(
-                        medecin_id=current_user.id,
+                        medecin_id=medecin_id,
                         date_demandee=date_jour,
                         creneau=creneau,
                         motif=f"Semaine type: {semaine_type['nom']}"
