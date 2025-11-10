@@ -105,6 +105,21 @@
 user_problem_statement: "Tester rapidement les endpoints principaux de l'application pour vérifier qu'il n'y a plus d'erreurs de chargement. L'utilisateur signale des erreurs lors du chargement des salles/données/planning. J'ai corrigé les salles en ajoutant les champs manquants et ajouté les utilisateurs manquants."
 
 backend:
+  - task: "Tests Rapides Endpoints Principaux (GET /api/salles, /api/users, /api/configuration, /api/planning/semaine)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "L'utilisateur signale des erreurs lors du chargement des salles/données/planning. J'ai corrigé les salles en ajoutant les champs manquants (type_salle, position_x, position_y) et ajouté les utilisateurs manquants. Besoin de tester rapidement les endpoints principaux."
+        - working: true
+          agent: "testing"
+          comment: "✅ TOUS LES ENDPOINTS PRINCIPAUX FONCTIONNENT PARFAITEMENT! Tests rapides réalisés avec succès: 1) ✅ Connexion Directeur (directeur@cabinet.fr) réussie, 2) ✅ GET /api/salles retourne 5 salles avec tous les champs requis (nom, type_salle, position_x, position_y), 3) ✅ GET /api/users retourne 6 utilisateurs actifs (Pierre Martin-Directeur, Marie Dupont-Médecin, Jean Bernard-Médecin, Julie Moreau-Assistant, Sophie Petit-Assistant, Emma Leroy-Secrétaire), 4) ✅ GET /api/configuration charge correctement (max médecins: 6, assistants: 8, horaires: 08:00-12:00), 5) ✅ GET /api/planning/semaine/2025-11-10 fonctionne (7 jours, structure correcte). Taux de réussite: 100% (5/5 tests). AUCUNE ERREUR DE CHARGEMENT DÉTECTÉE - Les corrections appliquées ont résolu les problèmes signalés par l'utilisateur."
+
   - task: "API Suppression Personnel (PUT /api/users/{id})"
     implemented: true
     working: true  
