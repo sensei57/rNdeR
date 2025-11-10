@@ -2904,7 +2904,19 @@ const DemandesTravailManager = () => {
     fetchDemandes();
     fetchConfiguration();
     fetchSemainesTypes();
+    if (user?.role === 'Directeur') {
+      fetchMedecins();
+    }
   }, []);
+
+  const fetchMedecins = async () => {
+    try {
+      const response = await axios.get(`${API}/users/by-role/Médecin`);
+      setMedecins(response.data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des médecins');
+    }
+  };
 
   const fetchDemandes = async () => {
     try {
