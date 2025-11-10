@@ -1960,25 +1960,23 @@ const PlanningManager = () => {
         </div>
         
         <div className="flex items-center space-x-4">
-          {/* Mode d'affichage - Directeur a la vue semaine par défaut */}
-          {user?.role !== 'Directeur' && (
-            <div className="flex space-x-2">
-              <Button
-                variant={viewMode === 'jour' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('jour')}
-              >
-                Vue Jour
-              </Button>
-              <Button
-                variant={viewMode === 'semaine' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('semaine')}
-              >
-                Vue Semaine
-              </Button>
-            </div>
-          )}
+          {/* Mode d'affichage - Disponible pour tous */}
+          <div className="flex space-x-2">
+            <Button
+              variant={viewMode === 'jour' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('jour')}
+            >
+              Vue Jour
+            </Button>
+            <Button
+              variant={viewMode === 'semaine' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('semaine')}
+            >
+              Vue Semaine
+            </Button>
+          </div>
           
           {/* Filtre par rôle - Sélection multiple pour le directeur */}
           {user?.role === 'Directeur' && (
