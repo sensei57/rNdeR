@@ -1551,12 +1551,14 @@ const PlanningManager = () => {
   const [congesApprouves, setCongesApprouves] = useState([]);
   const [planningSemaine, setPlanningSemaine] = useState(null);
   const [showPlanningModal, setShowPlanningModal] = useState(false);
+  const [showEditCreneauModal, setShowEditCreneauModal] = useState(false);
   const [showAttributionModal, setShowAttributionModal] = useState(false);
   const [showSemaineTypeModal, setShowSemaineTypeModal] = useState(false);
   const [semainesTypes, setSemainesTypes] = useState([]);
   const [selectedSemaineType, setSelectedSemaineType] = useState(null);
   const [dateDebutSemaine, setDateDebutSemaine] = useState('');
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [editingCreneau, setEditingCreneau] = useState(null);
   const [newCreneau, setNewCreneau] = useState({
     date: new Date().toISOString().split('T')[0],
     creneau: 'MATIN',
