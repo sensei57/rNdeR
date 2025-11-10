@@ -1543,7 +1543,7 @@ const PlanningManager = () => {
   const [planning, setPlanning] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('semaine');
-  const [filterRole, setFilterRole] = useState(['TOUS']);
+  const [filterRole, setFilterRole] = useState('TOUS');
   const [users, setUsers] = useState([]);
   const [salles, setSalles] = useState([]);
   const [medecins, setMedecins] = useState([]);
