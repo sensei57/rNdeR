@@ -2873,6 +2873,8 @@ const PlanningManager = () => {
 const DemandesTravailManager = () => {
   const [demandes, setDemandes] = useState([]);
   const [semainesTypes, setSemainesTypes] = useState([]);
+  const [medecins, setMedecins] = useState([]);
+  const [medecinSelectionne, setMedecinSelectionne] = useState('');
   const [showDemandeModal, setShowDemandeModal] = useState(false);
   const [showSemaineTypeModal, setShowSemaineTypeModal] = useState(false);
   const [configuration, setConfiguration] = useState(null);
