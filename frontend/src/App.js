@@ -2276,6 +2276,156 @@ const PlanningManager = () => {
               </Dialog>
             </div>
           )}
+
+      {/* Modal de modification de créneau */}
+      {user?.role === 'Directeur' && editingCreneau && (
+        <Dialog open={showEditCreneauModal} onOpenChange={setShowEditCreneauModal}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Modifier le Créneau</DialogTitle>
+              <DialogDescription>
+                Créneau de {editingCreneau.date} - {editingCreneau.creneau}
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleUpdateCreneau} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Date</Label>
+                <Input type="date" value={newCreneau.date} disabled className="bg-gray-100" />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Créneau</Label>
+                <Input value={newCreneau.creneau} disabled className="bg-gray-100" />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Salle de travail</Label>
+                <Select
+                  value={newCreneau.salle_attribuee}
+                  onValueChange={(value) => setNewCreneau({...newCreneau, salle_attribuee: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionnez une salle" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {editingCreneau.employe_role === 'Secrétaire' && (
+                      <>
+                        {['P1', 'P2', 'P3', 'P4', 'P5', 'P6'].map(poste => (
+                          <SelectItem key={poste} value={poste}>
+                            Poste {poste}
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
+                    {editingCreneau.employe_role === 'Assistant' && salles.filter(s => s.type_salle === 'ASSISTANT').map(salle => (
+                      <SelectItem key={salle.id} value={salle.nom}>
+                        {salle.nom}
+                      </SelectItem>
+                    ))}
+                    {editingCreneau.employe_role === 'Médecin' && salles.filter(s => s.type_salle === 'MEDECIN').map(salle => (
+                      <SelectItem key={salle.id} value={salle.nom}>
+                        {salle.nom}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {editingCreneau.employe_role === 'Médecin' && (
+                <div className="space-y-2">
+                  <Label>Salle d'attente</Label>
+                  <Select
+                    value={newCreneau.salle_attente}
+                    onValueChange={(value) => setNewCreneau({...newCreneau, salle_attente: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez une salle d'attente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {salles.filter(s => s.type_salle === 'ATTENTE').map(salle => (
+                        <SelectItem key={salle.id} value={salle.nom}>
+                          {salle.nom}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {editingCreneau.employe_role === 'Assistant' && (
+                <div className="space-y-2">
+                  <Label>Médecins attribués</Label>
+                  <div className="border rounded p-3 space-y-2 max-h-40 overflow-y-auto">
+                    {medecins.map(medecin => (
+                      <div key={medecin.id} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={newCreneau.medecin_ids.includes(medecin.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setNewCreneau({...newCreneau, medecin_ids: [...newCreneau.medecin_ids, medecin.id]});
+                            } else {
+                              setNewCreneau({...newCreneau, medecin_ids: newCreneau.medecin_ids.filter(id => id !== medecin.id)});
+                            }
+                          }}
+                          className="w-4 h-4"
+                        />
+                        <label>Dr. {medecin.prenom} {medecin.nom}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {editingCreneau.employe_role === 'Secrétaire' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Horaire début</Label>
+                    <Input
+                      type="time"
+                      value={newCreneau.horaire_debut}
+                      onChange={(e) => setNewCreneau({...newCreneau, horaire_debut: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Horaire fin</Label>
+                    <Input
+                      type="time"
+                      value={newCreneau.horaire_fin}
+                      onChange={(e) => setNewCreneau({...newCreneau, horaire_fin: e.target.value})}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>Notes</Label>
+                <Textarea
+                  value={newCreneau.notes}
+                  onChange={(e) => setNewCreneau({...newCreneau, notes: e.target.value})}
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowEditCreneauModal(false);
+                    setEditingCreneau(null);
+                  }}
+                >
+                  Annuler
+                </Button>
+                <Button type="submit">
+                  Enregistrer
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
       
       {/* Modal d'attribution pour le Directeur */}
       {user?.role === 'Directeur' && (
