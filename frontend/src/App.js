@@ -2915,7 +2915,12 @@ const PlanningManager = () => {
                         {planningApresMidiFiltered.map(creneau => (
                           <div
                             key={creneau.id}
-                            onClick={() => user?.role === 'Directeur' && handleEditCreneau(creneau)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (user?.role === 'Directeur') {
+                                handleEditCreneau(creneau);
+                              }
+                            }}
                             className={`text-xs p-1 rounded border ${getRoleColor(creneau.employe_role)} ${user?.role === 'Directeur' ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
                           >
                             <div className="font-medium truncate">
