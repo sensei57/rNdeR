@@ -2000,8 +2000,8 @@ const PlanningManager = () => {
             </Button>
             <Input
               type="date"
-              value={user?.role === 'Directeur' ? selectedWeek : selectedDate}
-              onChange={(e) => user?.role === 'Directeur' ? setSelectedWeek(e.target.value) : setSelectedDate(e.target.value)}
+              value={viewMode === 'semaine' ? selectedWeek : selectedDate}
+              onChange={(e) => viewMode === 'semaine' ? setSelectedWeek(e.target.value) : setSelectedDate(e.target.value)}
               className="w-auto"
             />
             <Button
