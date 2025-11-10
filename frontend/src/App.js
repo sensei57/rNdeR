@@ -2962,7 +2962,7 @@ const PlanningManager = () => {
         )}
 
         {/* Vue Semaine */}
-        {viewMode === 'semaine' && planningSemaine && (
+        {viewMode === 'semaine' && planningSemaine && planningSemaine.dates && planningSemaine.dates.length > 0 && (
           <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
@@ -3024,7 +3024,9 @@ const PlanningManager = () => {
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <span className="text-sm text-gray-600">
-                  {new Date(planningSemaine.dates[0]).toLocaleDateString('fr-FR')} - {new Date(planningSemaine.dates[6]).toLocaleDateString('fr-FR')}
+                  {planningSemaine.dates && planningSemaine.dates[0] && planningSemaine.dates[6] ? 
+                    `${new Date(planningSemaine.dates[0]).toLocaleDateString('fr-FR')} - ${new Date(planningSemaine.dates[6]).toLocaleDateString('fr-FR')}` 
+                    : 'Semaine en cours'}
                 </span>
                 <Button
                   variant="outline"
