@@ -2658,9 +2658,10 @@ const PlanningManager = () => {
             </div>
           </CardContent>
         </Card>
-        
-        {/* Planning Journée complète */}
-        {planningJournee.length > 0 && (
+        )}
+
+        {/* Vue Jour - Planning Journée complète */}
+        {viewMode !== 'semaine' && planningJournee.length > 0 && (
           <Card>
             <CardHeader className="bg-gradient-to-r from-green-50 to-green-100">
               <CardTitle className="flex items-center space-x-2">
