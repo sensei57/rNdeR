@@ -1439,7 +1439,7 @@ async def create_demande_jour_travail(
             raise HTTPException(status_code=400, detail="Date et créneau requis pour une demande individuelle")
         
         existing = await db.demandes_travail.find_one({
-            "medecin_id": current_user.id,
+            "medecin_id": medecin_id,
             "date_demandee": demande_data.date_demandee,
             "creneau": demande_data.creneau,
             "statut": {"$ne": "REJETE"}
@@ -1449,7 +1449,7 @@ async def create_demande_jour_travail(
             raise HTTPException(status_code=400, detail="Une demande existe déjà pour cette date/créneau")
         
         demande = DemandeJourTravail(
-            medecin_id=current_user.id,
+            medecin_id=medecin_id,
             date_demandee=demande_data.date_demandee,
             creneau=demande_data.creneau,
             motif=demande_data.motif
