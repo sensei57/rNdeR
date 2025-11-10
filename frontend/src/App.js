@@ -1903,10 +1903,10 @@ const PlanningManager = () => {
     return <div className="flex justify-center p-8">Chargement...</div>;
   }
 
-  // Filtrer le planning selon les rôles sélectionnés
-  const filteredPlanning = filterRole.includes('TOUS') 
+  // Filtrer le planning selon le rôle sélectionné
+  const filteredPlanning = filterRole === 'TOUS' 
     ? planning 
-    : planning.filter(c => filterRole.includes(c.employe_role));
+    : planning.filter(c => c.employe_role === filterRole);
   
   const planningMatin = filteredPlanning.filter(c => c.creneau === 'MATIN');
   const planningApresMidi = filteredPlanning.filter(c => c.creneau === 'APRES_MIDI');
