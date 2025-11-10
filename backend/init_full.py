@@ -96,7 +96,37 @@ async def init_full_database():
         await db.users.insert_many(users)
         print(f"   ✅ {len(users)} utilisateurs créés")
     else:
-        print(f"   ℹ️  {user_count} utilisateur(s) déjà présent(s)")
+        # Add missing users
+        missing_users = []
+        
+        # Check for each user
+        user_emails = [
+            ("dr.dupont@cabinet.fr", "Dupont", "Marie", "Médecin", "medecin123"),
+            ("dr.bernard@cabinet.fr", "Bernard", "Jean", "Médecin", "medecin123"),
+            ("assistant1@cabinet.fr", "Moreau", "Julie", "Assistant", "assistant123"),
+            ("assistant2@cabinet.fr", "Petit", "Sophie", "Assistant", "assistant123"),
+            ("secretaire@cabinet.fr", "Leroy", "Emma", "Secrétaire", "secretaire123")
+        ]
+        
+        for email, nom, prenom, role, password in user_emails:
+            existing = await db.users.find_one({"email": email})
+            if not existing:
+                missing_users.append({
+                    "id": str(uuid.uuid4()),
+                    "email": email,
+                    "password_hash": pwd_context.hash(password),
+                    "nom": nom,
+                    "prenom": prenom,
+                    "role": role,
+                    "actif": True,
+                    "date_creation": datetime.now(timezone.utc)
+                })
+        
+        if missing_users:
+            await db.users.insert_many(missing_users)
+            print(f"   ✅ {len(missing_users)} utilisateur(s) ajouté(s)")
+        
+        print(f"   ℹ️  Total: {user_count + len(missing_users)} utilisateur(s)")
     
     # Create default configuration
     config_count = await db.configuration.count_documents({})
