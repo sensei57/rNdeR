@@ -2534,7 +2534,8 @@ const PlanningManager = () => {
         </div>
       </div>
 
-        {/* Planning Matin */}
+        {/* Vue Jour - Planning Matin */}
+        {viewMode !== 'semaine' && (
         <Card>
           <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100">
             <CardTitle className="flex items-center space-x-2">
