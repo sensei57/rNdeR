@@ -1562,7 +1562,42 @@ async def approuver_demande_jour_travail(
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Demande non trouvée")
     
-    return {"message": f"Demande {statut.lower()}e avec succès"}
+    # Si la demande est approuvée, créer automatiquement un créneau dans le planning
+    if request.approuve:
+        # Récupérer les informations du médecin
+        medecin = await db.users.find_one({"id": demande["medecin_id"]})
+        if not medecin:
+            raise HTTPException(status_code=404, detail="Médecin non trouvé")
+        
+        # Créer le(s) créneau(x) selon le type
+        creneaux_a_creer = []
+        if demande["creneau"] == "JOURNEE_COMPLETE":
+            creneaux_a_creer = ["MATIN", "APRES_MIDI"]
+        else:
+            creneaux_a_creer = [demande["creneau"]]
+        
+        for creneau_type in creneaux_a_creer:
+            # Vérifier si un créneau n'existe pas déjà pour ce médecin à cette date/heure
+            existing_creneau = await db.planning.find_one({
+                "date": demande["date_demandee"],
+                "creneau": creneau_type,
+                "employe_id": demande["medecin_id"]
+            })
+            
+            if not existing_creneau:
+                # Créer le créneau
+                creneau_planning = CreneauPlanning(
+                    date=demande["date_demandee"],
+                    creneau=creneau_type,
+                    employe_id=demande["medecin_id"],
+                    employe_role=medecin["role"],
+                    salle_attribuee=None,
+                    salle_attente=None,
+                    notes=f"Créneau créé automatiquement depuis demande de travail approuvée"
+                )
+                await db.planning.insert_one(creneau_planning.dict())
+    
+    return {"message": f"Demande {statut.lower()}e avec succès" + (" et créneau(x) créé(s) dans le planning" if request.approuve else "")}
 
 # Planning semaine
 @api_router.get("/planning/semaine/{date_debut}")
