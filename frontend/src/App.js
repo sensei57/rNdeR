@@ -1577,13 +1577,22 @@ const PlanningManager = () => {
     notes: ''
   });
 
+  const goToToday = () => {
+    const today = new Date().toISOString().split('T')[0];
+    if (viewMode === 'semaine') {
+      setSelectedWeek(today);
+    } else {
+      setSelectedDate(today);
+    }
+  };
+
   const navigateWeek = (direction) => {
-    const currentDate = new Date(user?.role === 'Directeur' ? selectedWeek : selectedDate);
+    const currentDate = new Date(viewMode === 'semaine' ? selectedWeek : selectedDate);
     const newDate = new Date(currentDate);
     newDate.setDate(currentDate.getDate() + (direction === 'prev' ? -7 : 7));
     const newDateStr = newDate.toISOString().split('T')[0];
     
-    if (user?.role === 'Directeur') {
+    if (viewMode === 'semaine') {
       setSelectedWeek(newDateStr);
     } else {
       setSelectedDate(newDateStr);
