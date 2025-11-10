@@ -1661,22 +1661,29 @@ async def get_plan_cabinet(
     # Créer un mapping salle -> employé
     occupation_salles = {}
     for creneau_planning in planning:
-        if creneau_planning.get("salle_attribuee"):
-            employe = await db.users.find_one({"id": creneau_planning["employe_id"]})
-            if employe and '_id' in employe:
-                del employe['_id']
-                
-            medecin_attribue = None
-            if creneau_planning.get("medecin_attribue_id"):
-                medecin_attribue = await db.users.find_one({"id": creneau_planning["medecin_attribue_id"]})
-                if medecin_attribue and '_id' in medecin_attribue:
-                    del medecin_attribue['_id']
+        employe = await db.users.find_one({"id": creneau_planning["employe_id"]})
+        if employe and '_id' in employe:
+            del employe['_id']
             
-            occupation_salles[creneau_planning["salle_attribuee"]] = {
-                "employe": User(**employe) if employe else None,
-                "medecin_attribue": User(**medecin_attribue) if medecin_attribue else None,
-                "notes": creneau_planning.get("notes")
-            }
+        medecin_attribue = None
+        if creneau_planning.get("medecin_attribue_id"):
+            medecin_attribue = await db.users.find_one({"id": creneau_planning["medecin_attribue_id"]})
+            if medecin_attribue and '_id' in medecin_attribue:
+                del medecin_attribue['_id']
+        
+        occupation_data = {
+            "employe": User(**employe) if employe else None,
+            "medecin_attribue": User(**medecin_attribue) if medecin_attribue else None,
+            "notes": creneau_planning.get("notes")
+        }
+        
+        # Ajouter l'occupation de la salle de travail
+        if creneau_planning.get("salle_attribuee"):
+            occupation_salles[creneau_planning["salle_attribuee"]] = occupation_data
+        
+        # Ajouter l'occupation de la salle d'attente
+        if creneau_planning.get("salle_attente"):
+            occupation_salles[creneau_planning["salle_attente"]] = occupation_data
     
     # Nettoyer les salles
     salles_clean = []
