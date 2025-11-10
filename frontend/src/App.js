@@ -1914,9 +1914,9 @@ const PlanningManager = () => {
 
   // Créer des groupes par rôle pour l'affichage en colonnes
   const getRoleGroups = (planningData) => {
-    const roles = filterRole.includes('TOUS') 
+    const roles = filterRole === 'TOUS' 
       ? ['Médecin', 'Assistant', 'Secrétaire']
-      : filterRole.filter(r => r !== 'TOUS');
+      : [filterRole];
     
     return roles.map(role => ({
       role,
