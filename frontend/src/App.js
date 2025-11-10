@@ -1975,35 +1975,47 @@ const PlanningManager = () => {
           
           {/* Filtre par rôle - Sélection multiple pour le directeur */}
           {user?.role === 'Directeur' && (
-            <div className="flex space-x-2">
-              <Button
-                variant={filterRole === 'TOUS' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilterRole('TOUS')}
-              >
-                Tous
-              </Button>
-              <Button
-                variant={filterRole === 'Médecin' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilterRole('Médecin')}
-              >
-                Médecins
-              </Button>
-              <Button
-                variant={filterRole === 'Assistant' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilterRole('Assistant')}
-              >
-                Assistants
-              </Button>
-              <Button
-                variant={filterRole === 'Secrétaire' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilterRole('Secrétaire')}
-              >
-                Secrétaires
-              </Button>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm font-medium">Filtres :</span>
+              <div className="flex space-x-2">
+                <Button
+                  variant={filterRole.length === 3 ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={selectAllRoles}
+                >
+                  Tous
+                </Button>
+                <Button
+                  variant={filterRole.length === 0 ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={deselectAllRoles}
+                >
+                  Aucun
+                </Button>
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  variant={filterRole.includes('Médecin') ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleRoleToggle('Médecin')}
+                >
+                  {filterRole.includes('Médecin') ? '✓ ' : ''}Médecins
+                </Button>
+                <Button
+                  variant={filterRole.includes('Assistant') ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleRoleToggle('Assistant')}
+                >
+                  {filterRole.includes('Assistant') ? '✓ ' : ''}Assistants
+                </Button>
+                <Button
+                  variant={filterRole.includes('Secrétaire') ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleRoleToggle('Secrétaire')}
+                >
+                  {filterRole.includes('Secrétaire') ? '✓ ' : ''}Secrétaires
+                </Button>
+              </div>
             </div>
           )}
           
