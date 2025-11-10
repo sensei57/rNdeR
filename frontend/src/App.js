@@ -1955,10 +1955,15 @@ const PlanningManager = () => {
   const getRoleGroups = (planningData) => {
     const roles = filterRole.length > 0 ? filterRole : ['Médecin', 'Assistant', 'Secrétaire'];
     
-    return roles.map(role => ({
-      role,
-      creneaux: planningData.filter(c => c.employe_role === role)
-    }));
+    const groups = {};
+    roles.forEach(role => {
+      groups[role] = planningData.filter(c => c.employe_role === role);
+    });
+    
+    return {
+      roles: roles,
+      groups: groups
+    };
   };
 
   return (
