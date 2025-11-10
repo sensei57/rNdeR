@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "L'utilisateur signale qu'il y a une erreur quand il va dans la section Administration. Je dois diagnostiquer ce problème urgent."
+user_problem_statement: "Tester rapidement les endpoints principaux de l'application pour vérifier qu'il n'y a plus d'erreurs de chargement. L'utilisateur signale des erreurs lors du chargement des salles/données/planning. J'ai corrigé les salles en ajoutant les champs manquants et ajouté les utilisateurs manquants."
 
 backend:
   - task: "API Suppression Personnel (PUT /api/users/{id})"
