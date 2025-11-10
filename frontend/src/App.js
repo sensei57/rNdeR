@@ -3117,6 +3117,28 @@ const DemandesTravailManager = () => {
               </DialogHeader>
               
               <form onSubmit={handleCreateDemande} className="space-y-4">
+                {/* Sélection du médecin pour le Directeur */}
+                {user?.role === 'Directeur' && (
+                  <div className="space-y-2">
+                    <Label>Médecin *</Label>
+                    <Select
+                      value={medecinSelectionne}
+                      onValueChange={setMedecinSelectionne}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionnez un médecin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {medecins.map(medecin => (
+                          <SelectItem key={medecin.id} value={medecin.id}>
+                            Dr. {medecin.prenom} {medecin.nom}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label>Type de demande</Label>
                   <div className="flex space-x-2">
