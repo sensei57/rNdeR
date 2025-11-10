@@ -2012,6 +2012,15 @@ const PlanningManager = () => {
                 <span>Générer Notifications</span>
               </Button>
               
+              <Button
+                onClick={() => setShowSemaineTypeModal(true)}
+                variant="outline"
+                className="flex items-center space-x-2"
+              >
+                <Calendar className="h-4 w-4" />
+                <span>Appliquer Semaine Type</span>
+              </Button>
+              
               <Dialog open={showPlanningModal} onOpenChange={setShowPlanningModal}>
                 <DialogTrigger asChild>
                   <Button className="flex items-center space-x-2">
