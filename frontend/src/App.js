@@ -2385,6 +2385,151 @@ const PlanningManager = () => {
             </form>
           </DialogContent>
         </Dialog>
+      )}
+
+      {/* Modal Appliquer Semaine Type */}
+      {user?.role === 'Directeur' && (
+        <Dialog open={showSemaineTypeModal} onOpenChange={setShowSemaineTypeModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Appliquer une Semaine Type</DialogTitle>
+              <DialogDescription>
+                Sélectionnez une semaine type et une date de début pour générer automatiquement les créneaux
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Employé *</Label>
+                <Select
+                  value={newCreneau.employe_id}
+                  onValueChange={(value) => setNewCreneau({...newCreneau, employe_id: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionnez un employé" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.map(employe => (
+                      <SelectItem key={employe.id} value={employe.id}>
+                        {employe.prenom} {employe.nom} ({employe.role})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Semaine Type *</Label>
+                <Select
+                  value={selectedSemaineType}
+                  onValueChange={setSelectedSemaineType}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionnez une semaine type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {semainesTypes.map(semaine => (
+                      <SelectItem key={semaine.id} value={semaine.id}>
+                        {semaine.nom}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Date de début de semaine (Lundi) *</Label>
+                <Input
+                  type="date"
+                  value={dateDebutSemaine}
+                  onChange={(e) => setDateDebutSemaine(e.target.value)}
+                />
+              </div>
+
+              {selectedSemaineType && (
+                <div className="p-3 bg-gray-50 rounded">
+                  <p className="text-sm font-medium mb-2">Aperçu de la semaine :</p>
+                  {(() => {
+                    const semaine = semainesTypes.find(s => s.id === selectedSemaineType);
+                    if (!semaine) return null;
+                    const jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+                    return (
+                      <div className="space-y-1 text-sm">
+                        {jours.map(jour => {
+                          const creneau = semaine[jour];
+                          return creneau && creneau !== 'REPOS' ? (
+                            <div key={jour} className="flex justify-between">
+                              <span className="capitalize">{jour}</span>
+                              <span className="font-medium">{creneau}</span>
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowSemaineTypeModal(false);
+                    setSelectedSemaineType(null);
+                    setDateDebutSemaine('');
+                  }}
+                >
+                  Annuler
+                </Button>
+                <Button
+                  onClick={async () => {
+                    if (!newCreneau.employe_id || !selectedSemaineType || !dateDebutSemaine) {
+                      toast.error('Veuillez remplir tous les champs');
+                      return;
+                    }
+
+                    try {
+                      const semaine = semainesTypes.find(s => s.id === selectedSemaineType);
+                      const jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+                      const dateDebut = new Date(dateDebutSemaine);
+
+                      for (let i = 0; i < jours.length; i++) {
+                        const creneau = semaine[jours[i]];
+                        if (creneau && creneau !== 'REPOS') {
+                          const dateJour = new Date(dateDebut);
+                          dateJour.setDate(dateDebut.getDate() + i);
+                          const dateStr = dateJour.toISOString().split('T')[0];
+
+                          await axios.post(`${API}/planning`, {
+                            date: dateStr,
+                            creneau: creneau,
+                            employe_id: newCreneau.employe_id,
+                            salle_attribuee: '',
+                            salle_attente: '',
+                            horaire_debut: '',
+                            horaire_fin: '',
+                            notes: `Semaine type: ${semaine.nom}`,
+                            medecin_ids: []
+                          });
+                        }
+                      }
+
+                      toast.success('Semaine type appliquée avec succès');
+                      setShowSemaineTypeModal(false);
+                      setSelectedSemaineType(null);
+                      setDateDebutSemaine('');
+                      fetchPlanningByDate(selectedDate);
+                    } catch (error) {
+                      toast.error(error.response?.data?.detail || 'Erreur lors de l\'application de la semaine type');
+                    }
+                  }}
+                >
+                  Appliquer
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
           )}
         </div>
       </div>
