@@ -3024,6 +3024,7 @@ const DemandesTravailManager = () => {
       date_debut_semaine: ''
     });
     setTypeDemande('individuelle');
+    setMedecinSelectionne('');
   };
 
   const handleCreateSemaineType = async (e) => {
