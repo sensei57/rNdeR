@@ -1832,13 +1832,57 @@ const PlanningManager = () => {
     }
   };
 
+  const handleEditCreneau = (creneau) => {
+    setEditingCreneau(creneau);
+    setNewCreneau({
+      date: creneau.date,
+      creneau: creneau.creneau,
+      employe_id: creneau.employe_id,
+      salle_attribuee: creneau.salle_attribuee || '',
+      salle_attente: creneau.salle_attente || '',
+      horaire_debut: creneau.horaire_debut || '',
+      horaire_fin: creneau.horaire_fin || '',
+      notes: creneau.notes || '',
+      medecin_ids: creneau.medecin_ids || []
+    });
+    setShowEditCreneauModal(true);
+  };
+
+  const handleUpdateCreneau = async (e) => {
+    e.preventDefault();
+    
+    if (!newCreneau.employe_id) {
+      toast.error('Veuillez sélectionner un employé');
+      return;
+    }
+
+    try {
+      await axios.put(`${API}/planning/${editingCreneau.id}`, newCreneau);
+      toast.success('Créneau modifié avec succès');
+      setShowEditCreneauModal(false);
+      setEditingCreneau(null);
+      resetForm();
+      if (viewMode === 'semaine') {
+        fetchPlanningSemaine(selectedWeek);
+      } else {
+        fetchPlanningByDate(selectedDate);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la modification du créneau');
+    }
+  };
+
   const handleDeleteCreneau = async (creneauId) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce créneau ?')) return;
     
     try {
       await axios.delete(`${API}/planning/${creneauId}`);
       toast.success('Créneau supprimé');
-      fetchPlanningByDate(selectedDate);
+      if (viewMode === 'semaine') {
+        fetchPlanningSemaine(selectedWeek);
+      } else {
+        fetchPlanningByDate(selectedDate);
+      }
     } catch (error) {
       toast.error('Erreur lors de la suppression');
     }
