@@ -2930,7 +2930,8 @@ const PlanningManager = () => {
                         {planningApresMidiFiltered.map(creneau => (
                           <div
                             key={creneau.id}
-                            className={`text-xs p-1 rounded border ${getRoleColor(creneau.employe_role)}`}
+                            onClick={() => user?.role === 'Directeur' && handleEditCreneau(creneau)}
+                            className={`text-xs p-1 rounded border ${getRoleColor(creneau.employe_role)} ${user?.role === 'Directeur' ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
                           >
                             <div className="font-medium truncate">
                               {creneau.employe?.prenom?.[0]}.{creneau.employe?.nom}
@@ -2938,6 +2939,11 @@ const PlanningManager = () => {
                             {creneau.salle_attribuee && (
                               <div className="text-xs opacity-75">
                                 {creneau.salle_attribuee}
+                              </div>
+                            )}
+                            {user?.role === 'Directeur' && (
+                              <div className="text-[10px] text-blue-600 mt-1">
+                                ✏️ Cliquer pour modifier
                               </div>
                             )}
                           </div>
