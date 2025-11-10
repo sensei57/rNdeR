@@ -364,6 +364,7 @@ class DemandeJourTravailCreate(BaseModel):
     motif: Optional[str] = None
     semaine_type_id: Optional[str] = None  # Pour demande de semaine type
     date_debut_semaine: Optional[str] = None  # YYYY-MM-DD du lundi
+    medecin_id: Optional[str] = None  # Pour que le directeur puisse faire une demande pour un médecin
 
 class ApprobationJourTravailRequest(BaseModel):
     approuve: bool
