@@ -3047,14 +3047,14 @@ const PlanningManager = () => {
               
               {/* Créneaux par jour avec filtrage */}
               {planningSemaine.dates.map(date => {
-                // Filtrer les créneaux selon le rôle sélectionné
-                const planningMatinFiltered = filterRole === 'TOUS' 
-                  ? planningSemaine.planning[date]?.MATIN || []
-                  : (planningSemaine.planning[date]?.MATIN || []).filter(c => c.employe_role === filterRole);
+                // Filtrer les créneaux selon les rôles sélectionnés
+                const planningMatinFiltered = filterRole.length === 0
+                  ? []
+                  : (planningSemaine.planning[date]?.MATIN || []).filter(c => filterRole.includes(c.employe_role));
                 
-                const planningApresMidiFiltered = filterRole === 'TOUS'
-                  ? planningSemaine.planning[date]?.APRES_MIDI || []
-                  : (planningSemaine.planning[date]?.APRES_MIDI || []).filter(c => c.employe_role === filterRole);
+                const planningApresMidiFiltered = filterRole.length === 0
+                  ? []
+                  : (planningSemaine.planning[date]?.APRES_MIDI || []).filter(c => filterRole.includes(c.employe_role));
                 
                 return (
                   <div key={date} className="space-y-2">
