@@ -1971,6 +1971,94 @@ class MedicalStaffAPITester:
             print(f"❌ Failed - Error: {str(e)}")
             return False, {}
 
+    def test_quick_endpoints(self):
+        """Quick test of main endpoints as requested by user"""
+        print("\n🚀 QUICK ENDPOINT TESTS - Testing main loading endpoints...")
+        
+        # Test 1: Login as Directeur
+        print("\n1️⃣ Testing Directeur Login...")
+        success = self.test_login("directeur", "directeur@cabinet.fr", "admin123")
+        if not success:
+            print("❌ Cannot proceed without directeur login")
+            return False
+        
+        directeur_token = self.tokens['directeur']
+        
+        # Test 2: GET /api/salles - Should return 5 salles
+        print("\n2️⃣ Testing GET /api/salles...")
+        success, salles_data = self.run_test(
+            "Get salles (should return 5 salles)",
+            "GET",
+            "salles",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✅ Found {len(salles_data)} salles")
+            for salle in salles_data:
+                print(f"   - {salle['nom']} ({salle['type_salle']}) - Position: ({salle['position_x']}, {salle['position_y']})")
+        
+        # Test 3: GET /api/users - Should return 6 users
+        print("\n3️⃣ Testing GET /api/users...")
+        success, users_data = self.run_test(
+            "Get users (should return 6 users)",
+            "GET",
+            "users",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✅ Found {len(users_data)} users")
+            for user in users_data:
+                status = "Actif" if user.get('actif', True) else "Inactif"
+                print(f"   - {user['prenom']} {user['nom']} ({user['role']}) - {status}")
+        
+        # Test 4: GET /api/configuration
+        print("\n4️⃣ Testing GET /api/configuration...")
+        success, config_data = self.run_test(
+            "Get configuration",
+            "GET",
+            "configuration",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✅ Configuration loaded successfully")
+            print(f"   - Max médecins/jour: {config_data.get('max_medecins_par_jour', 'N/A')}")
+            print(f"   - Max assistants/jour: {config_data.get('max_assistants_par_jour', 'N/A')}")
+            print(f"   - Horaires matin: {config_data.get('heures_ouverture_matin_debut', 'N/A')}-{config_data.get('heures_ouverture_matin_fin', 'N/A')}")
+        
+        # Test 5: GET /api/planning/semaine/2025-11-10
+        print("\n5️⃣ Testing GET /api/planning/semaine/2025-11-10...")
+        success, planning_data = self.run_test(
+            "Get planning for week 2025-11-10",
+            "GET",
+            "planning/semaine/2025-11-10",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✅ Planning loaded successfully")
+            dates = planning_data.get('dates', [])
+            planning = planning_data.get('planning', {})
+            print(f"   - Week dates: {len(dates)} days")
+            
+            total_slots = 0
+            for date, slots in planning.items():
+                matin_count = len(slots.get('MATIN', []))
+                apres_midi_count = len(slots.get('APRES_MIDI', []))
+                total_slots += matin_count + apres_midi_count
+                if matin_count > 0 or apres_midi_count > 0:
+                    print(f"   - {date}: {matin_count} matin, {apres_midi_count} après-midi")
+            
+            print(f"   - Total planning slots: {total_slots}")
+        
+        return True
+
     def test_deletion_apis(self):
         """Test deletion APIs that are reported as problematic by users"""
         print("\n🗑️ Testing Deletion APIs (User Reported Issues)...")
