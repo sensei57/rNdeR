@@ -1705,12 +1705,13 @@ const PlanningManager = () => {
     try {
       if (user?.role === 'Directeur') {
         // Directeur voit tous les utilisateurs
-        const [usersRes, medecinRes, assistantRes, sallesRes, semainesTypesRes] = await Promise.all([
+        const [usersRes, medecinRes, assistantRes, sallesRes, semainesTypesRes, congesRes] = await Promise.all([
           axios.get(`${API}/users`),
           axios.get(`${API}/users/by-role/Médecin`),
           axios.get(`${API}/users/by-role/Assistant`),
           axios.get(`${API}/salles`),
-          axios.get(`${API}/semaines-types`)
+          axios.get(`${API}/semaines-types`),
+          axios.get(`${API}/conges`)
         ]);
         
         setUsers(usersRes.data);
@@ -1718,6 +1719,7 @@ const PlanningManager = () => {
         setAssistants(assistantRes.data);
         setSalles(sallesRes.data);
         setSemainesTypes(semainesTypesRes.data);
+        setCongesApprouves(congesRes.data);
       } else {
         // Les autres ne voient que les données pertinentes
         setUsers([user]); // Seulement eux-mêmes dans la liste
