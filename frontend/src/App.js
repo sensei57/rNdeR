@@ -3102,6 +3102,11 @@ const PlanningManager = () => {
                   ? []
                   : (planningSemaine.planning[date]?.APRES_MIDI || []).filter(c => filterRole.includes(c.employe_role));
                 
+                // Trouver les employés en congé ce jour
+                const employesEnConge = users.filter(u => 
+                  filterRole.includes(u.role) && isEmployeEnConge(u.id, date)
+                );
+                
                 return (
                   <div key={date} className="space-y-2">
                     {/* Matin */}
@@ -3134,6 +3139,20 @@ const PlanningManager = () => {
                                 ✏️ Cliquer pour modifier
                               </div>
                             )}
+                          </div>
+                        ))}
+                        {/* Afficher les employés en congé */}
+                        {employesEnConge.map(employe => (
+                          <div
+                            key={`conge-matin-${employe.id}`}
+                            className="text-xs p-1 rounded border-2 border-red-500 bg-red-50 text-red-700"
+                          >
+                            <div className="font-medium truncate">
+                              {employe.prenom?.[0]}.{employe.nom}
+                            </div>
+                            <div className="text-xs font-semibold">
+                              🚫 Congés
+                            </div>
                           </div>
                         ))}
                       </div>
