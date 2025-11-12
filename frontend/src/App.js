@@ -1968,6 +1968,21 @@ const PlanningManager = () => {
     };
   };
 
+  // Vérifier si un employé est en congé à une date donnée
+  const isEmployeEnConge = (employeId, date) => {
+    if (!congesApprouves || congesApprouves.length === 0) return false;
+    
+    return congesApprouves.some(conge => {
+      if (conge.utilisateur_id !== employeId) return false;
+      
+      const dateToCheck = new Date(date);
+      const dateDebut = new Date(conge.date_debut);
+      const dateFin = new Date(conge.date_fin);
+      
+      return dateToCheck >= dateDebut && dateToCheck <= dateFin;
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
