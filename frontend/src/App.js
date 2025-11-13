@@ -1311,7 +1311,6 @@ const SallesManager = () => {
               </form>
             </DialogContent>
           </Dialog>
-        </div>
       </div>
 
       {/* Configuration Modal */}
