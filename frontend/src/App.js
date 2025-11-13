@@ -2805,6 +2805,9 @@ const PlanningManager = () => {
                       const jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
                       const dateDebut = new Date(dateDebutSemaine);
 
+                      // Trouver l'employé pour vérifier son rôle
+                      const employe = users.find(u => u.id === newCreneau.employe_id);
+                      
                       for (let i = 0; i < jours.length; i++) {
                         const creneau = semaine[jours[i]];
                         if (creneau && creneau !== 'REPOS') {
@@ -2812,17 +2815,31 @@ const PlanningManager = () => {
                           dateJour.setDate(dateDebut.getDate() + i);
                           const dateStr = dateJour.toISOString().split('T')[0];
 
-                          await axios.post(`${API}/planning`, {
+                          // Utiliser les horaires de la semaine type si l'employé est secrétaire
+                          const creneauData = {
                             date: dateStr,
                             creneau: creneau,
                             employe_id: newCreneau.employe_id,
                             salle_attribuee: '',
                             salle_attente: '',
-                            horaire_debut: '',
-                            horaire_fin: '',
                             notes: `Semaine type: ${semaine.nom}`,
                             medecin_ids: []
-                          });
+                          };
+                          
+                          // Ajouter les horaires pour les secrétaires
+                          if (employe?.role === 'Secrétaire') {
+                            creneauData.horaire_debut = semaine.horaire_debut || '';
+                            creneauData.horaire_fin = semaine.horaire_fin || '';
+                            if (creneau === 'JOURNEE_COMPLETE') {
+                              creneauData.horaire_pause_debut = semaine.horaire_pause_debut || '';
+                              creneauData.horaire_pause_fin = semaine.horaire_pause_fin || '';
+                            }
+                          } else {
+                            creneauData.horaire_debut = '';
+                            creneauData.horaire_fin = '';
+                          }
+
+                          await axios.post(`${API}/planning`, creneauData);
                         }
                       }
 
