@@ -903,6 +903,15 @@ const CongeManager = () => {
     return types[type] || type;
   };
 
+  const getCreneauLabel = (creneau) => {
+    const creneaux = {
+      'JOURNEE_COMPLETE': 'Journée complète',
+      'MATIN': 'Matin uniquement',
+      'APRES_MIDI': 'Après-midi uniquement'
+    };
+    return creneaux[creneau] || 'Journée complète';
+  };
+
   if (loading) {
     return <div className="flex justify-center p-8">Chargement...</div>;
   }
