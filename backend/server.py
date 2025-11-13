@@ -712,6 +712,49 @@ async def subscribe_to_notifications(
         print(f"Erreur lors de l'enregistrement du token: {e}")
         raise HTTPException(status_code=500, detail="Erreur lors de l'enregistrement")
 
+# Endpoint de diagnostic (GET - pour debug)
+@api_router.get("/debug-users")
+async def debug_users():
+    """Diagnostic de l'état de la base utilisateurs - PRODUCTION"""
+    try:
+        # Compter les utilisateurs
+        user_count = await db.users.count_documents({})
+        
+        if user_count == 0:
+            return {
+                "status": "empty_database",
+                "message": "🔍 Base de données vide - aucun utilisateur",
+                "users_count": 0,
+                "suggestion": "Appelez /api/init-admin-simple pour initialiser"
+            }
+        
+        # Lister les utilisateurs (sans mots de passe)
+        users = await db.users.find({}, {"mot_de_passe": 0}).to_list(100)
+        
+        users_info = []
+        for user in users:
+            users_info.append({
+                "email": user.get("email"),
+                "nom": f"{user.get('prenom')} {user.get('nom')}",
+                "role": user.get("role"),
+                "actif": user.get("actif")
+            })
+        
+        return {
+            "status": "users_found",
+            "message": f"🔍 {user_count} utilisateur(s) trouvé(s)",
+            "users_count": user_count,
+            "users": users_info,
+            "director_exists": any(u["role"] == "Directeur" for u in users_info)
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"❌ Erreur lors du diagnostic",
+            "error": str(e)
+        }
+
 # Endpoint d'initialisation pour la production (GET - simple)
 @api_router.get("/init-admin-simple")
 async def init_admin_simple():
