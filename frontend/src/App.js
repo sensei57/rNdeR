@@ -789,7 +789,9 @@ const CongeManager = () => {
   const [demandes, setDemandes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showNewDemandeModal, setShowNewDemandeModal] = useState(false);
+  const [users, setUsers] = useState([]);
   const [newDemande, setNewDemande] = useState({
+    utilisateur_id: '',
     date_debut: '',
     date_fin: '',
     type_conge: '',
