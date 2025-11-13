@@ -5427,9 +5427,30 @@ const StocksManager = () => {
     lien_commande: ''
   });
 
+  const [users, setUsers] = useState([]);
+  const [selectedPermission, setSelectedPermission] = useState({
+    utilisateur_id: '',
+    peut_voir: true,
+    peut_modifier: false,
+    peut_ajouter: false,
+    peut_supprimer: false
+  });
+
   useEffect(() => {
     fetchData();
-  }, []);
+    if (user?.role === 'Directeur') {
+      fetchUsers();
+    }
+  }, [user]);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get(`${API}/users`);
+      setUsers(response.data.filter(u => u.actif && u.role !== 'Directeur'));
+    } catch (error) {
+      console.error('Erreur lors du chargement des utilisateurs');
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
