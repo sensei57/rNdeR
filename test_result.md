@@ -348,6 +348,21 @@ backend:
           agent: "testing"
           comment: "🎉 SYSTÈME DE NOTIFICATIONS FIREBASE COMPLÈTEMENT FONCTIONNEL! ✅ TESTS COMPLETS RÉUSSIS (27/27 - 100%): 1) ✅ TEST 1 - Enregistrement token Firebase: Tokens enregistrés avec succès pour directeur, médecin et assistant, 2) ✅ TEST 2 - Notifications Directeur (Demande congé Assistant): Demande de congé créée par assistant → Directeur reçoit 1 notification de demande de congé, 3) ✅ TEST 3 - Notifications Directeur (Demande travail Médecin): Demande de travail créée par médecin → Directeur reçoit 1 notification de demande de travail, 4) ✅ TEST 4 - Notifications employé (Validation demande): Approbation par Directeur → Médecin reçoit 1 notification d'approbation, 5) ✅ TEST 5 - Récupération notifications: Chaque utilisateur ne voit que ses propres notifications (directeur: 2, médecin: 1, assistant: 0), 6) ✅ TEST 6 - Planning quotidien: Déclenchement manuel réussi (endpoint fonctionnel), 7) ✅ TEST 7 - Endpoints Firebase: Mise à jour tokens + marquage notifications comme lues fonctionnent parfaitement. 🎯 OBJECTIF ATTEINT: Système de notifications Firebase fonctionne de bout en bout selon toutes les spécifications demandées."
 
+  - task: "API Modification Profil Utilisateur (PUT /api/users/me/profile)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "TEST - API Modification Profil Utilisateur (Nom et Prénom). CONTEXTE: Nouvelle fonctionnalité ajoutée permettant à un utilisateur (notamment le Directeur) de modifier son nom et prénom via son profil. ENDPOINT: PUT /api/users/me/profile. IDENTIFIANTS: Directeur: directeur@cabinet.fr / admin123. TESTS REQUIS: 1) ✅ TEST CONNEXION - Se connecter comme Directeur et récupérer le token d'authentification, 2) ✅ TEST MODIFICATION VALIDE - PUT /api/users/me/profile avec prenom='Pierre-Alexandre', nom='Martin-Dubois', vérifier status 200 et message de succès, 3) ✅ TEST VÉRIFICATION CHANGEMENT - GET /api/users/me pour vérifier que prenom='Pierre-Alexandre' et nom='Martin-Dubois', 4) ❌ TEST VALIDATION - Champs vides (PUT avec prenom vide ou nom vide, vérifier status 400 et message d'erreur approprié), 5) ❌ TEST VALIDATION - Champs trop courts (PUT avec prenom='A' et nom='B', vérifier status 400 et message 'au moins 2 caractères'), 6) ✅ TEST RESTAURATION - Remettre les valeurs d'origine (Pierre Martin) et vérifier que la restauration fonctionne."
+        - working: true
+          agent: "testing"
+          comment: "🎉 API MODIFICATION PROFIL UTILISATEUR COMPLÈTEMENT FONCTIONNELLE! ✅ TESTS COMPLETS RÉUSSIS (9/9 - 100%): 1) ✅ TEST CONNEXION: Connexion Directeur (directeur@cabinet.fr/admin123) réussie, token obtenu, valeurs originales stockées (Pierre Martin), 2) ✅ TEST MODIFICATION VALIDE: PUT /api/users/me/profile avec prenom='Pierre-Alexandre', nom='Martin-Dubois' réussi (Status 200), message de succès 'Profil mis à jour avec succès', valeurs mises à jour retournées correctement, 3) ✅ TEST VÉRIFICATION CHANGEMENT: GET /api/users/me confirme les changements (Pierre-Alexandre Martin-Dubois), 4) ✅ TEST VALIDATION CHAMPS VIDES: Prenom vide et nom vide correctement rejetés (Status 400), message d'erreur approprié 'Le prénom et le nom sont requis', 5) ✅ TEST VALIDATION CHAMPS COURTS: Prenom='A' et nom='B' correctement rejetés (Status 400), message d'erreur correct 'Le prénom et le nom doivent contenir au moins 2 caractères', 6) ✅ TEST RESTAURATION: Valeurs originales (Pierre Martin) restaurées avec succès et vérifiées. 🎯 OBJECTIF ATTEINT: L'API de modification du profil fonctionne correctement avec toutes les validations selon les spécifications demandées."
+
 frontend:
   - task: "Administration - Erreur JavaScript critique"
     implemented: true
