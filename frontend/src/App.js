@@ -1524,9 +1524,21 @@ const PlanningManager = () => {
   const [showEditCreneauModal, setShowEditCreneauModal] = useState(false);
   const [showAttributionModal, setShowAttributionModal] = useState(false);
   const [showSemaineTypeModal, setShowSemaineTypeModal] = useState(false);
+  const [showCreateSemaineTypeModal, setShowCreateSemaineTypeModal] = useState(false);
   const [semainesTypes, setSemainesTypes] = useState([]);
   const [selectedSemaineType, setSelectedSemaineType] = useState(null);
   const [dateDebutSemaine, setDateDebutSemaine] = useState('');
+  const [newSemaineType, setNewSemaineType] = useState({
+    nom: '',
+    description: '',
+    lundi: 'REPOS',
+    mardi: 'REPOS',
+    mercredi: 'REPOS',
+    jeudi: 'REPOS',
+    vendredi: 'REPOS',
+    samedi: 'REPOS',
+    dimanche: 'REPOS'
+  });
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [editingCreneau, setEditingCreneau] = useState(null);
   const [newCreneau, setNewCreneau] = useState({
