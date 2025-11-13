@@ -239,7 +239,7 @@ const PushNotificationManager = () => {
       
       if (perm === 'granted') {
         await subscribeToPush();
-        toast.success('Notifications activées ! Vous recevrez votre planning chaque matin.');
+        toast.success('Notifications activées ! Vous recevrez votre planning chaque matin à 7h45.');
       } else {
         toast.error('Notifications refusées. Vous ne recevrez pas les alertes.');
       }
@@ -251,24 +251,40 @@ const PushNotificationManager = () => {
 
   const subscribeToPush = async () => {
     try {
-      const registration = await navigator.serviceWorker.ready;
+      // Import Firebase dynamiquement
+      const { messaging, getToken } = await import('../firebase.js');
       
-      // Pour l'instant, on utilise un système simplifié sans serveur VAPID
-      // En production, il faudrait configurer Firebase Cloud Messaging
-      
-      // Simuler un abonnement réussi (pas de vraie souscription push pour l'instant)
-      setSubscribed(true);
-      toast.success('✅ Notifications activées ! Vous recevrez votre planning chaque matin à 7h00.');
+      if (!messaging) {
+        throw new Error('Firebase Messaging non disponible');
+      }
+
+      // Obtenir le token FCM
+      const token = await getToken(messaging, {
+        vapidKey: 'BLDFCJN6pePvpIaVCTQtAhcwNhlusiMzFjPDdzll12vBWZcvkYJ4Bc60R9RSBcTx-hpqwT3ngTWn4lgVh4qQS-E'
+      });
+
+      if (token) {
+        // Enregistrer le token au backend
+        await axios.post(`${API}/notifications/subscribe`, {
+          token: token,
+          userId: user.id
+        });
+        
+        setSubscribed(true);
+        toast.success('✅ Notifications Firebase activées ! Vous recevrez votre planning chaque matin à 7h45.');
+      } else {
+        throw new Error('Impossible d\'obtenir le token FCM');
+      }
     } catch (error) {
-      console.error('Erreur lors de l\'abonnement:', error);
-      toast.error('Erreur lors de l\'abonnement aux notifications');
+      console.error('Erreur lors de l\'abonnement Firebase:', error);
+      toast.error('Erreur lors de l\'abonnement aux notifications: ' + error.message);
     }
   };
 
   const testNotification = () => {
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification('🏥 Planning Test', {
-        body: 'Test de notification - Votre planning serait affiché ici chaque matin à 7h00',
+        body: 'Test de notification - Votre planning serait affiché ici chaque matin à 7h45',
         icon: '/icon-192.png',
         tag: 'test-notification'
       });
@@ -279,7 +295,13 @@ const PushNotificationManager = () => {
   };
 
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    return null; // Navigateur non compatible
+    return (
+      <div className="bg-gray-50 border border-gray-200 rounded p-3 text-sm">
+        <p className="text-gray-600">
+          ⚠️ Votre navigateur ne supporte pas les notifications push. Utilisez Chrome, Firefox ou Safari récent.
+        </p>
+      </div>
+    );
   }
 
   if (permission === 'denied') {
@@ -298,7 +320,7 @@ const PushNotificationManager = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Bell className="h-4 w-4 text-green-600" />
-            <span className="text-green-800">Notifications activées ✓</span>
+            <span className="text-green-800">Notifications Firebase activées ✓</span>
           </div>
           <Button 
             onClick={testNotification} 
