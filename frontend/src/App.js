@@ -1788,7 +1788,8 @@ const PlanningManager = () => {
       setAssistants(assistantRes.data);
       setSalles(sallesRes.data);
       setSemainesTypes(semainesTypesRes.data);
-      setCongesApprouves(congesRes.data);
+      // Filtrer uniquement les congés approuvés
+      setCongesApprouves(congesRes.data.filter(c => c.statut === 'APPROUVE'));
       setAssignations(assignationsRes.data);
       setDemandesTravail(demandesTravailRes.data);
     } catch (error) {
