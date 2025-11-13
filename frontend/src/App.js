@@ -946,6 +946,26 @@ const CongeManager = () => {
               </div>
               
               <div className="space-y-2">
+                <Label htmlFor="creneau_conge">Durée du congé *</Label>
+                <Select
+                  value={newDemande.creneau || 'JOURNEE_COMPLETE'}
+                  onValueChange={(value) => setNewDemande({...newDemande, creneau: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="JOURNEE_COMPLETE">Journée complète</SelectItem>
+                    <SelectItem value="MATIN">Demi-journée matin</SelectItem>
+                    <SelectItem value="APRES_MIDI">Demi-journée après-midi</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">
+                  Sélectionnez si vous prenez une journée complète ou une demi-journée
+                </p>
+              </div>
+              
+              <div className="space-y-2">
                 <Label htmlFor="motif">Motif (optionnel)</Label>
                 <Textarea
                   id="motif"
