@@ -70,6 +70,20 @@ async def init_database():
         print("\n👥 Création des utilisateurs...")
         
         users = [
+            # COMPTE ADMINISTRATEUR DE SECOURS - NE JAMAIS SUPPRIMER
+            {
+                "id": "super-admin-root",
+                "email": "admin@cabinet.fr",
+                "password_hash": hash_password("SuperAdmin2025!"),
+                "prenom": "Administrateur",
+                "nom": "Système",
+                "role": DIRECTEUR,
+                "telephone": "0000000000",
+                "actif": True,
+                "is_protected": True,  # Protection contre suppression
+                "date_creation": datetime.now(timezone.utc),
+                "derniere_connexion": None
+            },
             {
                 "id": "user-directeur-001",
                 "email": "directeur@cabinet.fr",
