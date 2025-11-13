@@ -3247,6 +3247,256 @@ async def initialize_database(request: InitDatabaseRequest):
                     "note": "Compte protégé - Ne peut jamais être supprimé"
                 },
                 "directeur": {
+
+
+@api_router.get("/database-status")
+async def get_database_status():
+    """
+    Endpoint pour vérifier l'état de la base de données.
+    Retourne le nombre d'éléments dans chaque collection.
+    Public - Aucune authentification requise.
+    """
+    try:
+        user_count = await db.users.count_documents({})
+        salle_count = await db.salles.count_documents({})
+        config_count = await db.configuration.count_documents({})
+        
+        # Liste les emails des utilisateurs existants (sans mots de passe)
+        users = await db.users.find({}, {"email": 1, "prenom": 1, "nom": 1, "role": 1, "actif": 1, "_id": 0}).to_list(100)
+        
+        return {
+            "database_initialized": user_count > 0,
+            "counts": {
+                "users": user_count,
+                "salles": salle_count,
+                "configuration": config_count
+            },
+            "existing_users": users,
+            "message": "Base de données déjà initialisée" if user_count > 0 else "Base de données vide - prête pour l'initialisation"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+@api_router.post("/force-init-database")
+async def force_initialize_database(request: InitDatabaseRequest):
+    """
+    Force la réinitialisation complète de la base de données.
+    ⚠️ ATTENTION : Supprime TOUTES les données existantes !
+    Nécessite un token spécial différent du token d'initialisation normale.
+    
+    Usage: POST /api/force-init-database avec {"secret_token": "force-init-2025-danger"}
+    """
+    # Vérifier le token secret spécial
+    expected_token = "force-init-2025-danger"
+    if request.secret_token != expected_token:
+        raise HTTPException(status_code=403, detail="Token de forçage invalide")
+    
+    try:
+        # Supprimer toutes les collections
+        await db.users.delete_many({})
+        await db.salles.delete_many({})
+        await db.configuration.delete_many({})
+        
+        # Créer les utilisateurs (même code que l'endpoint normal)
+        users = [
+            # COMPTE ADMINISTRATEUR DE SECOURS - NE JAMAIS SUPPRIMER
+            {
+                "id": "super-admin-root",
+                "email": "admin@cabinet.fr",
+                "password_hash": get_password_hash("SuperAdmin2025!"),
+                "prenom": "Administrateur",
+                "nom": "Système",
+                "role": "Directeur",
+                "telephone": "0000000000",
+                "actif": True,
+                "is_protected": True,
+                "date_creation": datetime.now(timezone.utc),
+                "derniere_connexion": None
+            },
+            {
+                "id": "user-directeur-001",
+                "email": "directeur@cabinet.fr",
+                "password_hash": get_password_hash("admin123"),
+                "prenom": "Pierre",
+                "nom": "Martin",
+                "role": "Directeur",
+                "telephone": "0601020304",
+                "actif": True,
+                "date_creation": datetime.now(timezone.utc),
+                "derniere_connexion": None
+            },
+            {
+                "id": "user-medecin-001",
+                "email": "dr.dupont@cabinet.fr",
+                "password_hash": get_password_hash("medecin123"),
+                "prenom": "Marie",
+                "nom": "Dupont",
+                "role": "Médecin",
+                "telephone": "0612345678",
+                "specialite": "Médecine générale",
+                "actif": True,
+                "date_creation": datetime.now(timezone.utc),
+                "derniere_connexion": None
+            },
+            {
+                "id": "user-medecin-002",
+                "email": "dr.bernard@cabinet.fr",
+                "password_hash": get_password_hash("medecin123"),
+                "prenom": "Jean",
+                "nom": "Bernard",
+                "role": "Médecin",
+                "telephone": "0623456789",
+                "specialite": "Pédiatrie",
+                "actif": True,
+                "date_creation": datetime.now(timezone.utc),
+                "derniere_connexion": None
+            },
+            {
+                "id": "user-assistant-001",
+                "email": "julie.moreau@cabinet.fr",
+                "password_hash": get_password_hash("assistant123"),
+                "prenom": "Julie",
+                "nom": "Moreau",
+                "role": "Assistant",
+                "telephone": "0634567890",
+                "actif": True,
+                "date_creation": datetime.now(timezone.utc),
+                "derniere_connexion": None
+            },
+            {
+                "id": "user-assistant-002",
+                "email": "sophie.petit@cabinet.fr",
+                "password_hash": get_password_hash("assistant123"),
+                "prenom": "Sophie",
+                "nom": "Petit",
+                "role": "Assistant",
+                "telephone": "0645678901",
+                "actif": True,
+                "date_creation": datetime.now(timezone.utc),
+                "derniere_connexion": None
+            },
+            {
+                "id": "user-secretaire-001",
+                "email": "emma.leroy@cabinet.fr",
+                "password_hash": get_password_hash("secretaire123"),
+                "prenom": "Emma",
+                "nom": "Leroy",
+                "role": "Secrétaire",
+                "telephone": "0656789012",
+                "actif": True,
+                "date_creation": datetime.now(timezone.utc),
+                "derniere_connexion": None
+            }
+        ]
+        
+        await db.users.insert_many(users)
+        
+        # Créer les salles
+        salles = [
+            {
+                "id": "salle-001",
+                "nom": "Cabinet 1",
+                "type_salle": "Cabinet médical",
+                "capacite": 1,
+                "equipements": ["Bureau", "Chaise", "Ordinateur", "Lit d'examen"],
+                "actif": True,
+                "position_x": 100,
+                "position_y": 100
+            },
+            {
+                "id": "salle-002",
+                "nom": "Cabinet 2",
+                "type_salle": "Cabinet médical",
+                "capacite": 1,
+                "equipements": ["Bureau", "Chaise", "Ordinateur", "Lit d'examen"],
+                "actif": True,
+                "position_x": 300,
+                "position_y": 100
+            },
+            {
+                "id": "salle-003",
+                "nom": "Salle de soin 1",
+                "type_salle": "Salle de soin",
+                "capacite": 2,
+                "equipements": ["Lit", "Chaise", "Armoire médicale", "Lavabo"],
+                "actif": True,
+                "position_x": 100,
+                "position_y": 300
+            },
+            {
+                "id": "salle-004",
+                "nom": "Salle de soin 2",
+                "type_salle": "Salle de soin",
+                "capacite": 2,
+                "equipements": ["Lit", "Chaise", "Armoire médicale", "Lavabo"],
+                "actif": True,
+                "position_x": 300,
+                "position_y": 300
+            },
+            {
+                "id": "salle-005",
+                "nom": "Salle d'attente",
+                "type_salle": "Salle d'attente",
+                "capacite": 10,
+                "equipements": ["Chaises", "Table basse", "Magazines"],
+                "actif": True,
+                "position_x": 200,
+                "position_y": 500
+            }
+        ]
+        
+        await db.salles.insert_many(salles)
+        
+        # Créer la configuration
+        configuration = {
+            "id": "config-001",
+            "max_medecins_par_creneau": 6,
+            "max_assistants_par_creneau": 8,
+            "horaires_matin": {
+                "debut": "08:00",
+                "fin": "12:00"
+            },
+            "horaires_apres_midi": {
+                "debut": "14:00",
+                "fin": "18:00"
+            },
+            "delai_notification_jours": 7,
+            "actif": True
+        }
+        
+        await db.configuration.insert_one(configuration)
+        
+        # Compter les éléments créés
+        user_count = await db.users.count_documents({})
+        salle_count = await db.salles.count_documents({})
+        config_count = await db.configuration.count_documents({})
+        
+        return {
+            "message": "⚠️ Base de données RÉINITIALISÉE avec succès ! Toutes les anciennes données ont été supprimées.",
+            "utilisateurs_crees": user_count,
+            "salles_creees": salle_count,
+            "configuration_creee": config_count,
+            "identifiants": {
+                "super_admin": {
+                    "email": "admin@cabinet.fr",
+                    "password": "SuperAdmin2025!",
+                    "note": "Compte protégé - Ne peut jamais être supprimé"
+                },
+                "directeur": {
+                    "email": "directeur@cabinet.fr",
+                    "password": "admin123"
+                },
+                "medecin": {
+                    "email": "dr.dupont@cabinet.fr",
+                    "password": "medecin123"
+                }
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la réinitialisation: {str(e)}")
+
+
                     "email": "directeur@cabinet.fr",
                     "password": "admin123"
                 },
