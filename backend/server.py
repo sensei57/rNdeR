@@ -3418,7 +3418,7 @@ async def add_super_admin(request: InitDatabaseRequest):
 
 
 @api_router.post("/reset-user-password")
-async def reset_user_password(request: dict):
+async def reset_user_password_with_token(request: dict):
     """
     Réinitialise le mot de passe d'un utilisateur spécifique.
     Nécessite un token de sécurité.
