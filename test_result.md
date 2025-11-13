@@ -212,7 +212,7 @@ backend:
 
   - task: "Administration Comptes - Impersonate (POST /api/admin/impersonate/{user_id})"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
@@ -224,6 +224,9 @@ backend:
         - working: "NA"
           agent: "testing"
           comment: "⚠️ API IMPERSONATE NON TESTÉE - Impossible de tester car tous les utilisateurs non-directeur sont inactifs en base de données. L'API semble correctement implémentée mais nécessite des utilisateurs actifs pour validation complète."
+        - working: true
+          agent: "testing"
+          comment: "🎉 PROBLÈME IMPERSONATION COMPLÈTEMENT RÉSOLU! 🔍 ROOT CAUSE IDENTIFIÉE: Le frontend ne mettait pas à jour l'en-tête d'autorisation d'axios et n'exposait pas setUser dans le contexte d'authentification. ✅ CORRECTIONS APPLIQUÉES: 1) Ajout de axios.defaults.headers.common['Authorization'] dans handleImpersonate, 2) Exposition de setUser et setToken dans AuthContext.Provider. ✅ VALIDATION COMPLÈTE: 1) ✅ Connexion Directeur (directeur@cabinet.fr/admin123) réussie, 2) ✅ Navigation Administration OK, 3) ✅ Bouton 'Se connecter' pour Marie Dupont fonctionne, 4) ✅ API POST /admin/impersonate/{userId} répond 200 OK, 5) ✅ Changement d'utilisateur confirmé: Pierre Martin → Marie Dupont, 6) ✅ Changement de rôle confirmé: Directeur → Médecin, 7) ✅ Permissions correctement appliquées (bouton 'Nouveau Personnel' non visible), 8) ✅ Interface utilisateur mise à jour en temps réel. 🎯 RÉSULTAT: Le bouton 'Se connecter' dans la section Administration fonctionne parfaitement. L'utilisateur peut maintenant s'impersonner en tant qu'autres utilisateurs sans connaître leur mot de passe."
 
   - task: "Administration Comptes - Reset Password (PUT /api/admin/users/{user_id}/password)"
     implemented: true
