@@ -3245,6 +3245,9 @@ def main():
     # Test leave management
     tester.test_leave_management()
     
+    # Test NEW FEATURE: Half-day leave management
+    tester.test_half_day_leave_management()
+    
     # Test room reservations
     tester.test_room_reservations()
     
