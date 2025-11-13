@@ -210,6 +210,123 @@ const NotificationToday = () => {
   );
 };
 
+// Notifications Badge Component
+const NotificationBadge = () => {
+  const { user } = useAuth();
+  const [notifications, setNotifications] = useState({ conges: 0, travail: 0 });
+  const [showPanel, setShowPanel] = useState(false);
+  const [demandesConges, setDemandesConges] = useState([]);
+  const [demandesTravail, setDemandesTravail] = useState([]);
+
+  useEffect(() => {
+    if (user?.role === 'Directeur') {
+      fetchNotifications();
+      // Recharger les notifications toutes les 30 secondes
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  const fetchNotifications = async () => {
+    try {
+      const [congesRes, travailRes] = await Promise.all([
+        axios.get(`${API}/conges`),
+        axios.get(`${API}/demandes-travail`)
+      ]);
+
+      const congesEnAttente = congesRes.data.filter(d => d.statut === 'EN_ATTENTE');
+      const travailEnAttente = travailRes.data.filter(d => d.statut === 'EN_ATTENTE');
+
+      setDemandesConges(congesEnAttente);
+      setDemandesTravail(travailEnAttente);
+      setNotifications({
+        conges: congesEnAttente.length,
+        travail: travailEnAttente.length
+      });
+    } catch (error) {
+      console.error('Erreur lors du chargement des notifications');
+    }
+  };
+
+  const totalNotifications = notifications.conges + notifications.travail;
+
+  if (user?.role !== 'Directeur' || totalNotifications === 0) return null;
+
+  return (
+    <div className="relative">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setShowPanel(!showPanel)}
+        className="relative"
+      >
+        <Bell className="h-4 w-4" />
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+          {totalNotifications}
+        </span>
+      </Button>
+
+      {showPanel && (
+        <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border z-50">
+          <div className="p-4 border-b bg-gray-50">
+            <h3 className="font-bold text-gray-800 flex items-center">
+              <Bell className="h-5 w-5 mr-2" />
+              Demandes en attente ({totalNotifications})
+            </h3>
+          </div>
+          <div className="max-h-96 overflow-y-auto">
+            {/* Demandes de congés */}
+            {demandesConges.length > 0 && (
+              <div className="p-4 border-b">
+                <h4 className="font-semibold text-sm text-gray-700 mb-2">
+                  Demandes de Congés ({notifications.conges})
+                </h4>
+                <div className="space-y-2">
+                  {demandesConges.map(demande => (
+                    <div key={demande.id} className="text-sm bg-yellow-50 p-2 rounded border border-yellow-200">
+                      <p className="font-medium">{demande.utilisateur?.prenom} {demande.utilisateur?.nom}</p>
+                      <p className="text-xs text-gray-600">
+                        {new Date(demande.date_debut).toLocaleDateString('fr-FR')} - {new Date(demande.date_fin).toLocaleDateString('fr-FR')}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Demandes de travail */}
+            {demandesTravail.length > 0 && (
+              <div className="p-4">
+                <h4 className="font-semibold text-sm text-gray-700 mb-2">
+                  Demandes de Travail ({notifications.travail})
+                </h4>
+                <div className="space-y-2">
+                  {demandesTravail.map(demande => (
+                    <div key={demande.id} className="text-sm bg-blue-50 p-2 rounded border border-blue-200">
+                      <p className="font-medium">Dr. {demande.medecin?.prenom} {demande.medecin?.nom}</p>
+                      <p className="text-xs text-gray-600">
+                        {new Date(demande.date_demandee).toLocaleDateString('fr-FR')} - {demande.creneau === 'MATIN' ? 'Matin' : demande.creneau === 'APRES_MIDI' ? 'Après-midi' : 'Journée'}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="p-3 border-t bg-gray-50 text-center">
+            <button
+              onClick={() => setShowPanel(false)}
+              className="text-sm text-gray-600 hover:text-gray-800"
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Dashboard Navigation
 const Navigation = () => {
   const { user, logout } = useAuth();
@@ -238,6 +355,7 @@ const Navigation = () => {
             </h1>
           </div>
           <div className="flex items-center space-x-4">
+            <NotificationBadge />
             <div className="flex items-center space-x-2">
               <Avatar>
                 <AvatarFallback className={getRoleColor(user?.role)}>
