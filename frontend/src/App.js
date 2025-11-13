@@ -3726,6 +3726,7 @@ const PlanningManager = () => {
                         datesMonth.push(d.toISOString().split('T')[0]);
                       }
                       const demiJournees = calculateDemiJournees(medecin.id, datesMonth);
+                      const conges = calculateConges(medecin.id, datesMonth);
                       return (
                         <div key={medecin.id} className="bg-blue-50 border border-blue-200 rounded p-2">
                           <div className="text-sm font-medium text-gray-800">
@@ -3734,6 +3735,11 @@ const PlanningManager = () => {
                           <div className="text-lg font-bold text-blue-600">
                             {demiJournees} {demiJournees <= 1 ? 'demi-journée' : 'demi-journées'}
                           </div>
+                          {conges > 0 && (
+                            <div className="text-xs text-red-600 font-medium mt-1">
+                              🔴 {conges} {conges === 1 ? 'jour' : 'jours'} de congé
+                            </div>
+                          )}
                         </div>
                       );
                     })}
