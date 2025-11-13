@@ -7671,6 +7671,38 @@ const MonProfilManager = () => {
     }
   };
 
+  const handleUpdateProfile = async () => {
+    if (!profileData.prenom || !profileData.nom) {
+      toast.error('Veuillez remplir tous les champs');
+      return;
+    }
+
+    if (profileData.prenom.length < 2 || profileData.nom.length < 2) {
+      toast.error('Le prénom et le nom doivent contenir au moins 2 caractères');
+      return;
+    }
+
+    try {
+      const response = await axios.put(`${API}/users/me/profile`, {
+        prenom: profileData.prenom,
+        nom: profileData.nom
+      });
+      
+      // Mettre à jour les données utilisateur dans le contexte
+      setUser({
+        ...user,
+        prenom: profileData.prenom,
+        nom: profileData.nom
+      });
+      
+      toast.success('Profil mis à jour avec succès');
+      setShowProfileModal(false);
+      setProfileData({ prenom: '', nom: '' });
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la mise à jour du profil');
+    }
+  };
+
   const handleUpdatePassword = async () => {
     if (!passwordData.currentPassword || !passwordData.newPassword) {
       toast.error('Veuillez remplir tous les champs');
