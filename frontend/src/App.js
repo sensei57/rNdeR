@@ -1992,6 +1992,61 @@ const PlanningManager = () => {
     });
   };
 
+  // Calculer les demi-journées pour un employé dans une période
+  const calculateDemiJournees = (employeId, dates) => {
+    if (!planningSemaine || !planningSemaine.planning) return 0;
+    
+    let total = 0;
+    dates.forEach(date => {
+      const planning = planningSemaine.planning[date];
+      if (!planning) return;
+      
+      const creneauxMatin = planning.MATIN?.filter(c => c.employe_id === employeId) || [];
+      const creneauxApresMidi = planning.APRES_MIDI?.filter(c => c.employe_id === employeId) || [];
+      
+      total += creneauxMatin.length * 0.5;
+      total += creneauxApresMidi.length * 0.5;
+    });
+    
+    return total;
+  };
+
+  // Calculer les heures travaillées pour un secrétaire dans une période
+  const calculateHeures = (employeId, dates) => {
+    if (!planningSemaine || !planningSemaine.planning) return 0;
+    
+    let totalMinutes = 0;
+    dates.forEach(date => {
+      const planning = planningSemaine.planning[date];
+      if (!planning) return;
+      
+      const creneaux = [...(planning.MATIN || []), ...(planning.APRES_MIDI || [])];
+      const creneauxEmploye = creneaux.filter(c => c.employe_id === employeId);
+      
+      creneauxEmploye.forEach(creneau => {
+        if (creneau.horaire_debut && creneau.horaire_fin) {
+          // Parser les heures
+          const [debutH, debutM] = creneau.horaire_debut.split(':').map(Number);
+          const [finH, finM] = creneau.horaire_fin.split(':').map(Number);
+          
+          let minutes = (finH * 60 + finM) - (debutH * 60 + debutM);
+          
+          // Soustraire la pause si présente
+          if (creneau.horaire_pause_debut && creneau.horaire_pause_fin) {
+            const [pauseDebutH, pauseDebutM] = creneau.horaire_pause_debut.split(':').map(Number);
+            const [pauseFinH, pauseFinM] = creneau.horaire_pause_fin.split(':').map(Number);
+            const pauseMinutes = (pauseFinH * 60 + pauseFinM) - (pauseDebutH * 60 + pauseDebutM);
+            minutes -= pauseMinutes;
+          }
+          
+          totalMinutes += minutes;
+        }
+      });
+    });
+    
+    return (totalMinutes / 60).toFixed(1); // Convertir en heures avec 1 décimale
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
