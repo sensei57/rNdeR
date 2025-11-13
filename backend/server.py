@@ -1095,19 +1095,33 @@ async def create_assignation(
 async def get_assignations(current_user: User = Depends(get_current_user)):
     assignations = await db.assignations.find({"actif": True}).to_list(1000)
     
+    # Optimisation: Batch fetch all users at once (évite N+1 queries)
+    all_user_ids = set()
+    for assignation in assignations:
+        all_user_ids.add(assignation["medecin_id"])
+        all_user_ids.add(assignation["assistant_id"])
+    
+    # Une seule requête pour tous les utilisateurs
+    users = await db.users.find(
+        {"id": {"$in": list(all_user_ids)}},
+        {"_id": 0, "password_hash": 0}  # Exclure champs sensibles
+    ).to_list(1000)
+    
+    # Créer un map pour accès rapide O(1)
+    users_map = {user["id"]: User(**user) for user in users}
+    
     # Enrich with user details
     enriched_assignations = []
     for assignation in assignations:
-        # Remove MongoDB _id field to avoid serialization error
         assignation.pop('_id', None)
         
-        medecin = await db.users.find_one({"id": assignation["medecin_id"]})
-        assistant = await db.users.find_one({"id": assignation["assistant_id"]})
+        medecin = users_map.get(assignation["medecin_id"])
+        assistant = users_map.get(assignation["assistant_id"])
         
         enriched_assignations.append({
             **assignation,
-            "medecin": User(**medecin).dict() if medecin else None,
-            "assistant": User(**assistant).dict() if assistant else None
+            "medecin": medecin.dict() if medecin else None,
+            "assistant": assistant.dict() if assistant else None
         })
     
     return enriched_assignations
