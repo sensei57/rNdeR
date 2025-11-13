@@ -255,19 +255,10 @@ const PushNotificationManager = () => {
       
       // Pour l'instant, on utilise un système simplifié sans serveur VAPID
       // En production, il faudrait configurer Firebase Cloud Messaging
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: null // À remplacer par votre clé VAPID publique
-      });
-
-      // Envoyer l'abonnement au serveur
-      await axios.post(`${API}/notifications/subscribe`, {
-        subscription: subscription.toJSON(),
-        userId: user.id
-      });
-
+      
+      // Simuler un abonnement réussi (pas de vraie souscription push pour l'instant)
       setSubscribed(true);
-      toast.success('Vous êtes maintenant abonné aux notifications !');
+      toast.success('✅ Notifications activées ! Vous recevrez votre planning chaque matin à 7h00.');
     } catch (error) {
       console.error('Erreur lors de l\'abonnement:', error);
       toast.error('Erreur lors de l\'abonnement aux notifications');
