@@ -564,6 +564,18 @@ frontend:
           agent: "testing"
           comment: "🎉 CORRECTION BACKEND VALIDÉE AVEC SUCCÈS! ✅ TEST COMPLET MARIE DUPONT RÉUSSI: 1) ✅ Connexion dr.dupont@cabinet.fr/medecin123 réussie, 2) ✅ Navigation section Personnel accessible, 3) ✅ Compteurs PARFAITS: Médecins (2), Assistants (2), Secrétaires (1) - exactement comme attendu, 4) ✅ API /users accessible (200 OK, 6 utilisateurs récupérés), 5) ✅ Cartes employés affichées dans tous les onglets (Dr. Marie Dupont, Dr. Jean Bernard visibles), 6) ✅ Aucune erreur 403 détectée dans le network, 7) ✅ Navigation entre onglets fonctionnelle. 🔍 VALIDATION TECHNIQUE: L'endpoint /api/users a été correctement modifié pour permettre l'accès à tous les utilisateurs authentifiés. Marie Dupont voit maintenant tous les employés comme requis. 🎯 OBJECTIF ATTEINT: La correction backend fonctionne parfaitement - tous les employés peuvent maintenant voir le personnel complet du cabinet."
 
+  - task: "Plan Cabinet - Accès pour Marie Dupont (Médecin)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "TEST RAPIDE - Vérifier que Marie Dupont voit le Plan Cabinet. CONTEXTE: J'ai ajouté 'Plan Cabinet' dans le menu pour tous les utilisateurs (pas seulement Directeur). Marie Dupont (Médecin) devrait maintenant voir ce menu. TESTS REQUIS: 1) Connexion Marie Dupont (dr.dupont@cabinet.fr/medecin123), 2) Vérifier menu 'Plan Cabinet' visible après 'Gestion Salles', 3) Cliquer sur 'Plan Cabinet', 4) Vérifier affichage plan avec salles positionnées, 5) Vérifier sélection date et créneau (MATIN/APRÈS-MIDI), 6) Capture d'écran du plan. OBJECTIF: Confirmer accès Plan Cabinet pour Marie Dupont."
+
 agent_communication:
     - agent: "testing"
       message: "🚨 PROBLÈME CRITIQUE IDENTIFIÉ - PERMISSIONS API PERSONNEL! 🔍 ROOT CAUSE TROUVÉE: Marie Dupont (Médecin) ne peut pas voir le personnel car l'endpoint /api/users est restreint aux Directeurs uniquement, mais le frontend s'attend à ce que tous les utilisateurs y aient accès. ✅ DIAGNOSTIC COMPLET: 1) ❌ Marie Dupont: 403 Forbidden sur /api/users → Compteurs (0,0,0), 2) ✅ Directeur: 200 OK sur /api/users → Compteurs (2,2,1), 3) 🔍 Backend: require_role([DIRECTEUR]) ligne 511, 4) 🔍 Frontend: Commentaire 'Tous les utilisateurs voient tout le personnel' ligne 296. ✅ DONNÉES CONFIRMÉES: 6 utilisateurs en base (1 Directeur, 2 Médecins, 2 Assistants, 1 Secrétaire), tous actifs. 🎯 SOLUTION REQUISE: Modifier l'endpoint /api/users pour permettre l'accès à tous les utilisateurs authentifiés, pas seulement aux Directeurs. Le problème n'est PAS dans les données mais dans les permissions backend."
