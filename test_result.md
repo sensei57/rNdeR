@@ -578,6 +578,21 @@ frontend:
           agent: "testing"
           comment: "🎉 TEST PLAN CABINET MARIE DUPONT COMPLÈTEMENT RÉUSSI! ✅ VÉRIFICATIONS COMPLÈTES: 1) ✅ Connexion Marie Dupont (dr.dupont@cabinet.fr/medecin123) réussie, 2) ✅ Menu 'Plan Cabinet' VISIBLE dans barre latérale à la position 9 (après 'Gestion Salles' position 8), 3) ✅ Clic sur 'Plan Cabinet' fonctionne parfaitement, 4) ✅ Page 'Plan du Cabinet' se charge avec titre et description, 5) ✅ Plan s'affiche avec 5 salles positionnées (Cabinet 1, Cabinet 2, Salle de soin 1, Salle de soin 2, Salle d'attente), 6) ✅ Sélecteur de date fonctionnel (changement 13/11 → 14/11 → 12/11), 7) ✅ Sélecteur créneau fonctionnel (Matin ↔ Après-midi avec mise à jour titre), 8) ✅ Légende complète (Médecin, Assistant, Attente, Libre), 9) ✅ API /cabinet/plan/{date}?creneau={creneau} fonctionne, 10) ✅ 0 erreur JavaScript détectée, 11) ✅ Captures d'écran réalisées. 🎯 OBJECTIF ATTEINT: Marie Dupont peut maintenant accéder au Plan Cabinet avec toutes les fonctionnalités opérationnelles. L'ajout du menu pour tous les utilisateurs fonctionne parfaitement."
 
+  - task: "Permissions Menus - Vérification Marie Dupont vs Directeur"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "TEST ULTRA-RAPIDE - Vérifier les menus pour Marie Dupont. CONTEXTE: Correction: Marie Dupont (Médecin) doit voir 'Plan Cabinet' mais PAS 'Gestion Salles'. 'Gestion Salles' doit être visible UNIQUEMENT pour le Directeur. IDENTIFIANTS: Médecin: dr.dupont@cabinet.fr / medecin123. TESTS RAPIDES: 1) Connexion Marie Dupont, 2) VÉRIFIER: Menu 'Plan Cabinet' VISIBLE ✅, 3) VÉRIFIER: Menu 'Gestion Salles' PAS VISIBLE ❌, 4) Se déconnecter, 5) Connexion Directeur (directeur@cabinet.fr / admin123), 6) VÉRIFIER: Menu 'Gestion Salles' VISIBLE pour Directeur ✅. OBJECTIF: Confirmer que seul le Plan Cabinet est visible pour les employés, pas la Gestion Salles."
+        - working: true
+          agent: "testing"
+          comment: "🎉 TEST PERMISSIONS MENUS COMPLÈTEMENT RÉUSSI! ✅ MARIE DUPONT (Médecin): 1) ✅ Connexion dr.dupont@cabinet.fr/medecin123 réussie, 2) ✅ Menu 'Plan Cabinet' VISIBLE (CORRECT), 3) ✅ Menu 'Gestion Salles' NON VISIBLE (CORRECT), 4) ✅ Clic Plan Cabinet fonctionne parfaitement. ✅ DIRECTEUR (Pierre Martin): 1) ✅ Déconnexion et connexion directeur@cabinet.fr/admin123 réussie, 2) ✅ Menu 'Plan Cabinet' VISIBLE (CORRECT), 3) ✅ Menu 'Gestion Salles' VISIBLE (CORRECT). 🎯 RÉSULTAT GLOBAL: TOUS LES TESTS RÉUSSIS! Les permissions de menu fonctionnent correctement selon les spécifications - Marie Dupont voit Plan Cabinet mais pas Gestion Salles, le Directeur voit les deux menus. La correction des permissions est parfaitement implémentée."
+
 agent_communication:
     - agent: "testing"
       message: "🚨 PROBLÈME CRITIQUE IDENTIFIÉ - PERMISSIONS API PERSONNEL! 🔍 ROOT CAUSE TROUVÉE: Marie Dupont (Médecin) ne peut pas voir le personnel car l'endpoint /api/users est restreint aux Directeurs uniquement, mais le frontend s'attend à ce que tous les utilisateurs y aient accès. ✅ DIAGNOSTIC COMPLET: 1) ❌ Marie Dupont: 403 Forbidden sur /api/users → Compteurs (0,0,0), 2) ✅ Directeur: 200 OK sur /api/users → Compteurs (2,2,1), 3) 🔍 Backend: require_role([DIRECTEUR]) ligne 511, 4) 🔍 Frontend: Commentaire 'Tous les utilisateurs voient tout le personnel' ligne 296. ✅ DONNÉES CONFIRMÉES: 6 utilisateurs en base (1 Directeur, 2 Médecins, 2 Assistants, 1 Secrétaire), tous actifs. 🎯 SOLUTION REQUISE: Modifier l'endpoint /api/users pour permettre l'accès à tous les utilisateurs authentifiés, pas seulement aux Directeurs. Le problème n'est PAS dans les données mais dans les permissions backend."
