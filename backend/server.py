@@ -508,7 +508,8 @@ async def login(user_login: UserLogin):
 
 # User management routes
 @api_router.get("/users", response_model=List[User])
-async def get_users(current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))):
+async def get_users(current_user: User = Depends(get_current_user)):
+    """Tous les utilisateurs authentifiés peuvent voir la liste du personnel"""
     users = await db.users.find().to_list(1000)
     return [User(**user) for user in users]
 
