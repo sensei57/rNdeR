@@ -318,6 +318,21 @@ backend:
           agent: "testing"
           comment: "✅ ENDPOINT PLANNING SEMAINE PARFAITEMENT FONCTIONNEL! Test réalisé avec GET /api/planning/semaine/2025-01-20: 1) ✅ Retourne structure correcte avec 'dates' (7 jours) et 'planning' (données par jour), 2) ✅ Semaine du 20-26 janvier 2025 correctement calculée, 3) ✅ Date 2025-01-22 incluse dans la semaine, 4) ✅ Structure planning par jour avec créneaux MATIN/APRES_MIDI. L'endpoint fonctionne parfaitement pour l'affichage des demandes dans le planning."
 
+  - task: "Système de Notifications Firebase (POST /api/notifications/subscribe, GET /api/notifications, PUT /api/notifications/{id}/read, POST /api/notifications/send-daily-planning)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Système complet de notifications push Firebase implémenté. Règles: Directeur reçoit notifications pour demandes de congés des Assistants/Secrétaires (PAS médecins) et demandes de travail des Médecins uniquement. Employés reçoivent notifications pour validation de leurs demandes. Tout le monde reçoit planning quotidien (matin à 7h45). Tests requis: enregistrement token Firebase, notifications directeur, notifications employé, récupération notifications, planning quotidien, endpoints Firebase."
+        - working: true
+          agent: "testing"
+          comment: "🎉 SYSTÈME DE NOTIFICATIONS FIREBASE COMPLÈTEMENT FONCTIONNEL! ✅ TESTS COMPLETS RÉUSSIS (27/27 - 100%): 1) ✅ TEST 1 - Enregistrement token Firebase: Tokens enregistrés avec succès pour directeur, médecin et assistant, 2) ✅ TEST 2 - Notifications Directeur (Demande congé Assistant): Demande de congé créée par assistant → Directeur reçoit 1 notification de demande de congé, 3) ✅ TEST 3 - Notifications Directeur (Demande travail Médecin): Demande de travail créée par médecin → Directeur reçoit 1 notification de demande de travail, 4) ✅ TEST 4 - Notifications employé (Validation demande): Approbation par Directeur → Médecin reçoit 1 notification d'approbation, 5) ✅ TEST 5 - Récupération notifications: Chaque utilisateur ne voit que ses propres notifications (directeur: 2, médecin: 1, assistant: 0), 6) ✅ TEST 6 - Planning quotidien: Déclenchement manuel réussi (endpoint fonctionnel), 7) ✅ TEST 7 - Endpoints Firebase: Mise à jour tokens + marquage notifications comme lues fonctionnent parfaitement. 🎯 OBJECTIF ATTEINT: Système de notifications Firebase fonctionne de bout en bout selon toutes les spécifications demandées."
+
 frontend:
   - task: "Administration - Erreur JavaScript critique"
     implemented: true
