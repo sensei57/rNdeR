@@ -543,6 +543,40 @@ async def notify_user_request_status(user_id: str, type_request: str, status: st
 
 # ===== FIN SYSTÈME NOTIFICATIONS =====
 
+# Endpoints pour les notifications
+@api_router.get("/notifications")
+async def get_user_notifications(
+    current_user: User = Depends(get_current_user),
+    limit: int = 20
+):
+    """Récupère les notifications de l'utilisateur actuel"""
+    notifications = await db.notifications.find(
+        {"user_id": current_user.id}
+    ).sort("sent_at", -1).limit(limit).to_list(limit)
+    
+    # Supprimer les _id de MongoDB
+    for notif in notifications:
+        if '_id' in notif:
+            del notif['_id']
+    
+    return notifications
+
+@api_router.put("/notifications/{notification_id}/read")
+async def mark_notification_read(
+    notification_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Marque une notification comme lue"""
+    result = await db.notifications.update_one(
+        {"id": notification_id, "user_id": current_user.id},
+        {"$set": {"read": True}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Notification non trouvée")
+    
+    return {"message": "Notification marquée comme lue"}
+
 # Authentication routes
 @api_router.post("/auth/register", response_model=User)
 async def register_user(user_data: UserCreate):
