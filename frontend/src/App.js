@@ -790,6 +790,8 @@ const CongeManager = () => {
   const [loading, setLoading] = useState(true);
   const [showNewDemandeModal, setShowNewDemandeModal] = useState(false);
   const [users, setUsers] = useState([]);
+  const [filterStatut, setFilterStatut] = useState('TOUT'); // TOUT, EN_ATTENTE, APPROUVE
+  const [filterEmploye, setFilterEmploye] = useState('TOUS'); // TOUS ou ID d'un employé
   const [newDemande, setNewDemande] = useState({
     utilisateur_id: '',
     date_debut: '',
