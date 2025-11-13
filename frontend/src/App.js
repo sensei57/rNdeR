@@ -3652,7 +3652,7 @@ const PlanningManager = () => {
                             {assistant.prenom} {assistant.nom}
                           </div>
                           <div className="text-lg font-bold text-orange-600">
-                            {demiJournees} 1/2 j.
+                            {demiJournees} {demiJournees <= 1 ? 'demi-journée' : 'demi-journées'}
                           </div>
                         </div>
                       );
