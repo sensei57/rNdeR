@@ -4669,9 +4669,34 @@ def urgent_authentication_main():
         print("⚠️ Authentication needs attention - several issues detected")
         return 1
 
+def super_admin_main():
+    """Main function for super admin protected account tests"""
+    print("🛡️ SUPER ADMIN PROTECTED ACCOUNT TESTS")
+    print("="*60)
+    
+    tester = MedicalStaffAPITester()
+    
+    # Run super admin tests
+    success = tester.test_super_admin_protected_account()
+    
+    # Print final summary
+    print(f"\n📊 Super Admin Test Summary:")
+    print(f"   Tests run: {tester.tests_run}")
+    print(f"   Tests passed: {tester.tests_passed}")
+    print(f"   Success rate: {(tester.tests_passed/tester.tests_run*100):.1f}%")
+    
+    if success:
+        print("🎉 Super Admin Protection System is FULLY FUNCTIONAL!")
+        return 0
+    else:
+        print("❌ Super Admin Protection System has issues!")
+        return 1
+
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) > 1 and sys.argv[1] == "--profile":
+    if len(sys.argv) > 1 and sys.argv[1] == "--super-admin":
+        sys.exit(super_admin_main())
+    elif len(sys.argv) > 1 and sys.argv[1] == "--profile":
         sys.exit(profile_modification_main())
     elif len(sys.argv) > 1 and sys.argv[1] == "--urgent-auth":
         sys.exit(urgent_authentication_main())
@@ -4682,5 +4707,5 @@ if __name__ == "__main__":
     elif len(sys.argv) > 1 and sys.argv[1] == "--firebase":
         sys.exit(firebase_notification_main())
     else:
-        # Default to profile modification tests as requested
-        sys.exit(profile_modification_main())
+        # Default to super admin tests as requested in review
+        sys.exit(super_admin_main())
