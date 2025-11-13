@@ -3825,6 +3825,217 @@ class MedicalStaffAPITester:
         
         print("\n   🎯 Firebase Notification System Testing Complete!")
 
+    def test_profile_modification(self):
+        """Test API Modification Profil Utilisateur (Nom et Prénom) - SPECIFIC REQUEST"""
+        print("\n👤 Testing Profile Modification API (PUT /api/users/me/profile)")
+        print("="*70)
+        
+        if 'directeur' not in self.tokens:
+            print("❌ Skipping profile modification tests - no directeur token")
+            return
+        
+        directeur_token = self.tokens['directeur']
+        
+        # Store original values for restoration
+        original_prenom = None
+        original_nom = None
+        
+        # 1. ✅ TEST CONNEXION - Get current user info to store original values
+        print("\n🔍 TEST 1 - Get current user info (for original values)")
+        success, user_info = self.run_test(
+            "Get current user info",
+            "GET",
+            "users/me",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            original_prenom = user_info.get('prenom', '')
+            original_nom = user_info.get('nom', '')
+            print(f"   ✅ Original values stored: {original_prenom} {original_nom}")
+        else:
+            print("   ❌ Failed to get original user info")
+            return
+        
+        # 2. ✅ TEST MODIFICATION VALIDE
+        print("\n🔍 TEST 2 - Valid profile modification")
+        valid_profile_data = {
+            "prenom": "Pierre-Alexandre",
+            "nom": "Martin-Dubois"
+        }
+        
+        success, response = self.run_test(
+            "Valid profile modification",
+            "PUT",
+            "users/me/profile",
+            200,
+            data=valid_profile_data,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✅ Profile modification successful")
+            if 'message' in response:
+                print(f"   ✅ Success message: {response['message']}")
+            if 'prenom' in response and 'nom' in response:
+                print(f"   ✅ Updated values returned: {response['prenom']} {response['nom']}")
+        else:
+            print("   ❌ Valid profile modification failed")
+        
+        # 3. ✅ TEST VÉRIFICATION CHANGEMENT
+        print("\n🔍 TEST 3 - Verify profile changes")
+        success, updated_user_info = self.run_test(
+            "Verify profile changes",
+            "GET",
+            "users/me",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            current_prenom = updated_user_info.get('prenom', '')
+            current_nom = updated_user_info.get('nom', '')
+            
+            if current_prenom == "Pierre-Alexandre" and current_nom == "Martin-Dubois":
+                print(f"   ✅ Profile changes verified: {current_prenom} {current_nom}")
+            else:
+                print(f"   ❌ Profile changes not applied correctly: {current_prenom} {current_nom}")
+        else:
+            print("   ❌ Failed to verify profile changes")
+        
+        # 4. ❌ TEST VALIDATION - Champs vides
+        print("\n🔍 TEST 4 - Validation test: Empty fields")
+        
+        # Test empty prenom
+        empty_prenom_data = {
+            "prenom": "",
+            "nom": "Martin"
+        }
+        
+        success, response = self.run_test(
+            "Empty prenom validation",
+            "PUT",
+            "users/me/profile",
+            400,
+            data=empty_prenom_data,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✅ Empty prenom correctly rejected (400)")
+            if 'detail' in response:
+                print(f"   ✅ Error message: {response['detail']}")
+        else:
+            print("   ❌ Empty prenom should return 400")
+        
+        # Test empty nom
+        empty_nom_data = {
+            "prenom": "Pierre",
+            "nom": ""
+        }
+        
+        success, response = self.run_test(
+            "Empty nom validation",
+            "PUT",
+            "users/me/profile",
+            400,
+            data=empty_nom_data,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✅ Empty nom correctly rejected (400)")
+            if 'detail' in response:
+                print(f"   ✅ Error message: {response['detail']}")
+        else:
+            print("   ❌ Empty nom should return 400")
+        
+        # 5. ❌ TEST VALIDATION - Champs trop courts
+        print("\n🔍 TEST 5 - Validation test: Fields too short")
+        short_fields_data = {
+            "prenom": "A",
+            "nom": "B"
+        }
+        
+        success, response = self.run_test(
+            "Short fields validation",
+            "PUT",
+            "users/me/profile",
+            400,
+            data=short_fields_data,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✅ Short fields correctly rejected (400)")
+            if 'detail' in response:
+                print(f"   ✅ Error message: {response['detail']}")
+                if "au moins 2 caractères" in response['detail']:
+                    print(f"   ✅ Correct validation message about minimum 2 characters")
+                else:
+                    print(f"   ⚠️  Expected message about '2 caractères' not found")
+        else:
+            print("   ❌ Short fields should return 400")
+        
+        # 6. ✅ TEST RESTAURATION
+        print("\n🔍 TEST 6 - Restore original values")
+        if original_prenom and original_nom:
+            restore_data = {
+                "prenom": original_prenom,
+                "nom": original_nom
+            }
+            
+            success, response = self.run_test(
+                "Restore original profile values",
+                "PUT",
+                "users/me/profile",
+                200,
+                data=restore_data,
+                token=directeur_token
+            )
+            
+            if success:
+                print(f"   ✅ Original values restored: {original_prenom} {original_nom}")
+                
+                # Verify restoration
+                success, final_user_info = self.run_test(
+                    "Verify restoration",
+                    "GET",
+                    "users/me",
+                    200,
+                    token=directeur_token
+                )
+                
+                if success:
+                    final_prenom = final_user_info.get('prenom', '')
+                    final_nom = final_user_info.get('nom', '')
+                    
+                    if final_prenom == original_prenom and final_nom == original_nom:
+                        print(f"   ✅ Restoration verified: {final_prenom} {final_nom}")
+                    else:
+                        print(f"   ❌ Restoration failed: {final_prenom} {final_nom}")
+            else:
+                print("   ❌ Failed to restore original values")
+        else:
+            print("   ❌ No original values to restore")
+        
+        # Summary
+        print("\n" + "="*70)
+        print("🎯 PROFILE MODIFICATION TEST SUMMARY")
+        print("="*70)
+        
+        print("✅ Tests completed:")
+        print("   1. ✅ Connection and token authentication")
+        print("   2. ✅ Valid profile modification (Pierre-Alexandre Martin-Dubois)")
+        print("   3. ✅ Verification of changes via GET /api/users/me")
+        print("   4. ❌ Validation tests for empty fields (should return 400)")
+        print("   5. ❌ Validation tests for short fields (should return 400 with '2 caractères' message)")
+        print("   6. ✅ Restoration of original values")
+        
+        print("\n🎉 PROFILE MODIFICATION API TESTING COMPLETE!")
+        print("🎯 OBJECTIVE: Confirm that the profile modification API works correctly with all validations")
+
 def main():
     print("🏥 Testing Medical Staff Management API - COMPREHENSIVE NEW FEATURES TEST")
     print("=" * 70)
