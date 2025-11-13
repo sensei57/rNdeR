@@ -269,7 +269,11 @@ async def init_database():
         
         print("\n📝 IDENTIFIANTS DE CONNEXION:")
         print("-" * 60)
-        print("Directeur:")
+        print("🔐 COMPTE ADMINISTRATEUR DE SECOURS (PROTÉGÉ):")
+        print("  Email: admin@cabinet.fr")
+        print("  Mot de passe: SuperAdmin2025!")
+        print("  ⚠️  Ce compte ne peut JAMAIS être supprimé ou désactivé")
+        print("\nDirecteur:")
         print("  Email: directeur@cabinet.fr")
         print("  Mot de passe: admin123")
         print("\nMédecins:")
