@@ -3247,6 +3247,18 @@ async def initialize_database(request: InitDatabaseRequest):
                     "note": "Compte protégé - Ne peut jamais être supprimé"
                 },
                 "directeur": {
+                    "email": "directeur@cabinet.fr",
+                    "password": "admin123"
+                },
+                "medecin": {
+                    "email": "dr.dupont@cabinet.fr",
+                    "password": "medecin123"
+                }
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de l'initialisation: {str(e)}")
 
 
 @api_router.get("/database-status")
