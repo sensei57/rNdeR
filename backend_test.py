@@ -3890,5 +3890,7 @@ if __name__ == "__main__":
         sys.exit(run_reactivation_only())
     elif len(sys.argv) > 1 and sys.argv[1] == "--quick":
         sys.exit(quick_main())
+    elif len(sys.argv) > 1 and sys.argv[1] == "--firebase":
+        sys.exit(firebase_notification_main())
     else:
         sys.exit(main())
