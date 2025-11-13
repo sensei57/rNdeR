@@ -1270,13 +1270,25 @@ async def get_reservations_salles(
     
     reservations = await db.reservations_salles.find(query).to_list(1000)
     
+    # Optimisation: Batch fetch all users at once (évite N+1 queries)
+    all_user_ids = set(res["utilisateur_id"] for res in reservations if "utilisateur_id" in res)
+    
+    # Une seule requête pour tous les utilisateurs
+    users = await db.users.find(
+        {"id": {"$in": list(all_user_ids)}},
+        {"_id": 0, "password_hash": 0}  # Exclure champs sensibles
+    ).to_list(1000)
+    
+    # Créer un map pour accès rapide O(1)
+    users_map = {user["id"]: User(**user) for user in users}
+    
     # Enrich with user details
     enriched_reservations = []
     for reservation in reservations:
-        utilisateur = await db.users.find_one({"id": reservation["utilisateur_id"]})
+        utilisateur = users_map.get(reservation.get("utilisateur_id"))
         enriched_reservations.append({
             **reservation,
-            "utilisateur": User(**utilisateur) if utilisateur else None
+            "utilisateur": utilisateur if utilisateur else None
         })
     
     return enriched_reservations
