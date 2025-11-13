@@ -676,6 +676,15 @@ async def mark_notification_read(
     
     return {"message": "Notification marquée comme lue"}
 
+@api_router.post("/notifications/send-daily-planning")
+async def trigger_daily_planning(
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    """Déclenche manuellement l'envoi du planning quotidien (TEST)"""
+    background_tasks.add_task(send_daily_planning_notifications)
+    return {"message": "Envoi du planning quotidien programmé"}
+
 # Authentication routes
 @api_router.post("/auth/register", response_model=User)
 async def register_user(user_data: UserCreate):
