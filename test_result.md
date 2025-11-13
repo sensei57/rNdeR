@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "TEST RAPIDE - Vérifier que l'erreur de planning est corrigée. L'utilisateur avait une erreur 'Cannot read properties of undefined (reading 'length')' sur la page Planning. Main agent a corrigé 2 problèmes: 1) Ajout de vérifications de sécurité sur planningSemaine.dates, 2) Correction de la fonction getRoleGroups pour retourner {roles: [], groups: {}} au lieu d'un simple tableau. Test ultra-rapide requis avec identifiants Directeur: directeur@cabinet.fr / admin123."
+user_problem_statement: "TEST RAPIDE - Vérifier que Marie Dupont voit le Plan Cabinet. CONTEXTE: J'ai ajouté 'Plan Cabinet' dans le menu pour tous les utilisateurs (pas seulement Directeur). Marie Dupont (Médecin) devrait maintenant voir ce menu. IDENTIFIANTS: Médecin: dr.dupont@cabinet.fr / medecin123. TESTS: 1) Se connecter comme Marie Dupont, 2) VÉRIFIER: Menu 'Plan Cabinet' visible dans la barre latérale gauche (après 'Gestion Salles'), 3) Cliquer sur 'Plan Cabinet', 4) VÉRIFIER: Le plan du cabinet s'affiche avec les salles positionnées, 5) VÉRIFIER: Sélection de date et créneau (MATIN/APRÈS-MIDI) fonctionnelle, 6) Prendre une capture d'écran du plan. OBJECTIF: Confirmer que Marie Dupont peut maintenant accéder au Plan Cabinet."
 
 backend:
   - task: "Tests Rapides Endpoints Principaux (GET /api/salles, /api/users, /api/configuration, /api/planning/semaine)"
