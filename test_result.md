@@ -453,7 +453,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Authentification Urgente Après Initialisation Base de Données (POST /api/auth/login, GET /api/users/me)"
+    - "Compte Super Admin Protégé - Sécurité Critique (POST /api/auth/login, PUT /api/admin/users/{id}/toggle-active, DELETE /api/admin/users/{id}/delete-permanently)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
