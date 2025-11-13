@@ -1537,7 +1537,11 @@ const PlanningManager = () => {
     jeudi: 'REPOS',
     vendredi: 'REPOS',
     samedi: 'REPOS',
-    dimanche: 'REPOS'
+    dimanche: 'REPOS',
+    horaire_debut: '08:00',
+    horaire_fin: '18:00',
+    horaire_pause_debut: '12:00',
+    horaire_pause_fin: '14:00'
   });
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [editingCreneau, setEditingCreneau] = useState(null);
@@ -3530,7 +3534,11 @@ const DemandesTravailManager = () => {
     jeudi: 'REPOS',
     vendredi: 'REPOS',
     samedi: 'REPOS',
-    dimanche: 'REPOS'
+    dimanche: 'REPOS',
+    horaire_debut: '08:00',
+    horaire_fin: '18:00',
+    horaire_pause_debut: '12:00',
+    horaire_pause_fin: '14:00'
   });
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
