@@ -1439,23 +1439,25 @@ const CongeManager = () => {
                 </div>
               </div>
 
-              {/* Filtre par employé */}
-              <div className="space-y-2">
-                <Label>Employé</Label>
-                <Select value={filterEmploye} onValueChange={setFilterEmploye}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="TOUS">Tous les employés</SelectItem>
-                    {users.map(u => (
-                      <SelectItem key={u.id} value={u.id}>
-                        {u.prenom} {u.nom} - {u.role}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Filtre par employé - Visible uniquement pour le Directeur */}
+              {user?.role === 'Directeur' && (
+                <div className="space-y-2">
+                  <Label>Employé</Label>
+                  <Select value={filterEmploye} onValueChange={setFilterEmploye}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="TOUS">Tous les employés</SelectItem>
+                      {users.map(u => (
+                        <SelectItem key={u.id} value={u.id}>
+                          {u.prenom} {u.nom} - {u.role}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
 
             <div className="text-sm text-gray-500">
