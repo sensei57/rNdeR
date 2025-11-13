@@ -1720,6 +1720,17 @@ async def approuver_demande_jour_travail(
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Demande non trouvée")
     
+    # 📤 NOTIFICATION : Statut de la demande de travail
+    creneau_text = "Journée complète" if demande["creneau"] == "JOURNEE_COMPLETE" else demande["creneau"].lower()
+    details = f"{demande['date_demandee']} ({creneau_text})"
+    background_tasks.add_task(
+        notify_user_request_status,
+        demande["medecin_id"],
+        "Demande de jour de travail",
+        statut,
+        details
+    )
+    
     # Si la demande est approuvée, créer automatiquement un créneau dans le planning
     if request.approuve:
         # Récupérer les informations du médecin
