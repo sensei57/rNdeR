@@ -23,7 +23,7 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # Security
-SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
+SECRET_KEY = os.environ['SECRET_KEY']  # Fail fast si non défini
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 
