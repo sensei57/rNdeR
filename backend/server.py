@@ -1176,20 +1176,28 @@ async def get_demandes_conges(current_user: User = Depends(get_current_user)):
     else:
         demandes = await db.demandes_conges.find({"utilisateur_id": current_user.id}).to_list(1000)
     
+    # Optimisation: Batch fetch all users at once (évite N+1 queries)
+    all_user_ids = set(demande["utilisateur_id"] for demande in demandes if "utilisateur_id" in demande)
+    
+    # Une seule requête pour tous les utilisateurs
+    users = await db.users.find(
+        {"id": {"$in": list(all_user_ids)}},
+        {"_id": 0, "password_hash": 0}  # Exclure champs sensibles
+    ).to_list(1000)
+    
+    # Créer un map pour accès rapide O(1)
+    users_map = {user["id"]: User(**user) for user in users}
+    
     # Enrich with user details and clean data
     enriched_demandes = []
     for demande in demandes:
-        # Remove MongoDB _id field that causes serialization issues
-        if '_id' in demande:
-            del demande['_id']
-            
-        utilisateur = await db.users.find_one({"id": demande["utilisateur_id"]})
-        if utilisateur and '_id' in utilisateur:
-            del utilisateur['_id']
+        demande.pop('_id', None)
+        
+        utilisateur = users_map.get(demande.get("utilisateur_id"))
             
         enriched_demandes.append({
             **demande,
-            "utilisateur": User(**utilisateur) if utilisateur else None
+            "utilisateur": utilisateur if utilisateur else None
         })
     
     return enriched_demandes
