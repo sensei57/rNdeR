@@ -793,6 +793,7 @@ const CongeManager = () => {
     date_debut: '',
     date_fin: '',
     type_conge: '',
+    creneau: 'JOURNEE_COMPLETE',
     motif: ''
   });
   const { user } = useAuth();
