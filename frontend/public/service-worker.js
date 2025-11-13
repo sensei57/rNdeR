@@ -45,9 +45,24 @@ self.addEventListener('activate', (event) => {
 
 // Stratégie de cache : Network First, fallback to Cache
 self.addEventListener('fetch', (event) => {
+  // Ne pas cacher les requêtes API (POST, PUT, DELETE, etc.)
+  if (event.request.method !== 'GET') {
+    return;
+  }
+  
+  // Ne pas cacher les requêtes vers l'API
+  if (event.request.url.includes('/api/')) {
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
+        // Vérifier si la réponse est valide
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+          return response;
+        }
+
         // Clone la réponse
         const responseClone = response.clone();
         
