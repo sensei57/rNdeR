@@ -914,9 +914,28 @@ const CongeManager = () => {
     return creneaux[creneau] || 'Journée complète';
   };
 
+  // Filtrer les demandes selon les critères sélectionnés
+  const getFilteredDemandes = () => {
+    let filtered = [...demandes];
+    
+    // Filtrer par statut
+    if (filterStatut !== 'TOUT') {
+      filtered = filtered.filter(d => d.statut === filterStatut);
+    }
+    
+    // Filtrer par employé
+    if (filterEmploye !== 'TOUS') {
+      filtered = filtered.filter(d => d.utilisateur_id === filterEmploye);
+    }
+    
+    return filtered;
+  };
+
   if (loading) {
     return <div className="flex justify-center p-8">Chargement...</div>;
   }
+
+  const filteredDemandes = getFilteredDemandes();
 
   return (
     <div className="space-y-6">
