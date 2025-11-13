@@ -616,9 +616,19 @@ async def build_daily_planning_message(user, planning_slots, date):
         }).to_list(100)
         
         if colleagues:
+            # Optimisation: Batch fetch all colleagues at once (évite N+1 queries)
+            colleague_ids = [c["employe_id"] for c in colleagues]
+            colleague_users = await db.users.find(
+                {"id": {"$in": colleague_ids}},
+                {"_id": 0, "id": 1, "prenom": 1, "nom": 1, "role": 1}
+            ).to_list(100)
+            
+            # Créer un map pour accès rapide O(1)
+            colleagues_map = {u["id"]: u for u in colleague_users}
+            
             colleague_names = []
             for colleague_slot in colleagues:
-                colleague = await db.users.find_one({"id": colleague_slot["employe_id"]})
+                colleague = colleagues_map.get(colleague_slot["employe_id"])
                 if colleague:
                     name = f"{colleague['prenom']} {colleague['nom']}"
                     if colleague['role'] == 'Médecin':
