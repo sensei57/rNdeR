@@ -68,11 +68,7 @@ const AuthProvider = ({ children }) => {
       
       toast.success('Connexion réussie !');
       
-      // Force redirect to dashboard after successful login
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 500);
-      
+      // React Router will handle the redirect automatically via the protected routes
       return true;
     } catch (error) {
       toast.error('Email ou mot de passe incorrect');
