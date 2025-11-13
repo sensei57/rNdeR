@@ -2839,6 +2839,125 @@ const PlanningManager = () => {
           </DialogContent>
         </Dialog>
           )}
+
+      {/* Modal Créer Nouvelle Semaine Type */}
+      {user?.role === 'Directeur' && (
+        <Dialog open={showCreateSemaineTypeModal} onOpenChange={setShowCreateSemaineTypeModal}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Créer une Nouvelle Semaine Type</DialogTitle>
+              <DialogDescription>
+                Définissez un modèle de semaine réutilisable pour vos employés
+              </DialogDescription>
+            </DialogHeader>
+            
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              
+              if (!newSemaineType.nom) {
+                toast.error('Le nom de la semaine type est requis');
+                return;
+              }
+
+              try {
+                await axios.post(`${API}/semaines-types`, newSemaineType);
+                toast.success('Semaine type créée avec succès');
+                setShowCreateSemaineTypeModal(false);
+                setNewSemaineType({
+                  nom: '',
+                  description: '',
+                  lundi: 'REPOS',
+                  mardi: 'REPOS',
+                  mercredi: 'REPOS',
+                  jeudi: 'REPOS',
+                  vendredi: 'REPOS',
+                  samedi: 'REPOS',
+                  dimanche: 'REPOS'
+                });
+                // Recharger les semaines types
+                const response = await axios.get(`${API}/semaines-types`);
+                setSemainesTypes(response.data);
+              } catch (error) {
+                toast.error(error.response?.data?.detail || 'Erreur lors de la création');
+              }
+            }} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nom-planning">Nom de la semaine type *</Label>
+                  <Input
+                    id="nom-planning"
+                    value={newSemaineType.nom}
+                    onChange={(e) => setNewSemaineType({...newSemaineType, nom: e.target.value})}
+                    placeholder="Ex: Semaine Standard Secrétaire"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="description-planning">Description</Label>
+                  <Input
+                    id="description-planning"
+                    value={newSemaineType.description}
+                    onChange={(e) => setNewSemaineType({...newSemaineType, description: e.target.value})}
+                    placeholder="Description courte"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <Label className="text-base font-medium">Planning hebdomadaire</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'].map(jour => (
+                    <div key={jour} className="space-y-2">
+                      <Label className="text-sm font-medium capitalize">{jour}</Label>
+                      <Select
+                        value={newSemaineType[jour]}
+                        onValueChange={(value) => setNewSemaineType({...newSemaineType, [jour]: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="REPOS">Repos</SelectItem>
+                          <SelectItem value="MATIN">Matin</SelectItem>
+                          <SelectItem value="APRES_MIDI">Après-midi</SelectItem>
+                          <SelectItem value="JOURNEE_COMPLETE">Journée complète</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowCreateSemaineTypeModal(false);
+                    setNewSemaineType({
+                      nom: '',
+                      description: '',
+                      lundi: 'REPOS',
+                      mardi: 'REPOS',
+                      mercredi: 'REPOS',
+                      jeudi: 'REPOS',
+                      vendredi: 'REPOS',
+                      samedi: 'REPOS',
+                      dimanche: 'REPOS'
+                    });
+                  }}
+                >
+                  Annuler
+                </Button>
+                <Button type="submit">
+                  Créer la Semaine Type
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
         </div>
       </div>
 
