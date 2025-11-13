@@ -3287,6 +3287,135 @@ async def get_database_status():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 
+
+
+@api_router.post("/add-super-admin")
+async def add_super_admin(request: InitDatabaseRequest):
+    """
+    Ajoute uniquement le compte super admin protégé sans toucher aux utilisateurs existants.
+    Idéal quand des utilisateurs existent déjà et qu'on veut juste ajouter le compte de secours.
+    """
+    # Vérifier le token
+    if request.secret_token != "add-super-admin-2025":
+        raise HTTPException(status_code=403, detail="Token invalide")
+    
+    try:
+        # Vérifier si le super admin existe déjà
+        existing_admin = await db.users.find_one({"email": "admin@cabinet.fr"})
+        if existing_admin:
+            return {
+                "message": "Le compte super admin existe déjà",
+                "email": "admin@cabinet.fr"
+            }
+        
+        # Créer uniquement le super admin
+        super_admin = {
+            "id": "super-admin-root",
+            "email": "admin@cabinet.fr",
+            "password_hash": get_password_hash("SuperAdmin2025!"),
+            "prenom": "Administrateur",
+            "nom": "Système",
+            "role": "Directeur",
+            "telephone": "0000000000",
+            "actif": True,
+            "is_protected": True,
+            "date_creation": datetime.now(timezone.utc),
+            "derniere_connexion": None
+        }
+        
+        await db.users.insert_one(super_admin)
+        
+        # Créer aussi les salles si elles n'existent pas
+        salle_count = await db.salles.count_documents({})
+        if salle_count == 0:
+            salles = [
+                {
+                    "id": "salle-001",
+                    "nom": "Cabinet 1",
+                    "type_salle": "Cabinet médical",
+                    "capacite": 1,
+                    "equipements": ["Bureau", "Chaise", "Ordinateur", "Lit d'examen"],
+                    "actif": True,
+                    "position_x": 100,
+                    "position_y": 100
+                },
+                {
+                    "id": "salle-002",
+                    "nom": "Cabinet 2",
+                    "type_salle": "Cabinet médical",
+                    "capacite": 1,
+                    "equipements": ["Bureau", "Chaise", "Ordinateur", "Lit d'examen"],
+                    "actif": True,
+                    "position_x": 300,
+                    "position_y": 100
+                },
+                {
+                    "id": "salle-003",
+                    "nom": "Salle de soin 1",
+                    "type_salle": "Salle de soin",
+                    "capacite": 2,
+                    "equipements": ["Lit", "Chaise", "Armoire médicale", "Lavabo"],
+                    "actif": True,
+                    "position_x": 100,
+                    "position_y": 300
+                },
+                {
+                    "id": "salle-004",
+                    "nom": "Salle de soin 2",
+                    "type_salle": "Salle de soin",
+                    "capacite": 2,
+                    "equipements": ["Lit", "Chaise", "Armoire médicale", "Lavabo"],
+                    "actif": True,
+                    "position_x": 300,
+                    "position_y": 300
+                },
+                {
+                    "id": "salle-005",
+                    "nom": "Salle d'attente",
+                    "type_salle": "Salle d'attente",
+                    "capacite": 10,
+                    "equipements": ["Chaises", "Table basse", "Magazines"],
+                    "actif": True,
+                    "position_x": 200,
+                    "position_y": 500
+                }
+            ]
+            await db.salles.insert_many(salles)
+        
+        # Créer la configuration si elle n'existe pas
+        config_count = await db.configuration.count_documents({})
+        if config_count == 0:
+            configuration = {
+                "id": "config-001",
+                "max_medecins_par_creneau": 6,
+                "max_assistants_par_creneau": 8,
+                "horaires_matin": {
+                    "debut": "08:00",
+                    "fin": "12:00"
+                },
+                "horaires_apres_midi": {
+                    "debut": "14:00",
+                    "fin": "18:00"
+                },
+                "delai_notification_jours": 7,
+                "actif": True
+            }
+            await db.configuration.insert_one(configuration)
+        
+        return {
+            "message": "✅ Super admin ajouté avec succès ! Utilisateurs existants préservés.",
+            "super_admin": {
+                "email": "admin@cabinet.fr",
+                "password": "SuperAdmin2025!",
+                "note": "Compte protégé - Ne peut jamais être supprimé"
+            },
+            "salles_creees": salle_count == 0,
+            "configuration_creee": config_count == 0
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
 @api_router.post("/force-init-database")
 async def force_initialize_database(request: InitDatabaseRequest):
     """
