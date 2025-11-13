@@ -729,6 +729,7 @@ async def get_assignations(current_user: User = Depends(get_current_user)):
 @api_router.post("/conges", response_model=DemandeConge)
 async def create_demande_conge(
     demande_data: DemandeCongeCreate,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user)
 ):
     # Si un utilisateur_id est fourni et que l'utilisateur actuel est Directeur, l'utiliser
@@ -746,7 +747,24 @@ async def create_demande_conge(
         creneau=demande_data.creneau if demande_data.creneau else "JOURNEE_COMPLETE",
         motif=demande_data.motif if demande_data.motif else None
     )
+    
     await db.demandes_conges.insert_one(demande.dict())
+    
+    # 📤 NOTIFICATION : Nouvelle demande de congé
+    # Si ce n'est pas le directeur qui crée la demande, notifier le directeur
+    if current_user.role != ROLES["DIRECTEUR"]:
+        user_name = f"{current_user.prenom} {current_user.nom}"
+        dates = f"{demande.date_debut} au {demande.date_fin}"
+        creneau_text = "Journée complète" if demande.creneau == "JOURNEE_COMPLETE" else demande.creneau.lower()
+        details = f"{dates} ({creneau_text})"
+        
+        background_tasks.add_task(
+            notify_director_new_request, 
+            "demande de congé", 
+            user_name, 
+            details
+        )
+    
     return demande
 
 @api_router.get("/conges", response_model=List[Dict[str, Any]])
