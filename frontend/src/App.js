@@ -265,6 +265,19 @@ const PushNotificationManager = () => {
     }
   };
 
+  const testNotification = () => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('🏥 Planning Test', {
+        body: 'Test de notification - Votre planning serait affiché ici chaque matin à 7h00',
+        icon: '/icon-192.png',
+        tag: 'test-notification'
+      });
+      toast.success('Notification de test envoyée !');
+    } else {
+      toast.error('Notifications non autorisées');
+    }
+  };
+
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
     return null; // Navigateur non compatible
   }
