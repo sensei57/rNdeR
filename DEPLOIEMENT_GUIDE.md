@@ -38,7 +38,15 @@ python3 scripts/init_database_production.py
 
 ## 👥 Identifiants par Défaut
 
-### 🔑 Directeur (Administrateur)
+### 🛡️ Super Administrateur (Compte de Secours - PROTÉGÉ)
+- **Email**: `admin@cabinet.fr`
+- **Mot de passe**: `SuperAdmin2025!`
+- **Rôle**: Directeur
+- **Nom**: Administrateur Système
+- **⚠️ IMPORTANT**: Ce compte ne peut JAMAIS être supprimé ou désactivé
+- **Usage**: À utiliser en cas de problème avec les autres comptes
+
+### 🔑 Directeur (Administrateur Principal)
 - **Email**: `directeur@cabinet.fr`
 - **Mot de passe**: `admin123`
 - **Rôle**: Directeur
