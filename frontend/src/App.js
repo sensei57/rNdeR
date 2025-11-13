@@ -97,13 +97,18 @@ const LoginPage = () => {
   const [password, setPassword] = useState('password123');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      await login(email, password);
+      const success = await login(email, password);
+      if (success) {
+        // Redirect to dashboard after successful login
+        navigate('/');
+      }
     } catch (error) {
       console.error('Erreur de connexion:', error);
       toast.error('Email ou mot de passe incorrect');
