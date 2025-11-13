@@ -3815,6 +3815,49 @@ def run_reactivation_only():
         print("⚠️  Personnel visibility issue may persist")
         return 1
 
+def firebase_notification_main():
+    """Test Firebase notification system specifically"""
+    print("🔥 FIREBASE NOTIFICATION SYSTEM TEST")
+    print("Testing complete Firebase push notification system for medical cabinet...")
+    print("=" * 70)
+    
+    tester = MedicalStaffAPITester()
+    
+    # Test authentication for all roles
+    print("\n🔐 Testing Authentication...")
+    login_success = True
+    for role, credentials in tester.test_users.items():
+        if not tester.test_login(role, credentials['email'], credentials['password']):
+            print(f"❌ Login failed for {role}")
+            login_success = False
+    
+    if not login_success:
+        print("\n❌ Authentication tests failed. Cannot proceed with Firebase tests.")
+        return 1
+    
+    print(f"\n✅ Successfully authenticated all roles!")
+    
+    # Run Firebase notification system tests
+    tester.test_firebase_notification_system()
+    
+    # Print final results
+    print(f"\n" + "="*60)
+    print(f"📊 FIREBASE NOTIFICATION TEST RESULTS")
+    print(f"="*60)
+    print(f"Tests run: {tester.tests_run}")
+    print(f"Tests passed: {tester.tests_passed}")
+    print(f"Success rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    
+    if tester.tests_passed == tester.tests_run:
+        print("🎉 ALL FIREBASE NOTIFICATION TESTS PASSED!")
+        print("✅ Complete Firebase notification system is working correctly!")
+        return 0
+    else:
+        failed_tests = tester.tests_run - tester.tests_passed
+        print(f"❌ {failed_tests} Firebase notification tests failed")
+        print(f"⚠️  Check the failed tests above for issues that need to be addressed")
+        return 1
+
 def quick_main():
     """Quick test of main endpoints as requested by user"""
     print("🏥 QUICK TEST - Medical Staff Management API")
