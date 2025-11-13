@@ -474,6 +474,75 @@ def require_role(allowed_roles: List[str]):
         return current_user
     return role_checker
 
+# ===== SYSTÈME DE NOTIFICATIONS =====
+
+class NotificationSubscription(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    endpoint: str
+    p256dh: str
+    auth: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    active: bool = True
+
+class NotificationRequest(BaseModel):
+    user_id: str
+    title: str
+    body: str
+    data: Optional[Dict] = None
+
+async def send_notification_to_user(user_id: str, title: str, body: str, data: Optional[Dict] = None):
+    """Envoie une notification à un utilisateur spécifique"""
+    try:
+        # Pour l'instant, on stocke les notifications en base
+        # Plus tard, on intégrera Firebase Cloud Messaging
+        notification = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "title": title,
+            "body": body,
+            "data": data or {},
+            "sent_at": datetime.now(timezone.utc),
+            "read": False
+        }
+        
+        await db.notifications.insert_one(notification)
+        print(f"📤 Notification envoyée à {user_id}: {title}")
+        
+    except Exception as e:
+        print(f"❌ Erreur notification: {e}")
+
+async def notify_director_new_request(type_request: str, user_name: str, details: str):
+    """Notifie le directeur d'une nouvelle demande"""
+    # Trouver le directeur
+    director = await db.users.find_one({"role": ROLES["DIRECTEUR"], "actif": True})
+    if director:
+        title = f"🆕 Nouvelle {type_request}"
+        body = f"{user_name} a fait une {type_request.lower()}: {details}"
+        await send_notification_to_user(
+            director["id"], 
+            title, 
+            body, 
+            {"type": "new_request", "request_type": type_request}
+        )
+
+async def notify_user_request_status(user_id: str, type_request: str, status: str, details: str):
+    """Notifie un utilisateur du changement de statut de sa demande"""
+    status_emoji = "✅" if status == "APPROUVE" else "❌"
+    status_text = "approuvée" if status == "APPROUVE" else "refusée"
+    
+    title = f"{status_emoji} {type_request} {status_text}"
+    body = f"Votre {type_request.lower()} du {details} a été {status_text}"
+    
+    await send_notification_to_user(
+        user_id, 
+        title, 
+        body, 
+        {"type": "status_change", "status": status, "request_type": type_request}
+    )
+
+# ===== FIN SYSTÈME NOTIFICATIONS =====
+
 # Authentication routes
 @api_router.post("/auth/register", response_model=User)
 async def register_user(user_data: UserCreate):
