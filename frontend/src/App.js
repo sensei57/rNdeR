@@ -1537,6 +1537,8 @@ const PlanningManager = () => {
     salle_attente: '',
     horaire_debut: '',
     horaire_fin: '',
+    horaire_pause_debut: '',
+    horaire_pause_fin: '',
     notes: '',
     medecin_ids: []
   });
