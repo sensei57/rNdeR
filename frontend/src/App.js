@@ -7636,10 +7636,15 @@ const ChatManager = () => {
 
 // Mon Profil Component
 const MonProfilManager = () => {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [newEmail, setNewEmail] = useState('');
+  const [profileData, setProfileData] = useState({
+    prenom: '',
+    nom: ''
+  });
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
