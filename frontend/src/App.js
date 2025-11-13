@@ -7746,6 +7746,32 @@ const MonProfilManager = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b">
+                <div className="flex items-center space-x-4">
+                  <Avatar className="h-16 w-16 bg-blue-500">
+                    <AvatarFallback className="text-white text-xl">
+                      {user?.prenom?.[0]}{user?.nom?.[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-2xl font-bold">{user?.prenom} {user?.nom}</p>
+                    <Badge variant="outline" className="mt-1">{user?.role}</Badge>
+                  </div>
+                </div>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => {
+                    setProfileData({ prenom: user?.prenom || '', nom: user?.nom || '' });
+                    setShowProfileModal(true);
+                  }}
+                >
+                  <Edit className="h-3 w-3 mr-1" />
+                  Modifier
+                </Button>
+              </div>
+            </div>
             <div>
               <Label className="text-sm text-gray-500">Prénom</Label>
               <p className="text-lg font-medium">{user?.prenom}</p>
@@ -7753,10 +7779,6 @@ const MonProfilManager = () => {
             <div>
               <Label className="text-sm text-gray-500">Nom</Label>
               <p className="text-lg font-medium">{user?.nom}</p>
-            </div>
-            <div>
-              <Label className="text-sm text-gray-500">Rôle</Label>
-              <Badge variant="outline">{user?.role}</Badge>
             </div>
             <div>
               <Label className="text-sm text-gray-500">Email</Label>
@@ -7767,6 +7789,10 @@ const MonProfilManager = () => {
                   Modifier
                 </Button>
               </div>
+            </div>
+            <div>
+              <Label className="text-sm text-gray-500">Téléphone</Label>
+              <p className="text-lg font-medium">{user?.telephone || 'Non renseigné'}</p>
             </div>
           </div>
         </CardContent>
