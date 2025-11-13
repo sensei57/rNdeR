@@ -394,6 +394,7 @@ class SalleReservation(BaseModel):
     notes: Optional[str] = None
 
 class DemandeCongeCreate(BaseModel):
+    utilisateur_id: Optional[str] = None  # Pour que le Directeur puisse créer des demandes pour d'autres
     date_debut: str  # YYYY-MM-DD
     date_fin: str  # YYYY-MM-DD
     type_conge: str  # "CONGE_PAYE", "RTT", "MALADIE", etc.
