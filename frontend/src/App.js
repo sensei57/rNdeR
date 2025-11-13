@@ -8083,7 +8083,7 @@ const DemandesTravailManager = () => {
     <div className="p-6">
       <Card>
         <CardHeader>
-          <CardTitle>📋 Demandes de Travail</CardTitle>
+          <CardTitle>📋 Demandes Travail</CardTitle>
           <CardDescription>Gestion des demandes de travail et suivi des tâches</CardDescription>
         </CardHeader>
         <CardContent>
