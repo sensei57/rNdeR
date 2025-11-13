@@ -1898,9 +1898,10 @@ const PlanningManager = () => {
 
   const fetchPlanningByDate = async (date) => {
     try {
-      const [planningRes, congesRes] = await Promise.all([
+      const [planningRes, congesRes, demandesTravailRes] = await Promise.all([
         axios.get(`${API}/planning/${date}`),
-        axios.get(`${API}/conges`)
+        axios.get(`${API}/conges`),
+        axios.get(`${API}/demandes-travail`)
       ]);
       
       let planningData = planningRes.data;
@@ -1922,6 +1923,9 @@ const PlanningManager = () => {
         new Date(conge.date_fin) >= new Date(date)
       );
       setCongesApprouves(congesDate);
+      
+      // Charger les demandes de travail pour afficher les demandes en attente
+      setDemandesTravail(demandesTravailRes.data);
       
     } catch (error) {
       console.error('Erreur lors du chargement du planning:', error);
