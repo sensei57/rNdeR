@@ -3509,20 +3509,6 @@ async def force_initialize_database(request: InitDatabaseRequest):
         raise HTTPException(status_code=500, detail=f"Erreur lors de la réinitialisation: {str(e)}")
 
 
-                    "email": "directeur@cabinet.fr",
-                    "password": "admin123"
-                },
-                "medecin": {
-                    "email": "dr.dupont@cabinet.fr",
-                    "password": "medecin123"
-                }
-            }
-        }
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur lors de l'initialisation: {str(e)}")
-
-
 # Include the router in the main app
 app.include_router(api_router)
 
