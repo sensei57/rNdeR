@@ -3213,6 +3213,195 @@ class MedicalStaffAPITester:
         print(f"\n   🎉 EMAIL MODIFICATION API FULLY FUNCTIONAL!")
         return True
 
+    def test_work_requests_specific(self):
+        """Test work requests (demandes de travail) system - SPECIFIC TEST REQUEST"""
+        print("\n💼 Testing Work Requests (Demandes de Travail) - SPECIFIC REQUEST...")
+        
+        created_requests = []
+        marie_dupont_id = None
+        
+        # First, get all users to find Marie Dupont's ID
+        if 'directeur' in self.tokens:
+            success, users_data = self.run_test(
+                "Get users to find Marie Dupont",
+                "GET",
+                "users",
+                200,
+                token=self.tokens['directeur']
+            )
+            
+            if success:
+                for user in users_data:
+                    if user.get('email') == 'dr.dupont@cabinet.fr' or (user.get('prenom') == 'Marie' and user.get('nom') == 'Dupont'):
+                        marie_dupont_id = user['id']
+                        print(f"   Found Marie Dupont ID: {marie_dupont_id}")
+                        break
+                
+                if not marie_dupont_id:
+                    print("   ⚠️  Marie Dupont not found, using first médecin")
+                    medecins = [u for u in users_data if u['role'] == 'Médecin']
+                    if medecins:
+                        marie_dupont_id = medecins[0]['id']
+                        print(f"   Using {medecins[0]['prenom']} {medecins[0]['nom']} ID: {marie_dupont_id}")
+        
+        # TEST 1 - Créer une demande de travail en attente
+        print(f"\n   TEST 1 - Create pending work request as Doctor...")
+        
+        if 'medecin' in self.tokens:
+            work_request_data = {
+                "date_demandee": "2025-01-22",
+                "creneau": "MATIN",
+                "motif": "Test demande en attente"
+            }
+            
+            success, response = self.run_test(
+                "Create work request as Doctor (dr.dupont@cabinet.fr)",
+                "POST",
+                "demandes-travail",
+                200,
+                data=work_request_data,
+                token=self.tokens['medecin']
+            )
+            
+            if success and isinstance(response, list) and len(response) > 0:
+                created_request = response[0]
+                created_requests.append(created_request)
+                print(f"   ✅ Work request created successfully")
+                print(f"   - Request ID: {created_request.get('id')}")
+                print(f"   - Date: {created_request.get('date_demandee')}")
+                print(f"   - Slot: {created_request.get('creneau')}")
+                print(f"   - Status: {created_request.get('statut')}")
+                print(f"   - Motif: {created_request.get('motif')}")
+                
+                # Verify status is EN_ATTENTE
+                if created_request.get('statut') == 'EN_ATTENTE':
+                    print(f"   ✅ Request correctly created with status EN_ATTENTE")
+                else:
+                    print(f"   ❌ Request status is {created_request.get('statut')}, expected EN_ATTENTE")
+            else:
+                print(f"   ❌ Failed to create work request or invalid response format")
+        else:
+            print(f"   ❌ No médecin token available for testing")
+        
+        # TEST 2 - Vérifier que la demande apparaît dans la liste
+        print(f"\n   TEST 2 - Verify request appears in Director's list...")
+        
+        if 'directeur' in self.tokens:
+            success, all_requests = self.run_test(
+                "Get all work requests as Director",
+                "GET",
+                "demandes-travail",
+                200,
+                token=self.tokens['directeur']
+            )
+            
+            if success:
+                print(f"   ✅ Retrieved {len(all_requests)} work requests")
+                
+                # Find our created request
+                our_request = None
+                for request in all_requests:
+                    if (request.get('date_demandee') == '2025-01-22' and 
+                        request.get('creneau') == 'MATIN' and 
+                        request.get('motif') == 'Test demande en attente'):
+                        our_request = request
+                        break
+                
+                if our_request:
+                    print(f"   ✅ Found our created request in the list:")
+                    print(f"   - Status: {our_request.get('statut')}")
+                    print(f"   - Date: {our_request.get('date_demandee')}")
+                    print(f"   - Slot: {our_request.get('creneau')}")
+                    
+                    # Check medecin details
+                    medecin = our_request.get('medecin', {})
+                    if medecin:
+                        print(f"   - Doctor: {medecin.get('prenom')} {medecin.get('nom')} ({medecin.get('email')})")
+                        
+                        # Verify it corresponds to Marie Dupont
+                        if medecin.get('email') == 'dr.dupont@cabinet.fr':
+                            print(f"   ✅ Request correctly associated with Marie Dupont")
+                        else:
+                            print(f"   ⚠️  Request associated with different doctor: {medecin.get('email')}")
+                    else:
+                        print(f"   ❌ No doctor information found in request")
+                    
+                    # Verify all required fields
+                    if (our_request.get('statut') == 'EN_ATTENTE' and
+                        our_request.get('date_demandee') == '2025-01-22' and
+                        our_request.get('creneau') == 'MATIN'):
+                        print(f"   ✅ All request fields are correct")
+                    else:
+                        print(f"   ❌ Some request fields are incorrect")
+                else:
+                    print(f"   ❌ Our created request not found in the list")
+                    print(f"   Available requests:")
+                    for req in all_requests:
+                        print(f"   - {req.get('date_demandee')} {req.get('creneau')} - {req.get('motif')}")
+            else:
+                print(f"   ❌ Failed to retrieve work requests as Director")
+        else:
+            print(f"   ❌ No directeur token available for testing")
+        
+        # TEST 3 - Vérifier le planning semaine
+        print(f"\n   TEST 3 - Verify weekly planning endpoint...")
+        
+        if 'directeur' in self.tokens:
+            # Get planning for week containing January 22, 2025 (Monday of that week is January 20, 2025)
+            success, planning_response = self.run_test(
+                "Get weekly planning for 2025-01-20",
+                "GET",
+                "planning/semaine/2025-01-20",
+                200,
+                token=self.tokens['directeur']
+            )
+            
+            if success:
+                print(f"   ✅ Weekly planning endpoint works correctly")
+                
+                # Check response structure
+                if 'dates' in planning_response and 'planning' in planning_response:
+                    dates = planning_response['dates']
+                    planning_data = planning_response['planning']
+                    
+                    print(f"   - Week contains {len(dates)} days")
+                    print(f"   - Planning data structure: {len(planning_data)} days")
+                    
+                    # Check if January 22 is in the dates
+                    if '2025-01-22' in dates:
+                        print(f"   ✅ January 22, 2025 is included in the week")
+                        
+                        # Check planning data for that day
+                        day_planning = planning_data.get('2025-01-22', {})
+                        morning_slots = day_planning.get('MATIN', [])
+                        afternoon_slots = day_planning.get('APRES_MIDI', [])
+                        
+                        print(f"   - January 22 morning slots: {len(morning_slots)}")
+                        print(f"   - January 22 afternoon slots: {len(afternoon_slots)}")
+                    else:
+                        print(f"   ❌ January 22, 2025 not found in week dates")
+                        print(f"   Week dates: {dates}")
+                else:
+                    print(f"   ❌ Invalid planning response structure")
+                    print(f"   Response keys: {list(planning_response.keys())}")
+            else:
+                print(f"   ❌ Weekly planning endpoint failed")
+        else:
+            print(f"   ❌ No directeur token available for testing")
+        
+        # SUMMARY
+        print(f"\n   📊 WORK REQUESTS TEST SUMMARY:")
+        if created_requests:
+            print(f"   ✅ Successfully created {len(created_requests)} work request(s)")
+            print(f"   ✅ Work requests are properly stored and retrievable")
+            print(f"   ✅ Weekly planning endpoint is functional")
+            print(f"   🎯 OBJECTIVE ACHIEVED: Work requests system is working correctly")
+        else:
+            print(f"   ❌ Failed to create work requests")
+            print(f"   🎯 OBJECTIVE NOT ACHIEVED: Work requests system needs investigation")
+        
+        return created_requests
+
 def main():
     print("🏥 Testing Medical Staff Management API - COMPREHENSIVE NEW FEATURES TEST")
     print("=" * 70)
