@@ -1211,19 +1211,18 @@ const SallesManager = () => {
               <Settings className="h-4 w-4" />
               <span>Configuration</span>
             </Button>
-            
-            <Dialog open={showSalleModal} onOpenChange={setShowSalleModal}>
-              <DialogTrigger asChild>
-                <Button className="flex items-center space-x-2">
-                  <Plus className="h-4 w-4" />
-                  <span>Nouvelle Salle</span>
-                </Button>
-              </DialogTrigger>
-            </Dialog>
           </div>
         )}
 
         <Dialog open={showSalleModal} onOpenChange={setShowSalleModal}>
+          <DialogTrigger asChild>
+            {user?.role === 'Directeur' && (
+              <Button className="flex items-center space-x-2">
+                <Plus className="h-4 w-4" />
+                <span>Nouvelle Salle</span>
+              </Button>
+            )}
+          </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>
