@@ -1071,8 +1071,71 @@ const CongeManager = () => {
         </Dialog>
       </div>
 
+      {/* Filtres */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-gray-700">Filtres</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Filtre par statut */}
+              <div className="space-y-2">
+                <Label>Statut</Label>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant={filterStatut === 'TOUT' ? 'default' : 'outline'}
+                    onClick={() => setFilterStatut('TOUT')}
+                  >
+                    Tout ({demandes.length})
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={filterStatut === 'EN_ATTENTE' ? 'default' : 'outline'}
+                    onClick={() => setFilterStatut('EN_ATTENTE')}
+                    className={filterStatut === 'EN_ATTENTE' ? '' : 'border-yellow-300 text-yellow-700 hover:bg-yellow-50'}
+                  >
+                    En attente ({demandes.filter(d => d.statut === 'EN_ATTENTE').length})
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={filterStatut === 'APPROUVE' ? 'default' : 'outline'}
+                    onClick={() => setFilterStatut('APPROUVE')}
+                    className={filterStatut === 'APPROUVE' ? '' : 'border-green-300 text-green-700 hover:bg-green-50'}
+                  >
+                    Validées ({demandes.filter(d => d.statut === 'APPROUVE').length})
+                  </Button>
+                </div>
+              </div>
+
+              {/* Filtre par employé */}
+              <div className="space-y-2">
+                <Label>Employé</Label>
+                <Select value={filterEmploye} onValueChange={setFilterEmploye}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="TOUS">Tous les employés</SelectItem>
+                    {users.map(u => (
+                      <SelectItem key={u.id} value={u.id}>
+                        {u.prenom} {u.nom} - {u.role}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="text-sm text-gray-500">
+              {filteredDemandes.length} demande{filteredDemandes.length > 1 ? 's' : ''} affichée{filteredDemandes.length > 1 ? 's' : ''}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="space-y-4">
-        {demandes.map(demande => (
+        {filteredDemandes.map(demande => (
           <Card key={demande.id}>
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
