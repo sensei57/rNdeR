@@ -1470,23 +1470,25 @@ const SallesManager = () => {
                   </div>
                 </div>
                 
-                <div className="flex space-x-1">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleEditSalle(salle)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleDeleteSalle(salle.id, salle.nom)}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                {user?.role === 'Directeur' && (
+                  <div className="flex space-x-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleEditSalle(salle)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDeleteSalle(salle.id, salle.nom)}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
