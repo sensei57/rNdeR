@@ -353,6 +353,11 @@ class SemaineTypeCreate(BaseModel):
     vendredi: Optional[str] = None
     samedi: Optional[str] = None
     dimanche: Optional[str] = None
+    # Horaires types pour secrétaires
+    horaire_debut: Optional[str] = None
+    horaire_fin: Optional[str] = None
+    horaire_pause_debut: Optional[str] = None
+    horaire_pause_fin: Optional[str] = None
 
 # Demande Jour Travail Models
 class DemandeJourTravail(BaseModel):
