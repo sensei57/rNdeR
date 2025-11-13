@@ -1520,6 +1520,7 @@ async def init_semaines_types(
 @api_router.post("/demandes-travail", response_model=List[DemandeJourTravail])
 async def create_demande_jour_travail(
     demande_data: DemandeJourTravailCreate,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user)
 ):
     # Vérifier que l'utilisateur est médecin ou directeur
@@ -1565,6 +1566,18 @@ async def create_demande_jour_travail(
                     )
                     await db.demandes_travail.insert_one(demande.dict())
                     demandes_creees.append(demande)
+        
+        # 📤 NOTIFICATION : Nouvelle demande de semaine type (si créé par médecin)
+        if current_user.role == ROLES["MEDECIN"] and demandes_creees:
+            user_name = f"Dr. {current_user.prenom} {current_user.nom}"
+            details = f"Semaine type '{semaine_type['nom']}' du {demande_data.date_debut_semaine}"
+            background_tasks.add_task(
+                notify_director_new_request,
+                "demande de semaine type",
+                user_name,
+                details
+            )
+            
     else:
         # Demande individuelle
         if not demande_data.date_demandee or not demande_data.creneau:
@@ -1589,6 +1602,18 @@ async def create_demande_jour_travail(
         
         await db.demandes_travail.insert_one(demande.dict())
         demandes_creees.append(demande)
+        
+        # 📤 NOTIFICATION : Nouvelle demande individuelle (si créé par médecin) 
+        if current_user.role == ROLES["MEDECIN"]:
+            user_name = f"Dr. {current_user.prenom} {current_user.nom}"
+            creneau_text = "Journée complète" if demande.creneau == "JOURNEE_COMPLETE" else demande.creneau.lower()
+            details = f"{demande.date_demandee} ({creneau_text})"
+            background_tasks.add_task(
+                notify_director_new_request,
+                "demande de jour de travail",
+                user_name,
+                details
+            )
     
     return demandes_creees
 
