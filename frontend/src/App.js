@@ -1220,34 +1220,35 @@ const SallesManager = () => {
           <p className="text-gray-600 mt-1">Configurez les salles et boxes du cabinet</p>
         </div>
         
-        <div className="flex space-x-3">
-          {salles.length === 0 && (
+        {user?.role === 'Directeur' && (
+          <div className="flex space-x-3">
+            {salles.length === 0 && (
+              <Button
+                onClick={initialiserCabinet}
+                variant="outline"
+                className="flex items-center space-x-2"
+              >
+                <Building2 className="h-4 w-4" />
+                <span>Initialiser Cabinet</span>
+              </Button>
+            )}
+            
             <Button
-              onClick={initialiserCabinet}
+              onClick={() => setShowConfigModal(true)}
               variant="outline"
               className="flex items-center space-x-2"
             >
-              <Building2 className="h-4 w-4" />
-              <span>Initialiser Cabinet</span>
+              <Settings className="h-4 w-4" />
+              <span>Configuration</span>
             </Button>
-          )}
-          
-          <Button
-            onClick={() => setShowConfigModal(true)}
-            variant="outline"
-            className="flex items-center space-x-2"
-          >
-            <Settings className="h-4 w-4" />
-            <span>Configuration</span>
-          </Button>
-          
-          <Dialog open={showSalleModal} onOpenChange={setShowSalleModal}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center space-x-2">
-                <Plus className="h-4 w-4" />
-                <span>Nouvelle Salle</span>
-              </Button>
-            </DialogTrigger>
+            
+            <Dialog open={showSalleModal} onOpenChange={setShowSalleModal}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center space-x-2">
+                  <Plus className="h-4 w-4" />
+                  <span>Nouvelle Salle</span>
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>
