@@ -7974,6 +7974,130 @@ const MonProfilManager = () => {
   );
 };
 
+
+// ==================== COMPOSANTS MANQUANTS ====================
+
+// Composant Chat/Messages (à développer)
+const ChatManager = () => {
+  return (
+    <div className="p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>💬 Messagerie Interne</CardTitle>
+          <CardDescription>Communication entre membres de l'équipe</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-12">
+            <p className="text-gray-500 mb-4">📧 Fonctionnalité de messagerie en cours de développement</p>
+            <p className="text-sm text-gray-400">Cette section permettra aux membres de l'équipe de communiquer entre eux</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+// Composant Coffre-Fort (à développer)
+const CoffreFortManager = () => {
+  return (
+    <div className="p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>🔐 Mon Coffre-Fort</CardTitle>
+          <CardDescription>Documents personnels sécurisés</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-12">
+            <p className="text-gray-500 mb-4">📁 Fonctionnalité de coffre-fort en cours de développement</p>
+            <p className="text-sm text-gray-400">Cette section permettra de stocker vos documents confidentiels de manière sécurisée</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+// Composant Plan du Cabinet (à développer)
+const PlanCabinetManager = () => {
+  return (
+    <div className="p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>🏥 Plan du Cabinet</CardTitle>
+          <CardDescription>Visualisation et gestion de l'espace</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-12">
+            <p className="text-gray-500 mb-4">🗺️ Fonctionnalité de plan interactif en cours de développement</p>
+            <p className="text-sm text-gray-400">Cette section affichera un plan interactif du cabinet médical avec l'emplacement des salles</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+// Composant Gestion des Stocks (à développer)
+const StocksManager = () => {
+  return (
+    <div className="p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>📦 Gestion des Stocks</CardTitle>
+          <CardDescription>Inventaire et suivi du matériel</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-12">
+            <p className="text-gray-500 mb-4">📊 Fonctionnalité de gestion des stocks en cours de développement</p>
+            <p className="text-sm text-gray-400">Cette section permettra de gérer l'inventaire du matériel médical et des fournitures</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+// Composant Administration (à développer)
+const AdminManager = () => {
+  return (
+    <div className="p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>⚙️ Administration</CardTitle>
+          <CardDescription>Paramètres système et logs</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-12">
+            <p className="text-gray-500 mb-4">🔧 Fonctionnalité d'administration en cours de développement</p>
+            <p className="text-sm text-gray-400">Cette section permettra d'accéder aux paramètres avancés et aux logs système</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+// Composant Demandes de Travail (nouveau nom)
+const DemandesTravailManager = () => {
+  return (
+    <div className="p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>📋 Demandes et Tâches</CardTitle>
+          <CardDescription>Gestion des demandes de travail et suivi des tâches</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-12">
+            <p className="text-gray-500 mb-4">✅ Fonctionnalité de gestion des demandes en cours de développement</p>
+            <p className="text-sm text-gray-400">Cette section permettra de créer, assigner et suivre les demandes de travail au sein du cabinet</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+
 // Main Dashboard
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('personnel');
