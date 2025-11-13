@@ -685,6 +685,33 @@ async def trigger_daily_planning(
     background_tasks.add_task(send_daily_planning_notifications)
     return {"message": "Envoi du planning quotidien programmé"}
 
+@api_router.post("/notifications/subscribe")
+async def subscribe_to_notifications(
+    subscription_data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Enregistre le token FCM d'un utilisateur"""
+    try:
+        # Supprimer l'ancien token s'il existe
+        await db.notification_tokens.delete_many({"user_id": current_user.id})
+        
+        # Enregistrer le nouveau token
+        token_doc = {
+            "id": str(uuid.uuid4()),
+            "user_id": current_user.id,
+            "token": subscription_data.get("token"),
+            "created_at": datetime.now(timezone.utc),
+            "active": True
+        }
+        
+        await db.notification_tokens.insert_one(token_doc)
+        
+        return {"message": "Token FCM enregistré avec succès"}
+        
+    except Exception as e:
+        print(f"Erreur lors de l'enregistrement du token: {e}")
+        raise HTTPException(status_code=500, detail="Erreur lors de l'enregistrement")
+
 # Authentication routes
 @api_router.post("/auth/register", response_model=User)
 async def register_user(user_data: UserCreate):
