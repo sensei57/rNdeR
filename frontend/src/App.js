@@ -2867,6 +2867,19 @@ const PlanningManager = () => {
                         </div>
                       )}
                       
+                      {/* Afficher les assignations médecin-assistant */}
+                      {creneau.employe?.role === 'Médecin' && getAssistantsForMedecin(creneau.employe_id).length > 0 && (
+                        <div className="text-sm text-blue-600">
+                          👥 Avec: {getAssistantsForMedecin(creneau.employe_id).map(a => `${a.prenom} ${a.nom}`).join(', ')}
+                        </div>
+                      )}
+                      
+                      {creneau.employe?.role === 'Assistant' && getMedecinsForAssistant(creneau.employe_id).length > 0 && (
+                        <div className="text-sm text-blue-600">
+                          👨‍⚕️ Avec: Dr. {getMedecinsForAssistant(creneau.employe_id).map(m => `${m.prenom} ${m.nom}`).join(', Dr. ')}
+                        </div>
+                      )}
+                      
                       {creneau.notes && (
                         <div className="text-sm text-gray-600 italic">
                           📝 {creneau.notes}
