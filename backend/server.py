@@ -2946,6 +2946,10 @@ async def delete_user_permanently(
     if not target_user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     
+    # Protection: Empêcher la suppression du compte super admin
+    if target_user.get('is_protected', False):
+        raise HTTPException(status_code=403, detail="Ce compte administrateur est protégé et ne peut jamais être supprimé")
+    
     # Empêcher la suppression du Directeur actuel
     if target_user.get("role") == "Directeur" and target_user["id"] == current_user.id:
         raise HTTPException(status_code=403, detail="Vous ne pouvez pas supprimer votre propre compte")
