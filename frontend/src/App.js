@@ -1724,14 +1724,17 @@ const PlanningManager = () => {
       
       if (user?.role === 'Directeur') {
         // Vue globale pour le directeur
-        const [usersRes, sallesRes, planningRes] = await Promise.all([
+        const [usersRes, sallesRes, planningRes, congesRes] = await Promise.all([
           axios.get(`${API}/users`),
           axios.get(`${API}/salles`),
-          axios.get(`${API}/planning/semaine/${mondayStr}`)
+          axios.get(`${API}/planning/semaine/${mondayStr}`),
+          axios.get(`${API}/conges`)
         ]);
         
         setUsers(usersRes.data.filter(u => u.actif));
         setSalles(sallesRes.data);
+        // Filtrer uniquement les congés approuvés
+        setCongesApprouves(congesRes.data.filter(c => c.statut === 'APPROUVE'));
         
         // Vérifier que la structure est correcte
         if (planningRes.data && planningRes.data.dates && planningRes.data.planning) {
@@ -1742,8 +1745,15 @@ const PlanningManager = () => {
         }
       } else {
         // Vue personnelle pour les employés
-        const response = await axios.get(`${API}/planning/semaine/${mondayStr}`);
-        const personalPlanning = response.data;
+        const [planningRes, congesRes] = await Promise.all([
+          axios.get(`${API}/planning/semaine/${mondayStr}`),
+          axios.get(`${API}/conges`)
+        ]);
+        
+        const personalPlanning = planningRes.data;
+        
+        // Filtrer uniquement les congés approuvés pour l'utilisateur actuel
+        setCongesApprouves(congesRes.data.filter(c => c.statut === 'APPROUVE' && c.utilisateur_id === user.id));
         
         // Vérifier que la structure est correcte
         if (personalPlanning && personalPlanning.dates && personalPlanning.planning) {
