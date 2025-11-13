@@ -6357,9 +6357,11 @@ const Dashboard = () => {
       items.splice(4, 0, { id: 'demandes-travail', label: 'Demandes Travail', icon: CalendarDays });
     }
 
+    // Salles visible à tous les utilisateurs (lecture seule pour non-directeurs)
+    items.push({ id: 'salles', label: 'Gestion Salles', icon: Building2 });
+
     if (user?.role === 'Directeur') {
       items.push({ id: 'plan-cabinet', label: 'Plan Cabinet', icon: MapPin });
-      items.push({ id: 'salles', label: 'Gestion Salles', icon: Building2 });
       items.push({ id: 'stocks', label: 'Gestion Stocks', icon: Package });
       items.push({ id: 'admin', label: 'Administration', icon: Settings });
     }
