@@ -307,6 +307,21 @@ frontend:
           agent: "testing"
           comment: "🎉 ERREUR JAVASCRIPT CRITIQUE COMPLÈTEMENT RÉSOLUE! ✅ CORRECTION APPLIQUÉE: 1) Ajout accolade fermante manquante après handleResetPassword (ligne 3173), 2) Correction structure fonction handleUpdateEmail, 3) Suppression accolades en trop (lignes 3197-3198). ✅ VALIDATION COMPLÈTE: 1) ✅ Connexion Directeur réussie, 2) ✅ Navigation Administration OK, 3) ✅ Page 'Administration des Comptes' se charge correctement, 4) ✅ API GET /admin/users fonctionne (9 utilisateurs affichés), 5) ✅ Tous boutons d'action présents (40 boutons: Se connecter, Mot de passe, Email, Activer/Désactiver, Supprimer), 6) ✅ Modals Email et Mot de passe s'ouvrent/ferment correctement, 7) ✅ 0 erreur JavaScript détectée. 🎯 RÉSULTAT: L'utilisateur peut maintenant accéder à la section Administration sans aucune erreur. Le problème signalé est complètement résolu."
 
+  - task: "Administration - Fonctionnalité Impersonation (Bouton Se connecter)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "TEST URGENT - L'utilisateur signale que le bouton 'Se connecter' dans la section Administration ne fonctionne pas. Il s'agit de la fonctionnalité d'impersonation (se connecter en tant qu'un autre utilisateur). Backend API testé et fonctionne correctement. Le problème est probablement côté frontend. Tests requis: connexion Directeur, navigation Administration, test bouton 'Se connecter', capture erreurs JavaScript et appels API."
+        - working: true
+          agent: "testing"
+          comment: "🎉 PROBLÈME IMPERSONATION COMPLÈTEMENT RÉSOLU! 🔍 ROOT CAUSE IDENTIFIÉE: Le frontend ne mettait pas à jour l'en-tête d'autorisation d'axios et n'exposait pas setUser dans le contexte d'authentification. ✅ CORRECTIONS APPLIQUÉES: 1) Ajout de axios.defaults.headers.common['Authorization'] dans handleImpersonate, 2) Exposition de setUser et setToken dans AuthContext.Provider. ✅ VALIDATION COMPLÈTE: 1) ✅ Connexion Directeur (directeur@cabinet.fr/admin123) réussie, 2) ✅ Navigation Administration OK, 3) ✅ Bouton 'Se connecter' pour Marie Dupont fonctionne, 4) ✅ API POST /admin/impersonate/{userId} répond 200 OK, 5) ✅ Changement d'utilisateur confirmé: Pierre Martin → Marie Dupont, 6) ✅ Changement de rôle confirmé: Directeur → Médecin, 7) ✅ Permissions correctement appliquées (bouton 'Nouveau Personnel' non visible), 8) ✅ Interface utilisateur mise à jour en temps réel. 🎯 RÉSULTAT: Le bouton 'Se connecter' dans la section Administration fonctionne parfaitement. L'utilisateur peut maintenant s'impersonner en tant qu'autres utilisateurs sans connaître leur mot de passe."
+
   - task: "Attribution Planning - Diagnostic des erreurs"
     implemented: true
     working: true
