@@ -14,6 +14,20 @@
       "sizes": "512x512"
     }
   ],
+  "screenshots": [
+    {
+      "src": "screenshot-wide.png",
+      "type": "image/png",
+      "sizes": "1280x720",
+      "form_factor": "wide"
+    },
+    {
+      "src": "screenshot-narrow.png",
+      "type": "image/png", 
+      "sizes": "640x1136",
+      "form_factor": "narrow"
+    }
+  ],
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#3B82F6",
