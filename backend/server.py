@@ -1597,7 +1597,7 @@ async def approuver_demande_jour_travail(
                     employe_role=medecin["role"],
                     salle_attribuee=None,
                     salle_attente=None,
-                    notes=f"Créneau créé automatiquement depuis demande de travail approuvée"
+                    notes=None
                 )
                 await db.planning.insert_one(creneau_planning.dict())
     
