@@ -61,8 +61,11 @@ def reactivate_marie():
             print(f"   Response: {reactivate_response.text}")
         return False
     
-    result = reactivate_response.json()
-    print(f"✅ Marie Dupont reactivated successfully: Active = {result.get('actif', 'unknown')}")
+    try:
+        result = reactivate_response.json()
+        print(f"✅ Marie Dupont reactivated successfully: Active = {result.get('actif', 'unknown')}")
+    except:
+        print(f"✅ Marie Dupont reactivated successfully (no JSON response)")
     
     # Verify reactivation
     users_response = requests.get(f"{api_url}/users", headers=headers)
