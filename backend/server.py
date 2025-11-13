@@ -661,11 +661,19 @@ async def create_demande_conge(
     demande_data: DemandeCongeCreate,
     current_user: User = Depends(get_current_user)
 ):
+    # Si un utilisateur_id est fourni et que l'utilisateur actuel est Directeur, l'utiliser
+    # Sinon, utiliser l'ID de l'utilisateur actuel
+    utilisateur_id = current_user.id
+    if hasattr(demande_data, 'utilisateur_id') and demande_data.utilisateur_id:
+        if current_user.role == ROLES["DIRECTEUR"]:
+            utilisateur_id = demande_data.utilisateur_id
+    
     demande = DemandeConge(
-        utilisateur_id=current_user.id,
+        utilisateur_id=utilisateur_id,
         date_debut=demande_data.date_debut,
         date_fin=demande_data.date_fin,
         type_conge=demande_data.type_conge,
+        creneau=demande_data.creneau if demande_data.creneau else "JOURNEE_COMPLETE",
         motif=demande_data.motif if demande_data.motif else None
     )
     await db.demandes_conges.insert_one(demande.dict())
