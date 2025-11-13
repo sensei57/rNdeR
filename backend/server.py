@@ -625,13 +625,16 @@ async def get_assignations(current_user: User = Depends(get_current_user)):
     # Enrich with user details
     enriched_assignations = []
     for assignation in assignations:
+        # Remove MongoDB _id field to avoid serialization error
+        assignation.pop('_id', None)
+        
         medecin = await db.users.find_one({"id": assignation["medecin_id"]})
         assistant = await db.users.find_one({"id": assignation["assistant_id"]})
         
         enriched_assignations.append({
             **assignation,
-            "medecin": User(**medecin) if medecin else None,
-            "assistant": User(**assistant) if assistant else None
+            "medecin": User(**medecin).dict() if medecin else None,
+            "assistant": User(**assistant).dict() if assistant else None
         })
     
     return enriched_assignations
