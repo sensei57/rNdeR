@@ -116,6 +116,8 @@ class CreneauPlanningCreate(BaseModel):
     salle_attente: Optional[str] = None
     horaire_debut: Optional[str] = None
     horaire_fin: Optional[str] = None
+    horaire_pause_debut: Optional[str] = None
+    horaire_pause_fin: Optional[str] = None
     notes: Optional[str] = None
 
 # Groupe Chat Models
