@@ -288,6 +288,21 @@ backend:
           agent: "testing"
           comment: "✅ API MODIFICATION EMAIL ENTIÈREMENT FONCTIONNELLE! Tests complets réalisés: 1) ✅ Sécurité: Seul Directeur peut accéder (403 pour autres rôles), 2) ✅ Validation: 8 formats email invalides correctement rejetés (sans @, domaine manquant, etc.), 3) ✅ Validation: Email dupliqué correctement rejeté (400), 4) ✅ Gestion erreurs: Utilisateur inexistant (404), champ email manquant (400), 5) ✅ Fonctionnalité: Email modifié avec succès et persisté en base, 6) ✅ Connexion: Utilisateur peut se connecter avec nouvel email, 7) ✅ Connexion: Ancien email ne fonctionne plus (401), 8) ✅ Structure réponse JSON correcte avec ancien/nouveau email et nom utilisateur. CORRECTION APPLIQUÉE: Fix password_hash field dans reset password API. L'API fonctionne parfaitement selon toutes les spécifications demandées."
 
+  - task: "Gestion Congés - Fonctionnalité demi-journées (POST/GET/PUT /api/conges avec champ creneau)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Nouvelles fonctionnalités implémentées pour les demi-journées de congés: 1) Ajout du champ utilisateur_id dans DemandeCongeCreate pour que le Directeur puisse créer des demandes pour d'autres employés, 2) Correction de l'endpoint POST /api/conges pour sauvegarder correctement le champ creneau (MATIN/APRES_MIDI/JOURNEE_COMPLETE), 3) Support complet des demi-journées dans le système de congés. Tests requis: création demande par Directeur pour employé, récupération avec créneau correct, approbation, vérification filtrage congés approuvés pour planning."
+        - working: true
+          agent: "testing"
+          comment: "🎉 FONCTIONNALITÉ DEMI-JOURNÉES DE CONGÉS COMPLÈTEMENT FONCTIONNELLE! ✅ TESTS COMPLETS RÉUSSIS: 1) ✅ TEST 1 - Création demande congé pour employé par Directeur: POST /api/conges avec utilisateur_id=Marie Dupont, creneau=MATIN, type_conge=CONGE_PAYE réussie, 2) ✅ TEST 2 - Récupération demandes: GET /api/conges retourne demande avec utilisateur_id correct, creneau=MATIN, statut=EN_ATTENTE, 3) ✅ TEST 3 - Approbation demande: PUT /api/conges/{id}/approuver avec approuve=true réussie, statut passe à APPROUVE, 4) ✅ TEST 4 - Vérification congés approuvés pour planning: 6 congés approuvés trouvés, notre demande demi-journée correctement dans la liste, 5) ✅ TEST 5 - Test demi-journée après-midi: POST /api/conges avec creneau=APRES_MIDI réussie et approuvée. ✅ RÉSULTAT FINAL: Les deux demandes (MATIN et APRES_MIDI) sont correctement enregistrées, approuvées et filtrées. Le système de demi-journées de congés fonctionne parfaitement côté backend avec support complet du champ creneau et de la création de demandes par le Directeur pour d'autres employés."
+
 frontend:
   - task: "Administration - Erreur JavaScript critique"
     implemented: true
