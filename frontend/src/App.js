@@ -1957,6 +1957,23 @@ const PlanningManager = () => {
       .filter(m => m); // Filtrer les undefined
   };
 
+  // Vérifier si un employé a une demande de travail en attente à une date donnée
+  const hasDemandeEnAttente = (employeId, date, creneau) => {
+    if (!demandesTravail || demandesTravail.length === 0) return false;
+    
+    return demandesTravail.some(demande => {
+      if (demande.medecin_id !== employeId) return false;
+      if (demande.statut !== 'EN_ATTENTE') return false;
+      if (demande.date_demandee !== date) return false;
+      
+      // Vérifier le créneau
+      if (demande.creneau === 'JOURNEE_COMPLETE') return true;
+      if (demande.creneau === creneau) return true;
+      
+      return false;
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
