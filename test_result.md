@@ -423,8 +423,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Demandes de Travail - Création et récupération (POST/GET /api/demandes-travail)"
-    - "Planning Semaine - Endpoint récupération (GET /api/planning/semaine/{date})"
+    - "Authentification Urgente Après Initialisation Base de Données (POST /api/auth/login, GET /api/users/me)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
