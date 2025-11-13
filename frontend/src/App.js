@@ -4266,6 +4266,23 @@ const DemandesTravailManager = () => {
     return creneaux[creneau] || creneau;
   };
 
+  // Filtrer les demandes selon les critères sélectionnés
+  const getFilteredDemandes = () => {
+    let filtered = [...demandes];
+    
+    // Filtrer par statut
+    if (filterStatut !== 'TOUT') {
+      filtered = filtered.filter(d => d.statut === filterStatut);
+    }
+    
+    // Filtrer par médecin
+    if (filterMedecin !== 'TOUS') {
+      filtered = filtered.filter(d => d.medecin_id === filterMedecin);
+    }
+    
+    return filtered;
+  };
+
   // Calculer les statistiques pour le directeur
   const getStatsJour = (date, creneau) => {
     if (!configuration) return { current: 0, max: 0 };
@@ -4285,6 +4302,8 @@ const DemandesTravailManager = () => {
   if (loading) {
     return <div className="flex justify-center p-8">Chargement...</div>;
   }
+
+  const filteredDemandes = getFilteredDemandes();
 
   return (
     <div className="space-y-6">
