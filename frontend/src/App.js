@@ -2848,6 +2848,23 @@ const PlanningManager = () => {
                         </div>
                       </div>
                     ))}
+                    
+                    {/* Afficher les demandes en attente pour ce rôle (Directeur uniquement) */}
+                    {user?.role === 'Directeur' && role === 'Médecin' && users.filter(u => 
+                      u.role === 'Médecin' && hasDemandeEnAttente(u.id, selectedDate, 'MATIN')
+                    ).map(employe => (
+                      <div
+                        key={`demande-jour-matin-${employe.id}`}
+                        className="border-2 border-yellow-500 bg-yellow-50 text-yellow-700 rounded-lg p-3"
+                      >
+                        <div className="font-medium">
+                          {employe.prenom} {employe.nom}
+                        </div>
+                        <div className="text-sm font-semibold mt-1">
+                          ⏳ Demande en attente
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ))}
               </div>
