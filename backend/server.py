@@ -397,6 +397,7 @@ class DemandeCongeCreate(BaseModel):
     date_debut: str  # YYYY-MM-DD
     date_fin: str  # YYYY-MM-DD
     type_conge: str  # "CONGE_PAYE", "RTT", "MALADIE", etc.
+    creneau: Optional[str] = "JOURNEE_COMPLETE"  # "MATIN", "APRES_MIDI", "JOURNEE_COMPLETE"
     motif: Optional[str] = ""
 
 class DemandeConge(BaseModel):
@@ -405,6 +406,7 @@ class DemandeConge(BaseModel):
     date_debut: str  # YYYY-MM-DD
     date_fin: str  # YYYY-MM-DD
     type_conge: str  # "CONGE_PAYE", "RTT", "MALADIE", etc.
+    creneau: Optional[str] = "JOURNEE_COMPLETE"  # "MATIN", "APRES_MIDI", "JOURNEE_COMPLETE"
     motif: Optional[str] = None
     statut: str = "EN_ATTENTE"  # "EN_ATTENTE", "APPROUVE", "REJETE"
     date_demande: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
