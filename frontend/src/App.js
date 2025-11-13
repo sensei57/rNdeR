@@ -281,10 +281,20 @@ const PushNotificationManager = () => {
 
   if (permission === 'granted' && subscribed) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded p-3 text-sm flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Bell className="h-4 w-4 text-green-600" />
-          <span className="text-green-800">Notifications activées ✓</span>
+      <div className="bg-green-50 border border-green-200 rounded p-3 text-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Bell className="h-4 w-4 text-green-600" />
+            <span className="text-green-800">Notifications activées ✓</span>
+          </div>
+          <Button 
+            onClick={testNotification} 
+            size="sm" 
+            variant="outline"
+            className="text-xs"
+          >
+            Test
+          </Button>
         </div>
       </div>
     );
