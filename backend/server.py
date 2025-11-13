@@ -2985,8 +2985,6 @@ async def delete_user_permanently(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression: {str(e)}")
-    
-    return {"message": f"Utilisateur {'activé' if new_status else 'désactivé'} avec succès", "actif": new_status}
 
 @api_router.get("/stocks/permissions", response_model=List[Dict])
 async def get_permissions_stock(current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))):
