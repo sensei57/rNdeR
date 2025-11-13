@@ -3245,8 +3245,8 @@ const PlanningManager = () => {
                             </div>
                           </div>
                         ))}
-                        {/* Afficher les employés avec demande en attente */}
-                        {employesDemandeApresMidiEnAttente.map(employe => (
+                        {/* Afficher les employés avec demande en attente (Directeur uniquement) */}
+                        {user?.role === 'Directeur' && employesDemandeApresMidiEnAttente.map(employe => (
                           <div
                             key={`demande-apres-midi-${employe.id}`}
                             className="text-xs p-1 rounded border-2 border-yellow-500 bg-yellow-50 text-yellow-700"
