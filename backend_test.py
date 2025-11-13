@@ -4438,7 +4438,9 @@ def urgent_authentication_main():
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) > 1 and sys.argv[1] == "--urgent-auth":
+    if len(sys.argv) > 1 and sys.argv[1] == "--profile":
+        sys.exit(profile_modification_main())
+    elif len(sys.argv) > 1 and sys.argv[1] == "--urgent-auth":
         sys.exit(urgent_authentication_main())
     elif len(sys.argv) > 1 and sys.argv[1] == "--reactivation-only":
         sys.exit(run_reactivation_only())
@@ -4447,5 +4449,5 @@ if __name__ == "__main__":
     elif len(sys.argv) > 1 and sys.argv[1] == "--firebase":
         sys.exit(firebase_notification_main())
     else:
-        # Default to urgent authentication tests
-        sys.exit(urgent_authentication_main())
+        # Default to profile modification tests as requested
+        sys.exit(profile_modification_main())
