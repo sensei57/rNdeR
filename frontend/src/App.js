@@ -1070,6 +1070,9 @@ const CongeManager = () => {
                   <p className="text-sm text-gray-600">
                     <strong>Type:</strong> {getTypeCongeLabel(demande.type_conge)}
                   </p>
+                  <p className="text-sm text-gray-600">
+                    <strong>Durée:</strong> {getCreneauLabel(demande.creneau)}
+                  </p>
                   {demande.motif && (
                     <p className="text-sm text-gray-600">
                       <strong>Motif:</strong> {demande.motif}
