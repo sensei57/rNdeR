@@ -4042,6 +4042,10 @@ const AdminManager = () => {
       
       // Sauvegarder le token et mettre à jour l'utilisateur
       localStorage.setItem('token', response.data.access_token);
+      
+      // Mettre à jour l'en-tête d'autorisation d'axios
+      axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
+      
       setUser(response.data.user);
       
       toast.success(`Connexion en tant que ${response.data.user.prenom} ${response.data.user.nom}`);
