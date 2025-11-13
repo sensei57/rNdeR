@@ -2047,6 +2047,20 @@ const PlanningManager = () => {
     return (totalMinutes / 60).toFixed(1); // Convertir en heures avec 1 décimale
   };
 
+  // Calculer le nombre de jours de congés pour un employé dans une période
+  const calculateConges = (employeId, dates) => {
+    if (!congesApprouves || congesApprouves.length === 0) return 0;
+    
+    let joursConges = 0;
+    dates.forEach(date => {
+      if (isEmployeEnConge(employeId, date)) {
+        joursConges += 1;
+      }
+    });
+    
+    return joursConges;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
