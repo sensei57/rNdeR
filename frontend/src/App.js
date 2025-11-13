@@ -7740,6 +7740,34 @@ const MonProfilManager = () => {
         </CardContent>
       </Card>
 
+      {/* Test notifications quotidiennes (Directeur uniquement) */}
+      {user?.role === 'Directeur' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Tests de Notifications</CardTitle>
+            <CardDescription>Tester l'envoi des notifications quotidiennes</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              onClick={async () => {
+                try {
+                  await axios.post(`${API}/notifications/send-daily-planning`);
+                  toast.success('Planning quotidien envoyé à tous les employés !');
+                } catch (error) {
+                  toast.error('Erreur lors de l\'envoi');
+                }
+              }}
+              className="w-full"
+            >
+              📅 Envoyer le planning du jour (TEST)
+            </Button>
+            <p className="text-xs text-gray-600 mt-2">
+              Envoie le planning d'aujourd'hui à tous les employés qui travaillent
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Modal de modification d'email */}
       <Dialog open={showEmailModal} onOpenChange={setShowEmailModal}>
         <DialogContent>
