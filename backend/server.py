@@ -335,6 +335,11 @@ class SemaineType(BaseModel):
     vendredi: Optional[str] = None
     samedi: Optional[str] = None
     dimanche: Optional[str] = None
+    # Horaires types pour secrétaires
+    horaire_debut: Optional[str] = None  # "08:00"
+    horaire_fin: Optional[str] = None  # "18:00"
+    horaire_pause_debut: Optional[str] = None  # "12:00"
+    horaire_pause_fin: Optional[str] = None  # "14:00"
     actif: bool = True
     date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
