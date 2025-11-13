@@ -2721,6 +2721,15 @@ const PlanningManager = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowCreateSemaineTypeModal(true)}
+                  className="w-full mt-2"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Créer une Nouvelle Semaine Type
+                </Button>
               </div>
 
               <div className="space-y-2">
