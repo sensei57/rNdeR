@@ -1,19 +1,19 @@
 {
-  "short_name": "Gestion Cabinet",
+  "short_name": "Cabinet",
   "name": "Gestion Personnel Médical",
   "description": "Application de gestion du personnel et planning médical",
   "icons": [
     {
-      "src": "icon-192.svg",
-      "type": "image/svg+xml",
+      "src": "icon-192.png",
+      "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
-      "src": "icon-512.svg",
-      "type": "image/svg+xml",
+      "src": "icon-512.png",
+      "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ],
   "start_url": "/",
@@ -21,5 +21,13 @@
   "theme_color": "#3B82F6",
   "background_color": "#ffffff",
   "orientation": "portrait",
-  "scope": "/"
+  "scope": "/",
+  "screenshots": [
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "form_factor": "wide"
+    }
+  ]
 }
