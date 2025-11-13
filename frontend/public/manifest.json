@@ -4,21 +4,22 @@
   "description": "Application de gestion du personnel et planning médical",
   "icons": [
     {
-      "src": "icon-192.png",
-      "type": "image/png",
+      "src": "icon-192.svg",
+      "type": "image/svg+xml",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "icon-512.png",
-      "type": "image/png",
+      "src": "icon-512.svg",
+      "type": "image/svg+xml",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#3B82F6",
   "background_color": "#ffffff",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "scope": "/"
 }
