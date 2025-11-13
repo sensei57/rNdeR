@@ -7647,6 +7647,17 @@ const MonProfilManager = () => {
         </CardContent>
       </Card>
 
+      {/* Gestion des notifications push */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Notifications Push</CardTitle>
+          <CardDescription>Recevez votre planning quotidien sur votre téléphone</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PushNotificationManager />
+        </CardContent>
+      </Card>
+
       {/* Modal de modification d'email */}
       <Dialog open={showEmailModal} onOpenChange={setShowEmailModal}>
         <DialogContent>
