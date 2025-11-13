@@ -252,7 +252,7 @@ const PushNotificationManager = () => {
   const subscribeToPush = async () => {
     try {
       // Import Firebase dynamiquement
-      const { messaging, getToken } = await import('../firebase.js');
+      const { messaging, getToken } = await import('./firebase.js');
       
       if (!messaging) {
         throw new Error('Firebase Messaging non disponible');
