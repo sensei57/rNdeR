@@ -210,6 +210,114 @@ const NotificationToday = () => {
   );
 };
 
+// Push Notification Manager Component
+const PushNotificationManager = () => {
+  const { user } = useAuth();
+  const [permission, setPermission] = useState(Notification.permission);
+  const [subscribed, setSubscribed] = useState(false);
+
+  useEffect(() => {
+    checkSubscription();
+  }, [user]);
+
+  const checkSubscription = async () => {
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        setSubscribed(!!subscription);
+      } catch (error) {
+        console.error('Erreur lors de la vérification de l\'abonnement:', error);
+      }
+    }
+  };
+
+  const requestPermission = async () => {
+    try {
+      const perm = await Notification.requestPermission();
+      setPermission(perm);
+      
+      if (perm === 'granted') {
+        await subscribeToPush();
+        toast.success('Notifications activées ! Vous recevrez votre planning chaque matin.');
+      } else {
+        toast.error('Notifications refusées. Vous ne recevrez pas les alertes.');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la demande de permission:', error);
+      toast.error('Erreur lors de l\'activation des notifications');
+    }
+  };
+
+  const subscribeToPush = async () => {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      
+      // Pour l'instant, on utilise un système simplifié sans serveur VAPID
+      // En production, il faudrait configurer Firebase Cloud Messaging
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: null // À remplacer par votre clé VAPID publique
+      });
+
+      // Envoyer l'abonnement au serveur
+      await axios.post(`${API}/notifications/subscribe`, {
+        subscription: subscription.toJSON(),
+        userId: user.id
+      });
+
+      setSubscribed(true);
+      toast.success('Vous êtes maintenant abonné aux notifications !');
+    } catch (error) {
+      console.error('Erreur lors de l\'abonnement:', error);
+      toast.error('Erreur lors de l\'abonnement aux notifications');
+    }
+  };
+
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    return null; // Navigateur non compatible
+  }
+
+  if (permission === 'denied') {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded p-3 text-sm">
+        <p className="text-red-800">
+          ⚠️ Notifications bloquées. Activez-les dans les paramètres de votre navigateur.
+        </p>
+      </div>
+    );
+  }
+
+  if (permission === 'granted' && subscribed) {
+    return (
+      <div className="bg-green-50 border border-green-200 rounded p-3 text-sm flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Bell className="h-4 w-4 text-green-600" />
+          <span className="text-green-800">Notifications activées ✓</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-blue-50 border border-blue-200 rounded p-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-blue-900">
+            📱 Recevez votre planning quotidien
+          </p>
+          <p className="text-xs text-blue-700 mt-1">
+            Activez les notifications pour recevoir chaque matin votre planning (salle + collègues)
+          </p>
+        </div>
+        <Button onClick={requestPermission} size="sm" className="ml-4">
+          Activer
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 // Notifications Badge Component
 const NotificationBadge = () => {
   const { user } = useAuth();
