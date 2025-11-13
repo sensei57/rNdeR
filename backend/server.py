@@ -541,6 +541,105 @@ async def notify_user_request_status(user_id: str, type_request: str, status: st
         {"type": "status_change", "status": status, "request_type": type_request}
     )
 
+async def send_daily_planning_notifications():
+    """Envoie le planning quotidien à tous les employés qui travaillent aujourd'hui"""
+    from datetime import date
+    today = date.today().strftime('%Y-%m-%d')
+    
+    print(f"🌅 Envoi des plannings quotidiens pour le {today}")
+    
+    try:
+        # Récupérer tous les employés actifs
+        users = await db.users.find({"actif": True}).to_list(1000)
+        
+        for user in users:
+            # Récupérer le planning de l'employé pour aujourd'hui
+            planning_slots = await db.planning.find({
+                "date": today,
+                "employe_id": user["id"]
+            }).to_list(100)
+            
+            if planning_slots:
+                # Construire le message de planning
+                planning_text = await build_daily_planning_message(user, planning_slots, today)
+                
+                if planning_text:
+                    await send_notification_to_user(
+                        user["id"],
+                        "🌅 Votre planning du jour",
+                        planning_text,
+                        {"type": "daily_planning", "date": today}
+                    )
+        
+        print(f"✅ Plannings quotidiens envoyés avec succès")
+        
+    except Exception as e:
+        print(f"❌ Erreur lors de l'envoi des plannings: {e}")
+
+async def build_daily_planning_message(user, planning_slots, date):
+    """Construit le message du planning quotidien pour un utilisateur"""
+    if not planning_slots:
+        return None
+    
+    messages = []
+    
+    # Grouper par créneau
+    creneaux = {"MATIN": [], "APRES_MIDI": []}
+    for slot in planning_slots:
+        if slot["creneau"] in creneaux:
+            creneaux[slot["creneau"]].append(slot)
+    
+    for creneau_type, slots in creneaux.items():
+        if not slots:
+            continue
+            
+        creneau_name = "🌅 MATIN (9h-12h)" if creneau_type == "MATIN" else "🌆 APRÈS-MIDI (14h-18h)"
+        
+        # Pour chaque créneau, construire le message
+        slot = slots[0]  # Normalement un seul slot par créneau
+        
+        message_parts = [f"\n{creneau_name}"]
+        
+        # Salle
+        if slot.get("salle_attribuee"):
+            message_parts.append(f"• Salle : {slot['salle_attribuee']}")
+        elif slot.get("salle_attente"):
+            message_parts.append(f"• Salle : {slot['salle_attente']} (attente)")
+        else:
+            message_parts.append("• Salle : À définir")
+        
+        # Collègues (autres personnes qui travaillent en même temps)
+        colleagues = await db.planning.find({
+            "date": date,
+            "creneau": creneau_type,
+            "employe_id": {"$ne": user["id"]}
+        }).to_list(100)
+        
+        if colleagues:
+            colleague_names = []
+            for colleague_slot in colleagues:
+                colleague = await db.users.find_one({"id": colleague_slot["employe_id"]})
+                if colleague:
+                    name = f"{colleague['prenom']} {colleague['nom']}"
+                    if colleague['role'] == 'Médecin':
+                        name = f"Dr. {name}"
+                    colleague_names.append(f"{name} ({colleague['role']})")
+            
+            if colleague_names:
+                message_parts.append(f"• Avec : {', '.join(colleague_names[:3])}")
+                if len(colleague_names) > 3:
+                    message_parts.append(f"  + {len(colleague_names) - 3} autre(s)")
+        else:
+            message_parts.append("• Vous travaillez seul(e)")
+        
+        messages.append("\n".join(message_parts))
+    
+    if messages:
+        intro = f"📅 Planning du {date}"
+        return f"{intro}\n" + "\n".join(messages)
+    
+    return None
+
 # ===== FIN SYSTÈME NOTIFICATIONS =====
 
 # Endpoints pour les notifications
