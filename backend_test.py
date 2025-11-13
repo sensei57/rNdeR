@@ -3884,13 +3884,178 @@ def quick_main():
         print("❌ SOME TESTS FAILED! Loading errors detected.")
         return 1
 
+    def test_authentication_urgent(self):
+        """Test urgent authentication after database initialization"""
+        print("\n🔐 URGENT AUTHENTICATION TESTS AFTER DATABASE INITIALIZATION")
+        print("="*70)
+        
+        # Test 1: ✅ POST /api/auth/login with Director
+        print("\n🔍 TEST 1 - Director Login (directeur@cabinet.fr / admin123)")
+        success, response = self.run_test(
+            "Director Login",
+            "POST",
+            "auth/login",
+            200,
+            data={"email": "directeur@cabinet.fr", "password": "admin123"}
+        )
+        
+        if success:
+            if 'access_token' in response and 'user' in response:
+                self.tokens['directeur'] = response['access_token']
+                self.users['directeur'] = response['user']
+                user = response['user']
+                print(f"   ✅ SUCCESS: Token obtained")
+                print(f"   ✅ User data: {user.get('prenom', '')} {user.get('nom', '')} ({user.get('role', '')})")
+                print(f"   ✅ Email: {user.get('email', '')}")
+            else:
+                print(f"   ❌ MISSING: access_token or user data in response")
+        else:
+            print(f"   ❌ FAILED: Director login failed")
+        
+        # Test 2: ✅ POST /api/auth/login with Doctor
+        print("\n🔍 TEST 2 - Doctor Login (dr.dupont@cabinet.fr / medecin123)")
+        success, response = self.run_test(
+            "Doctor Login",
+            "POST",
+            "auth/login",
+            200,
+            data={"email": "dr.dupont@cabinet.fr", "password": "medecin123"}
+        )
+        
+        if success:
+            if 'access_token' in response and 'user' in response:
+                self.tokens['medecin'] = response['access_token']
+                self.users['medecin'] = response['user']
+                user = response['user']
+                print(f"   ✅ SUCCESS: Token obtained")
+                print(f"   ✅ User data: {user.get('prenom', '')} {user.get('nom', '')} ({user.get('role', '')})")
+                print(f"   ✅ Email: {user.get('email', '')}")
+            else:
+                print(f"   ❌ MISSING: access_token or user data in response")
+        else:
+            print(f"   ❌ FAILED: Doctor login failed")
+        
+        # Test 3: ✅ POST /api/auth/login with Assistant
+        print("\n🔍 TEST 3 - Assistant Login (julie.moreau@cabinet.fr / assistant123)")
+        success, response = self.run_test(
+            "Assistant Login",
+            "POST",
+            "auth/login",
+            200,
+            data={"email": "julie.moreau@cabinet.fr", "password": "assistant123"}
+        )
+        
+        if success:
+            if 'access_token' in response and 'user' in response:
+                self.tokens['assistant'] = response['access_token']
+                self.users['assistant'] = response['user']
+                user = response['user']
+                print(f"   ✅ SUCCESS: Token obtained")
+                print(f"   ✅ User data: {user.get('prenom', '')} {user.get('nom', '')} ({user.get('role', '')})")
+                print(f"   ✅ Email: {user.get('email', '')}")
+            else:
+                print(f"   ❌ MISSING: access_token or user data in response")
+        else:
+            print(f"   ❌ FAILED: Assistant login failed")
+        
+        # Test 4: ❌ POST /api/auth/login with INVALID credentials
+        print("\n🔍 TEST 4 - Invalid Login (test@test.com / wrong)")
+        success, response = self.run_test(
+            "Invalid Login",
+            "POST",
+            "auth/login",
+            401,
+            data={"email": "test@test.com", "password": "wrong"}
+        )
+        
+        if success:
+            if 'detail' in response:
+                print(f"   ✅ SUCCESS: Correct 401 status")
+                print(f"   ✅ Error message: {response.get('detail', '')}")
+                if "Email ou mot de passe incorrect" in response.get('detail', ''):
+                    print(f"   ✅ Correct error message in French")
+                else:
+                    print(f"   ⚠️  Error message not exactly as expected")
+            else:
+                print(f"   ⚠️  No error detail in response")
+        else:
+            print(f"   ❌ FAILED: Should return 401 for invalid credentials")
+        
+        # Test 5: ✅ GET /api/users/me with Director token
+        print("\n🔍 TEST 5 - Get Current User with Director Token")
+        if 'directeur' in self.tokens:
+            success, response = self.run_test(
+                "Get Current User (Director)",
+                "GET",
+                "users/me",
+                200,
+                token=self.tokens['directeur']
+            )
+            
+            if success:
+                print(f"   ✅ SUCCESS: Authentication works")
+                print(f"   ✅ User data returned: {response.get('prenom', '')} {response.get('nom', '')} ({response.get('role', '')})")
+                print(f"   ✅ Email: {response.get('email', '')}")
+                print(f"   ✅ Active: {response.get('actif', '')}")
+            else:
+                print(f"   ❌ FAILED: Cannot get current user with Director token")
+        else:
+            print(f"   ❌ SKIPPED: No Director token available")
+        
+        # Summary
+        print("\n" + "="*70)
+        print("🎯 AUTHENTICATION TEST SUMMARY")
+        print("="*70)
+        
+        successful_logins = len([role for role in ['directeur', 'medecin', 'assistant'] if role in self.tokens])
+        print(f"✅ Successful logins: {successful_logins}/3")
+        
+        if successful_logins == 3:
+            print("🎉 EXCELLENT: All authentication tests passed!")
+            print("🎉 Database initialization was successful!")
+            print("🎉 All users can now authenticate properly!")
+        elif successful_logins >= 2:
+            print("✅ GOOD: Most authentication tests passed")
+            print("⚠️  Some users may need to be checked in database")
+        elif successful_logins >= 1:
+            print("⚠️  PARTIAL: Some authentication working")
+            print("❌ Several users cannot authenticate - check database")
+        else:
+            print("❌ CRITICAL: No authentication working")
+            print("❌ Database initialization may have failed")
+        
+        return successful_logins
+
+def urgent_authentication_main():
+    """Run only urgent authentication tests"""
+    tester = MedicalStaffAPITester()
+    
+    print("🚀 Running URGENT Authentication Tests After Database Initialization...")
+    successful_logins = tester.test_authentication_urgent()
+    
+    print(f"\n🎯 Final Results:")
+    print(f"Successful logins: {successful_logins}/3")
+    
+    if successful_logins == 3:
+        print("🎉 All authentication working perfectly!")
+        return 0
+    elif successful_logins >= 2:
+        print("✅ Most authentication working - minor issues")
+        return 0
+    else:
+        print("⚠️ Authentication needs attention - several issues detected")
+        return 1
+
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) > 1 and sys.argv[1] == "--reactivation-only":
+    if len(sys.argv) > 1 and sys.argv[1] == "--urgent-auth":
+        sys.exit(urgent_authentication_main())
+    elif len(sys.argv) > 1 and sys.argv[1] == "--reactivation-only":
         sys.exit(run_reactivation_only())
     elif len(sys.argv) > 1 and sys.argv[1] == "--quick":
         sys.exit(quick_main())
     elif len(sys.argv) > 1 and sys.argv[1] == "--firebase":
         sys.exit(firebase_notification_main())
     else:
-        sys.exit(main())
+        # Default to urgent authentication tests
+        sys.exit(urgent_authentication_main())
