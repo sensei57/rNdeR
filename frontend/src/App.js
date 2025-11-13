@@ -5982,6 +5982,141 @@ const StocksManager = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Modal Gestion des Permissions */}
+      <Dialog open={showPermissionModal} onOpenChange={setShowPermissionModal}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Gestion des Permissions - Stocks</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Formulaire d'ajout de permission */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Attribuer une Permission</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSavePermission} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Utilisateur</Label>
+                    <Select
+                      value={selectedPermission.utilisateur_id}
+                      onValueChange={(value) => {
+                        const existingPerm = getPermissionForUser(value);
+                        if (existingPerm) {
+                          setSelectedPermission({
+                            utilisateur_id: value,
+                            peut_voir: existingPerm.peut_voir,
+                            peut_modifier: existingPerm.peut_modifier,
+                            peut_ajouter: existingPerm.peut_ajouter,
+                            peut_supprimer: existingPerm.peut_supprimer
+                          });
+                        } else {
+                          setSelectedPermission({
+                            ...selectedPermission,
+                            utilisateur_id: value
+                          });
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner un utilisateur" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {users.map(u => (
+                          <SelectItem key={u.id} value={u.id}>
+                            {u.prenom} {u.nom} - {u.role}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="peut_voir"
+                        checked={selectedPermission.peut_voir}
+                        onChange={(e) => setSelectedPermission({...selectedPermission, peut_voir: e.target.checked})}
+                        className="w-4 h-4"
+                      />
+                      <Label htmlFor="peut_voir" className="cursor-pointer">Peut voir les stocks</Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="peut_modifier"
+                        checked={selectedPermission.peut_modifier}
+                        onChange={(e) => setSelectedPermission({...selectedPermission, peut_modifier: e.target.checked})}
+                        className="w-4 h-4"
+                      />
+                      <Label htmlFor="peut_modifier" className="cursor-pointer">Peut modifier les articles</Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="peut_ajouter"
+                        checked={selectedPermission.peut_ajouter}
+                        onChange={(e) => setSelectedPermission({...selectedPermission, peut_ajouter: e.target.checked})}
+                        className="w-4 h-4"
+                      />
+                      <Label htmlFor="peut_ajouter" className="cursor-pointer">Peut ajouter des articles</Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="peut_supprimer"
+                        checked={selectedPermission.peut_supprimer}
+                        onChange={(e) => setSelectedPermission({...selectedPermission, peut_supprimer: e.target.checked})}
+                        className="w-4 h-4"
+                      />
+                      <Label htmlFor="peut_supprimer" className="cursor-pointer">Peut supprimer des articles</Label>
+                    </div>
+                  </div>
+
+                  <Button type="submit" className="w-full">
+                    Enregistrer la Permission
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            {/* Liste des permissions existantes */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Permissions Actuelles</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {permissions.length === 0 ? (
+                  <p className="text-gray-500 text-center py-4">Aucune permission attribuée</p>
+                ) : (
+                  <div className="space-y-2">
+                    {permissions.map(perm => (
+                      <div key={perm.id} className="border rounded p-3 bg-gray-50">
+                        <div className="font-medium text-gray-900">
+                          {perm.utilisateur?.prenom} {perm.utilisateur?.nom}
+                          <span className="text-sm text-gray-600 ml-2">({perm.utilisateur?.role})</span>
+                        </div>
+                        <div className="text-sm text-gray-600 mt-2 space-y-1">
+                          {perm.peut_voir && <div>✓ Peut voir</div>}
+                          {perm.peut_modifier && <div>✓ Peut modifier</div>}
+                          {perm.peut_ajouter && <div>✓ Peut ajouter</div>}
+                          {perm.peut_supprimer && <div>✓ Peut supprimer</div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
