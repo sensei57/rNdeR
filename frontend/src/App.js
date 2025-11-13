@@ -2948,6 +2948,23 @@ const PlanningManager = () => {
                 </div>
               ))}
               
+              {/* Afficher les demandes en attente (Directeur uniquement) */}
+              {user?.role === 'Directeur' && users.filter(u => 
+                u.role === 'Médecin' && hasDemandeEnAttente(u.id, selectedDate, 'APRES_MIDI')
+              ).map(employe => (
+                <div
+                  key={`demande-jour-apres-midi-${employe.id}`}
+                  className="border-2 border-yellow-500 bg-yellow-50 text-yellow-700 rounded-lg p-3"
+                >
+                  <div className="font-medium">
+                    {employe.prenom} {employe.nom} ({employe.role})
+                  </div>
+                  <div className="text-sm font-semibold mt-1">
+                    ⏳ Demande en attente
+                  </div>
+                </div>
+              ))}
+              
               {planningApresMidi.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
                   <CalendarDays className="h-12 w-12 mx-auto mb-2 text-gray-300" />
