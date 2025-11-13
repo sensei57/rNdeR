@@ -3660,6 +3660,7 @@ const PlanningManager = () => {
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                     {assistants.filter(a => a.actif).map(assistant => {
                       const demiJournees = calculateDemiJournees(assistant.id, planningSemaine.dates);
+                      const conges = calculateConges(assistant.id, planningSemaine.dates);
                       return (
                         <div key={assistant.id} className="bg-orange-50 border border-orange-200 rounded p-2">
                           <div className="text-sm font-medium text-gray-800">
@@ -3668,6 +3669,11 @@ const PlanningManager = () => {
                           <div className="text-lg font-bold text-orange-600">
                             {demiJournees} {demiJournees <= 1 ? 'demi-journée' : 'demi-journées'}
                           </div>
+                          {conges > 0 && (
+                            <div className="text-xs text-red-600 font-medium mt-1">
+                              🔴 {conges} {conges === 1 ? 'jour' : 'jours'} de congé
+                            </div>
+                          )}
                         </div>
                       );
                     })}
