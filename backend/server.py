@@ -1660,6 +1660,7 @@ async def get_demandes_jour_travail(
 async def approuver_demande_jour_travail(
     demande_id: str,
     request: ApprobationJourTravailRequest,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
 ):
     # Récupérer la demande
