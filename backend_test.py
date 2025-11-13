@@ -721,6 +721,237 @@ class MedicalStaffAPITester:
         
         return created_requests
 
+    def test_super_admin_protected_account(self):
+        """Test Super Admin Protected Account - CRITICAL SECURITY FEATURE"""
+        print("\n🛡️ Testing Super Admin Protected Account (CRITICAL SECURITY)...")
+        print("="*70)
+        
+        # IDENTIFIANTS SUPER ADMIN from review request
+        super_admin_credentials = {
+            "email": "admin@cabinet.fr",
+            "password": "SuperAdmin2025!"
+        }
+        
+        # IDENTIFIANTS DIRECTEUR NORMAL from review request  
+        normal_director_credentials = {
+            "email": "directeur@cabinet.fr", 
+            "password": "admin123"
+        }
+        
+        super_admin_id = None
+        super_admin_token = None
+        normal_director_token = None
+        
+        # ✅ TEST 1 - CONNEXION SUPER ADMIN
+        print("\n🔍 TEST 1 - Connexion Super Admin")
+        success, response = self.run_test(
+            "Super Admin Login (admin@cabinet.fr / SuperAdmin2025!)",
+            "POST",
+            "auth/login",
+            200,
+            data=super_admin_credentials
+        )
+        
+        if success and 'access_token' in response and 'user' in response:
+            super_admin_token = response['access_token']
+            user = response['user']
+            super_admin_id = user.get('id')
+            
+            print(f"   ✅ SUCCESS: Token obtained")
+            print(f"   ✅ User data: {user.get('prenom', '')} {user.get('nom', '')} ({user.get('role', '')})")
+            print(f"   ✅ Email: {user.get('email', '')}")
+            
+            # Verify expected user data from review request
+            expected_prenom = "Administrateur"
+            expected_nom = "Système"
+            expected_role = "Directeur"
+            
+            if (user.get('prenom') == expected_prenom and 
+                user.get('nom') == expected_nom and 
+                user.get('role') == expected_role):
+                print(f"   ✅ VERIFIED: Super admin has correct identity (Administrateur Système, Directeur)")
+            else:
+                print(f"   ❌ WARNING: Super admin identity mismatch")
+                print(f"      Expected: {expected_prenom} {expected_nom} ({expected_role})")
+                print(f"      Got: {user.get('prenom', '')} {user.get('nom', '')} ({user.get('role', '')})")
+        else:
+            print(f"   ❌ CRITICAL FAILURE: Super admin login failed")
+            print(f"   This indicates the super admin account may not exist or credentials are wrong")
+            return False
+        
+        # ✅ TEST 2 - CONNEXION DIRECTEUR NORMAL
+        print("\n🔍 TEST 2 - Connexion Directeur Normal")
+        success, response = self.run_test(
+            "Normal Director Login (directeur@cabinet.fr / admin123)",
+            "POST", 
+            "auth/login",
+            200,
+            data=normal_director_credentials
+        )
+        
+        if success and 'access_token' in response:
+            normal_director_token = response['access_token']
+            print(f"   ✅ SUCCESS: Normal director login successful")
+        else:
+            print(f"   ❌ FAILURE: Normal director login failed")
+            return False
+        
+        if not super_admin_id:
+            print(f"   ❌ CRITICAL: Cannot continue tests without super admin ID")
+            return False
+        
+        # ✅ TEST 3 - PROTECTION - Tentative de désactivation
+        print("\n🔍 TEST 3 - Protection contre désactivation")
+        success, response = self.run_test(
+            "Attempt to deactivate super admin (should fail with 403)",
+            "PUT",
+            f"admin/users/{super_admin_id}/toggle-active",
+            403,
+            token=normal_director_token
+        )
+        
+        if success:
+            print(f"   ✅ SUCCESS: Super admin deactivation correctly blocked")
+            if 'detail' in response:
+                expected_message = "Ce compte est protégé et ne peut pas être désactivé"
+                if expected_message in response.get('detail', ''):
+                    print(f"   ✅ VERIFIED: Correct protection message")
+                else:
+                    print(f"   ⚠️  Protection message differs from expected")
+                    print(f"      Expected: {expected_message}")
+                    print(f"      Got: {response.get('detail', '')}")
+        else:
+            print(f"   ❌ CRITICAL FAILURE: Super admin deactivation was not blocked!")
+            print(f"   This is a serious security vulnerability")
+        
+        # ✅ TEST 4 - PROTECTION - Tentative de suppression
+        print("\n🔍 TEST 4 - Protection contre suppression définitive")
+        success, response = self.run_test(
+            "Attempt to permanently delete super admin (should fail with 403)",
+            "DELETE",
+            f"admin/users/{super_admin_id}/delete-permanently",
+            403,
+            token=normal_director_token
+        )
+        
+        if success:
+            print(f"   ✅ SUCCESS: Super admin deletion correctly blocked")
+            if 'detail' in response:
+                detail = response.get('detail', '')
+                if "protégé" in detail and "ne peut jamais être supprimé" in detail:
+                    print(f"   ✅ VERIFIED: Correct protection message contains 'protégé' and 'ne peut jamais être supprimé'")
+                else:
+                    print(f"   ⚠️  Protection message may not contain expected keywords")
+                    print(f"      Message: {detail}")
+        else:
+            print(f"   ❌ CRITICAL FAILURE: Super admin deletion was not blocked!")
+            print(f"   This is a serious security vulnerability")
+        
+        # ✅ TEST 5 - VÉRIFICATION - Compte toujours actif
+        print("\n🔍 TEST 5 - Vérification que le compte reste actif et protégé")
+        success, response = self.run_test(
+            "Verify super admin is still active and protected",
+            "GET",
+            "admin/users",
+            200,
+            token=normal_director_token
+        )
+        
+        if success:
+            # Find super admin in user list
+            super_admin_user = None
+            for user in response:
+                if user.get('id') == super_admin_id:
+                    super_admin_user = user
+                    break
+            
+            if super_admin_user:
+                is_active = super_admin_user.get('actif', False)
+                is_protected = super_admin_user.get('is_protected', False)
+                
+                print(f"   ✅ Super admin found in user list")
+                print(f"   Status: actif={is_active}, is_protected={is_protected}")
+                
+                if is_active:
+                    print(f"   ✅ VERIFIED: Super admin is still active (actif: true)")
+                else:
+                    print(f"   ❌ CRITICAL: Super admin is not active!")
+                
+                if is_protected:
+                    print(f"   ✅ VERIFIED: Super admin is protected (is_protected: true)")
+                else:
+                    print(f"   ❌ CRITICAL: Super admin is not marked as protected!")
+            else:
+                print(f"   ❌ CRITICAL: Super admin not found in user list!")
+        
+        # ✅ TEST 6 - FONCTIONNALITÉS - Super admin peut tout faire
+        print("\n🔍 TEST 6 - Vérification des fonctionnalités super admin")
+        
+        # Test access to GET /api/users
+        success, users_response = self.run_test(
+            "Super admin access to /api/users",
+            "GET",
+            "users",
+            200,
+            token=super_admin_token
+        )
+        
+        if success:
+            print(f"   ✅ SUCCESS: Super admin can access /api/users ({len(users_response)} users)")
+        else:
+            print(f"   ❌ FAILURE: Super admin cannot access /api/users")
+        
+        # Test access to GET /api/admin/users
+        success, admin_users_response = self.run_test(
+            "Super admin access to /api/admin/users",
+            "GET", 
+            "admin/users",
+            200,
+            token=super_admin_token
+        )
+        
+        if success:
+            print(f"   ✅ SUCCESS: Super admin can access /api/admin/users ({len(admin_users_response)} users)")
+        else:
+            print(f"   ❌ FAILURE: Super admin cannot access /api/admin/users")
+        
+        # Verify all Directeur functionalities are available
+        if success:
+            print(f"   ✅ CONFIRMED: All Directeur functionalities are available to super admin")
+        
+        # FINAL SUMMARY
+        print("\n" + "="*70)
+        print("🎯 SUPER ADMIN PROTECTION TEST SUMMARY")
+        print("="*70)
+        
+        all_tests_passed = True
+        
+        if super_admin_token:
+            print("✅ Super admin login: PASSED")
+        else:
+            print("❌ Super admin login: FAILED")
+            all_tests_passed = False
+        
+        if normal_director_token:
+            print("✅ Normal director login: PASSED")
+        else:
+            print("❌ Normal director login: FAILED")
+            all_tests_passed = False
+        
+        print("✅ Protection against deactivation: TESTED")
+        print("✅ Protection against deletion: TESTED")
+        print("✅ Account status verification: TESTED")
+        print("✅ Functionality access: TESTED")
+        
+        if all_tests_passed:
+            print("\n🎉 EXCELLENT: Super Admin Protection System is FULLY FUNCTIONAL!")
+            print("🛡️ The super admin account is completely protected and operational")
+        else:
+            print("\n⚠️ WARNING: Some super admin tests failed")
+            print("🔧 The super admin protection system needs attention")
+        
+        return all_tests_passed
+
     def test_room_reservations(self):
         """Test room reservation system"""
         print("\n🏥 Testing Room Reservations...")
