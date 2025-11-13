@@ -937,6 +937,27 @@ const CongeManager = () => {
             </DialogHeader>
             
             <form onSubmit={handleCreateDemande} className="space-y-4">
+              {user?.role === 'Directeur' && (
+                <div className="space-y-2">
+                  <Label htmlFor="utilisateur">Employé concerné *</Label>
+                  <Select
+                    value={newDemande.utilisateur_id}
+                    onValueChange={(value) => setNewDemande({...newDemande, utilisateur_id: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez un employé" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users.map(u => (
+                        <SelectItem key={u.id} value={u.id}>
+                          {u.prenom} {u.nom} - {u.role}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="date_debut">Date de début *</Label>
