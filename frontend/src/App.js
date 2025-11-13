@@ -802,7 +802,19 @@ const CongeManager = () => {
 
   useEffect(() => {
     fetchDemandes();
-  }, []);
+    if (user?.role === 'Directeur') {
+      fetchUsers();
+    }
+  }, [user]);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get(`${API}/users`);
+      setUsers(response.data.filter(u => u.actif));
+    } catch (error) {
+      console.error('Erreur lors du chargement des utilisateurs');
+    }
+  };
 
   const fetchDemandes = async () => {
     try {
