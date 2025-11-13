@@ -7849,6 +7849,47 @@ const MonProfilManager = () => {
         </Card>
       )}
 
+
+      {/* Modal de modification du profil (Nom et Prénom) */}
+      <Dialog open={showProfileModal} onOpenChange={setShowProfileModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier mon profil</DialogTitle>
+            <DialogDescription>
+              Modifiez votre nom et prénom
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Prénom</Label>
+              <Input
+                type="text"
+                placeholder="Votre prénom"
+                value={profileData.prenom}
+                onChange={(e) => setProfileData({...profileData, prenom: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label>Nom</Label>
+              <Input
+                type="text"
+                placeholder="Votre nom"
+                value={profileData.nom}
+                onChange={(e) => setProfileData({...profileData, nom: e.target.value})}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowProfileModal(false)}>
+                Annuler
+              </Button>
+              <Button onClick={handleUpdateProfile}>
+                Enregistrer
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Modal de modification d'email */}
       <Dialog open={showEmailModal} onOpenChange={setShowEmailModal}>
         <DialogContent>
