@@ -8115,7 +8115,7 @@ const Dashboard = () => {
 
     // Ajouter demandes de travail pour médecins et directeur
     if (user?.role === 'Médecin' || user?.role === 'Directeur') {
-      items.splice(4, 0, { id: 'demandes-travail', label: 'Demandes de Travail', icon: CalendarDays });
+      items.splice(4, 0, { id: 'demandes-travail', label: 'Demandes Travail', icon: CalendarDays });
     }
 
     // Plan Cabinet visible à tous les utilisateurs
