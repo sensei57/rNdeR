@@ -1934,6 +1934,26 @@ const PlanningManager = () => {
     });
   };
 
+  // Récupérer les assistants assignés à un médecin
+  const getAssistantsForMedecin = (medecinId) => {
+    if (!assignations || assignations.length === 0) return [];
+    
+    return assignations
+      .filter(a => a.medecin_id === medecinId && a.actif)
+      .map(a => a.assistant)
+      .filter(a => a); // Filtrer les undefined
+  };
+
+  // Récupérer les médecins assignés à un assistant
+  const getMedecinsForAssistant = (assistantId) => {
+    if (!assignations || assignations.length === 0) return [];
+    
+    return assignations
+      .filter(a => a.assistant_id === assistantId && a.actif)
+      .map(a => a.medecin)
+      .filter(m => m); // Filtrer les undefined
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
