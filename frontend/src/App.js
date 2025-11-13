@@ -2933,6 +2933,50 @@ const PlanningManager = () => {
                 </div>
               </div>
               
+              <div className="space-y-3">
+                <Label className="text-base font-medium">Horaires types (pour Secrétaires)</Label>
+                <p className="text-sm text-gray-500">Ces horaires seront appliqués automatiquement aux secrétaires</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Heure de début</Label>
+                    <Input
+                      type="time"
+                      value={newSemaineType.horaire_debut}
+                      onChange={(e) => setNewSemaineType({...newSemaineType, horaire_debut: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Fin du matin (début pause)</Label>
+                    <Input
+                      type="time"
+                      value={newSemaineType.horaire_pause_debut}
+                      onChange={(e) => setNewSemaineType({...newSemaineType, horaire_pause_debut: e.target.value})}
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Reprise après-midi (fin pause)</Label>
+                    <Input
+                      type="time"
+                      value={newSemaineType.horaire_pause_fin}
+                      onChange={(e) => setNewSemaineType({...newSemaineType, horaire_pause_fin: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Fin de journée</Label>
+                    <Input
+                      type="time"
+                      value={newSemaineType.horaire_fin}
+                      onChange={(e) => setNewSemaineType({...newSemaineType, horaire_fin: e.target.value})}
+                    />
+                  </div>
+                </div>
+              </div>
+              
               <div className="flex justify-end space-x-2 pt-4">
                 <Button
                   type="button"
