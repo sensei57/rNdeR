@@ -1219,6 +1219,11 @@ const SallesManager = () => {
                   <span>Nouvelle Salle</span>
                 </Button>
               </DialogTrigger>
+            </Dialog>
+          </div>
+        )}
+
+        <Dialog open={showSalleModal} onOpenChange={setShowSalleModal}>
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>
