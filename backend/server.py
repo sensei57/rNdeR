@@ -101,6 +101,8 @@ class CreneauPlanning(BaseModel):
     salle_attente: Optional[str] = None  # Salle d'attente associée
     horaire_debut: Optional[str] = None  # Pour secrétaires : "08:00"
     horaire_fin: Optional[str] = None  # Pour secrétaires : "17:00"
+    horaire_pause_debut: Optional[str] = None  # Pour secrétaires : heure de fin du matin "12:00"
+    horaire_pause_fin: Optional[str] = None  # Pour secrétaires : heure de reprise après-midi "14:00"
     notes: Optional[str] = None
     date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
