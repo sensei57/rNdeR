@@ -1416,8 +1416,6 @@ const SallesManager = () => {
           )}
         </DialogContent>
       </Dialog>
-          </div>
-        )}
 
       {/* Liste des salles */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
