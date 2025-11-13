@@ -5517,6 +5517,35 @@ const StocksManager = () => {
     }
   };
 
+  const handleSavePermission = async (e) => {
+    e.preventDefault();
+    
+    if (!selectedPermission.utilisateur_id) {
+      toast.error('Veuillez sélectionner un utilisateur');
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/stocks/permissions`, selectedPermission);
+      toast.success('Permission enregistrée avec succès');
+      setShowPermissionModal(false);
+      setSelectedPermission({
+        utilisateur_id: '',
+        peut_voir: true,
+        peut_modifier: false,
+        peut_ajouter: false,
+        peut_supprimer: false
+      });
+      fetchData();
+    } catch (error) {
+      toast.error('Erreur lors de l\'enregistrement de la permission');
+    }
+  };
+
+  const getPermissionForUser = (userId) => {
+    return permissions.find(p => p.utilisateur_id === userId);
+  };
+
   const handleEditArticle = (article) => {
     setEditingArticle(article);
     setNewArticle({
