@@ -893,8 +893,9 @@ async def create_demande_conge(
     await db.demandes_conges.insert_one(demande.dict())
     
     # 📤 NOTIFICATION : Nouvelle demande de congé
-    # Si ce n'est pas le directeur qui crée la demande, notifier le directeur
-    if current_user.role != ROLES["DIRECTEUR"]:
+    # Notifier le directeur SEULEMENT pour les demandes des Assistants et Secrétaires
+    if (current_user.role != ROLES["DIRECTEUR"] and 
+        current_user.role in [ROLES["ASSISTANT"], ROLES["SECRETAIRE"]]):
         user_name = f"{current_user.prenom} {current_user.nom}"
         dates = f"{demande.date_debut} au {demande.date_fin}"
         creneau_text = "Journée complète" if demande.creneau == "JOURNEE_COMPLETE" else demande.creneau.lower()
