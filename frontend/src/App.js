@@ -3124,6 +3124,16 @@ const PlanningManager = () => {
                   filterRole.includes(u.role) && isEmployeEnConge(u.id, date)
                 );
                 
+                // Trouver les employés avec demande de travail en attente (matin)
+                const employesDemandeMatinEnAttente = users.filter(u => 
+                  filterRole.includes(u.role) && hasDemandeEnAttente(u.id, date, 'MATIN')
+                );
+                
+                // Trouver les employés avec demande de travail en attente (après-midi)
+                const employesDemandeApresMidiEnAttente = users.filter(u => 
+                  filterRole.includes(u.role) && hasDemandeEnAttente(u.id, date, 'APRES_MIDI')
+                );
+                
                 return (
                   <div key={date} className="space-y-2">
                     {/* Matin */}
