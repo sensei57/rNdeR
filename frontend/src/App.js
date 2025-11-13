@@ -1244,13 +1244,18 @@ const CongeManager = () => {
   const getFilteredDemandes = () => {
     let filtered = [...demandes];
     
+    // Si l'utilisateur n'est PAS Directeur, ne montrer que ses propres congés
+    if (user?.role !== 'Directeur') {
+      filtered = filtered.filter(d => d.utilisateur_id === user.id);
+    }
+    
     // Filtrer par statut
     if (filterStatut !== 'TOUT') {
       filtered = filtered.filter(d => d.statut === filterStatut);
     }
     
-    // Filtrer par employé
-    if (filterEmploye !== 'TOUS') {
+    // Filtrer par employé (seulement pour le Directeur)
+    if (filterEmploye !== 'TOUS' && user?.role === 'Directeur') {
       filtered = filtered.filter(d => d.utilisateur_id === filterEmploye);
     }
     
