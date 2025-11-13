@@ -2287,25 +2287,54 @@ const PlanningManager = () => {
                     
                     {/* Horaires pour secrétaires */}
                     {users.find(u => u.id === newCreneau.employe_id)?.role === 'Secrétaire' && (
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Heure de début</Label>
-                          <Input
-                            type="time"
-                            value={newCreneau.horaire_debut}
-                            onChange={(e) => setNewCreneau({...newCreneau, horaire_debut: e.target.value})}
-                          />
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Heure de début</Label>
+                            <Input
+                              type="time"
+                              value={newCreneau.horaire_debut}
+                              onChange={(e) => setNewCreneau({...newCreneau, horaire_debut: e.target.value})}
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label>Heure de fin</Label>
+                            <Input
+                              type="time"
+                              value={newCreneau.horaire_fin}
+                              onChange={(e) => setNewCreneau({...newCreneau, horaire_fin: e.target.value})}
+                            />
+                          </div>
                         </div>
                         
-                        <div className="space-y-2">
-                          <Label>Heure de fin</Label>
-                          <Input
-                            type="time"
-                            value={newCreneau.horaire_fin}
-                            onChange={(e) => setNewCreneau({...newCreneau, horaire_fin: e.target.value})}
-                          />
-                        </div>
-                      </div>
+                        {/* Horaires de pause (si journée complète) */}
+                        {newCreneau.creneau === 'JOURNEE' && (
+                          <div className="grid grid-cols-2 gap-4 mt-2">
+                            <div className="space-y-2">
+                              <Label>Fin du matin (début pause)</Label>
+                              <Input
+                                type="time"
+                                value={newCreneau.horaire_pause_debut}
+                                onChange={(e) => setNewCreneau({...newCreneau, horaire_pause_debut: e.target.value})}
+                                placeholder="12:00"
+                              />
+                              <p className="text-xs text-gray-500">Ex: 12:00</p>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label>Reprise après-midi (fin pause)</Label>
+                              <Input
+                                type="time"
+                                value={newCreneau.horaire_pause_fin}
+                                onChange={(e) => setNewCreneau({...newCreneau, horaire_pause_fin: e.target.value})}
+                                placeholder="14:00"
+                              />
+                              <p className="text-xs text-gray-500">Ex: 14:00</p>
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
                     
                     <div className="space-y-2">
