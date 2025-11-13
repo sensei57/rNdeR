@@ -392,7 +392,9 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Demandes de Travail - Création et récupération (POST/GET /api/demandes-travail)"
+    - "Planning Semaine - Endpoint récupération (GET /api/planning/semaine/{date})"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
