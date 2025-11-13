@@ -2884,6 +2884,10 @@ async def toggle_user_active(
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     
+    # Protection: Empêcher la désactivation du compte super admin
+    if user.get('is_protected', False):
+        raise HTTPException(status_code=403, detail="Ce compte est protégé et ne peut pas être désactivé")
+    
     new_status = not user.get('actif', True)
     
     result = await db.users.update_one(
