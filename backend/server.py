@@ -3035,14 +3035,18 @@ async def create_permission_stock(
 
 # ==================== ENDPOINT D'INITIALISATION ====================
 # Endpoint spécial pour initialiser la base de données en production
+class InitDatabaseRequest(BaseModel):
+    secret_token: str
+
 @api_router.post("/init-database")
-async def initialize_database(secret_token: str):
+async def initialize_database(request: InitDatabaseRequest):
     """
     Endpoint pour initialiser la base de données en production.
     Peut être appelé une seule fois. Nécessite un token secret.
     
     Usage: POST /api/init-database avec {"secret_token": "votre-token-secret"}
     """
+    secret_token = request.secret_token
     # Vérifier le token secret
     expected_token = os.environ.get('INIT_SECRET_TOKEN', 'init-medical-cabinet-2025')
     if secret_token != expected_token:
