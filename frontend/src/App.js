@@ -4057,6 +4057,8 @@ const DemandesTravailManager = () => {
   const [semainesTypes, setSemainesTypes] = useState([]);
   const [medecins, setMedecins] = useState([]);
   const [medecinSelectionne, setMedecinSelectionne] = useState('');
+  const [filterStatut, setFilterStatut] = useState('TOUT'); // TOUT, EN_ATTENTE, APPROUVEE
+  const [filterMedecin, setFilterMedecin] = useState('TOUS'); // TOUS ou ID d'un médecin
   const [showDemandeModal, setShowDemandeModal] = useState(false);
   const [showSemaineTypeModal, setShowSemaineTypeModal] = useState(false);
   const [configuration, setConfiguration] = useState(null);
