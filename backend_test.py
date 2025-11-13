@@ -339,6 +339,244 @@ class MedicalStaffAPITester:
                 token=self.tokens['directeur']
             )
 
+    def test_half_day_leave_management(self):
+        """Test half-day leave management system - NEW FEATURE"""
+        print("\n🌅 Testing Half-Day Leave Management (NEW FEATURE)...")
+        
+        created_requests = []
+        marie_dupont_id = None
+        
+        # First, get all users to find Marie Dupont's ID
+        if 'directeur' in self.tokens:
+            success, users_data = self.run_test(
+                "Get users to find Marie Dupont",
+                "GET",
+                "users",
+                200,
+                token=self.tokens['directeur']
+            )
+            
+            if success:
+                for user in users_data:
+                    if user.get('email') == 'dr.dupont@cabinet.fr' or (user.get('prenom') == 'Marie' and user.get('nom') == 'Dupont'):
+                        marie_dupont_id = user['id']
+                        print(f"   Found Marie Dupont ID: {marie_dupont_id}")
+                        break
+                
+                if not marie_dupont_id:
+                    print("   ⚠️  Marie Dupont not found, using first médecin")
+                    medecins = [u for u in users_data if u['role'] == 'Médecin']
+                    if medecins:
+                        marie_dupont_id = medecins[0]['id']
+                        print(f"   Using {medecins[0]['prenom']} {medecins[0]['nom']} ID: {marie_dupont_id}")
+        
+        # TEST 1 - Création de demande de congé pour un employé (Directeur)
+        if 'directeur' in self.tokens and marie_dupont_id:
+            print(f"\n   TEST 1 - Director creates leave request for employee...")
+            
+            leave_data = {
+                "utilisateur_id": marie_dupont_id,
+                "date_debut": "2025-01-20",
+                "date_fin": "2025-01-20",
+                "type_conge": "CONGE_PAYE",
+                "creneau": "MATIN",
+                "motif": "Test demi-journée matin"
+            }
+            
+            success, response = self.run_test(
+                "Create morning half-day leave for employee (Director)",
+                "POST",
+                "conges",
+                200,
+                data=leave_data,
+                token=self.tokens['directeur']
+            )
+            
+            if success and 'id' in response:
+                created_requests.append({
+                    'id': response['id'],
+                    'utilisateur_id': marie_dupont_id,
+                    'creneau': 'MATIN',
+                    'type': 'CONGE_PAYE'
+                })
+                print(f"   ✓ Created morning half-day leave request")
+                print(f"   - Request ID: {response['id']}")
+                print(f"   - User ID: {response.get('utilisateur_id', 'N/A')}")
+                print(f"   - Slot: {response.get('creneau', 'N/A')}")
+                print(f"   - Status: {response.get('statut', 'N/A')}")
+            else:
+                print(f"   ❌ Failed to create morning half-day leave request")
+        
+        # TEST 2 - Récupération des demandes
+        if 'directeur' in self.tokens:
+            print(f"\n   TEST 2 - Retrieve leave requests...")
+            
+            success, demandes = self.run_test(
+                "Get all leave requests (Director)",
+                "GET",
+                "conges",
+                200,
+                token=self.tokens['directeur']
+            )
+            
+            if success:
+                print(f"   ✓ Retrieved {len(demandes)} leave requests")
+                
+                # Find our created request
+                for demande in demandes:
+                    if demande.get('id') in [req['id'] for req in created_requests]:
+                        print(f"   - Found created request:")
+                        print(f"     * ID: {demande.get('id')}")
+                        print(f"     * User ID: {demande.get('utilisateur_id')}")
+                        print(f"     * Slot: {demande.get('creneau', 'N/A')}")
+                        print(f"     * Status: {demande.get('statut', 'N/A')}")
+                        print(f"     * Type: {demande.get('type_conge', 'N/A')}")
+                        
+                        # Verify correct data
+                        if (demande.get('utilisateur_id') == marie_dupont_id and 
+                            demande.get('creneau') == 'MATIN' and 
+                            demande.get('statut') == 'EN_ATTENTE'):
+                            print(f"   ✓ Request has correct user_id, slot, and status")
+                        else:
+                            print(f"   ❌ Request data mismatch")
+        
+        # TEST 3 - Approbation de la demande
+        if 'directeur' in self.tokens and created_requests:
+            print(f"\n   TEST 3 - Approve leave request...")
+            
+            request_id = created_requests[0]['id']
+            approval_data = {
+                "approuve": True,
+                "commentaire": "Approved for half-day testing"
+            }
+            
+            success, response = self.run_test(
+                "Approve half-day leave request",
+                "PUT",
+                f"conges/{request_id}/approuver",
+                200,
+                data=approval_data,
+                token=self.tokens['directeur']
+            )
+            
+            if success:
+                print(f"   ✓ Successfully approved half-day leave request")
+                created_requests[0]['status'] = 'APPROUVE'
+            else:
+                print(f"   ❌ Failed to approve half-day leave request")
+        
+        # TEST 4 - Vérification que seuls les congés approuvés sont retournés pour le planning
+        if 'directeur' in self.tokens:
+            print(f"\n   TEST 4 - Verify only approved leaves for planning...")
+            
+            success, all_demandes = self.run_test(
+                "Get all leave requests for planning check",
+                "GET",
+                "conges",
+                200,
+                token=self.tokens['directeur']
+            )
+            
+            if success:
+                approved_leaves = [d for d in all_demandes if d.get('statut') == 'APPROUVE']
+                pending_leaves = [d for d in all_demandes if d.get('statut') == 'EN_ATTENTE']
+                
+                print(f"   ✓ Found {len(approved_leaves)} approved leaves")
+                print(f"   ✓ Found {len(pending_leaves)} pending leaves")
+                
+                # Check if our approved request is in the approved list
+                our_approved = [d for d in approved_leaves if d.get('id') in [req['id'] for req in created_requests if req.get('status') == 'APPROUVE']]
+                if our_approved:
+                    print(f"   ✓ Our approved half-day request is correctly in approved list")
+                    for req in our_approved:
+                        print(f"     * ID: {req.get('id')}, Slot: {req.get('creneau')}, Status: {req.get('statut')}")
+                else:
+                    print(f"   ⚠️  Our approved request not found in approved list")
+        
+        # TEST 5 - Test avec demi-journée après-midi
+        if 'directeur' in self.tokens and marie_dupont_id:
+            print(f"\n   TEST 5 - Create afternoon half-day leave...")
+            
+            afternoon_leave_data = {
+                "utilisateur_id": marie_dupont_id,
+                "date_debut": "2025-01-21",
+                "date_fin": "2025-01-21",
+                "type_conge": "CONGE_PAYE",
+                "creneau": "APRES_MIDI",
+                "motif": "Test demi-journée après-midi"
+            }
+            
+            success, response = self.run_test(
+                "Create afternoon half-day leave",
+                "POST",
+                "conges",
+                200,
+                data=afternoon_leave_data,
+                token=self.tokens['directeur']
+            )
+            
+            if success and 'id' in response:
+                created_requests.append({
+                    'id': response['id'],
+                    'utilisateur_id': marie_dupont_id,
+                    'creneau': 'APRES_MIDI',
+                    'type': 'CONGE_PAYE'
+                })
+                print(f"   ✓ Created afternoon half-day leave request")
+                print(f"   - Request ID: {response['id']}")
+                print(f"   - Slot: {response.get('creneau', 'N/A')}")
+                
+                # Approve this request too
+                request_id = response['id']
+                approval_data = {
+                    "approuve": True,
+                    "commentaire": "Approved afternoon half-day for testing"
+                }
+                
+                success_approve, approve_response = self.run_test(
+                    "Approve afternoon half-day leave",
+                    "PUT",
+                    f"conges/{request_id}/approuver",
+                    200,
+                    data=approval_data,
+                    token=self.tokens['directeur']
+                )
+                
+                if success_approve:
+                    print(f"   ✓ Successfully approved afternoon half-day leave")
+                    created_requests[-1]['status'] = 'APPROUVE'
+        
+        # Final verification - Check both morning and afternoon requests
+        if 'directeur' in self.tokens:
+            print(f"\n   FINAL VERIFICATION - Both half-day requests...")
+            
+            success, final_demandes = self.run_test(
+                "Final check of all leave requests",
+                "GET",
+                "conges",
+                200,
+                token=self.tokens['directeur']
+            )
+            
+            if success:
+                our_requests = [d for d in final_demandes if d.get('id') in [req['id'] for req in created_requests]]
+                morning_requests = [d for d in our_requests if d.get('creneau') == 'MATIN']
+                afternoon_requests = [d for d in our_requests if d.get('creneau') == 'APRES_MIDI']
+                
+                print(f"   ✓ Found {len(morning_requests)} morning half-day requests")
+                print(f"   ✓ Found {len(afternoon_requests)} afternoon half-day requests")
+                
+                for req in our_requests:
+                    print(f"   - {req.get('creneau')} request: Status={req.get('statut')}, Date={req.get('date_debut')}")
+                
+                if len(morning_requests) >= 1 and len(afternoon_requests) >= 1:
+                    print(f"   ✅ HALF-DAY LEAVE SYSTEM WORKING CORRECTLY!")
+                    print(f"   ✅ Both morning and afternoon half-day requests created and managed successfully")
+                else:
+                    print(f"   ⚠️  Missing some half-day requests")
+        
+        return created_requests
+
     def test_room_reservations(self):
         """Test room reservation system"""
         print("\n🏥 Testing Room Reservations...")
