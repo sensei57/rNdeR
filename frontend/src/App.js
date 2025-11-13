@@ -1518,6 +1518,7 @@ const PlanningManager = () => {
   const [assistants, setAssistants] = useState([]);
   const [congesApprouves, setCongesApprouves] = useState([]);
   const [assignations, setAssignations] = useState([]);
+  const [demandesTravail, setDemandesTravail] = useState([]);
   const [planningSemaine, setPlanningSemaine] = useState(null);
   const [showPlanningModal, setShowPlanningModal] = useState(false);
   const [showEditCreneauModal, setShowEditCreneauModal] = useState(false);
