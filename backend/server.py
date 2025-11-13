@@ -1032,6 +1032,30 @@ async def update_my_password(
     
     return {"message": "Mot de passe mis à jour avec succès"}
 
+@api_router.put("/users/me/profile")
+async def update_my_profile(
+    profile_data: Dict[str, str],
+    current_user: User = Depends(get_current_user)
+):
+    """Permet à un utilisateur de changer son nom et prénom"""
+    prenom = profile_data.get('prenom', '').strip()
+    nom = profile_data.get('nom', '').strip()
+    
+    if not prenom or not nom:
+        raise HTTPException(status_code=400, detail="Le prénom et le nom sont requis")
+    
+    if len(prenom) < 2 or len(nom) < 2:
+        raise HTTPException(status_code=400, detail="Le prénom et le nom doivent contenir au moins 2 caractères")
+    
+    # Mettre à jour le profil
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$set": {"prenom": prenom, "nom": nom}}
+    )
+    
+    return {"message": "Profil mis à jour avec succès", "prenom": prenom, "nom": nom}
+
+
 @api_router.put("/users/{user_id}", response_model=User)
 async def update_user(
     user_id: str,
