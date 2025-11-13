@@ -4379,6 +4379,43 @@ def quick_main():
         
         return successful_logins
 
+def profile_modification_main():
+    """Run only profile modification tests as requested"""
+    print("👤 PROFILE MODIFICATION API TEST - SPECIFIC REQUEST")
+    print("Testing PUT /api/users/me/profile endpoint with all validation scenarios...")
+    print("=" * 70)
+    
+    tester = MedicalStaffAPITester()
+    
+    # Test authentication for director
+    print("\n🔐 Testing Director Authentication...")
+    if not tester.test_login('directeur', 'directeur@cabinet.fr', 'admin123'):
+        print("❌ Director login failed. Cannot proceed with profile modification tests.")
+        return 1
+    
+    print(f"\n✅ Successfully authenticated Director!")
+    
+    # Run profile modification tests
+    tester.test_profile_modification()
+    
+    # Print final results
+    print(f"\n" + "="*60)
+    print(f"📊 PROFILE MODIFICATION TEST RESULTS")
+    print(f"="*60)
+    print(f"Tests run: {tester.tests_run}")
+    print(f"Tests passed: {tester.tests_passed}")
+    print(f"Success rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    
+    if tester.tests_passed == tester.tests_run:
+        print("🎉 ALL PROFILE MODIFICATION TESTS PASSED!")
+        print("✅ API Modification Profil Utilisateur is working correctly!")
+        return 0
+    else:
+        failed_tests = tester.tests_run - tester.tests_passed
+        print(f"❌ {failed_tests} profile modification tests failed")
+        print(f"⚠️  Check the failed tests above for issues that need to be addressed")
+        return 1
+
 def urgent_authentication_main():
     """Run only urgent authentication tests"""
     tester = MedicalStaffAPITester()
