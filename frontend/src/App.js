@@ -3688,6 +3688,7 @@ const PlanningManager = () => {
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                     {users.filter(u => u.role === 'Secrétaire' && u.actif).map(secretaire => {
                       const heures = calculateHeures(secretaire.id, planningSemaine.dates);
+                      const conges = calculateConges(secretaire.id, planningSemaine.dates);
                       return (
                         <div key={secretaire.id} className="bg-purple-50 border border-purple-200 rounded p-2">
                           <div className="text-sm font-medium text-gray-800">
@@ -3696,6 +3697,11 @@ const PlanningManager = () => {
                           <div className="text-lg font-bold text-purple-600">
                             {heures}h
                           </div>
+                          {conges > 0 && (
+                            <div className="text-xs text-red-600 font-medium mt-1">
+                              🔴 {conges} {conges === 1 ? 'jour' : 'jours'} de congé
+                            </div>
+                          )}
                         </div>
                       );
                     })}
