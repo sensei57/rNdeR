@@ -3416,6 +3416,56 @@ async def add_super_admin(request: InitDatabaseRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 
+
+@api_router.post("/reset-user-password")
+async def reset_user_password(request: dict):
+    """
+    Réinitialise le mot de passe d'un utilisateur spécifique.
+    Nécessite un token de sécurité.
+    """
+    email = request.get("email")
+    new_password = request.get("new_password")
+    secret_token = request.get("secret_token")
+    
+    if secret_token != "reset-password-2025-secure":
+        raise HTTPException(status_code=403, detail="Token invalide")
+    
+    if not email or not new_password:
+        raise HTTPException(status_code=400, detail="Email et nouveau mot de passe requis")
+    
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Le mot de passe doit contenir au moins 6 caractères")
+    
+    try:
+        # Trouver l'utilisateur
+        user = await db.users.find_one({"email": email})
+        if not user:
+            raise HTTPException(status_code=404, detail=f"Utilisateur {email} non trouvé")
+        
+        # Mettre à jour le mot de passe
+        new_hash = get_password_hash(new_password)
+        result = await db.users.update_one(
+            {"email": email},
+            {"$set": {"password_hash": new_hash}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=500, detail="Échec de la mise à jour")
+        
+        return {
+            "message": f"✅ Mot de passe réinitialisé avec succès pour {email}",
+            "email": email,
+            "new_password": new_password,
+            "nom": user.get("nom"),
+            "prenom": user.get("prenom")
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+
 @api_router.post("/force-init-database")
 async def force_initialize_database(request: InitDatabaseRequest):
     """
