@@ -796,8 +796,14 @@ async def get_demandes_conges(current_user: User = Depends(get_current_user)):
 async def approuver_demande_conge(
     demande_id: str,
     request: ApprobationRequest,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
 ):
+    # Récupérer la demande pour avoir les infos utilisateur
+    demande = await db.demandes_conges.find_one({"id": demande_id})
+    if not demande:
+        raise HTTPException(status_code=404, detail="Demande non trouvée")
+    
     statut = "APPROUVE" if request.approuve else "REJETE"
     update_data = {
         "statut": statut,
@@ -809,6 +815,16 @@ async def approuver_demande_conge(
     result = await db.demandes_conges.update_one({"id": demande_id}, {"$set": update_data})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Demande non trouvée")
+    
+    # 📤 NOTIFICATION : Statut de la demande de congé
+    dates = f"{demande['date_debut']} au {demande['date_fin']}"
+    background_tasks.add_task(
+        notify_user_request_status,
+        demande["utilisateur_id"],
+        "Demande de congé",
+        statut,
+        dates
+    )
     
     return {"message": f"Demande {statut.lower()}e avec succès"}
 
