@@ -1808,17 +1808,20 @@ const PlanningManager = () => {
       
       if (user?.role === 'Directeur') {
         // Vue globale pour le directeur
-        const [usersRes, sallesRes, planningRes, congesRes] = await Promise.all([
+        const [usersRes, sallesRes, planningRes, congesRes, demandesTravailRes] = await Promise.all([
           axios.get(`${API}/users`),
           axios.get(`${API}/salles`),
           axios.get(`${API}/planning/semaine/${mondayStr}`),
-          axios.get(`${API}/conges`)
+          axios.get(`${API}/conges`),
+          axios.get(`${API}/demandes-travail`)
         ]);
         
         setUsers(usersRes.data.filter(u => u.actif));
         setSalles(sallesRes.data);
         // Filtrer uniquement les congés approuvés
         setCongesApprouves(congesRes.data.filter(c => c.statut === 'APPROUVE'));
+        // Charger les demandes de travail pour afficher les demandes en attente
+        setDemandesTravail(demandesTravailRes.data);
         
         // Vérifier que la structure est correcte
         if (planningRes.data && planningRes.data.dates && planningRes.data.planning) {
