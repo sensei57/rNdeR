@@ -1671,42 +1671,22 @@ const PlanningManager = () => {
 
   const fetchData = async () => {
     try {
-      if (user?.role === 'Directeur') {
-        // Directeur voit tous les utilisateurs
-        const [usersRes, medecinRes, assistantRes, sallesRes, semainesTypesRes, congesRes] = await Promise.all([
-          axios.get(`${API}/users`),
-          axios.get(`${API}/users/by-role/Médecin`),
-          axios.get(`${API}/users/by-role/Assistant`),
-          axios.get(`${API}/salles`),
-          axios.get(`${API}/semaines-types`),
-          axios.get(`${API}/conges`)
-        ]);
-        
-        setUsers(usersRes.data);
-        setMedecins(medecinRes.data);
-        setAssistants(assistantRes.data);
-        setSalles(sallesRes.data);
-        setSemainesTypes(semainesTypesRes.data);
-        setCongesApprouves(congesRes.data);
-      } else {
-        // Les autres ne voient que les données pertinentes
-        setUsers([user]); // Seulement eux-mêmes dans la liste
-        
-        if (user?.role === 'Assistant') {
-          // Assistant voit les médecins avec qui il travaille
-          const assignationsRes = await axios.get(`${API}/assignations`);
-          const myAssignations = assignationsRes.data.filter(a => a.assistant_id === user.id);
-          const medecinIds = myAssignations.map(a => a.medecin_id);
-          
-          const medecinRes = await axios.get(`${API}/users/by-role/Médecin`);
-          const myMedecins = medecinRes.data.filter(m => medecinIds.includes(m.id));
-          setMedecins(myMedecins);
-          setAssistants([user]); // Seulement lui-même
-        } else {
-          setMedecins(user?.role === 'Médecin' ? [user] : []);
-          setAssistants([]);
-        }
-      }
+      // Tous les utilisateurs voient toutes les données (personnel et salles)
+      const [usersRes, medecinRes, assistantRes, sallesRes, semainesTypesRes, congesRes] = await Promise.all([
+        axios.get(`${API}/users`),
+        axios.get(`${API}/users/by-role/Médecin`),
+        axios.get(`${API}/users/by-role/Assistant`),
+        axios.get(`${API}/salles`),
+        axios.get(`${API}/semaines-types`),
+        axios.get(`${API}/conges`)
+      ]);
+      
+      setUsers(usersRes.data);
+      setMedecins(medecinRes.data);
+      setAssistants(assistantRes.data);
+      setSalles(sallesRes.data);
+      setSemainesTypes(semainesTypesRes.data);
+      setCongesApprouves(congesRes.data);
     } catch (error) {
       toast.error('Erreur lors du chargement des données');
     } finally {
