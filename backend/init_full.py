@@ -35,8 +35,8 @@ async def init_full_database():
                 "id": str(uuid.uuid4()),
                 "email": "directeur@cabinet.fr",
                 "password_hash": pwd_context.hash("admin123"),
-                "nom": "Martin",
-                "prenom": "Pierre",
+                "nom": "LEBLOND",
+                "prenom": "Francis",
                 "role": "Directeur",
                 "actif": True,
                 "date_creation": datetime.now(timezone.utc)
