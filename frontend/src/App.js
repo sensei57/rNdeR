@@ -1499,9 +1499,11 @@ const SallesManager = () => {
             <CardContent className="text-center py-8">
               <Building2 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
               <p className="text-gray-500 mb-4">Aucune salle configurée</p>
-              <Button onClick={initialiserCabinet} variant="outline">
-                Initialiser le Cabinet avec des Salles par Défaut
-              </Button>
+              {user?.role === 'Directeur' && (
+                <Button onClick={initialiserCabinet} variant="outline">
+                  Initialiser le Cabinet avec des Salles par Défaut
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}
