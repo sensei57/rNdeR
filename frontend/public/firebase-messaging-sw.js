@@ -2,35 +2,35 @@
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAyFIWDwfSGmcLzfPpPL_qo1w5Vxm6ctS4",
-  authDomain: "cabinet-medical-ope.firebaseapp.com",
-  projectId: "cabinet-medical-ope",
-  storageBucket: "cabinet-medical-ope.firebasestorage.app",
-  messagingSenderId: "752001506338",
-  appId: "1:752001506338:web:2eb60761bd9d7c00973e7b"
-};
+// Configuration Firebase depuis variables d'environnement via fetch
+// Note: Service Workers ne peuvent pas accéder à process.env directement
+fetch('/firebase-config.json')
+  .then(response => response.json())
+  .then(firebaseConfig => {
+    firebase.initializeApp(firebaseConfig);
 
-firebase.initializeApp(firebaseConfig);
+    const messaging = firebase.messaging();
 
-const messaging = firebase.messaging();
+    // Handle background messages
+    messaging.onBackgroundMessage((payload) => {
+      console.log('Background message received:', payload);
+      
+      const notificationTitle = payload.notification?.title || 'Cabinet Medical';
+      const notificationOptions = {
+        body: payload.notification?.body || payload.data?.body,
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        tag: 'cabinet-notification',
+        requireInteraction: true,
+        data: payload.data || {}
+      };
 
-// Handle background messages
-messaging.onBackgroundMessage((payload) => {
-  console.log('Background message received:', payload);
-  
-  const notificationTitle = payload.notification?.title || 'Cabinet Medical';
-  const notificationOptions = {
-    body: payload.notification?.body || payload.data?.body,
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
-    tag: 'cabinet-notification',
-    requireInteraction: true,
-    data: payload.data || {}
-  };
-
-  self.registration.showNotification(notificationTitle, notificationOptions);
-});
+      self.registration.showNotification(notificationTitle, notificationOptions);
+    });
+  })
+  .catch(error => {
+    console.error('Error loading Firebase config:', error);
+  });
 
 // Handle notification clicks
 self.addEventListener('notificationclick', (event) => {
