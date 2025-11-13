@@ -830,24 +830,36 @@ const CongeManager = () => {
   const handleCreateDemande = async (e) => {
     e.preventDefault();
     
+    // Validation des champs
     if (!newDemande.date_debut || !newDemande.date_fin || !newDemande.type_conge) {
       toast.error('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    // Si Directeur, vérifier qu'un utilisateur est sélectionné
+    if (user?.role === 'Directeur' && !newDemande.utilisateur_id) {
+      toast.error('Veuillez sélectionner un employé');
       return;
     }
 
     try {
       const demandeData = {
         ...newDemande,
-        utilisateur_id: user.id
+        // Si pas Directeur ou si utilisateur_id non rempli, utiliser l'ID de l'utilisateur actuel
+        utilisateur_id: (user?.role === 'Directeur' && newDemande.utilisateur_id) 
+          ? newDemande.utilisateur_id 
+          : user.id
       };
       
       await axios.post(`${API}/conges`, demandeData);
       toast.success('Demande de congé créée avec succès');
       setShowNewDemandeModal(false);
       setNewDemande({
+        utilisateur_id: '',
         date_debut: '',
         date_fin: '',
         type_conge: '',
+        creneau: 'JOURNEE_COMPLETE',
         motif: ''
       });
       fetchDemandes();
