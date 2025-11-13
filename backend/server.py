@@ -712,6 +712,94 @@ async def subscribe_to_notifications(
         print(f"Erreur lors de l'enregistrement du token: {e}")
         raise HTTPException(status_code=500, detail="Erreur lors de l'enregistrement")
 
+# Endpoint d'initialisation pour la production (GET - simple)
+@api_router.get("/init-admin-simple")
+async def init_admin_simple():
+    """Initialise le compte administrateur via GET (pour navigateur) - PRODUCTION UNIQUEMENT"""
+    try:
+        # Vérifier s'il y a déjà des utilisateurs
+        user_count = await db.users.count_documents({})
+        
+        if user_count > 0:
+            # Récupérer le directeur existant pour afficher ses infos
+            director = await db.users.find_one({"role": "Directeur"})
+            if director:
+                return {
+                    "status": "already_initialized",
+                    "message": "🔐 Base de données déjà initialisée !",
+                    "existing_director": {
+                        "email": director.get("email"),
+                        "nom": f"{director.get('prenom')} {director.get('nom')}",
+                        "password_hint": "admin123 (si non changé)"
+                    },
+                    "users_count": user_count,
+                    "next_action": "Essayez de vous connecter avec les identifiants ci-dessus"
+                }
+            else:
+                return {
+                    "status": "users_exist_no_director",
+                    "message": f"⚠️ {user_count} utilisateurs trouvés mais pas de directeur",
+                    "users_count": user_count
+                }
+        
+        # Créer le directeur LEBLOND Francis
+        director_data = {
+            "id": str(uuid.uuid4()),
+            "email": "directeur@cabinet.fr",
+            "nom": "LEBLOND",
+            "prenom": "Francis",
+            "role": ROLES["DIRECTEUR"],
+            "mot_de_passe": bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
+            "actif": True,
+            "date_creation": datetime.now(timezone.utc)
+        }
+        
+        # Insérer le directeur
+        await db.users.insert_one(director_data)
+        
+        # Créer aussi la configuration de base
+        config_data = {
+            "id": str(uuid.uuid4()),
+            "max_medecins_par_jour": 3,
+            "heures_ouverture": {
+                "matin_debut": "09:00",
+                "matin_fin": "12:00",
+                "apres_midi_debut": "14:00",
+                "apres_midi_fin": "18:00"
+            },
+            "jours_fermeture": ["dimanche"],
+            "derniere_modification": datetime.now(timezone.utc)
+        }
+        await db.configuration.insert_one(config_data)
+        
+        return {
+            "status": "success",
+            "message": "🎉 CABINET MÉDICAL INITIALISÉ AVEC SUCCÈS !",
+            "director_created": {
+                "email": "directeur@cabinet.fr",
+                "password": "admin123",
+                "nom_complet": "Francis LEBLOND",
+                "role": "Directeur"
+            },
+            "next_steps": [
+                "✅ 1. Retournez à l'application",
+                "✅ 2. Connectez-vous avec : directeur@cabinet.fr / admin123",
+                "✅ 3. Allez dans 'Gestion Personnel' pour créer d'autres comptes",
+                "✅ 4. Changez le mot de passe dans 'Mon Profil'",
+                "✅ 5. Activez les notifications push dans 'Mon Profil'"
+            ],
+            "config_created": "Configuration de base du cabinet créée"
+        }
+        
+    except Exception as e:
+        print(f"Erreur lors de l'initialisation: {e}")
+        return {
+            "status": "error",
+            "message": f"❌ Erreur lors de l'initialisation",
+            "error": str(e),
+            "suggestion": "Contactez le support technique"
+        }
+
 # Endpoint d'initialisation pour la production
 @api_router.post("/init-admin")
 async def init_admin():
