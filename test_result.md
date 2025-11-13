@@ -551,6 +551,21 @@ frontend:
           agent: "testing"
           comment: "🎉 TEST RÉUSSI - AFFICHAGE CONGÉS EN ROUGE PARFAITEMENT FONCTIONNEL! ✅ VÉRIFICATIONS COMPLÈTES: 1) ✅ Connexion Directeur (directeur@cabinet.fr/admin123) réussie, 2) ✅ Navigation Planning Interactif → Vue Semaine réussie, 3) ✅ Navigation vers semaine 10-16 novembre 2025 (contient 11-17 nov) réussie, 4) ✅ Congés Marie Dupont affichés en ROUGE sur 3 jours (12, 13, 14 nov), 5) ✅ Style CSS PARFAIT: border-red-500 (bordure rouge épaisse) + bg-red-50 (fond rouge clair) + text-red-700 (texte rouge), 6) ✅ Contenu CORRECT: icône 🚫 + texte 'Congés' présents, 7) ✅ Affichage dans MATIN ET APRÈS-MIDI: congés visibles dans les deux sections, 8) ✅ Planning semaine fonctionnel avec 7 colonnes jours et navigation par date. 📊 RÉSULTAT: Les congés s'affichent exactement comme spécifié - bordure rouge épaisse, fond rouge clair, texte rouge, icône 🚫, mention 'Congés', visible matin et après-midi. Fonctionnalité 100% opérationnelle selon les exigences utilisateur."
 
+  - task: "Personnel - Permissions API pour tous les employés"
+    implemented: false
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "TEST - Vérifier que les employés voient tous les autres employés dans Personnel. CONTEXTE: L'utilisateur (Marie Dupont, Médecin) ne voit aucun personnel dans la section 'Gestion du Personnel'. Les compteurs montrent: Médecins (0), Assistants (0), Secrétaires (0). J'ai modifié le code pour que tous les utilisateurs voient tout le personnel. Il devrait y avoir 6 utilisateurs dans la base de données."
+        - working: false
+          agent: "testing"
+          comment: "❌ PROBLÈME CRITIQUE IDENTIFIÉ - PERMISSIONS API BACKEND! 🔍 ROOT CAUSE TROUVÉE: L'endpoint /api/users (ligne 511 backend) est restreint aux Directeurs uniquement avec require_role([DIRECTEUR]), mais le frontend (ligne 296-298) s'attend à ce que tous les utilisateurs y aient accès. ✅ TESTS COMPLETS: 1) ❌ Marie Dupont (dr.dupont@cabinet.fr): 403 Forbidden sur /api/users → Compteurs Personnel (0,0,0), 2) ✅ Directeur (directeur@cabinet.fr): 200 OK sur /api/users → Compteurs Personnel (2,2,1), 3) ✅ Base de données: 6 utilisateurs actifs confirmés (1 Directeur, 2 Médecins, 2 Assistants, 1 Secrétaire). 🎯 SOLUTION REQUISE: Modifier l'endpoint GET /api/users pour permettre l'accès à tous les utilisateurs authentifiés (get_current_user) au lieu de require_role([DIRECTEUR]). Le problème n'est PAS dans les données mais dans les permissions backend qui ne correspondent pas aux attentes frontend."
+
 agent_communication:
     - agent: "testing"
       message: "🚨 PROBLÈME CRITIQUE IDENTIFIÉ - PERMISSIONS API PERSONNEL! 🔍 ROOT CAUSE TROUVÉE: Marie Dupont (Médecin) ne peut pas voir le personnel car l'endpoint /api/users est restreint aux Directeurs uniquement, mais le frontend s'attend à ce que tous les utilisateurs y aient accès. ✅ DIAGNOSTIC COMPLET: 1) ❌ Marie Dupont: 403 Forbidden sur /api/users → Compteurs (0,0,0), 2) ✅ Directeur: 200 OK sur /api/users → Compteurs (2,2,1), 3) 🔍 Backend: require_role([DIRECTEUR]) ligne 511, 4) 🔍 Frontend: Commentaire 'Tous les utilisateurs voient tout le personnel' ligne 296. ✅ DONNÉES CONFIRMÉES: 6 utilisateurs en base (1 Directeur, 2 Médecins, 2 Assistants, 1 Secrétaire), tous actifs. 🎯 SOLUTION REQUISE: Modifier l'endpoint /api/users pour permettre l'accès à tous les utilisateurs authentifiés, pas seulement aux Directeurs. Le problème n'est PAS dans les données mais dans les permissions backend."
