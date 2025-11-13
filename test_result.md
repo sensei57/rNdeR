@@ -552,8 +552,8 @@ frontend:
           comment: "🎉 TEST RÉUSSI - AFFICHAGE CONGÉS EN ROUGE PARFAITEMENT FONCTIONNEL! ✅ VÉRIFICATIONS COMPLÈTES: 1) ✅ Connexion Directeur (directeur@cabinet.fr/admin123) réussie, 2) ✅ Navigation Planning Interactif → Vue Semaine réussie, 3) ✅ Navigation vers semaine 10-16 novembre 2025 (contient 11-17 nov) réussie, 4) ✅ Congés Marie Dupont affichés en ROUGE sur 3 jours (12, 13, 14 nov), 5) ✅ Style CSS PARFAIT: border-red-500 (bordure rouge épaisse) + bg-red-50 (fond rouge clair) + text-red-700 (texte rouge), 6) ✅ Contenu CORRECT: icône 🚫 + texte 'Congés' présents, 7) ✅ Affichage dans MATIN ET APRÈS-MIDI: congés visibles dans les deux sections, 8) ✅ Planning semaine fonctionnel avec 7 colonnes jours et navigation par date. 📊 RÉSULTAT: Les congés s'affichent exactement comme spécifié - bordure rouge épaisse, fond rouge clair, texte rouge, icône 🚫, mention 'Congés', visible matin et après-midi. Fonctionnalité 100% opérationnelle selon les exigences utilisateur."
 
   - task: "Personnel - Permissions API pour tous les employés"
-    implemented: false
-    working: false
+    implemented: true
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
@@ -565,6 +565,9 @@ frontend:
         - working: false
           agent: "testing"
           comment: "❌ PROBLÈME CRITIQUE IDENTIFIÉ - PERMISSIONS API BACKEND! 🔍 ROOT CAUSE TROUVÉE: L'endpoint /api/users (ligne 511 backend) est restreint aux Directeurs uniquement avec require_role([DIRECTEUR]), mais le frontend (ligne 296-298) s'attend à ce que tous les utilisateurs y aient accès. ✅ TESTS COMPLETS: 1) ❌ Marie Dupont (dr.dupont@cabinet.fr): 403 Forbidden sur /api/users → Compteurs Personnel (0,0,0), 2) ✅ Directeur (directeur@cabinet.fr): 200 OK sur /api/users → Compteurs Personnel (2,2,1), 3) ✅ Base de données: 6 utilisateurs actifs confirmés (1 Directeur, 2 Médecins, 2 Assistants, 1 Secrétaire). 🎯 SOLUTION REQUISE: Modifier l'endpoint GET /api/users pour permettre l'accès à tous les utilisateurs authentifiés (get_current_user) au lieu de require_role([DIRECTEUR]). Le problème n'est PAS dans les données mais dans les permissions backend qui ne correspondent pas aux attentes frontend."
+        - working: true
+          agent: "testing"
+          comment: "🎉 CORRECTION BACKEND VALIDÉE AVEC SUCCÈS! ✅ TEST COMPLET MARIE DUPONT RÉUSSI: 1) ✅ Connexion dr.dupont@cabinet.fr/medecin123 réussie, 2) ✅ Navigation section Personnel accessible, 3) ✅ Compteurs PARFAITS: Médecins (2), Assistants (2), Secrétaires (1) - exactement comme attendu, 4) ✅ API /users accessible (200 OK, 6 utilisateurs récupérés), 5) ✅ Cartes employés affichées dans tous les onglets (Dr. Marie Dupont, Dr. Jean Bernard visibles), 6) ✅ Aucune erreur 403 détectée dans le network, 7) ✅ Navigation entre onglets fonctionnelle. 🔍 VALIDATION TECHNIQUE: L'endpoint /api/users a été correctement modifié pour permettre l'accès à tous les utilisateurs authentifiés. Marie Dupont voit maintenant tous les employés comme requis. 🎯 OBJECTIF ATTEINT: La correction backend fonctionne parfaitement - tous les employés peuvent maintenant voir le personnel complet du cabinet."
 
 agent_communication:
     - agent: "testing"
