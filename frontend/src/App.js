@@ -339,6 +339,7 @@ const NotificationBadge = () => {
   const [showPanel, setShowPanel] = useState(false);
   const [demandesConges, setDemandesConges] = useState([]);
   const [demandesTravail, setDemandesTravail] = useState([]);
+  const [userNotifications, setUserNotifications] = useState([]);
 
   useEffect(() => {
     if (user?.role === 'Directeur') {
@@ -347,7 +348,24 @@ const NotificationBadge = () => {
       const interval = setInterval(fetchNotifications, 30000);
       return () => clearInterval(interval);
     }
+    
+    if (user) {
+      fetchUserNotifications();
+      // Recharger les notifications utilisateur toutes les 30 secondes
+      const interval = setInterval(fetchUserNotifications, 30000);
+      return () => clearInterval(interval);
+    }
   }, [user]);
+
+  const fetchUserNotifications = async () => {
+    try {
+      const response = await axios.get(`${API}/notifications`);
+      const unreadNotifs = response.data.filter(n => !n.read);
+      setUserNotifications(unreadNotifs);
+    } catch (error) {
+      console.error('Erreur lors du chargement des notifications utilisateur');
+    }
+  };
 
   const fetchNotifications = async () => {
     try {
@@ -370,9 +388,24 @@ const NotificationBadge = () => {
     }
   };
 
-  const totalNotifications = notifications.conges + notifications.travail;
+  const markAsRead = async (notificationId) => {
+    try {
+      await axios.put(`${API}/notifications/${notificationId}/read`);
+      fetchUserNotifications(); // Recharger
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la notification');
+    }
+  };
 
-  if (user?.role !== 'Directeur' || totalNotifications === 0) return null;
+  // Pour le directeur : notifications de nouvelles demandes
+  const totalDirectorNotifications = user?.role === 'Directeur' ? (notifications.conges + notifications.travail) : 0;
+  
+  // Pour les autres : notifications personnelles
+  const totalUserNotifications = userNotifications.length;
+  
+  const totalNotifications = totalDirectorNotifications + totalUserNotifications;
+
+  if (totalNotifications === 0) return null;
 
   return (
     <div className="relative">
@@ -389,52 +422,87 @@ const NotificationBadge = () => {
       </Button>
 
       {showPanel && (
-        <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border z-50">
+        <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border z-50 max-h-96 overflow-y-auto">
           <div className="p-4 border-b bg-gray-50">
             <h3 className="font-bold text-gray-800 flex items-center">
               <Bell className="h-5 w-5 mr-2" />
-              Demandes en attente ({totalNotifications})
+              Notifications ({totalNotifications})
             </h3>
           </div>
-          <div className="max-h-96 overflow-y-auto">
-            {/* Demandes de congés */}
-            {demandesConges.length > 0 && (
-              <div className="p-4 border-b">
-                <h4 className="font-semibold text-sm text-gray-700 mb-2">
-                  Demandes de Congés ({notifications.conges})
-                </h4>
-                <div className="space-y-2">
-                  {demandesConges.map(demande => (
-                    <div key={demande.id} className="text-sm bg-yellow-50 p-2 rounded border border-yellow-200">
-                      <p className="font-medium">{demande.utilisateur?.prenom} {demande.utilisateur?.nom}</p>
-                      <p className="text-xs text-gray-600">
-                        {new Date(demande.date_debut).toLocaleDateString('fr-FR')} - {new Date(demande.date_fin).toLocaleDateString('fr-FR')}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
-            {/* Demandes de travail */}
-            {demandesTravail.length > 0 && (
-              <div className="p-4">
-                <h4 className="font-semibold text-sm text-gray-700 mb-2">
-                  Demandes de Travail ({notifications.travail})
-                </h4>
-                <div className="space-y-2">
-                  {demandesTravail.map(demande => (
-                    <div key={demande.id} className="text-sm bg-blue-50 p-2 rounded border border-blue-200">
-                      <p className="font-medium">Dr. {demande.medecin?.prenom} {demande.medecin?.nom}</p>
-                      <p className="text-xs text-gray-600">
-                        {new Date(demande.date_demandee).toLocaleDateString('fr-FR')} - {demande.creneau === 'MATIN' ? 'Matin' : demande.creneau === 'APRES_MIDI' ? 'Après-midi' : 'Journée'}
-                      </p>
+          {/* Notifications personnelles */}
+          {userNotifications.length > 0 && (
+            <div className="p-4 border-b">
+              <h4 className="font-semibold text-sm text-gray-700 mb-2">
+                Mes notifications ({userNotifications.length})
+              </h4>
+              <div className="space-y-2">
+                {userNotifications.slice(0, 5).map(notif => (
+                  <div key={notif.id} className="text-sm bg-blue-50 p-2 rounded border border-blue-200">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-medium text-blue-900">{notif.title}</p>
+                        <p className="text-xs text-blue-700">{notif.body}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {new Date(notif.sent_at).toLocaleString('fr-FR')}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => markAsRead(notif.id)}
+                        className="text-blue-600 hover:text-blue-800 text-xs ml-2"
+                      >
+                        ✓
+                      </button>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {/* Notifications directeur */}
+          {user?.role === 'Directeur' && (
+            <>
+              {/* Demandes de congés */}
+              {demandesConges.length > 0 && (
+                <div className="p-4 border-b">
+                  <h4 className="font-semibold text-sm text-gray-700 mb-2">
+                    Demandes de Congés ({notifications.conges})
+                  </h4>
+                  <div className="space-y-2">
+                    {demandesConges.map(demande => (
+                      <div key={demande.id} className="text-sm bg-yellow-50 p-2 rounded border border-yellow-200">
+                        <p className="font-medium">{demande.utilisateur?.prenom} {demande.utilisateur?.nom}</p>
+                        <p className="text-xs text-gray-600">
+                          {new Date(demande.date_debut).toLocaleDateString('fr-FR')} - {new Date(demande.date_fin).toLocaleDateString('fr-FR')}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Demandes de travail */}
+              {demandesTravail.length > 0 && (
+                <div className="p-4">
+                  <h4 className="font-semibold text-sm text-gray-700 mb-2">
+                    Demandes de Travail ({notifications.travail})
+                  </h4>
+                  <div className="space-y-2">
+                    {demandesTravail.map(demande => (
+                      <div key={demande.id} className="text-sm bg-blue-50 p-2 rounded border border-blue-200">
+                        <p className="font-medium">Dr. {demande.medecin?.prenom} {demande.medecin?.nom}</p>
+                        <p className="text-xs text-gray-600">
+                          {new Date(demande.date_demandee).toLocaleDateString('fr-FR')} - {demande.creneau === 'MATIN' ? 'Matin' : demande.creneau === 'APRES_MIDI' ? 'Après-midi' : 'Journée'}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
           <div className="p-3 border-t bg-gray-50 text-center">
             <button
               onClick={() => setShowPanel(false)}
