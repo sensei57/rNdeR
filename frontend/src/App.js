@@ -159,11 +159,6 @@ const LoginPage = () => {
             >
               {loading ? 'Connexion...' : 'Se connecter'}
             </Button>
-            
-            <div className="mt-4 p-3 bg-blue-50 rounded-md">
-              <p className="text-sm text-blue-700 font-medium">Comptes de test :</p>
-              <p className="text-xs text-blue-600">Directeur: directeur@hopital.fr / password123</p>
-            </div>
           </form>
         </CardContent>
       </Card>
