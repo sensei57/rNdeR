@@ -3736,110 +3736,232 @@ const PlanningManager = () => {
 
       {/* Tableau Récapitulatif - Directeur uniquement */}
       {viewMode === 'semaine' && user?.role === 'Directeur' && planningSemaine && planningSemaine.dates && planningSemaine.dates.length > 0 && (
-        <Card className="mt-4">
-          <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100">
-            <CardTitle className="flex items-center space-x-2">
-              <span>📊 Récapitulatif de la Semaine</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            <div className="space-y-4">
-              {/* Assistants - Demi-journées à la semaine */}
-              {assistants.filter(a => a.actif).length > 0 && (
-                <div>
-                  <h3 className="text-sm font-bold text-gray-700 mb-2">Assistants (Demi-journées/semaine)</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {assistants.filter(a => a.actif).map(assistant => {
-                      const demiJournees = calculateDemiJournees(assistant.id, planningSemaine.dates);
-                      const conges = calculateConges(assistant.id, planningSemaine.dates);
-                      return (
-                        <div key={assistant.id} className="bg-orange-50 border border-orange-200 rounded p-2">
-                          <div className="text-sm font-medium text-gray-800">
-                            {assistant.prenom} {assistant.nom}
-                          </div>
-                          <div className="text-lg font-bold text-orange-600">
-                            {demiJournees} {demiJournees <= 1 ? 'demi-journée' : 'demi-journées'}
-                          </div>
-                          {conges > 0 && (
-                            <div className="text-xs text-red-600 font-medium mt-1">
-                              🔴 {conges} {conges === 1 ? 'jour' : 'jours'} de congé
+        <>
+          {/* Récapitulatif Hebdomadaire */}
+          <Card className="mt-4">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100">
+              <CardTitle className="flex items-center space-x-2">
+                <span>📊 Récapitulatif Hebdomadaire (Semaine en cours)</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <div className="space-y-4">
+                {/* Médecins - Demi-journées à la semaine */}
+                {medecins.filter(m => m.actif).length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-700 mb-2">Médecins (Demi-journées/semaine)</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {medecins.filter(m => m.actif).map(medecin => {
+                        const demiJournees = calculateDemiJournees(medecin.id, planningSemaine.dates);
+                        const conges = calculateConges(medecin.id, planningSemaine.dates);
+                        return (
+                          <div key={medecin.id} className="bg-blue-50 border border-blue-200 rounded p-2">
+                            <div className="text-sm font-medium text-gray-800">
+                              Dr. {medecin.prenom} {medecin.nom}
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                            <div className="text-lg font-bold text-blue-600">
+                              {demiJournees} {demiJournees <= 1 ? 'demi-journée' : 'demi-journées'}
+                            </div>
+                            {conges > 0 && (
+                              <div className="text-xs text-red-600 font-medium mt-1">
+                                🔴 {conges} {conges === 1 ? 'jour' : 'jours'} de congé
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Secrétaires - Heures à la semaine */}
-              {users.filter(u => u.role === 'Secrétaire' && u.actif).length > 0 && (
-                <div>
-                  <h3 className="text-sm font-bold text-gray-700 mb-2">Secrétaires (Heures/semaine)</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {users.filter(u => u.role === 'Secrétaire' && u.actif).map(secretaire => {
-                      const heures = calculateHeures(secretaire.id, planningSemaine.dates);
-                      const conges = calculateConges(secretaire.id, planningSemaine.dates);
-                      return (
-                        <div key={secretaire.id} className="bg-purple-50 border border-purple-200 rounded p-2">
-                          <div className="text-sm font-medium text-gray-800">
-                            {secretaire.prenom} {secretaire.nom}
-                          </div>
-                          <div className="text-lg font-bold text-purple-600">
-                            {heures}h
-                          </div>
-                          {conges > 0 && (
-                            <div className="text-xs text-red-600 font-medium mt-1">
-                              🔴 {conges} {conges === 1 ? 'jour' : 'jours'} de congé
+                {/* Assistants - Demi-journées à la semaine */}
+                {assistants.filter(a => a.actif).length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-700 mb-2">Assistants (Demi-journées/semaine)</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {assistants.filter(a => a.actif).map(assistant => {
+                        const demiJournees = calculateDemiJournees(assistant.id, planningSemaine.dates);
+                        const conges = calculateConges(assistant.id, planningSemaine.dates);
+                        return (
+                          <div key={assistant.id} className="bg-orange-50 border border-orange-200 rounded p-2">
+                            <div className="text-sm font-medium text-gray-800">
+                              {assistant.prenom} {assistant.nom}
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                            <div className="text-lg font-bold text-orange-600">
+                              {demiJournees} {demiJournees <= 1 ? 'demi-journée' : 'demi-journées'}
+                            </div>
+                            {conges > 0 && (
+                              <div className="text-xs text-red-600 font-medium mt-1">
+                                🔴 {conges} {conges === 1 ? 'jour' : 'jours'} de congé
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Médecins - Demi-journées au mois */}
-              {medecins.filter(m => m.actif).length > 0 && (
-                <div>
-                  <h3 className="text-sm font-bold text-gray-700 mb-2">Médecins (Demi-journées/mois en cours)</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {medecins.filter(m => m.actif).map(medecin => {
-                      // Calculer toutes les dates du mois en cours
-                      const firstDate = new Date(planningSemaine.dates[0]);
-                      const year = firstDate.getFullYear();
-                      const month = firstDate.getMonth();
-                      const daysInMonth = new Date(year, month + 1, 0).getDate();
-                      const datesMonth = [];
-                      for (let i = 1; i <= daysInMonth; i++) {
-                        const d = new Date(year, month, i);
-                        datesMonth.push(d.toISOString().split('T')[0]);
-                      }
-                      const demiJournees = calculateDemiJournees(medecin.id, datesMonth);
-                      const conges = calculateConges(medecin.id, datesMonth);
-                      return (
-                        <div key={medecin.id} className="bg-blue-50 border border-blue-200 rounded p-2">
-                          <div className="text-sm font-medium text-gray-800">
-                            Dr. {medecin.prenom} {medecin.nom}
-                          </div>
-                          <div className="text-lg font-bold text-blue-600">
-                            {demiJournees} {demiJournees <= 1 ? 'demi-journée' : 'demi-journées'}
-                          </div>
-                          {conges > 0 && (
-                            <div className="text-xs text-red-600 font-medium mt-1">
-                              🔴 {conges} {conges === 1 ? 'jour' : 'jours'} de congé
+                {/* Secrétaires - Heures à la semaine */}
+                {users.filter(u => u.role === 'Secrétaire' && u.actif).length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-700 mb-2">Secrétaires (Heures/semaine)</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {users.filter(u => u.role === 'Secrétaire' && u.actif).map(secretaire => {
+                        const heures = calculateHeures(secretaire.id, planningSemaine.dates);
+                        const conges = calculateConges(secretaire.id, planningSemaine.dates);
+                        return (
+                          <div key={secretaire.id} className="bg-purple-50 border border-purple-200 rounded p-2">
+                            <div className="text-sm font-medium text-gray-800">
+                              {secretaire.prenom} {secretaire.nom}
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                            <div className="text-lg font-bold text-purple-600">
+                              {heures}h
+                            </div>
+                            {conges > 0 && (
+                              <div className="text-xs text-red-600 font-medium mt-1">
+                                🔴 {conges} {conges === 1 ? 'jour' : 'jours'} de congé
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Séparation */}
+          <div className="mt-6 border-t-4 border-gray-300"></div>
+
+          {/* Récapitulatif Mensuel */}
+          <Card className="mt-6">
+            <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100">
+              <CardTitle className="flex items-center space-x-2">
+                <span>📅 Récapitulatif Mensuel (Mois en cours)</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <div className="space-y-4">
+                {/* Médecins - Demi-journées au mois */}
+                {medecins.filter(m => m.actif).length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-700 mb-2">Médecins (Demi-journées/mois)</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {medecins.filter(m => m.actif).map(medecin => {
+                        // Calculer toutes les dates du mois en cours
+                        const firstDate = new Date(planningSemaine.dates[0]);
+                        const year = firstDate.getFullYear();
+                        const month = firstDate.getMonth();
+                        const daysInMonth = new Date(year, month + 1, 0).getDate();
+                        const datesMonth = [];
+                        for (let i = 1; i <= daysInMonth; i++) {
+                          const d = new Date(year, month, i);
+                          datesMonth.push(d.toISOString().split('T')[0]);
+                        }
+                        const demiJournees = calculateDemiJournees(medecin.id, datesMonth);
+                        const conges = calculateConges(medecin.id, datesMonth);
+                        return (
+                          <div key={medecin.id} className="bg-blue-50 border border-blue-200 rounded p-2">
+                            <div className="text-sm font-medium text-gray-800">
+                              Dr. {medecin.prenom} {medecin.nom}
+                            </div>
+                            <div className="text-lg font-bold text-blue-600">
+                              {demiJournees} {demiJournees <= 1 ? 'demi-journée' : 'demi-journées'}
+                            </div>
+                            {conges > 0 && (
+                              <div className="text-xs text-red-600 font-medium mt-1">
+                                🔴 {conges} {conges === 1 ? 'jour' : 'jours'} de congé
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Assistants - Demi-journées au mois */}
+                {assistants.filter(a => a.actif).length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-700 mb-2">Assistants (Demi-journées/mois)</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {assistants.filter(a => a.actif).map(assistant => {
+                        // Calculer toutes les dates du mois en cours
+                        const firstDate = new Date(planningSemaine.dates[0]);
+                        const year = firstDate.getFullYear();
+                        const month = firstDate.getMonth();
+                        const daysInMonth = new Date(year, month + 1, 0).getDate();
+                        const datesMonth = [];
+                        for (let i = 1; i <= daysInMonth; i++) {
+                          const d = new Date(year, month, i);
+                          datesMonth.push(d.toISOString().split('T')[0]);
+                        }
+                        const demiJournees = calculateDemiJournees(assistant.id, datesMonth);
+                        const conges = calculateConges(assistant.id, datesMonth);
+                        return (
+                          <div key={assistant.id} className="bg-orange-50 border border-orange-200 rounded p-2">
+                            <div className="text-sm font-medium text-gray-800">
+                              {assistant.prenom} {assistant.nom}
+                            </div>
+                            <div className="text-lg font-bold text-orange-600">
+                              {demiJournees} {demiJournees <= 1 ? 'demi-journée' : 'demi-journées'}
+                            </div>
+                            {conges > 0 && (
+                              <div className="text-xs text-red-600 font-medium mt-1">
+                                🔴 {conges} {conges === 1 ? 'jour' : 'jours'} de congé
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Secrétaires - Heures au mois */}
+                {users.filter(u => u.role === 'Secrétaire' && u.actif).length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-700 mb-2">Secrétaires (Heures/mois)</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {users.filter(u => u.role === 'Secrétaire' && u.actif).map(secretaire => {
+                        // Calculer toutes les dates du mois en cours
+                        const firstDate = new Date(planningSemaine.dates[0]);
+                        const year = firstDate.getFullYear();
+                        const month = firstDate.getMonth();
+                        const daysInMonth = new Date(year, month + 1, 0).getDate();
+                        const datesMonth = [];
+                        for (let i = 1; i <= daysInMonth; i++) {
+                          const d = new Date(year, month, i);
+                          datesMonth.push(d.toISOString().split('T')[0]);
+                        }
+                        const heures = calculateHeures(secretaire.id, datesMonth);
+                        const conges = calculateConges(secretaire.id, datesMonth);
+                        return (
+                          <div key={secretaire.id} className="bg-purple-50 border border-purple-200 rounded p-2">
+                            <div className="text-sm font-medium text-gray-800">
+                              {secretaire.prenom} {secretaire.nom}
+                            </div>
+                            <div className="text-lg font-bold text-purple-600">
+                              {heures}h
+                            </div>
+                            {conges > 0 && (
+                              <div className="text-xs text-red-600 font-medium mt-1">
+                                🔴 {conges} {conges === 1 ? 'jour' : 'jours'} de congé
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </>
       )}
     </div>
   );
