@@ -2,9 +2,8 @@
 Module pour gérer les notifications push via Firebase Cloud Messaging
 """
 import os
-import firebase_admin
-from firebase_admin import credentials, messaging
 import logging
+import httpx
 
 logger = logging.getLogger(__name__)
 
