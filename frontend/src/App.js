@@ -409,10 +409,25 @@ const NotificationBadge = ({ setActiveTab }) => {
   const markAsRead = async (notificationId) => {
     try {
       await axios.put(`${API}/notifications/${notificationId}/read`);
-      fetchUserNotifications(); // Recharger
+      await fetchUserNotifications(); // Recharger pour mettre à jour le badge
     } catch (error) {
       console.error('Erreur lors de la mise à jour de la notification');
     }
+  };
+
+  const handleNotificationClick = (type, notificationId = null) => {
+    // Marquer comme lu si c'est une notification personnelle
+    if (notificationId) {
+      markAsRead(notificationId);
+    }
+    
+    // Naviguer vers la page appropriée
+    if (setActiveTab) {
+      setActiveTab(type);
+    }
+    
+    // Fermer le panneau
+    setShowPanel(false);
   };
 
   // Pour le directeur : notifications de nouvelles demandes
