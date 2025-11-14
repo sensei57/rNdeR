@@ -3523,6 +3523,46 @@ async def force_initialize_database(request: InitDatabaseRequest):
     Nécessite un token spécial différent du token d'initialisation normale.
     
     Usage: POST /api/force-init-database avec {"secret_token": "force-init-2025-danger"}
+
+
+# ==================== NOTIFICATIONS PUSH ====================
+
+@api_router.post("/users/me/fcm-token")
+async def save_fcm_token(
+    request: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Enregistre le token FCM de l'utilisateur pour les notifications push"""
+    fcm_token = request.get("token")
+    
+    if not fcm_token:
+        raise HTTPException(status_code=400, detail="Token FCM requis")
+    
+    try:
+        # Mettre à jour le token FCM de l'utilisateur
+        await db.users.update_one(
+            {"id": current_user.id},
+            {"$set": {"fcm_token": fcm_token}}
+        )
+        
+        return {"message": "Token FCM enregistré avec succès"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+@api_router.delete("/users/me/fcm-token")
+async def delete_fcm_token(current_user: User = Depends(get_current_user)):
+    """Supprime le token FCM de l'utilisateur (désactivation des notifications)"""
+    try:
+        await db.users.update_one(
+            {"id": current_user.id},
+            {"$unset": {"fcm_token": ""}}
+        )
+        
+        return {"message": "Token FCM supprimé avec succès"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+
     """
     # Vérifier le token secret spécial
     expected_token = "force-init-2025-danger"
