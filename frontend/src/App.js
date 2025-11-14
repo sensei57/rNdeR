@@ -2088,10 +2088,6 @@ const PlanningManager = () => {
     setFilterRole(['Médecin', 'Assistant', 'Secrétaire']);
   };
 
-  const deselectAllRoles = () => {
-    setFilterRole([]);
-  };
-
   const navigateWeek = (direction) => {
     const currentDate = new Date(viewMode === 'semaine' ? selectedWeek : selectedDate);
     const newDate = new Date(currentDate);
