@@ -7997,9 +7997,9 @@ const Dashboard = () => {
       { id: 'documents', label: 'Mon Coffre-Fort', icon: FileText },
     ];
 
-    // Ajouter demandes de travail pour médecins et directeur
+    // Ajouter demandes de créneaux pour médecins et directeur
     if (user?.role === 'Médecin' || user?.role === 'Directeur') {
-      items.splice(4, 0, { id: 'demandes-travail', label: 'Demandes Travail', icon: CalendarDays });
+      items.splice(4, 0, { id: 'demandes-travail', label: 'Demande de créneaux', icon: CalendarDays });
     }
 
     // Plan Cabinet visible à tous les utilisateurs
