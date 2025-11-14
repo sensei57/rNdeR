@@ -7967,6 +7967,7 @@ const MonProfilManager = () => {
 // Main Dashboard
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('personnel');
+  const [menuOpen, setMenuOpen] = useState(false);
   const { user } = useAuth();
 
   const getMenuItems = () => {
