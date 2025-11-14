@@ -70,34 +70,18 @@ async def send_push_to_multiple(fcm_tokens: list, title: str, body: str, data: d
         body: Corps de la notification
         data: Données supplémentaires (optionnel)
     """
-    if not firebase_initialized or not fcm_tokens:
+    if not FIREBASE_SERVER_KEY or not fcm_tokens:
         return 0
     
-    try:
-        message = messaging.MulticastMessage(
-            notification=messaging.Notification(
-                title=title,
-                body=body,
-            ),
-            data=data or {},
-            tokens=fcm_tokens,
-            android=messaging.AndroidConfig(
-                priority='high'
-            ),
-            webpush=messaging.WebpushConfig(
-                notification=messaging.WebpushNotification(
-                    icon='/logo192.png',
-                    require_interaction=True
-                )
-            )
-        )
-        
-        response = messaging.send_multicast(message)
-        logger.info(f"Successfully sent {response.success_count} push notifications")
-        return response.success_count
-    except Exception as e:
-        logger.error(f"Error sending multicast push notification: {e}")
-        return 0
+    success_count = 0
+    
+    # Envoyer individuellement à chaque token
+    for token in fcm_tokens:
+        if await send_push_notification(token, title, body, data):
+            success_count += 1
+    
+    logger.info(f"Successfully sent {success_count}/{len(fcm_tokens)} push notifications")
+    return success_count
 
 
 # Configuration simplifiée - pas d'initialisation nécessaire
