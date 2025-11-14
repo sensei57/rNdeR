@@ -453,7 +453,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Messages Page Blank Issue for Julie Houdin (Assistant)"
+    - "Diagnostic Pages Blanches Version Déployée"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
