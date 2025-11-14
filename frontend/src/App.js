@@ -351,7 +351,7 @@ const PushNotificationManager = () => {
 };
 
 // Notifications Badge Component
-const NotificationBadge = () => {
+const NotificationBadge = ({ setActiveTab }) => {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState({ conges: 0, travail: 0 });
   const [showPanel, setShowPanel] = useState(false);
