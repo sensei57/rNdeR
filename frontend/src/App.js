@@ -534,7 +534,11 @@ const NotificationBadge = ({ setActiveTab }) => {
                   </h4>
                   <div className="space-y-2">
                     {demandesTravail.map(demande => (
-                      <div key={demande.id} className="text-sm bg-blue-50 p-2 rounded border border-blue-200">
+                      <div 
+                        key={demande.id} 
+                        className="text-sm bg-blue-50 p-2 rounded border border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors"
+                        onClick={() => handleNotificationClick('demandes-travail')}
+                      >
                         <p className="font-medium">Dr. {demande.medecin?.prenom} {demande.medecin?.nom}</p>
                         <p className="text-xs text-gray-600">
                           {new Date(demande.date_demandee).toLocaleDateString('fr-FR')} - {demande.creneau === 'MATIN' ? 'Matin' : demande.creneau === 'APRES_MIDI' ? 'Après-midi' : 'Journée'}
