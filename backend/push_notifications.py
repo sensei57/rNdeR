@@ -108,5 +108,4 @@ async def send_push_to_multiple(fcm_tokens: list, title: str, body: str, data: d
         return 0
 
 
-# Initialiser au chargement du module
-initialize_firebase()
+# Configuration simplifiée - pas d'initialisation nécessaire
