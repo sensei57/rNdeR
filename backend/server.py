@@ -969,7 +969,8 @@ async def login(user_login: UserLogin):
 @api_router.get("/users", response_model=List[User])
 async def get_users(current_user: User = Depends(get_current_user)):
     """Tous les utilisateurs authentifiés peuvent voir la liste du personnel"""
-    users = await db.users.find().to_list(1000)
+    # Optimisation sécurité: exclure password_hash et _id
+    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).to_list(1000)
     return [User(**user) for user in users]
 
 @api_router.get("/users/by-role/{role}", response_model=List[User])
