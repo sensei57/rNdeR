@@ -7,44 +7,9 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-# Initialiser Firebase Admin (une seule fois)
-firebase_initialized = False
-
-def initialize_firebase():
-    """Initialise Firebase Admin SDK"""
-    global firebase_initialized
-    
-    if firebase_initialized:
-        return
-    
-    try:
-        # Pour Firebase Admin, nous avons besoin d'un fichier de credentials
-        # Dans un environnement de production, cela devrait être configuré via des variables d'environnement
-        
-        # Configuration simple pour commencer (sans fichier de credentials)
-        # Note: Pour la production, il faudra un fichier service account JSON
-        
-        # Essayons d'initialiser avec les identifiants du projet
-        cred = credentials.Certificate({
-            "type": "service_account",
-            "project_id": "cabinet-medical-ope",
-            "private_key_id": os.environ.get("FIREBASE_PRIVATE_KEY_ID", ""),
-            "private_key": os.environ.get("FIREBASE_PRIVATE_KEY", "").replace('\\n', '\n'),
-            "client_email": os.environ.get("FIREBASE_CLIENT_EMAIL", ""),
-            "client_id": os.environ.get("FIREBASE_CLIENT_ID", ""),
-            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "token_uri": "https://oauth2.googleapis.com/token",
-            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-            "client_x509_cert_url": os.environ.get("FIREBASE_CERT_URL", "")
-        })
-        
-        firebase_admin.initialize_app(cred)
-        firebase_initialized = True
-        logger.info("Firebase Admin SDK initialized successfully")
-    except Exception as e:
-        logger.warning(f"Firebase initialization skipped: {e}")
-        # On continue sans Firebase pour le moment
-        pass
+# Clé serveur Firebase (à configurer dans .env)
+FIREBASE_SERVER_KEY = os.environ.get("FIREBASE_SERVER_KEY", "")
+FCM_URL = "https://fcm.googleapis.com/fcm/send"
 
 
 async def send_push_notification(fcm_token: str, title: str, body: str, data: dict = None):
