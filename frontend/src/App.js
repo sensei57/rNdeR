@@ -601,7 +601,7 @@ const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab 
             </h1>
           </div>
           <div className="flex items-center space-x-4">
-            <NotificationBadge />
+            <NotificationBadge setActiveTab={setActiveTab} />
             <div className="flex items-center space-x-2">
               <Avatar>
                 <AvatarFallback className={getRoleColor(user?.role)}>
