@@ -471,9 +471,13 @@ const NotificationBadge = ({ setActiveTab }) => {
               </h4>
               <div className="space-y-2">
                 {userNotifications.slice(0, 5).map(notif => (
-                  <div key={notif.id} className="text-sm bg-blue-50 p-2 rounded border border-blue-200">
+                  <div 
+                    key={notif.id} 
+                    className="text-sm bg-blue-50 p-2 rounded border border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors"
+                    onClick={() => handleNotificationClick('planning', notif.id)}
+                  >
                     <div className="flex justify-between items-start">
-                      <div>
+                      <div className="flex-1">
                         <p className="font-medium text-blue-900">{notif.title}</p>
                         <p className="text-xs text-blue-700">{notif.body}</p>
                         <p className="text-xs text-gray-500 mt-1">
@@ -481,8 +485,11 @@ const NotificationBadge = ({ setActiveTab }) => {
                         </p>
                       </div>
                       <button
-                        onClick={() => markAsRead(notif.id)}
-                        className="text-blue-600 hover:text-blue-800 text-xs ml-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          markAsRead(notif.id);
+                        }}
+                        className="text-blue-600 hover:text-blue-800 text-xs ml-2 flex-shrink-0"
                       >
                         ✓
                       </button>
