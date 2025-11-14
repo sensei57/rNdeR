@@ -1,5 +1,6 @@
 """
 Module pour gérer les notifications push via Firebase Cloud Messaging
+Version simplifiée sans Firebase Admin SDK
 """
 import os
 import logging
