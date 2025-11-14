@@ -981,7 +981,11 @@ async def get_users_by_role(
     if role not in ROLES.values():
         raise HTTPException(status_code=400, detail="Rôle invalide")
     
-    users = await db.users.find({"role": role, "actif": True}).to_list(1000)
+    # Optimisation sécurité: exclure password_hash et _id
+    users = await db.users.find(
+        {"role": role, "actif": True},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(1000)
     return [User(**user) for user in users]
 
 @api_router.get("/users/me", response_model=User)
