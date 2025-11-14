@@ -15,7 +15,7 @@ FCM_URL = "https://fcm.googleapis.com/fcm/send"
 
 async def send_push_notification(fcm_token: str, title: str, body: str, data: dict = None):
     """
-    Envoie une notification push à un utilisateur spécifique
+    Envoie une notification push à un utilisateur spécifique via FCM HTTP API
     
     Args:
         fcm_token: Token FCM de l'utilisateur
@@ -23,46 +23,38 @@ async def send_push_notification(fcm_token: str, title: str, body: str, data: di
         body: Corps de la notification
         data: Données supplémentaires (optionnel)
     """
-    if not firebase_initialized:
-        logger.warning("Firebase not initialized, skipping push notification")
+    if not FIREBASE_SERVER_KEY:
+        logger.warning("Firebase server key not configured, skipping push notification")
         return False
     
     try:
-        message = messaging.Message(
-            notification=messaging.Notification(
-                title=title,
-                body=body,
-            ),
-            data=data or {},
-            token=fcm_token,
-            android=messaging.AndroidConfig(
-                priority='high',
-                notification=messaging.AndroidNotification(
-                    sound='default',
-                    priority='high',
-                )
-            ),
-            apns=messaging.APNSConfig(
-                payload=messaging.APNSPayload(
-                    aps=messaging.Aps(
-                        sound='default',
-                        badge=1,
-                    )
-                )
-            ),
-            webpush=messaging.WebpushConfig(
-                notification=messaging.WebpushNotification(
-                    icon='/logo192.png',
-                    badge='/logo192.png',
-                    require_interaction=True,
-                    vibrate=[200, 100, 200]
-                )
-            )
-        )
+        headers = {
+            "Authorization": f"key={FIREBASE_SERVER_KEY}",
+            "Content-Type": "application/json"
+        }
         
-        response = messaging.send(message)
-        logger.info(f"Successfully sent push notification: {response}")
-        return True
+        payload = {
+            "to": fcm_token,
+            "notification": {
+                "title": title,
+                "body": body,
+                "icon": "/logo192.png",
+                "click_action": "FCM_PLUGIN_ACTIVITY",
+                "sound": "default"
+            },
+            "data": data or {},
+            "priority": "high"
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(FCM_URL, json=payload, headers=headers, timeout=10.0)
+            
+            if response.status_code == 200:
+                logger.info(f"Push notification sent successfully")
+                return True
+            else:
+                logger.error(f"Failed to send push notification: {response.status_code} - {response.text}")
+                return False
     except Exception as e:
         logger.error(f"Error sending push notification: {e}")
         return False
