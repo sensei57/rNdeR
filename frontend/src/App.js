@@ -3910,13 +3910,6 @@ const PlanningManager = () => {
                     >
                       Tous
                     </Button>
-                    <Button
-                      variant={filterRole.length === 0 ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={deselectAllRoles}
-                    >
-                      Aucun
-                    </Button>
                   </div>
                   <div className="flex space-x-2">
                     <Button
