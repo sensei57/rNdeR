@@ -55,7 +55,7 @@ async def send_push_notification(fcm_token: str, title: str, body: str, data: di
 
 async def send_push_to_multiple(fcm_tokens: list, title: str, body: str, data: dict = None):
     """
-    Envoie une notification push à plusieurs utilisateurs
+    Envoie une notification push à plusieurs utilisateurs via Cloud Function
     
     Args:
         fcm_tokens: Liste des tokens FCM
@@ -63,18 +63,36 @@ async def send_push_to_multiple(fcm_tokens: list, title: str, body: str, data: d
         body: Corps de la notification
         data: Données supplémentaires (optionnel)
     """
-    if not FIREBASE_SERVER_KEY or not fcm_tokens:
+    if not FIREBASE_FUNCTION_MULTICAST or not fcm_tokens:
         return 0
     
-    success_count = 0
-    
-    # Envoyer individuellement à chaque token
-    for token in fcm_tokens:
-        if await send_push_notification(token, title, body, data):
-            success_count += 1
-    
-    logger.info(f"Successfully sent {success_count}/{len(fcm_tokens)} push notifications")
-    return success_count
+    try:
+        payload = {
+            "tokens": fcm_tokens,
+            "title": title,
+            "body": body,
+            "data": data or {}
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                FIREBASE_FUNCTION_MULTICAST,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=10.0
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                success_count = result.get("successCount", 0)
+                logger.info(f"Successfully sent {success_count}/{len(fcm_tokens)} push notifications via Cloud Function")
+                return success_count
+            else:
+                logger.error(f"Failed to send multicast: {response.status_code}")
+                return 0
+    except Exception as e:
+        logger.error(f"Error sending multicast push: {e}")
+        return 0
 
 
 # Configuration simplifiée - pas d'initialisation nécessaire
