@@ -642,6 +642,31 @@ const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab 
           </div>
           <div className="flex items-center space-x-4">
             <NotificationBadge setActiveTab={setActiveTab} />
+            
+            {/* Bouton Notifications Push */}
+            <Button
+              variant={pushEnabled ? "default" : "outline"}
+              size="sm"
+              onClick={togglePushNotifications}
+              disabled={pushLoading}
+              className="flex items-center space-x-1"
+              title={pushEnabled ? "Notifications push activées" : "Activer les notifications push"}
+            >
+              {pushLoading ? (
+                <span className="animate-spin">⏳</span>
+              ) : pushEnabled ? (
+                <>
+                  <Bell className="h-4 w-4" />
+                  <span className="hidden sm:inline">Push ON</span>
+                </>
+              ) : (
+                <>
+                  <Bell className="h-4 w-4 opacity-50" />
+                  <span className="hidden sm:inline">Push OFF</span>
+                </>
+              )}
+            </Button>
+            
             <div className="flex items-center space-x-2">
               <Avatar>
                 <AvatarFallback className={getRoleColor(user?.role)}>
