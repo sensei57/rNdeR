@@ -14,7 +14,7 @@ FIREBASE_FUNCTION_MULTICAST = os.environ.get("FIREBASE_FUNCTION_MULTICAST", "")
 
 async def send_push_notification(fcm_token: str, title: str, body: str, data: dict = None):
     """
-    Envoie une notification push à un utilisateur spécifique via FCM HTTP API
+    Envoie une notification push à un utilisateur via Firebase Cloud Function
     
     Args:
         fcm_token: Token FCM de l'utilisateur
@@ -22,34 +22,28 @@ async def send_push_notification(fcm_token: str, title: str, body: str, data: di
         body: Corps de la notification
         data: Données supplémentaires (optionnel)
     """
-    if not FIREBASE_SERVER_KEY:
-        logger.warning("Firebase server key not configured, skipping push notification")
+    if not FIREBASE_FUNCTION_SEND_PUSH:
+        logger.warning("Firebase Cloud Function URL not configured, skipping push notification")
         return False
     
     try:
-        headers = {
-            "Authorization": f"key={FIREBASE_SERVER_KEY}",
-            "Content-Type": "application/json"
-        }
-        
         payload = {
-            "to": fcm_token,
-            "notification": {
-                "title": title,
-                "body": body,
-                "icon": "/logo192.png",
-                "click_action": "FCM_PLUGIN_ACTIVITY",
-                "sound": "default"
-            },
-            "data": data or {},
-            "priority": "high"
+            "token": fcm_token,
+            "title": title,
+            "body": body,
+            "data": data or {}
         }
         
         async with httpx.AsyncClient() as client:
-            response = await client.post(FCM_URL, json=payload, headers=headers, timeout=10.0)
+            response = await client.post(
+                FIREBASE_FUNCTION_SEND_PUSH, 
+                json=payload, 
+                headers={"Content-Type": "application/json"},
+                timeout=10.0
+            )
             
             if response.status_code == 200:
-                logger.info(f"Push notification sent successfully")
+                logger.info(f"Push notification sent successfully via Cloud Function")
                 return True
             else:
                 logger.error(f"Failed to send push notification: {response.status_code} - {response.text}")
