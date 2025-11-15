@@ -492,10 +492,9 @@ class NotificationRequest(BaseModel):
     data: Optional[Dict] = None
 
 async def send_notification_to_user(user_id: str, title: str, body: str, data: Optional[Dict] = None):
-    """Envoie une notification à un utilisateur spécifique"""
+    """Envoie une notification à un utilisateur spécifique (in-app + push)"""
     try:
-        # Pour l'instant, on stocke les notifications en base
-        # Plus tard, on intégrera Firebase Cloud Messaging
+        # 1. Sauvegarder en base pour la notification in-app
         notification = {
             "id": str(uuid.uuid4()),
             "user_id": user_id,
@@ -507,7 +506,19 @@ async def send_notification_to_user(user_id: str, title: str, body: str, data: O
         }
         
         await db.notifications.insert_one(notification)
-        print(f"📤 Notification envoyée à {user_id}: {title}")
+        print(f"📤 Notification in-app envoyée à {user_id}: {title}")
+        
+        # 2. Envoyer notification push si l'utilisateur a un token FCM
+        user = await db.users.find_one({"id": user_id}, {"fcm_token": 1})
+        if user and user.get("fcm_token"):
+            from push_notifications import send_push_notification
+            await send_push_notification(
+                fcm_token=user["fcm_token"],
+                title=title,
+                body=body,
+                data=data or {}
+            )
+            print(f"📱 Push notification envoyée à {user_id}")
         
     except Exception as e:
         print(f"❌ Erreur notification: {e}")
