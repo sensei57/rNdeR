@@ -585,6 +585,44 @@ const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab 
     }
   };
 
+  // Vérifier si les notifications push sont activées
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      setPushEnabled(true);
+    }
+  }, []);
+
+  // Activer/Désactiver les notifications push
+  const togglePushNotifications = async () => {
+    setPushLoading(true);
+    try {
+      if (!pushEnabled) {
+        // Activer les notifications
+        const { requestNotificationPermission, registerFCMToken } = await import('./firebase-messaging');
+        const token = await requestNotificationPermission();
+        
+        if (token) {
+          await registerFCMToken(token, API);
+          setPushEnabled(true);
+          toast.success('Notifications push activées !');
+        } else {
+          toast.error('Permission refusée pour les notifications');
+        }
+      } else {
+        // Désactiver les notifications
+        const { unregisterFCMToken } = await import('./firebase-messaging');
+        await unregisterFCMToken(API);
+        setPushEnabled(false);
+        toast.success('Notifications push désactivées');
+      }
+    } catch (error) {
+      console.error('Erreur notifications push:', error);
+      toast.error('Erreur lors de la gestion des notifications');
+    } finally {
+      setPushLoading(false);
+    }
+  };
+
   return (
     <nav className="bg-white shadow-lg border-b relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
