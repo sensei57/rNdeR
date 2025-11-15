@@ -568,6 +568,8 @@ const NotificationBadge = ({ setActiveTab }) => {
 // Dashboard Navigation
 const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab }) => {
   const { user, logout } = useAuth();
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
 
   const getInitials = (nom, prenom) => {
     return `${prenom?.[0] || ''}${nom?.[0] || ''}`.toUpperCase();
