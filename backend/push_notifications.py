@@ -1,6 +1,5 @@
 """
-Module pour gérer les notifications push via Firebase Cloud Messaging
-Version simplifiée sans Firebase Admin SDK
+Module pour gérer les notifications push via Firebase Cloud Functions
 """
 import os
 import logging
@@ -8,9 +7,9 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-# Clé serveur Firebase (à configurer dans .env)
-FIREBASE_SERVER_KEY = os.environ.get("FIREBASE_SERVER_KEY", "")
-FCM_URL = "https://fcm.googleapis.com/fcm/send"
+# URLs des Cloud Functions Firebase
+FIREBASE_FUNCTION_SEND_PUSH = os.environ.get("FIREBASE_FUNCTION_SEND_PUSH", "")
+FIREBASE_FUNCTION_MULTICAST = os.environ.get("FIREBASE_FUNCTION_MULTICAST", "")
 
 
 async def send_push_notification(fcm_token: str, title: str, body: str, data: dict = None):
