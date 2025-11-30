@@ -480,6 +480,28 @@ test_plan:
   test_priority: "high_first"
 
 frontend:
+  - task: "Système de Notifications Push - Badge Rouge et Marquage Lu"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "🚀 AMÉLIORATION MAJEURE DU SYSTÈME DE NOTIFICATIONS PUSH - L'utilisateur a signalé : 'ça ne fonctionne pas j'appuie sur la cloche et le nombre de notification reste'. PROBLÈME IDENTIFIÉ: Les notifications du Directeur (demandes EN_ATTENTE) n'étaient pas 'marquées comme vues'. SOLUTION IMPLÉMENTÉE: 1) Ajout état hasViewedDirectorNotifications pour tracker si directeur a vu les demandes, 2) Au clic sur cloche: Notifications personnelles → marquées comme lues, Pour directeur → hasViewedDirectorNotifications = true, 3) Calcul badge: totalDirectorNotifications = 0 si hasViewedDirectorNotifications = true, 4) Si nouvelles demandes arrivent → hasViewedDirectorNotifications reset à false (badge réapparaît). TESTS URGENTS REQUIS pour vérifier que le badge disparaît au clic."
+        - working: false
+          agent: "testing"
+          comment: "❌ PROBLÈME CRITIQUE CONFIRMÉ - Badge ne disparaît PAS après clic! 🔍 TESTS COMPLETS EFFECTUÉS: 1) ❌ TEST DIRECTEUR: Badge initial '2' → Clic cloche → Badge reste '2' (devrait passer à 0), 2) ❌ TEST PERSISTANCE: Après F5 → Badge reste '2' (devrait rester à 0 si marqué comme vu), 3) ✅ TEST MÉDECIN: Aucun badge personnel (normal), 4) ❌ TEST NOUVELLES DEMANDES: Création nouvelle demande → Badge passe à '2' → Clic cloche → Badge reste '2'. 🔧 ROOT CAUSE IDENTIFIÉE: La fonction handleBellClick dans NotificationBadge (lignes 458-471) ne met PAS à jour correctement hasViewedDirectorNotifications. Le state React n'est pas mis à jour ou la logique de calcul totalDirectorNotifications est défaillante. 📡 DIAGNOSTIC RÉSEAU: 16 appels API détectés (GET /conges, /demandes-travail) mais aucun appel pour marquer notifications comme lues. 🎯 CORRECTION REQUISE: Déboguer et corriger la logique handleBellClick pour que setHasViewedDirectorNotifications(true) fonctionne correctement et que le badge passe immédiatement à 0."
+
+agent_communication:
+    - agent: "main"
+      message: "🚀 AMÉLIORATION MAJEURE DU SYSTÈME DE NOTIFICATIONS PUSH - L'utilisateur demande que tout le monde reçoive des notifications sur leur téléphone (même app fermée). NOUVELLES FONCTIONNALITÉS IMPLÉMENTÉES: 1) 🏖️ CONGÉS AMÉLIORÉS - Directeur reçoit maintenant notifications pour TOUS les congés (y compris médecins), Collègues qui travaillent pendant les congés reçoivent une notification, Notification lors approbation/rejet de congé + notification aux collègues si approuvé. 2) 💬 NOTIFICATIONS MESSAGES COMPLÈTES - Messages privés: destinataire reçoit notification push, Messages groupe: tous les membres (sauf expéditeur) reçoivent notification, Messages généraux: tous les employés actifs (sauf expéditeur) reçoivent notification. 3) 📅 PLANNING QUOTIDIEN - Déjà fonctionnel: envoie détails (collègues + salle) chaque matin. FONCTIONS AJOUTÉES: notify_colleagues_about_leave() pour notifier collègues des congés. TESTS REQUIS: 1) Demande congé médecin → Directeur + collègues notifiés, 2) Approbation congé → Employé + collègues notifiés, 3) Message privé → Destinataire notifié, 4) Message groupe → Membres notifiés, 5) Message général → Tous notifiés. Backend redémarré avec succès."
+    - agent: "testing"
+      message: "❌ PROBLÈME CRITIQUE URGENT - Badge Notifications NE FONCTIONNE PAS! L'utilisateur a raison: 'j'appuie sur la cloche et le nombre de notification reste'. TESTS CONFIRMÉS: Badge '2' → Clic cloche → Badge reste '2' (devrait disparaître). ROOT CAUSE: handleBellClick ne met pas à jour hasViewedDirectorNotifications correctement. CORRECTION URGENTE REQUISE: Déboguer la logique React dans NotificationBadge component (lignes 458-471) pour que setHasViewedDirectorNotifications(true) fonctionne et badge passe à 0 immédiatement."
+
+frontend:
   - task: "Diagnostic Pages Blanches Version Déployée - Test Urgent Production"
     implemented: true
     working: true
