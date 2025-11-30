@@ -356,15 +356,18 @@ backend:
 
   - task: "Notifications Push Messages (POST /api/messages avec notifications)"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "💬 NOTIFICATIONS PUSH POUR MESSAGES IMPLÉMENTÉES - Système complet de notifications push pour tous les types de messages. FONCTIONNALITÉS: 1) Messages privés: destinataire reçoit notification '💬 Message de [Nom]' avec preview du message, 2) Messages groupe: tous les membres du groupe (sauf expéditeur) reçoivent notification '💬 [Nom] dans [Groupe]', 3) Messages généraux: tous les employés actifs (sauf expéditeur) reçoivent notification '📢 Message général de [Nom]'. Preview du message limité à 100 caractères. Les notifications sont envoyées en arrière-plan via BackgroundTasks. TESTS REQUIS: 1) Message privé → vérifier destinataire reçoit notification, 2) Message groupe → vérifier membres notifiés, 3) Message général → vérifier tous employés notifiés, 4) Vérifier expéditeur ne reçoit pas sa propre notification."
+        - working: true
+          agent: "testing"
+          comment: "🎉 NOTIFICATIONS PUSH MESSAGES COMPLÈTEMENT FONCTIONNELLES! ✅ TESTS COMPLETS RÉUSSIS: 1) ✅ Message Privé: Directeur → Médecin, notification '💬 Message de Francis LEBLOND' reçue avec preview correct, expéditeur ne reçoit pas sa propre notification, 2) ✅ Message Groupe: Groupe créé avec 3 membres (Directeur, Médecin, Assistant), message envoyé par Directeur → Médecin et Assistant reçoivent notifications '💬 [Nom] dans [Groupe]', expéditeur exclu, 3) ✅ Message Général: Directeur envoie message général → Tous employés actifs (2) reçoivent notification '📢 Message général de Francis LEBLOND', expéditeur exclu. 🎯 OBJECTIF ATTEINT: Système de notifications push pour messages fonctionne parfaitement selon toutes les spécifications. Tous les types de messages génèrent les bonnes notifications avec les bons destinataires."
 
   - task: "API Modification Profil Utilisateur (PUT /api/users/me/profile)"
     implemented: true
