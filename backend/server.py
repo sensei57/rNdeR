@@ -552,6 +552,56 @@ async def notify_user_request_status(user_id: str, type_request: str, status: st
         {"type": "status_change", "status": status, "request_type": type_request}
     )
 
+async def notify_colleagues_about_leave(user_name: str, date_debut: str, date_fin: str, creneau: str, user_id: str):
+    """Notifie les collègues qui travaillent pendant les jours de congé"""
+    from datetime import datetime, timedelta
+    
+    try:
+        # Convertir les dates
+        debut = datetime.strptime(date_debut, '%Y-%m-%d')
+        fin = datetime.strptime(date_fin, '%Y-%m-%d')
+        
+        # Pour chaque jour du congé
+        current_date = debut
+        colleagues_notified = set()
+        
+        while current_date <= fin:
+            date_str = current_date.strftime('%Y-%m-%d')
+            
+            # Trouver qui travaille ce jour-là
+            query = {"date": date_str, "employe_id": {"$ne": user_id}}
+            
+            # Filtrer par créneau si ce n'est pas une journée complète
+            if creneau and creneau != "JOURNEE_COMPLETE":
+                query["creneau"] = creneau
+            
+            working_colleagues = await db.planning.find(query).to_list(100)
+            
+            for colleague_slot in working_colleagues:
+                colleague_id = colleague_slot["employe_id"]
+                if colleague_id not in colleagues_notified:
+                    colleagues_notified.add(colleague_id)
+            
+            current_date += timedelta(days=1)
+        
+        # Envoyer une notification à chaque collègue concerné
+        if colleagues_notified:
+            creneau_text = "toute la journée" if creneau == "JOURNEE_COMPLETE" else creneau.lower()
+            dates_text = date_debut if date_debut == date_fin else f"{date_debut} au {date_fin}"
+            
+            for colleague_id in colleagues_notified:
+                await send_notification_to_user(
+                    colleague_id,
+                    f"🏖️ Congé d'un collègue",
+                    f"{user_name} sera en congé le {dates_text} ({creneau_text})",
+                    {"type": "colleague_leave", "date_debut": date_debut, "date_fin": date_fin}
+                )
+        
+        print(f"📤 {len(colleagues_notified)} collègues notifiés du congé de {user_name}")
+        
+    except Exception as e:
+        print(f"❌ Erreur notification collègues congé: {e}")
+
 async def send_daily_planning_notifications():
     """Envoie le planning quotidien à tous les employés qui travaillent aujourd'hui"""
     from datetime import date
