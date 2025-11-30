@@ -1316,6 +1316,8 @@ async def approuver_demande_conge(
     
     # 📤 NOTIFICATION : Statut de la demande de congé
     dates = f"{demande['date_debut']} au {demande['date_fin']}"
+    
+    # 1. Notifier l'employé du statut de sa demande
     background_tasks.add_task(
         notify_user_request_status,
         demande["utilisateur_id"],
@@ -1323,6 +1325,24 @@ async def approuver_demande_conge(
         statut,
         dates
     )
+    
+    # 2. Si approuvé, notifier aussi les collègues qui travaillent pendant ces jours
+    if request.approuve:
+        # Récupérer l'utilisateur pour avoir son nom
+        user = await db.users.find_one({"id": demande["utilisateur_id"]})
+        if user:
+            user_name = f"{user['prenom']} {user['nom']}"
+            if user['role'] == ROLES["MEDECIN"]:
+                user_name = f"Dr. {user_name}"
+            
+            background_tasks.add_task(
+                notify_colleagues_about_leave,
+                user_name,
+                demande['date_debut'],
+                demande['date_fin'],
+                demande.get('creneau', 'JOURNEE_COMPLETE'),
+                demande["utilisateur_id"]
+            )
     
     return {"message": f"Demande {statut.lower()}e avec succès"}
 
