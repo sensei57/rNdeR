@@ -620,10 +620,24 @@ const NotificationBadge = ({ setActiveTab }) => {
                         className="text-sm bg-blue-50 p-2 rounded border border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors"
                         onClick={() => handleNotificationClick('demandes-travail')}
                       >
-                        <p className="font-medium">Dr. {demande.medecin?.prenom} {demande.medecin?.nom}</p>
-                        <p className="text-xs text-gray-600">
-                          {new Date(demande.date_demandee).toLocaleDateString('fr-FR')} - {demande.creneau === 'MATIN' ? 'Matin' : demande.creneau === 'APRES_MIDI' ? 'Après-midi' : 'Journée'}
-                        </p>
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <p className="font-medium">Dr. {demande.medecin?.prenom} {demande.medecin?.nom}</p>
+                            <p className="text-xs text-gray-600">
+                              {new Date(demande.date_demandee).toLocaleDateString('fr-FR')} - {demande.creneau === 'MATIN' ? 'Matin' : demande.creneau === 'APRES_MIDI' ? 'Après-midi' : 'Journée'}
+                            </p>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeDemande('travail', demande.id);
+                            }}
+                            className="text-red-600 hover:text-red-800 text-lg ml-2 flex-shrink-0 hover:bg-red-100 rounded px-1"
+                            title="Retirer de la liste"
+                          >
+                            ✕
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
