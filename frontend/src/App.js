@@ -611,7 +611,7 @@ const NotificationBadge = ({ setActiveTab }) => {
               {demandesTravail.length > 0 && (
                 <div className="p-4">
                   <h4 className="font-semibold text-sm text-gray-700 mb-2">
-                    Demandes de Travail ({notifications.travail})
+                    Demandes de Travail ({demandesTravail.length})
                   </h4>
                   <div className="space-y-2">
                     {demandesTravail.map(demande => (
