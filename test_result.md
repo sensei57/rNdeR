@@ -473,8 +473,7 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Système de Notifications Push - Badge Rouge et Marquage Lu"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
