@@ -396,11 +396,22 @@ const NotificationBadge = ({ setActiveTab }) => {
       const congesEnAttente = congesRes.data.filter(d => d.statut === 'EN_ATTENTE');
       const travailEnAttente = travailRes.data.filter(d => d.statut === 'EN_ATTENTE');
 
+      const newCongesCount = congesEnAttente.length;
+      const newTravailCount = travailEnAttente.length;
+      
+      // Si le nombre de demandes a changé (nouvelles demandes), réinitialiser l'état "vues"
+      if (newCongesCount !== notifications.conges || newTravailCount !== notifications.travail) {
+        if (newCongesCount > notifications.conges || newTravailCount > notifications.travail) {
+          // De nouvelles demandes sont arrivées
+          setHasViewedDirectorNotifications(false);
+        }
+      }
+
       setDemandesConges(congesEnAttente);
       setDemandesTravail(travailEnAttente);
       setNotifications({
-        conges: congesEnAttente.length,
-        travail: travailEnAttente.length
+        conges: newCongesCount,
+        travail: newTravailCount
       });
     } catch (error) {
       console.error('Erreur lors du chargement des notifications');
