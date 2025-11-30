@@ -339,7 +339,7 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
           agent: "main"
@@ -347,6 +347,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "🎉 SYSTÈME DE NOTIFICATIONS FIREBASE COMPLÈTEMENT FONCTIONNEL! ✅ TESTS COMPLETS RÉUSSIS (27/27 - 100%): 1) ✅ TEST 1 - Enregistrement token Firebase: Tokens enregistrés avec succès pour directeur, médecin et assistant, 2) ✅ TEST 2 - Notifications Directeur (Demande congé Assistant): Demande de congé créée par assistant → Directeur reçoit 1 notification de demande de congé, 3) ✅ TEST 3 - Notifications Directeur (Demande travail Médecin): Demande de travail créée par médecin → Directeur reçoit 1 notification de demande de travail, 4) ✅ TEST 4 - Notifications employé (Validation demande): Approbation par Directeur → Médecin reçoit 1 notification d'approbation, 5) ✅ TEST 5 - Récupération notifications: Chaque utilisateur ne voit que ses propres notifications (directeur: 2, médecin: 1, assistant: 0), 6) ✅ TEST 6 - Planning quotidien: Déclenchement manuel réussi (endpoint fonctionnel), 7) ✅ TEST 7 - Endpoints Firebase: Mise à jour tokens + marquage notifications comme lues fonctionnent parfaitement. 🎯 OBJECTIF ATTEINT: Système de notifications Firebase fonctionne de bout en bout selon toutes les spécifications demandées."
+        - working: "NA"
+          agent: "main"
+          comment: "🚀 AMÉLIORATION MAJEURE DU SYSTÈME DE NOTIFICATIONS PUSH - L'utilisateur demande que tout le monde reçoive des notifications sur leur téléphone (même app fermée). NOUVELLES FONCTIONNALITÉS IMPLÉMENTÉES: 1) 🏖️ CONGÉS AMÉLIORÉS - Directeur reçoit maintenant notifications pour TOUS les congés (y compris médecins), Collègues qui travaillent pendant les congés reçoivent une notification, Notification lors approbation/rejet de congé + notification aux collègues si approuvé. 2) 💬 NOTIFICATIONS MESSAGES COMPLÈTES - Messages privés: destinataire reçoit notification push, Messages groupe: tous les membres (sauf expéditeur) reçoivent notification, Messages généraux: tous les employés actifs (sauf expéditeur) reçoivent notification. 3) 📅 PLANNING QUOTIDIEN - Déjà fonctionnel: envoie détails (collègues + salle) chaque matin. FONCTIONS AJOUTÉES: notify_colleagues_about_leave() pour notifier collègues des congés. TESTS REQUIS: 1) Demande congé médecin → Directeur + collègues notifiés, 2) Approbation congé → Employé + collègues notifiés, 3) Message privé → Destinataire notifié, 4) Message groupe → Membres notifiés, 5) Message général → Tous notifiés. Backend redémarré avec succès."
 
   - task: "API Modification Profil Utilisateur (PUT /api/users/me/profile)"
     implemented: true
