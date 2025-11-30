@@ -3575,6 +3575,9 @@ async def delete_fcm_token(current_user: User = Depends(get_current_user)):
         return {"message": "Token FCM supprimé avec succès"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+
+
     # Vérifier le token secret spécial
     expected_token = "force-init-2025-danger"
     if request.secret_token != expected_token:
