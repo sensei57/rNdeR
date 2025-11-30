@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import json
 
 class PermanentDeletionTester:
-    def __init__(self, base_url="https://deploy-login-bug.preview.emergentagent.com"):
+    def __init__(self, base_url="https://notif-pour-tous.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tokens = {}

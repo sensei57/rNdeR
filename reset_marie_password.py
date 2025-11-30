@@ -7,7 +7,7 @@ import requests
 import json
 
 def reset_marie_password():
-    base_url = "https://deploy-login-bug.preview.emergentagent.com"
+    base_url = "https://notif-pour-tous.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     # Login as directeur first
