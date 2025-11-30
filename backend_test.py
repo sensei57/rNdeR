@@ -4201,8 +4201,6 @@ class MedicalStaffAPITester:
         
         # Call the enhanced notification test method
         return self.test_enhanced_firebase_notification_system()
-                
-                # Check if notification was created for director
                 if 'directeur' in self.tokens:
                     success, notifications = self.run_test(
                         "Get Director notifications",
