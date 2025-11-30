@@ -583,10 +583,24 @@ const NotificationBadge = ({ setActiveTab }) => {
                         className="text-sm bg-yellow-50 p-2 rounded border border-yellow-200 cursor-pointer hover:bg-yellow-100 transition-colors"
                         onClick={() => handleNotificationClick('conges')}
                       >
-                        <p className="font-medium">{demande.utilisateur?.prenom} {demande.utilisateur?.nom}</p>
-                        <p className="text-xs text-gray-600">
-                          {new Date(demande.date_debut).toLocaleDateString('fr-FR')} - {new Date(demande.date_fin).toLocaleDateString('fr-FR')}
-                        </p>
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <p className="font-medium">{demande.utilisateur?.prenom} {demande.utilisateur?.nom}</p>
+                            <p className="text-xs text-gray-600">
+                              {new Date(demande.date_debut).toLocaleDateString('fr-FR')} - {new Date(demande.date_fin).toLocaleDateString('fr-FR')}
+                            </p>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeDemande('conge', demande.id);
+                            }}
+                            className="text-red-600 hover:text-red-800 text-lg ml-2 flex-shrink-0 hover:bg-red-100 rounded px-1"
+                            title="Retirer de la liste"
+                          >
+                            ✕
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
