@@ -800,7 +800,7 @@ async def debug_users():
             }
         
         # Lister les utilisateurs (sans mots de passe)
-        users = await db.users.find({}, {"mot_de_passe": 0}).to_list(100)
+        users = await db.users.find({}, {"password_hash": 0}).to_list(100)
         
         users_info = []
         for user in users:
