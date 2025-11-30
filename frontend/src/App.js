@@ -415,6 +415,19 @@ const NotificationBadge = ({ setActiveTab }) => {
     }
   };
 
+  const markAllAsRead = async () => {
+    try {
+      // Marquer toutes les notifications non lues comme lues
+      const markPromises = userNotifications.map(notif => 
+        axios.put(`${API}/notifications/${notif.id}/read`)
+      );
+      await Promise.all(markPromises);
+      await fetchUserNotifications(); // Recharger pour mettre à jour le badge
+    } catch (error) {
+      console.error('Erreur lors du marquage de toutes les notifications');
+    }
+  };
+
   const handleNotificationClick = (type, notificationId = null) => {
     // Marquer comme lu si c'est une notification personnelle
     if (notificationId) {
@@ -428,6 +441,15 @@ const NotificationBadge = ({ setActiveTab }) => {
     
     // Fermer le panneau
     setShowPanel(false);
+  };
+
+  const handleBellClick = () => {
+    // Si le panneau est fermé et qu'il y a des notifications, marquer toutes comme lues
+    if (!showPanel && userNotifications.length > 0) {
+      markAllAsRead();
+    }
+    // Ouvrir/fermer le panneau
+    setShowPanel(!showPanel);
   };
 
   // Pour le directeur : notifications de nouvelles demandes
@@ -445,7 +467,7 @@ const NotificationBadge = ({ setActiveTab }) => {
       <Button
         variant="outline"
         size="sm"
-        onClick={() => setShowPanel(!showPanel)}
+        onClick={handleBellClick}
         className="relative"
       >
         <Bell className="h-4 w-4" />
