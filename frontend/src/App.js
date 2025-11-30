@@ -461,19 +461,19 @@ const NotificationBadge = ({ setActiveTab }) => {
       await markAllAsRead();
     }
     
-    // Pour le directeur: marquer les demandes comme "vues" au premier clic
-    if (user?.role === 'Directeur' && !hasViewedDirectorNotifications) {
-      setHasViewedDirectorNotifications(true);
+    // Pour le directeur: réinitialiser les compteurs pour masquer le badge
+    if (user?.role === 'Directeur') {
+      setNotifications({ conges: 0, travail: 0 });
+      setDemandesConges([]);
+      setDemandesTravail([]);
     }
     
     // Ouvrir/fermer le panneau
     setShowPanel(!showPanel);
   };
 
-  // Pour le directeur : notifications de nouvelles demandes (seulement si pas encore vues)
-  const totalDirectorNotifications = (user?.role === 'Directeur' && !hasViewedDirectorNotifications) 
-    ? (notifications.conges + notifications.travail) 
-    : 0;
+  // Pour le directeur : notifications de nouvelles demandes
+  const totalDirectorNotifications = user?.role === 'Directeur' ? (notifications.conges + notifications.travail) : 0;
   
   // Pour les autres : notifications personnelles
   const totalUserNotifications = userNotifications.length;
