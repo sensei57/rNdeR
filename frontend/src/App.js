@@ -574,7 +574,7 @@ const NotificationBadge = ({ setActiveTab }) => {
               {demandesConges.length > 0 && (
                 <div className="p-4 border-b">
                   <h4 className="font-semibold text-sm text-gray-700 mb-2">
-                    Demandes de Congés ({notifications.conges})
+                    Demandes de Congés ({demandesConges.length})
                   </h4>
                   <div className="space-y-2">
                     {demandesConges.map(demande => (
