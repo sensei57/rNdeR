@@ -444,20 +444,24 @@ const NotificationBadge = ({ setActiveTab }) => {
   };
 
   const handleBellClick = async () => {
-    // Marquer toutes les notifications personnelles comme lues
-    if (userNotifications.length > 0) {
-      await markAllAsRead();
-    }
+    // Ouvrir le panneau AVANT de réinitialiser (important!)
+    const newShowPanel = !showPanel;
+    setShowPanel(newShowPanel);
     
-    // Pour le directeur: réinitialiser les compteurs pour masquer le badge
-    if (user?.role === 'Directeur') {
-      setNotifications({ conges: 0, travail: 0 });
-      setDemandesConges([]);
-      setDemandesTravail([]);
+    // Si on ouvre le panneau, marquer tout comme lu/vu
+    if (newShowPanel) {
+      // Marquer toutes les notifications personnelles comme lues
+      if (userNotifications.length > 0) {
+        await markAllAsRead();
+      }
+      
+      // Pour le directeur: réinitialiser les compteurs pour masquer le badge
+      if (user?.role === 'Directeur') {
+        setNotifications({ conges: 0, travail: 0 });
+        setDemandesConges([]);
+        setDemandesTravail([]);
+      }
     }
-    
-    // Ouvrir/fermer le panneau
-    setShowPanel(!showPanel);
   };
 
   // Pour le directeur : notifications de nouvelles demandes
@@ -468,7 +472,10 @@ const NotificationBadge = ({ setActiveTab }) => {
   
   const totalNotifications = totalDirectorNotifications + totalUserNotifications;
 
-  if (totalNotifications === 0) return null;
+  // Afficher le badge seulement s'il y a des notifications OU si le panneau est ouvert
+  const showBadge = totalNotifications > 0 || showPanel;
+
+  if (!showBadge) return null;
 
   return (
     <div className="relative">
@@ -479,9 +486,11 @@ const NotificationBadge = ({ setActiveTab }) => {
         className="relative"
       >
         <Bell className="h-4 w-4" />
-        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-          {totalNotifications}
-        </span>
+        {totalNotifications > 0 && (
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+            {totalNotifications}
+          </span>
+        )}
       </Button>
 
       {showPanel && (
