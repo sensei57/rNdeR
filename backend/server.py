@@ -1632,6 +1632,7 @@ async def update_membres_groupe(
 @api_router.post("/messages", response_model=Message)
 async def send_message(
     message_data: MessageCreate,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user)
 ):
     # Validation selon le type de message
@@ -1657,6 +1658,52 @@ async def send_message(
     )
     
     await db.messages.insert_one(message.dict())
+    
+    # 📤 NOTIFICATION : Nouveau message
+    sender_name = f"{current_user.prenom} {current_user.nom}"
+    if current_user.role == ROLES["MEDECIN"]:
+        sender_name = f"Dr. {sender_name}"
+    
+    # Tronquer le message si trop long
+    preview = message_data.contenu[:100] + "..." if len(message_data.contenu) > 100 else message_data.contenu
+    
+    if message_data.type_message == "PRIVE":
+        # Notification au destinataire uniquement
+        background_tasks.add_task(
+            send_notification_to_user,
+            message_data.destinataire_id,
+            f"💬 Message de {sender_name}",
+            preview,
+            {"type": "new_message", "message_type": "PRIVE", "sender_id": current_user.id}
+        )
+    
+    elif message_data.type_message == "GROUPE":
+        # Notification à tous les membres du groupe sauf l'expéditeur
+        groupe = await db.groupes_chat.find_one({"id": message_data.groupe_id})
+        if groupe:
+            groupe_name = groupe.get("nom", "Groupe")
+            for membre_id in groupe.get("membres", []):
+                if membre_id != current_user.id:  # Ne pas notifier l'expéditeur
+                    background_tasks.add_task(
+                        send_notification_to_user,
+                        membre_id,
+                        f"💬 {sender_name} dans {groupe_name}",
+                        preview,
+                        {"type": "new_message", "message_type": "GROUPE", "groupe_id": message_data.groupe_id}
+                    )
+    
+    elif message_data.type_message == "GENERAL":
+        # Notification à tous les employés actifs sauf l'expéditeur
+        all_users = await db.users.find({"actif": True, "id": {"$ne": current_user.id}}).to_list(1000)
+        for user in all_users:
+            background_tasks.add_task(
+                send_notification_to_user,
+                user["id"],
+                f"📢 Message général de {sender_name}",
+                preview,
+                {"type": "new_message", "message_type": "GENERAL"}
+            )
+    
     return message
 
 @api_router.get("/messages", response_model=List[Dict[str, Any]])
