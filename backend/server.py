@@ -1228,10 +1228,12 @@ async def create_demande_conge(
     await db.demandes_conges.insert_one(demande.dict())
     
     # 📤 NOTIFICATION : Nouvelle demande de congé
-    # Notifier le directeur SEULEMENT pour les demandes des Assistants et Secrétaires
-    if (current_user.role != ROLES["DIRECTEUR"] and 
-        current_user.role in [ROLES["ASSISTANT"], ROLES["SECRETAIRE"]]):
+    # 1. Notifier le directeur pour TOUTES les demandes (y compris médecins)
+    if current_user.role != ROLES["DIRECTEUR"]:
         user_name = f"{current_user.prenom} {current_user.nom}"
+        if current_user.role == ROLES["MEDECIN"]:
+            user_name = f"Dr. {user_name}"
+        
         dates = f"{demande.date_debut} au {demande.date_fin}"
         creneau_text = "Journée complète" if demande.creneau == "JOURNEE_COMPLETE" else demande.creneau.lower()
         details = f"{dates} ({creneau_text})"
@@ -1241,6 +1243,16 @@ async def create_demande_conge(
             "demande de congé", 
             user_name, 
             details
+        )
+        
+        # 2. Notifier les collègues qui travaillent pendant ces jours
+        background_tasks.add_task(
+            notify_colleagues_about_leave,
+            user_name,
+            demande.date_debut,
+            demande.date_fin,
+            demande.creneau,
+            utilisateur_id
         )
     
     return demande
