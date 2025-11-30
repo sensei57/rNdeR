@@ -474,8 +474,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Système de Notifications Firebase (POST /api/notifications/subscribe, GET /api/notifications, PUT /api/notifications/{id}/read, POST /api/notifications/send-daily-planning)"
-    - "Notifications Push Messages (POST /api/messages avec notifications)"
+    - "Système de Notifications Push - Badge Rouge et Marquage Lu"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
