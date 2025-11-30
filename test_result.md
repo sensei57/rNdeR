@@ -351,6 +351,18 @@ backend:
           agent: "main"
           comment: "🚀 AMÉLIORATION MAJEURE DU SYSTÈME DE NOTIFICATIONS PUSH - L'utilisateur demande que tout le monde reçoive des notifications sur leur téléphone (même app fermée). NOUVELLES FONCTIONNALITÉS IMPLÉMENTÉES: 1) 🏖️ CONGÉS AMÉLIORÉS - Directeur reçoit maintenant notifications pour TOUS les congés (y compris médecins), Collègues qui travaillent pendant les congés reçoivent une notification, Notification lors approbation/rejet de congé + notification aux collègues si approuvé. 2) 💬 NOTIFICATIONS MESSAGES COMPLÈTES - Messages privés: destinataire reçoit notification push, Messages groupe: tous les membres (sauf expéditeur) reçoivent notification, Messages généraux: tous les employés actifs (sauf expéditeur) reçoivent notification. 3) 📅 PLANNING QUOTIDIEN - Déjà fonctionnel: envoie détails (collègues + salle) chaque matin. FONCTIONS AJOUTÉES: notify_colleagues_about_leave() pour notifier collègues des congés. TESTS REQUIS: 1) Demande congé médecin → Directeur + collègues notifiés, 2) Approbation congé → Employé + collègues notifiés, 3) Message privé → Destinataire notifié, 4) Message groupe → Membres notifiés, 5) Message général → Tous notifiés. Backend redémarré avec succès."
 
+  - task: "Notifications Push Messages (POST /api/messages avec notifications)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "💬 NOTIFICATIONS PUSH POUR MESSAGES IMPLÉMENTÉES - Système complet de notifications push pour tous les types de messages. FONCTIONNALITÉS: 1) Messages privés: destinataire reçoit notification '💬 Message de [Nom]' avec preview du message, 2) Messages groupe: tous les membres du groupe (sauf expéditeur) reçoivent notification '💬 [Nom] dans [Groupe]', 3) Messages généraux: tous les employés actifs (sauf expéditeur) reçoivent notification '📢 Message général de [Nom]'. Preview du message limité à 100 caractères. Les notifications sont envoyées en arrière-plan via BackgroundTasks. TESTS REQUIS: 1) Message privé → vérifier destinataire reçoit notification, 2) Message groupe → vérifier membres notifiés, 3) Message général → vérifier tous employés notifiés, 4) Vérifier expéditeur ne reçoit pas sa propre notification."
+
   - task: "API Modification Profil Utilisateur (PUT /api/users/me/profile)"
     implemented: true
     working: true
