@@ -60,6 +60,10 @@ class MedicalStaffAPITester:
             print(f"❌ Failed - Error: {str(e)}")
             return False, {}
 
+    def run_delete_test(self, name, endpoint, expected_status, token=None):
+        """Run a DELETE test"""
+        return self.run_test(name, "DELETE", endpoint, expected_status, token=token)
+
     def test_login(self, role, email, password):
         """Test login for a specific role"""
         success, response = self.run_test(
