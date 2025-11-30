@@ -3534,6 +3534,9 @@ async def force_initialize_database(request: InitDatabaseRequest):
     Nécessite un token spécial différent du token d'initialisation normale.
     
     Usage: POST /api/force-init-database avec {"secret_token": "force-init-2025-danger"}
+    """
+    # Code de la fonction devrait être ici mais semble manquant
+    raise HTTPException(status_code=501, detail="Fonction non implémentée")
 
 
 # ==================== NOTIFICATIONS PUSH ====================
