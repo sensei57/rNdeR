@@ -863,7 +863,7 @@ async def init_admin_simple():
             "nom": "LEBLOND",
             "prenom": "Francis",
             "role": ROLES["DIRECTEUR"],
-            "mot_de_passe": bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
+            "password_hash": bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
             "actif": True,
             "date_creation": datetime.now(timezone.utc)
         }
@@ -936,7 +936,7 @@ async def init_admin():
             "nom": "LEBLOND",
             "prenom": "Francis",
             "role": ROLES["DIRECTEUR"],
-            "mot_de_passe": bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
+            "password_hash": bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
             "actif": True,
             "date_creation": datetime.now(timezone.utc)
         }
