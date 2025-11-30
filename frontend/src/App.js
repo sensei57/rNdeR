@@ -445,28 +445,46 @@ const NotificationBadge = ({ setActiveTab }) => {
   };
 
   const handleBellClick = async () => {
-    // Ouvrir le panneau AVANT de réinitialiser (important!)
+    // Ouvrir/fermer le panneau
     const newShowPanel = !showPanel;
     setShowPanel(newShowPanel);
     
-    // Si on ouvre le panneau, marquer tout comme lu/vu
+    // Si on ouvre le panneau, marquer comme "vu" (badge à 0) mais garder les données
     if (newShowPanel) {
+      setBadgeViewed(true);
+      
       // Marquer toutes les notifications personnelles comme lues
       if (userNotifications.length > 0) {
         await markAllAsRead();
       }
-      
-      // Pour le directeur: réinitialiser les compteurs pour masquer le badge
-      if (user?.role === 'Directeur') {
-        setNotifications({ conges: 0, travail: 0 });
-        setDemandesConges([]);
-        setDemandesTravail([]);
-      }
     }
   };
 
-  // Pour le directeur : notifications de nouvelles demandes
-  const totalDirectorNotifications = user?.role === 'Directeur' ? (notifications.conges + notifications.travail) : 0;
+  const removeNotification = async (notificationId) => {
+    try {
+      await axios.put(`${API}/notifications/${notificationId}/read`);
+      // Retirer de la liste locale
+      setUserNotifications(prev => prev.filter(n => n.id !== notificationId));
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la notification');
+    }
+  };
+
+  const removeDemande = async (type, demandeId) => {
+    // Pour le directeur: retirer une demande de la liste locale
+    if (type === 'conge') {
+      setDemandesConges(prev => prev.filter(d => d.id !== demandeId));
+      setNotifications(prev => ({ ...prev, conges: Math.max(0, prev.conges - 1) }));
+    } else if (type === 'travail') {
+      setDemandesTravail(prev => prev.filter(d => d.id !== demandeId));
+      setNotifications(prev => ({ ...prev, travail: Math.max(0, prev.travail - 1) }));
+    }
+  };
+
+  // Pour le directeur : notifications de nouvelles demandes (0 si déjà vues)
+  const totalDirectorNotifications = (user?.role === 'Directeur' && !badgeViewed) 
+    ? (notifications.conges + notifications.travail) 
+    : 0;
   
   // Pour les autres : notifications personnelles
   const totalUserNotifications = userNotifications.length;
