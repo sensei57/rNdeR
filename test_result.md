@@ -755,11 +755,11 @@ frontend:
 
   - task: "Système de Notifications Push - Badge Rouge et Marquage Lu"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
