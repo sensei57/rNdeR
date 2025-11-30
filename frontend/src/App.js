@@ -525,7 +525,7 @@ const NotificationBadge = ({ setActiveTab }) => {
           <div className="p-4 border-b bg-gray-50">
             <h3 className="font-bold text-gray-800 flex items-center">
               <Bell className="h-5 w-5 mr-2" />
-              Notifications ({totalNotifications})
+              Notifications ({userNotifications.length + demandesConges.length + demandesTravail.length})
             </h3>
           </div>
 
