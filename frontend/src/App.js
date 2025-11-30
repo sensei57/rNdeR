@@ -443,11 +443,17 @@ const NotificationBadge = ({ setActiveTab }) => {
     setShowPanel(false);
   };
 
-  const handleBellClick = () => {
-    // Si le panneau est fermé et qu'il y a des notifications, marquer toutes comme lues
-    if (!showPanel && userNotifications.length > 0) {
-      markAllAsRead();
+  const handleBellClick = async () => {
+    // Marquer toutes les notifications personnelles comme lues
+    if (userNotifications.length > 0) {
+      await markAllAsRead();
     }
+    
+    // Pour le directeur: réinitialiser les compteurs de demandes en attente
+    if (user?.role === 'Directeur') {
+      setNotifications({ conges: 0, travail: 0 });
+    }
+    
     // Ouvrir/fermer le panneau
     setShowPanel(!showPanel);
   };
