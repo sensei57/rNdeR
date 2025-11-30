@@ -4195,59 +4195,12 @@ class MedicalStaffAPITester:
         return created_requests
 
     def test_firebase_notification_system(self):
-        """Test Firebase notification system as requested in review"""
-        print("\n🔥 Testing Firebase Notification System...")
+        """Test Enhanced Firebase Notification System - URGENT PRIORITY"""
+        print("\n🔥 TESTING ENHANCED FIREBASE NOTIFICATION SYSTEM - URGENT PRIORITY")
+        print("="*80)
         
-        # TEST 1 - Enregistrement token Firebase
-        print("\n   TEST 1 - Firebase Token Registration...")
-        
-        for role in ['directeur', 'medecin', 'assistant']:
-            if role in self.tokens:
-                token_data = {
-                    "token": f"test-firebase-token-{role}-123",
-                    "userId": self.users[role]['id']
-                }
-                
-                success, response = self.run_test(
-                    f"Register Firebase token for {role}",
-                    "POST",
-                    "notifications/subscribe",
-                    200,
-                    data=token_data,
-                    token=self.tokens[role]
-                )
-                
-                if success:
-                    print(f"   ✅ Firebase token registered for {role}")
-                else:
-                    print(f"   ❌ Failed to register Firebase token for {role}")
-        
-        # TEST 2 - Notifications Directeur - Demande de congé (Assistant)
-        print("\n   TEST 2 - Director Notifications - Leave Request (Assistant)...")
-        
-        if 'assistant' in self.tokens:
-            from datetime import datetime, timedelta
-            start_date = (datetime.now() + timedelta(days=10)).strftime('%Y-%m-%d')
-            end_date = (datetime.now() + timedelta(days=12)).strftime('%Y-%m-%d')
-            
-            leave_data = {
-                "date_debut": start_date,
-                "date_fin": end_date,
-                "type_conge": "CONGE_PAYE",
-                "motif": "Test notification système Firebase"
-            }
-            
-            success, response = self.run_test(
-                "Create leave request as Assistant (should notify Director)",
-                "POST",
-                "conges",
-                200,
-                data=leave_data,
-                token=self.tokens['assistant']
-            )
-            
-            if success:
-                print(f"   ✅ Leave request created by Assistant")
+        # Call the enhanced notification test method
+        return self.test_enhanced_firebase_notification_system()
                 
                 # Check if notification was created for director
                 if 'directeur' in self.tokens:
