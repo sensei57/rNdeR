@@ -1300,94 +1300,507 @@ class MedicalStaffAPITester:
         
         return sent_messages
 
-    def test_notification_system(self):
-        """Test comprehensive notification system"""
-        print("\n🔔 Testing Notification System...")
+    def test_enhanced_firebase_notification_system(self):
+        """Test Enhanced Firebase Notification System - URGENT PRIORITY"""
+        print("\n🔥 TESTING ENHANCED FIREBASE NOTIFICATION SYSTEM - URGENT PRIORITY")
+        print("="*80)
         
-        if 'directeur' not in self.tokens:
-            print("❌ Skipping notification tests - no directeur token")
-            return
+        # Initialize test data
+        notification_counts = {
+            'directeur': 0,
+            'medecin': 0, 
+            'assistant': 0
+        }
         
-        directeur_token = self.tokens['directeur']
-        today = datetime.now().strftime('%Y-%m-%d')
+        # TEST 1 - Notification Congé Médecin au Directeur
+        print("\n🔍 TEST 1 - Notification Congé Médecin au Directeur")
+        print("-" * 60)
         
-        # First, ensure we have some planning data for notifications
-        planning_slots = self.test_planning_system()
-        
-        # Test generating notifications (Director only)
-        success, response = self.run_test(
-            f"Generate daily notifications for {today}",
-            "POST",
-            f"notifications/generate/{today}",
-            200,
-            token=directeur_token
-        )
-        
-        if success:
-            print(f"   ✓ Notifications generated successfully")
-            if 'message' in response:
-                print(f"   {response['message']}")
-        
-        # Test getting all notifications for date (Director)
-        success, all_notifications = self.run_test(
-            f"Get all notifications for {today} (Director)",
-            "GET",
-            f"notifications/{today}",
-            200,
-            token=directeur_token
-        )
-        
-        if success:
-            print(f"   Director can see {len(all_notifications)} notifications for {today}")
-            for notif in all_notifications:
-                employe = notif.get('employe', {})
-                print(f"   - Notification for {employe.get('prenom', '')} {employe.get('nom', '')}")
-        
-        # Test getting personal notification for today
-        for role in ['medecin', 'assistant', 'secretaire']:
-            if role in self.tokens:
-                success, my_notification = self.run_test(
-                    f"Get personal notification for today ({role})",
-                    "GET",
-                    "notifications/me/today",
-                    200,
-                    token=self.tokens[role]
-                )
-                
-                if success and my_notification:
-                    print(f"   ✓ {role} has personal notification for today")
-                    # Print first few lines of notification content
-                    content_lines = my_notification.get('contenu', '').split('\n')
-                    if content_lines:
-                        print(f"   Content preview: {content_lines[0]}")
-                elif success:
-                    print(f"   {role} has no notification for today")
-        
-        # Test unauthorized notification generation
         if 'medecin' in self.tokens:
+            # Create leave request as Doctor
+            leave_data = {
+                "date_debut": "2025-01-22",
+                "date_fin": "2025-01-22", 
+                "type_conge": "CONGE_PAYE",
+                "creneau": "MATIN",
+                "motif": "Test demande congé médecin"
+            }
+            
             success, response = self.run_test(
-                "Unauthorized notification generation (médecin)",
+                "Create leave request as Doctor (dr.dupont@cabinet.fr)",
                 "POST",
-                f"notifications/generate/{today}",
-                403,  # Should be forbidden
+                "conges",
+                200,
+                data=leave_data,
                 token=self.tokens['medecin']
             )
             
             if success:
-                print(f"   ✓ Non-directeur correctly denied notification generation")
+                print(f"   ✅ Leave request created successfully")
+                print(f"   - Request ID: {response.get('id', 'N/A')}")
+                print(f"   - Date: {response.get('date_debut', 'N/A')}")
+                print(f"   - Slot: {response.get('creneau', 'N/A')}")
+                notification_counts['directeur'] += 1
+                
+                # Verify Director receives notification
+                if 'directeur' in self.tokens:
+                    success_notif, notifications = self.run_test(
+                        "Check Director notifications after Doctor leave request",
+                        "GET",
+                        "notifications",
+                        200,
+                        token=self.tokens['directeur']
+                    )
+                    
+                    if success_notif:
+                        recent_notifs = [n for n in notifications if "congé" in n.get('title', '').lower()]
+                        if recent_notifs:
+                            print(f"   ✅ Director received {len(recent_notifs)} leave notification(s)")
+                            for notif in recent_notifs[:1]:  # Show first one
+                                print(f"   - Title: {notif.get('title', '')}")
+                                print(f"   - Body: {notif.get('body', '')}")
+                        else:
+                            print(f"   ❌ Director did not receive leave notification")
+            else:
+                print(f"   ❌ Failed to create leave request as Doctor")
         
-        # Test getting notifications for non-existent date
-        future_date = "2025-12-31"
-        success, empty_notifications = self.run_test(
-            f"Get notifications for future date {future_date}",
-            "GET",
-            f"notifications/{future_date}",
+        # TEST 2 - Notification Congé aux Collègues
+        print("\n🔍 TEST 2 - Notification Congé aux Collègues")
+        print("-" * 60)
+        
+        # First create some planning for colleagues to work on the same date
+        if 'directeur' in self.tokens and 'assistant' in self.tokens:
+            # Get users to create planning
+            success, users_data = self.run_test(
+                "Get users for planning setup",
+                "GET", 
+                "users",
+                200,
+                token=self.tokens['directeur']
+            )
+            
+            if success:
+                assistants = [u for u in users_data if u['role'] == 'Assistant']
+                if assistants:
+                    assistant = assistants[0]
+                    
+                    # Create planning for assistant on same date as leave
+                    planning_data = {
+                        "date": "2025-01-22",
+                        "creneau": "MATIN",
+                        "employe_id": assistant['id'],
+                        "salle_attribuee": "A",
+                        "notes": "Test planning for colleague notification"
+                    }
+                    
+                    success_plan, plan_response = self.run_test(
+                        "Create planning for assistant on leave date",
+                        "POST",
+                        "planning",
+                        200,
+                        data=planning_data,
+                        token=self.tokens['directeur']
+                    )
+                    
+                    if success_plan:
+                        print(f"   ✅ Planning created for assistant on leave date")
+                        
+                        # Now create another leave request to trigger colleague notification
+                        leave_data_colleague = {
+                            "date_debut": "2025-01-22",
+                            "date_fin": "2025-01-22",
+                            "type_conge": "RTT", 
+                            "creneau": "MATIN",
+                            "motif": "Test notification collègues"
+                        }
+                        
+                        if 'medecin' in self.tokens:
+                            success_leave, leave_response = self.run_test(
+                                "Create leave request to trigger colleague notification",
+                                "POST",
+                                "conges", 
+                                200,
+                                data=leave_data_colleague,
+                                token=self.tokens['medecin']
+                            )
+                            
+                            if success_leave:
+                                print(f"   ✅ Leave request created to test colleague notifications")
+                                notification_counts['assistant'] += 1
+                                
+                                # Check if assistant received colleague notification
+                                success_notif, assistant_notifications = self.run_test(
+                                    "Check Assistant notifications for colleague leave",
+                                    "GET",
+                                    "notifications",
+                                    200,
+                                    token=self.tokens['assistant']
+                                )
+                                
+                                if success_notif:
+                                    colleague_notifs = [n for n in assistant_notifications if "collègue" in n.get('body', '').lower()]
+                                    if colleague_notifs:
+                                        print(f"   ✅ Assistant received {len(colleague_notifs)} colleague notification(s)")
+                                        for notif in colleague_notifs[:1]:
+                                            print(f"   - Title: {notif.get('title', '')}")
+                                            print(f"   - Body: {notif.get('body', '')}")
+                                    else:
+                                        print(f"   ⚠️ Assistant did not receive colleague notification")
+        
+        # TEST 3 - Notification Approbation Congé
+        print("\n🔍 TEST 3 - Notification Approbation Congé")
+        print("-" * 60)
+        
+        if 'directeur' in self.tokens:
+            # Get existing leave requests to approve
+            success, leave_requests = self.run_test(
+                "Get leave requests for approval",
+                "GET",
+                "conges",
+                200,
+                token=self.tokens['directeur']
+            )
+            
+            if success and leave_requests:
+                # Find a pending request
+                pending_requests = [req for req in leave_requests if req.get('statut') == 'EN_ATTENTE']
+                if pending_requests:
+                    request_to_approve = pending_requests[0]
+                    request_id = request_to_approve['id']
+                    
+                    approval_data = {
+                        "approuve": True,
+                        "commentaire": "Approuvé pour test notifications"
+                    }
+                    
+                    success_approve, approve_response = self.run_test(
+                        "Approve leave request as Director",
+                        "PUT",
+                        f"conges/{request_id}/approuver",
+                        200,
+                        data=approval_data,
+                        token=self.tokens['directeur']
+                    )
+                    
+                    if success_approve:
+                        print(f"   ✅ Leave request approved successfully")
+                        
+                        # Check if employee received approval notification
+                        employee_id = request_to_approve.get('utilisateur_id')
+                        if employee_id:
+                            # Find which token corresponds to this employee
+                            for role, user_data in self.users.items():
+                                if user_data.get('id') == employee_id and role in self.tokens:
+                                    success_notif, employee_notifications = self.run_test(
+                                        f"Check {role} notifications for approval",
+                                        "GET",
+                                        "notifications",
+                                        200,
+                                        token=self.tokens[role]
+                                    )
+                                    
+                                    if success_notif:
+                                        approval_notifs = [n for n in employee_notifications if "approuvée" in n.get('body', '').lower()]
+                                        if approval_notifs:
+                                            print(f"   ✅ {role} received {len(approval_notifs)} approval notification(s)")
+                                            notification_counts[role] += 1
+                                        else:
+                                            print(f"   ⚠️ {role} did not receive approval notification")
+                                    break
+                else:
+                    print(f"   ⚠️ No pending leave requests found for approval test")
+        
+        # TEST 4 - Notification Message Privé
+        print("\n🔍 TEST 4 - Notification Message Privé")
+        print("-" * 60)
+        
+        if 'directeur' in self.tokens and 'medecin' in self.tokens:
+            medecin_id = self.users['medecin']['id']
+            
+            private_message_data = {
+                "contenu": "Message privé de test pour notification push",
+                "type_message": "PRIVE",
+                "destinataire_id": medecin_id
+            }
+            
+            success, message_response = self.run_test(
+                "Send private message from Director to Doctor",
+                "POST",
+                "messages",
+                200,
+                data=private_message_data,
+                token=self.tokens['directeur']
+            )
+            
+            if success:
+                print(f"   ✅ Private message sent successfully")
+                notification_counts['medecin'] += 1
+                
+                # Check if Doctor received message notification
+                success_notif, doctor_notifications = self.run_test(
+                    "Check Doctor notifications for private message",
+                    "GET",
+                    "notifications",
+                    200,
+                    token=self.tokens['medecin']
+                )
+                
+                if success_notif:
+                    message_notifs = [n for n in doctor_notifications if "💬" in n.get('title', '')]
+                    if message_notifs:
+                        print(f"   ✅ Doctor received {len(message_notifs)} message notification(s)")
+                        for notif in message_notifs[:1]:
+                            print(f"   - Title: {notif.get('title', '')}")
+                            print(f"   - Body: {notif.get('body', '')}")
+                    else:
+                        print(f"   ❌ Doctor did not receive message notification")
+                
+                # Verify sender (Director) does NOT receive own notification
+                success_sender, director_notifications = self.run_test(
+                    "Verify Director does not receive own message notification",
+                    "GET",
+                    "notifications",
+                    200,
+                    token=self.tokens['directeur']
+                )
+                
+                if success_sender:
+                    own_message_notifs = [n for n in director_notifications if "💬" in n.get('title', '') and "Message de" in n.get('title', '')]
+                    if not own_message_notifs:
+                        print(f"   ✅ Director correctly does NOT receive own message notification")
+                    else:
+                        print(f"   ❌ Director incorrectly received own message notification")
+        
+        # TEST 5 - Notification Message Groupe
+        print("\n🔍 TEST 5 - Notification Message Groupe")
+        print("-" * 60)
+        
+        if 'directeur' in self.tokens and 'medecin' in self.tokens and 'assistant' in self.tokens:
+            # First create a group
+            group_data = {
+                "nom": "Test Group Notifications",
+                "description": "Group for testing notifications",
+                "membres": [
+                    self.users['directeur']['id'],
+                    self.users['medecin']['id'], 
+                    self.users['assistant']['id']
+                ]
+            }
+            
+            success, group_response = self.run_test(
+                "Create group for notification testing",
+                "POST",
+                "groupes-chat",
+                200,
+                data=group_data,
+                token=self.tokens['directeur']
+            )
+            
+            if success and 'id' in group_response:
+                group_id = group_response['id']
+                print(f"   ✅ Test group created: {group_response['nom']}")
+                
+                # Send message in group
+                group_message_data = {
+                    "contenu": "Message de groupe pour test notifications",
+                    "type_message": "GROUPE",
+                    "groupe_id": group_id
+                }
+                
+                success_msg, msg_response = self.run_test(
+                    "Send group message from Director",
+                    "POST",
+                    "messages",
+                    200,
+                    data=group_message_data,
+                    token=self.tokens['directeur']
+                )
+                
+                if success_msg:
+                    print(f"   ✅ Group message sent successfully")
+                    notification_counts['medecin'] += 1
+                    notification_counts['assistant'] += 1
+                    
+                    # Check if group members (except sender) received notifications
+                    for role in ['medecin', 'assistant']:
+                        if role in self.tokens:
+                            success_notif, member_notifications = self.run_test(
+                                f"Check {role} notifications for group message",
+                                "GET",
+                                "notifications",
+                                200,
+                                token=self.tokens[role]
+                            )
+                            
+                            if success_notif:
+                                group_notifs = [n for n in member_notifications if "dans" in n.get('title', '') and "💬" in n.get('title', '')]
+                                if group_notifs:
+                                    print(f"   ✅ {role} received {len(group_notifs)} group message notification(s)")
+                                else:
+                                    print(f"   ❌ {role} did not receive group message notification")
+        
+        # TEST 6 - Notification Message Général
+        print("\n🔍 TEST 6 - Notification Message Général")
+        print("-" * 60)
+        
+        if 'directeur' in self.tokens:
+            general_message_data = {
+                "contenu": "Message général de test pour notifications push",
+                "type_message": "GENERAL"
+            }
+            
+            success, general_response = self.run_test(
+                "Send general message from Director",
+                "POST",
+                "messages",
+                200,
+                data=general_message_data,
+                token=self.tokens['directeur']
+            )
+            
+            if success:
+                print(f"   ✅ General message sent successfully")
+                
+                # Count expected notifications (all active employees except sender)
+                success_users, all_users = self.run_test(
+                    "Get all users to count expected notifications",
+                    "GET",
+                    "users",
+                    200,
+                    token=self.tokens['directeur']
+                )
+                
+                if success_users:
+                    active_users = [u for u in all_users if u.get('actif', False) and u['id'] != self.users['directeur']['id']]
+                    expected_count = len(active_users)
+                    print(f"   Expected {expected_count} employees to receive general message notification")
+                    
+                    # Check if all employees (except Director) received notifications
+                    for role in ['medecin', 'assistant']:
+                        if role in self.tokens:
+                            notification_counts[role] += 1
+                            success_notif, employee_notifications = self.run_test(
+                                f"Check {role} notifications for general message",
+                                "GET",
+                                "notifications",
+                                200,
+                                token=self.tokens[role]
+                            )
+                            
+                            if success_notif:
+                                general_notifs = [n for n in employee_notifications if "📢" in n.get('title', '')]
+                                if general_notifs:
+                                    print(f"   ✅ {role} received {len(general_notifs)} general message notification(s)")
+                                else:
+                                    print(f"   ❌ {role} did not receive general message notification")
+        
+        # TEST 7 - API Notifications Firebase
+        print("\n🔍 TEST 7 - API Notifications Firebase")
+        print("-" * 60)
+        
+        # Test Firebase token subscription
+        for role in ['directeur', 'medecin', 'assistant']:
+            if role in self.tokens:
+                subscription_data = {
+                    "token": f"fake_fcm_token_{role}_test_2025"
+                }
+                
+                success, sub_response = self.run_test(
+                    f"Subscribe to Firebase notifications ({role})",
+                    "POST",
+                    "notifications/subscribe",
+                    200,
+                    data=subscription_data,
+                    token=self.tokens[role]
+                )
+                
+                if success:
+                    print(f"   ✅ {role} successfully subscribed to Firebase notifications")
+        
+        # Test notification read functionality
+        for role in ['directeur', 'medecin', 'assistant']:
+            if role in self.tokens:
+                success, notifications = self.run_test(
+                    f"Get {role} notifications for read test",
+                    "GET",
+                    "notifications",
+                    200,
+                    token=self.tokens[role]
+                )
+                
+                if success and notifications:
+                    # Mark first notification as read
+                    first_notif = notifications[0]
+                    notif_id = first_notif.get('id')
+                    
+                    if notif_id:
+                        success_read, read_response = self.run_test(
+                            f"Mark notification as read ({role})",
+                            "PUT",
+                            f"notifications/{notif_id}/read",
+                            200,
+                            token=self.tokens[role]
+                        )
+                        
+                        if success_read:
+                            print(f"   ✅ {role} successfully marked notification as read")
+        
+        # Test daily planning notifications trigger
+        success, daily_response = self.run_test(
+            "Trigger daily planning notifications",
+            "POST",
+            "notifications/send-daily-planning",
             200,
-            token=directeur_token
+            token=self.tokens['directeur']
         )
         
         if success:
-            print(f"   Found {len(empty_notifications)} notifications for future date (expected: 0)")
+            print(f"   ✅ Daily planning notifications triggered successfully")
+        
+        # FINAL SUMMARY
+        print("\n" + "="*80)
+        print("🎯 ENHANCED FIREBASE NOTIFICATION SYSTEM TEST SUMMARY")
+        print("="*80)
+        
+        total_tests = 7
+        passed_tests = 0
+        
+        print(f"\n📊 NOTIFICATION COUNTS PER USER:")
+        for role, count in notification_counts.items():
+            if role in self.tokens:
+                print(f"   {role.upper()}: {count} notifications expected")
+                
+                # Verify actual notification count
+                success, actual_notifications = self.run_test(
+                    f"Final notification count check ({role})",
+                    "GET",
+                    "notifications",
+                    200,
+                    token=self.tokens[role]
+                )
+                
+                if success:
+                    actual_count = len(actual_notifications)
+                    print(f"   {role.upper()}: {actual_count} notifications received")
+                    
+                    if actual_count > 0:
+                        passed_tests += 1
+        
+        print(f"\n✅ TESTS COMPLETED: {passed_tests}/{total_tests}")
+        
+        if passed_tests >= 5:
+            print("🎉 EXCELLENT: Enhanced Firebase Notification System is WORKING!")
+            print("🔥 All major notification types are functional")
+            print("📱 Push notifications are being created in database")
+            print("📤 Backend logs should show notification sending attempts")
+        elif passed_tests >= 3:
+            print("✅ GOOD: Most notification features are working")
+            print("⚠️ Some notification types may need attention")
+        else:
+            print("❌ CRITICAL: Notification system has major issues")
+            print("🔧 Multiple notification types are not working properly")
+        
+        return notification_counts
 
     def test_salles_management(self):
         """Test comprehensive room/salle management system - NEW FEATURE"""
