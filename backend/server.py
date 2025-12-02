@@ -2280,6 +2280,103 @@ async def get_demandes_jour_travail(
     
     return enriched_demandes
 
+
+@api_router.post("/demandes-travail/mensuelle", response_model=dict)
+async def create_demande_mensuelle(
+    demande_data: DemandeMensuelleCreate,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(require_role([ROLES["MEDECIN"]]))
+):
+    """Créer des demandes de travail pour un mois entier"""
+    from datetime import datetime, timedelta
+    from calendar import monthrange
+    
+    try:
+        # Parser la date de début
+        date_debut = datetime.strptime(demande_data.date_debut, '%Y-%m-%d')
+        
+        # Calculer le dernier jour du mois
+        year = date_debut.year
+        month = date_debut.month
+        dernier_jour = monthrange(year, month)[1]
+        date_fin = datetime(year, month, dernier_jour)
+        
+        # Si une semaine type est fournie, la récupérer
+        semaine_type = None
+        if demande_data.semaine_type_id:
+            semaine_type = await db.semaines_types.find_one({"id": demande_data.semaine_type_id})
+            if not semaine_type:
+                raise HTTPException(status_code=404, detail="Semaine type non trouvée")
+        
+        # Créer les demandes jour par jour
+        demandes_creees = []
+        current_date = date_debut
+        jours_semaine = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
+        
+        while current_date <= date_fin:
+            date_str = current_date.strftime('%Y-%m-%d')
+            
+            # Vérifier si ce jour est exclu
+            if date_str in demande_data.jours_exclus:
+                current_date += timedelta(days=1)
+                continue
+            
+            # Déterminer le créneau selon la semaine type ou défaut
+            creneau = None
+            if semaine_type:
+                jour_semaine = jours_semaine[current_date.weekday()]
+                creneau = semaine_type.get(jour_semaine, 'REPOS')
+            else:
+                # Par défaut, demander la journée complète pour les jours ouvrables
+                if current_date.weekday() < 6:  # Lundi à Samedi
+                    creneau = 'JOURNEE_COMPLETE'
+                else:
+                    creneau = 'REPOS'
+            
+            # Ne créer une demande que si ce n'est pas un jour de repos
+            if creneau and creneau != 'REPOS':
+                # Vérifier qu'il n'y a pas déjà une demande pour ce jour
+                existing = await db.demandes_travail.find_one({
+                    "medecin_id": current_user.id,
+                    "date_demandee": date_str,
+                    "statut": {"$in": ["EN_ATTENTE", "APPROUVE"]}
+                })
+                
+                if not existing:
+                    demande = DemandeJourTravail(
+                        medecin_id=current_user.id,
+                        date_demandee=date_str,
+                        creneau=creneau,
+                        motif=demande_data.motif or f"Demande mensuelle {date_debut.strftime('%B %Y')}"
+                    )
+                    await db.demandes_travail.insert_one(demande.dict())
+                    demandes_creees.append(date_str)
+            
+            current_date += timedelta(days=1)
+        
+        # 📤 NOTIFICATION : Notifier le directeur
+        if demandes_creees:
+            user_name = f"Dr. {current_user.prenom} {current_user.nom}"
+            details = f"{len(demandes_creees)} demandes pour {date_debut.strftime('%B %Y')}"
+            
+            background_tasks.add_task(
+                notify_director_new_request,
+                "demandes de travail mensuelles",
+                user_name,
+                details
+            )
+        
+        return {
+            "message": f"{len(demandes_creees)} demandes créées avec succès",
+            "demandes_creees": len(demandes_creees),
+            "dates": demandes_creees
+        }
+        
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Format de date invalide")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.put("/demandes-travail/{demande_id}/approuver")
 async def approuver_demande_jour_travail(
     demande_id: str,
