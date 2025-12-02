@@ -275,8 +275,10 @@ class AnnulationCreneauxTester:
         print("-" * 60)
         
         # Create another work request for direct cancellation
+        future_date_2 = (datetime.now() + timedelta(days=32)).strftime('%Y-%m-%d')
+        
         demande_data_2 = {
-            "date_demandee": "2025-01-27",
+            "date_demandee": future_date_2,
             "creneau": "MATIN",
             "motif": "Test demande pour annulation directe"
         }
