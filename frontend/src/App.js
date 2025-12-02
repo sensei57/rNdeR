@@ -5081,12 +5081,6 @@ const DemandesTravailManager = () => {
     }
   };
 
-    } catch (error) {
-      toast.error(error.response?.data?.detail || 'Erreur lors de l\'annulation');
-    }
-  };
-
-
   const resetForm = () => {
     setNewDemande({
       date_demandee: '',
