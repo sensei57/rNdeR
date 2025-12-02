@@ -499,10 +499,13 @@ const NotificationBadge = ({ setActiveTab }) => {
   
   const totalNotifications = totalDirectorNotifications + totalUserNotifications;
 
-  // Afficher le badge seulement s'il y a des notifications OU si le panneau est ouvert
-  const showBadge = totalNotifications > 0 || showPanel;
+  // Compter le total réel de notifications dans les données
+  const totalRealNotifications = userNotifications.length + demandesConges.length + demandesTravail.length;
 
-  if (!showBadge) return null;
+  // Afficher la cloche si : il y a des notifications OU le panneau est ouvert OU il y a des données
+  const showBell = totalNotifications > 0 || showPanel || totalRealNotifications > 0;
+
+  if (!showBell) return null;
 
   return (
     <div className="relative">
