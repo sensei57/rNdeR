@@ -3952,6 +3952,53 @@ const PlanningManager = () => {
           </DialogContent>
         </Dialog>
       )}
+
+
+      {/* Modal Annulation Créneau depuis Planning */}
+      <Dialog open={showAnnulationCreneauModal} onOpenChange={setShowAnnulationCreneauModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>🗑️ Annuler le créneau</DialogTitle>
+            <DialogDescription>
+              {creneauToCancel && (
+                <>
+                  Annulation du créneau de <strong>{creneauToCancel.employe?.prenom} {creneauToCancel.employe?.nom}</strong>
+                  <br />
+                  {creneauToCancel.date} - {creneauToCancel.creneau === 'MATIN' ? 'Matin' : 'Après-midi'}
+                  <br />
+                  <span className="text-orange-600 text-sm mt-2 block">
+                    ⚠️ Ce créneau provient d'une demande de travail approuvée. Le médecin sera notifié de l'annulation.
+                  </span>
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleSubmitAnnulationCreneau} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="raison-annulation-creneau">Raison de l'annulation *</Label>
+              <Textarea
+                id="raison-annulation-creneau"
+                value={raisonAnnulationCreneau}
+                onChange={(e) => setRaisonAnnulationCreneau(e.target.value)}
+                placeholder="Ex: Réorganisation interne, urgence, fermeture exceptionnelle..."
+                rows={4}
+                required
+              />
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setShowAnnulationCreneauModal(false)}>
+                Annuler
+              </Button>
+              <Button type="submit" className="bg-red-600 hover:bg-red-700">
+                Confirmer l'annulation
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
         </div>
       </div>
 
