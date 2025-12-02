@@ -2358,6 +2358,186 @@ async def approuver_demande_jour_travail(
     
     return {"message": f"Demande {statut.lower()}e avec succès" + (" et créneau(x) créé(s) dans le planning" if request.approuve else "")}
 
+@api_router.post("/demandes-travail/{demande_id}/demander-annulation")
+async def demander_annulation_demande_travail(
+    demande_id: str,
+    request: DemandeAnnulationRequest,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user)
+):
+    """Médecin demande l'annulation d'une demande de créneau approuvée"""
+    # Récupérer la demande
+    demande = await db.demandes_travail.find_one({"id": demande_id})
+    if not demande:
+        raise HTTPException(status_code=404, detail="Demande non trouvée")
+    
+    # Vérifier que c'est le médecin concerné
+    if current_user.role == ROLES["MEDECIN"] and demande["medecin_id"] != current_user.id:
+        raise HTTPException(status_code=403, detail="Vous ne pouvez demander l'annulation que de vos propres demandes")
+    
+    # Vérifier que la demande est approuvée
+    if demande["statut"] != "APPROUVE":
+        raise HTTPException(status_code=400, detail="Seules les demandes approuvées peuvent être annulées")
+    
+    # Vérifier qu'il n'y a pas déjà une demande d'annulation en cours
+    if demande.get("demande_annulation", False):
+        raise HTTPException(status_code=400, detail="Une demande d'annulation est déjà en cours")
+    
+    # Mettre à jour la demande
+    await db.demandes_travail.update_one(
+        {"id": demande_id},
+        {"$set": {
+            "demande_annulation": True,
+            "raison_demande_annulation": request.raison,
+            "date_demande_annulation": datetime.now(timezone.utc)
+        }}
+    )
+    
+    # 📤 NOTIFICATION : Notifier le directeur de la demande d'annulation
+    medecin_name = f"{current_user.prenom} {current_user.nom}"
+    if current_user.role == ROLES["MEDECIN"]:
+        medecin_name = f"Dr. {medecin_name}"
+    
+    date_str = demande["date_demandee"]
+    creneau_text = "Journée complète" if demande["creneau"] == "JOURNEE_COMPLETE" else demande["creneau"].lower()
+    details = f"{date_str} ({creneau_text})"
+    
+    background_tasks.add_task(
+        notify_director_new_request,
+        "demande d'annulation de créneau",
+        medecin_name,
+        details
+    )
+    
+    return {"message": "Demande d'annulation envoyée avec succès"}
+
+@api_router.put("/demandes-travail/{demande_id}/approuver-annulation")
+async def approuver_annulation_demande_travail(
+    demande_id: str,
+    request: ApprobationJourTravailRequest,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    """Directeur approuve ou rejette une demande d'annulation"""
+    # Récupérer la demande
+    demande = await db.demandes_travail.find_one({"id": demande_id})
+    if not demande:
+        raise HTTPException(status_code=404, detail="Demande non trouvée")
+    
+    # Vérifier qu'il y a une demande d'annulation en cours
+    if not demande.get("demande_annulation", False):
+        raise HTTPException(status_code=400, detail="Aucune demande d'annulation en cours")
+    
+    if request.approuve:
+        # Approuver l'annulation
+        await db.demandes_travail.update_one(
+            {"id": demande_id},
+            {"$set": {
+                "statut": "ANNULE",
+                "annule_par": current_user.id,
+                "raison_annulation": demande.get("raison_demande_annulation", ""),
+                "date_annulation": datetime.now(timezone.utc),
+                "demande_annulation": False,
+                "commentaire_approbation": request.commentaire
+            }}
+        )
+        
+        # Supprimer les créneaux du planning
+        creneaux_a_supprimer = []
+        if demande["creneau"] == "JOURNEE_COMPLETE":
+            creneaux_a_supprimer = ["MATIN", "APRES_MIDI"]
+        else:
+            creneaux_a_supprimer = [demande["creneau"]]
+        
+        for creneau_type in creneaux_a_supprimer:
+            await db.planning.delete_one({
+                "date": demande["date_demandee"],
+                "creneau": creneau_type,
+                "employe_id": demande["medecin_id"]
+            })
+        
+        statut_message = "approuvée"
+    else:
+        # Rejeter la demande d'annulation
+        await db.demandes_travail.update_one(
+            {"id": demande_id},
+            {"$set": {
+                "demande_annulation": False,
+                "commentaire_approbation": request.commentaire
+            }}
+        )
+        statut_message = "rejetée"
+    
+    # 📤 NOTIFICATION : Notifier le médecin du statut de sa demande d'annulation
+    date_str = demande["date_demandee"]
+    creneau_text = "Journée complète" if demande["creneau"] == "JOURNEE_COMPLETE" else demande["creneau"].lower()
+    details = f"{date_str} ({creneau_text})"
+    
+    background_tasks.add_task(
+        notify_user_request_status,
+        demande["medecin_id"],
+        "Demande d'annulation de créneau",
+        "APPROUVE" if request.approuve else "REJETE",
+        details
+    )
+    
+    return {"message": f"Demande d'annulation {statut_message} avec succès"}
+
+@api_router.post("/demandes-travail/{demande_id}/annuler-directement")
+async def annuler_directement_demande_travail(
+    demande_id: str,
+    request: AnnulationDirecteRequest,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    """Directeur annule directement une demande de créneau approuvée"""
+    # Récupérer la demande
+    demande = await db.demandes_travail.find_one({"id": demande_id})
+    if not demande:
+        raise HTTPException(status_code=404, detail="Demande non trouvée")
+    
+    # Vérifier que la demande est approuvée
+    if demande["statut"] != "APPROUVE":
+        raise HTTPException(status_code=400, detail="Seules les demandes approuvées peuvent être annulées")
+    
+    # Annuler la demande
+    await db.demandes_travail.update_one(
+        {"id": demande_id},
+        {"$set": {
+            "statut": "ANNULE",
+            "annule_par": current_user.id,
+            "raison_annulation": request.raison,
+            "date_annulation": datetime.now(timezone.utc)
+        }}
+    )
+    
+    # Supprimer les créneaux du planning
+    creneaux_a_supprimer = []
+    if demande["creneau"] == "JOURNEE_COMPLETE":
+        creneaux_a_supprimer = ["MATIN", "APRES_MIDI"]
+    else:
+        creneaux_a_supprimer = [demande["creneau"]]
+    
+    for creneau_type in creneaux_a_supprimer:
+        await db.planning.delete_one({
+            "date": demande["date_demandee"],
+            "creneau": creneau_type,
+            "employe_id": demande["medecin_id"]
+        })
+    
+    # 📤 NOTIFICATION : Notifier le médecin de l'annulation
+    date_str = demande["date_demandee"]
+    creneau_text = "Journée complète" if demande["creneau"] == "JOURNEE_COMPLETE" else demande["creneau"].lower()
+    
+    await send_notification_to_user(
+        demande["medecin_id"],
+        "❌ Créneau annulé par le Directeur",
+        f"Votre créneau du {date_str} ({creneau_text}) a été annulé. Raison: {request.raison}",
+        {"type": "creneau_annule", "date": date_str, "creneau": demande["creneau"]}
+    )
+    
+    return {"message": "Demande annulée avec succès"}
+
 # Planning semaine
 @api_router.get("/planning/semaine/{date_debut}")
 async def get_planning_semaine(
