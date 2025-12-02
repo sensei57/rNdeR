@@ -4807,6 +4807,7 @@ const DemandesTravailManager = () => {
     horaire_pause_fin: '14:00'
   });
   const [loading, setLoading] = useState(true);
+  const [employes, setEmployes] = useState([]);
   const [showAnnulationModal, setShowAnnulationModal] = useState(false);
   const [demandeIdAnnulation, setDemandeIdAnnulation] = useState(null);
   const [raisonAnnulation, setRaisonAnnulation] = useState('');
