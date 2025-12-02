@@ -5523,8 +5523,6 @@ const DemandesTravailManager = () => {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
-
 
       {/* Modal Annulation */}
       <Dialog open={showAnnulationModal} onOpenChange={setShowAnnulationModal}>
