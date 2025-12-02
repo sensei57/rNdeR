@@ -5046,7 +5046,7 @@ const DemandesTravailManager = () => {
     genererJoursMois(newDate, demandeMensuelle.semaine_type_id);
   };
 
-  const handleSemaineTypeChangeM ensuelle = (semaineTypeId) => {
+  const handleSemaineTypeChangeMensuelle = (semaineTypeId) => {
     setDemandeMensuelle(prev => ({ ...prev, semaine_type_id: semaineTypeId }));
     genererJoursMois(demandeMensuelle.date_debut, semaineTypeId);
   };
