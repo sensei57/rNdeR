@@ -4990,6 +4990,97 @@ const DemandesTravailManager = () => {
       setShowAnnulationModal(false);
       setRaisonAnnulation('');
       fetchDemandes();
+
+
+  const handleOpenDemandeMensuelle = () => {
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    setDemandeMensuelle({
+      date_debut: firstDay.toISOString().split('T')[0],
+      semaine_type_id: '',
+      motif: '',
+      jours_exclus: []
+    });
+    genererJoursMois(firstDay.toISOString().split('T')[0], '');
+    setShowDemandeMensuelleModal(true);
+  };
+
+  const genererJoursMois = (dateDebut, semaineTypeId) => {
+    const date = new Date(dateDebut);
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    
+    const jours = [];
+    const joursNoms = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+    const semaineType = semainesTypes.find(s => s.id === semaineTypeId);
+    
+    for (let day = 1; day <= lastDay; day++) {
+      const currentDate = new Date(year, month, day);
+      const dateStr = currentDate.toISOString().split('T')[0];
+      const jourSemaine = joursNoms[currentDate.getDay()];
+      
+      let creneau = 'JOURNEE_COMPLETE';
+      if (semaineType) {
+        creneau = semaineType[jourSemaine] || 'REPOS';
+      } else {
+        // Par défaut : journée complète du lundi au samedi
+        if (currentDate.getDay() === 0) { // Dimanche
+          creneau = 'REPOS';
+        }
+      }
+      
+      jours.push({
+        date: dateStr,
+        jourNom: jourSemaine,
+        creneau: creneau,
+        selectionne: creneau !== 'REPOS'
+      });
+    }
+    
+    setJoursDisponibles(jours);
+  };
+
+  const handleDateDebutChange = (newDate) => {
+    setDemandeMensuelle(prev => ({ ...prev, date_debut: newDate }));
+    genererJoursMois(newDate, demandeMensuelle.semaine_type_id);
+  };
+
+  const handleSemaineTypeChangeM ensuelle = (semaineTypeId) => {
+    setDemandeMensuelle(prev => ({ ...prev, semaine_type_id: semaineTypeId }));
+    genererJoursMois(demandeMensuelle.date_debut, semaineTypeId);
+  };
+
+  const toggleJourSelection = (dateStr) => {
+    setJoursDisponibles(prev => prev.map(j => 
+      j.date === dateStr ? { ...j, selectionne: !j.selectionne } : j
+    ));
+  };
+
+  const handleSubmitDemandeMensuelle = async (e) => {
+    e.preventDefault();
+    
+    // Construire la liste des jours exclus
+    const joursExclus = joursDisponibles
+      .filter(j => !j.selectionne)
+      .map(j => j.date);
+    
+    try {
+      const response = await axios.post(`${API}/demandes-travail/mensuelle`, {
+        date_debut: demandeMensuelle.date_debut,
+        semaine_type_id: demandeMensuelle.semaine_type_id || null,
+        jours_exclus: joursExclus,
+        motif: demandeMensuelle.motif
+      });
+      
+      toast.success(response.data.message || 'Demandes créées avec succès');
+      setShowDemandeMensuelleModal(false);
+      fetchDemandes();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la création des demandes');
+    }
+  };
+
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Erreur lors de l\'annulation');
     }
