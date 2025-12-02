@@ -4811,6 +4811,14 @@ const DemandesTravailManager = () => {
   const [demandeIdAnnulation, setDemandeIdAnnulation] = useState(null);
   const [raisonAnnulation, setRaisonAnnulation] = useState('');
   const [typeAnnulation, setTypeAnnulation] = useState(''); // 'demander', 'approuver', 'rejeter', 'directe'
+  const [showDemandeMensuelleModal, setShowDemandeMensuelleModal] = useState(false);
+  const [demandeMensuelle, setDemandeMensuelle] = useState({
+    date_debut: '',
+    semaine_type_id: '',
+    motif: '',
+    jours_exclus: []
+  });
+  const [joursDisponibles, setJoursDisponibles] = useState([]);
   const { user } = useAuth();
 
   useEffect(() => {
