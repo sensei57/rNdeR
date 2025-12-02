@@ -4813,6 +4813,66 @@ const DemandesTravailManager = () => {
     }
   };
 
+  const handleDemanderAnnulation = (demandeId) => {
+    setDemandeIdAnnulation(demandeId);
+    setTypeAnnulation('demander');
+    setRaisonAnnulation('');
+    setShowAnnulationModal(true);
+  };
+
+  const handleApprouverAnnulation = (demandeId, approuver) => {
+    setDemandeIdAnnulation(demandeId);
+    setTypeAnnulation(approuver ? 'approuver' : 'rejeter');
+    setRaisonAnnulation('');
+    setShowAnnulationModal(true);
+  };
+
+  const handleAnnulerDirectement = (demandeId) => {
+    setDemandeIdAnnulation(demandeId);
+    setTypeAnnulation('directe');
+    setRaisonAnnulation('');
+    setShowAnnulationModal(true);
+  };
+
+  const handleSubmitAnnulation = async (e) => {
+    e.preventDefault();
+    
+    if (!raisonAnnulation.trim()) {
+      toast.error('La raison est obligatoire');
+      return;
+    }
+
+    try {
+      if (typeAnnulation === 'demander') {
+        // Médecin demande l'annulation
+        await axios.post(`${API}/demandes-travail/${demandeIdAnnulation}/demander-annulation`, {
+          raison: raisonAnnulation
+        });
+        toast.success('Demande d\'annulation envoyée avec succès');
+      } else if (typeAnnulation === 'approuver' || typeAnnulation === 'rejeter') {
+        // Directeur approuve ou rejette la demande d'annulation
+        await axios.put(`${API}/demandes-travail/${demandeIdAnnulation}/approuver-annulation`, {
+          approuve: typeAnnulation === 'approuver',
+          commentaire: raisonAnnulation
+        });
+        toast.success(typeAnnulation === 'approuver' ? 'Annulation approuvée' : 'Demande d\'annulation rejetée');
+      } else if (typeAnnulation === 'directe') {
+        // Directeur annule directement
+        await axios.post(`${API}/demandes-travail/${demandeIdAnnulation}/annuler-directement`, {
+          raison: raisonAnnulation
+        });
+        toast.success('Créneau annulé avec succès');
+      }
+      
+      setShowAnnulationModal(false);
+      setRaisonAnnulation('');
+      fetchDemandes();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de l\'annulation');
+    }
+  };
+
+
   const resetForm = () => {
     setNewDemande({
       date_demandee: '',
