@@ -397,19 +397,21 @@ const NotificationBadge = ({ setActiveTab }) => {
       const congesEnAttente = congesRes.data.filter(d => d.statut === 'EN_ATTENTE');
       const travailEnAttente = travailRes.data.filter(d => d.statut === 'EN_ATTENTE');
 
-      const newCongesCount = congesEnAttente.length;
-      const newTravailCount = travailEnAttente.length;
+      // Vérifier s'il y a de VRAIES nouvelles demandes (pas déjà vues)
+      const hasNewDemandes = [...congesEnAttente, ...travailEnAttente].some(
+        demande => !viewedDemandesIds.has(demande.id)
+      );
       
-      // Si nouvelles demandes arrivent, réinitialiser badgeViewed
-      if (newCongesCount > notifications.conges || newTravailCount > notifications.travail) {
+      // Réinitialiser badgeViewed SEULEMENT s'il y a de nouvelles demandes
+      if (hasNewDemandes) {
         setBadgeViewed(false);
       }
 
       setDemandesConges(congesEnAttente);
       setDemandesTravail(travailEnAttente);
       setNotifications({
-        conges: newCongesCount,
-        travail: newTravailCount
+        conges: congesEnAttente.length,
+        travail: travailEnAttente.length
       });
     } catch (error) {
       console.error('Erreur lors du chargement des notifications');
