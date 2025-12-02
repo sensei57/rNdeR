@@ -2352,14 +2352,14 @@ async def create_demande_mensuelle(
             if creneau and creneau != 'REPOS':
                 # Vérifier qu'il n'y a pas déjà une demande pour ce jour
                 existing = await db.demandes_travail.find_one({
-                    "medecin_id": current_user.id,
+                    "medecin_id": medecin_id,
                     "date_demandee": date_str,
                     "statut": {"$in": ["EN_ATTENTE", "APPROUVE"]}
                 })
                 
                 if not existing:
                     demande = DemandeJourTravail(
-                        medecin_id=current_user.id,
+                        medecin_id=medecin_id,
                         date_demandee=date_str,
                         creneau=creneau,
                         motif=demande_data.motif or f"Demande mensuelle {date_debut.strftime('%B %Y')}"
