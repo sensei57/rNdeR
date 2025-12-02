@@ -328,6 +328,7 @@ class SemaineType(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     nom: str
     description: Optional[str] = None
+    medecin_id: Optional[str] = None  # ID du médecin propriétaire (None = semaine type globale)
     lundi: Optional[str] = None  # "MATIN", "APRES_MIDI", "JOURNEE_COMPLETE", "REPOS"
     mardi: Optional[str] = None
     mercredi: Optional[str] = None
