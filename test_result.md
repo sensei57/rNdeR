@@ -504,7 +504,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Annulation Demandes de Créneaux - Nouvelle Fonctionnalité"
+    - "Semaines Types Privées + Bouton Demande Mensuelle"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
