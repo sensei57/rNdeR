@@ -2353,6 +2353,9 @@ const PlanningManager = () => {
     medecin_ids: [],
     notes: ''
   });
+  const [showAnnulationCreneauModal, setShowAnnulationCreneauModal] = useState(false);
+  const [creneauToCancel, setCreneauToCancel] = useState(null);
+  const [raisonAnnulationCreneau, setRaisonAnnulationCreneau] = useState('');
 
   const goToToday = () => {
     const today = new Date().toISOString().split('T')[0];
