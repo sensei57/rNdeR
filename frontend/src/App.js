@@ -5071,7 +5071,7 @@ const DemandesTravailManager = () => {
     try {
       const response = await axios.post(`${API}/demandes-travail/mensuelle`, {
         date_debut: demandeMensuelle.date_debut,
-        semaine_type_id: demandeMensuelle.semaine_type_id || null,
+        semaine_type_id: (demandeMensuelle.semaine_type_id && demandeMensuelle.semaine_type_id !== 'none') ? demandeMensuelle.semaine_type_id : null,
         jours_exclus: joursExclus,
         motif: demandeMensuelle.motif
       });
