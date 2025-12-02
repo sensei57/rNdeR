@@ -354,8 +354,10 @@ class AnnulationCreneauxTester:
         print("-" * 60)
         
         # Test: Only approved requests can be cancelled
+        future_date_3 = (datetime.now() + timedelta(days=34)).strftime('%Y-%m-%d')
+        
         demande_pending_data = {
-            "date_demandee": "2025-01-28",
+            "date_demandee": future_date_3,
             "creneau": "MATIN",
             "motif": "Test demande en attente"
         }
