@@ -4024,14 +4024,16 @@ const PlanningManager = () => {
                                 variant="ghost"
                                 onClick={() => handleEditCreneau(creneau)}
                                 className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 h-7 w-7 p-0"
+                                title="Modifier"
                               >
                                 <Edit className="h-3 w-3" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => handleDeleteCreneau(creneau.id)}
+                                onClick={() => handleAnnulerCreneau(creneau)}
                                 className="text-red-600 hover:text-red-800 hover:bg-red-50 h-7 w-7 p-0"
+                                title="Annuler"
                               >
                                 <Trash2 className="h-3 w-3" />
                               </Button>
