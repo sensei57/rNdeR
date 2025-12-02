@@ -5741,6 +5741,121 @@ const DemandesTravailManager = () => {
         </DialogContent>
       </Dialog>
 
+
+
+      {/* Modal Demande Mensuelle */}
+      <Dialog open={showDemandeMensuelleModal} onOpenChange={setShowDemandeMensuelleModal}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>📅 Demande de Créneaux sur 1 Mois</DialogTitle>
+            <DialogDescription>
+              Créez plusieurs demandes de créneaux pour tout un mois. Vous pouvez utiliser une semaine type ou personnaliser jour par jour.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleSubmitDemandeMensuelle} className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="date-debut-mensuelle">Mois / Date de début *</Label>
+                <Input
+                  id="date-debut-mensuelle"
+                  type="date"
+                  value={demandeMensuelle.date_debut}
+                  onChange={(e) => handleDateDebutChange(e.target.value)}
+                  required
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="semaine-type-mensuelle">Semaine Type (Optionnel)</Label>
+                <Select
+                  value={demandeMensuelle.semaine_type_id}
+                  onValueChange={handleSemaineTypeChangeMensuelle}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sans semaine type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Sans semaine type (Journée complète par défaut)</SelectItem>
+                    {semainesTypes.map(semaine => (
+                      <SelectItem key={semaine.id} value={semaine.id}>
+                        {semaine.nom}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="motif-mensuelle">Motif (Optionnel)</Label>
+              <Textarea
+                id="motif-mensuelle"
+                value={demandeMensuelle.motif}
+                onChange={(e) => setDemandeMensuelle(prev => ({ ...prev, motif: e.target.value }))}
+                placeholder="Ex: Demande mensuelle janvier 2025..."
+                rows={2}
+              />
+            </div>
+
+            {/* Liste des jours avec cases à cocher */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <Label>Jours demandés</Label>
+                <div className="text-sm text-gray-600">
+                  {joursDisponibles.filter(j => j.selectionne).length} jour(s) sélectionné(s)
+                </div>
+              </div>
+              <div className="border rounded-lg p-4 bg-gray-50 max-h-[300px] overflow-y-auto">
+                <div className="grid grid-cols-7 gap-2">
+                  {joursDisponibles.map(jour => (
+                    <div 
+                      key={jour.date}
+                      className={`
+                        p-2 rounded border cursor-pointer text-center text-sm
+                        ${jour.selectionne 
+                          ? 'bg-blue-100 border-blue-500 text-blue-800' 
+                          : 'bg-gray-100 border-gray-300 text-gray-500'
+                        }
+                        ${jour.creneau === 'REPOS' ? 'opacity-40' : ''}
+                      `}
+                      onClick={() => jour.creneau !== 'REPOS' && toggleJourSelection(jour.date)}
+                    >
+                      <div className="font-bold">{new Date(jour.date).getDate()}</div>
+                      <div className="text-xs capitalize">{jour.jourNom.substring(0, 3)}</div>
+                      {jour.creneau !== 'REPOS' && (
+                        <div className="text-xs mt-1">
+                          {jour.creneau === 'JOURNEE_COMPLETE' ? 'Journée' :
+                           jour.creneau === 'MATIN' ? 'Matin' : 'AM'}
+                        </div>
+                      )}
+                      {jour.creneau === 'REPOS' && <div className="text-xs">Repos</div>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                💡 Cliquez sur un jour pour l'inclure ou l'exclure de la demande.
+              </p>
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setShowDemandeMensuelleModal(false)}>
+                Annuler
+              </Button>
+              <Button 
+                type="submit" 
+                className="bg-purple-600 hover:bg-purple-700"
+                disabled={joursDisponibles.filter(j => j.selectionne).length === 0}
+              >
+                Créer {joursDisponibles.filter(j => j.selectionne).length} demande(s)
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* Modal Annulation */}
       <Dialog open={showAnnulationModal} onOpenChange={setShowAnnulationModal}>
         <DialogContent className="max-w-md">
