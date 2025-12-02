@@ -466,6 +466,12 @@ const NotificationBadge = ({ setActiveTab }) => {
       if (userNotifications.length > 0) {
         await markAllAsRead();
       }
+      
+      // Stocker les IDs des demandes vues
+      const allIds = new Set();
+      demandesConges.forEach(d => allIds.add(d.id));
+      demandesTravail.forEach(d => allIds.add(d.id));
+      setViewedDemandesIds(allIds);
     }
   };
 
