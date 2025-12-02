@@ -390,6 +390,7 @@ class DemandeJourTravailCreate(BaseModel):
 
 
 class DemandeMensuelleCreate(BaseModel):
+    medecin_id: Optional[str] = None  # Optionnel : si directeur fait la demande pour un médecin
     date_debut: str  # YYYY-MM-DD (premier jour du mois ou date de début)
     semaine_type_id: Optional[str] = None  # Optionnel : basé sur semaine type
     jours_exclus: List[str] = []  # Liste des dates à exclure ["2025-01-15", "2025-01-20"]
