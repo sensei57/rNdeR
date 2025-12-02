@@ -477,8 +477,12 @@ const NotificationBadge = ({ setActiveTab }) => {
     
     // Si on ouvre le panneau, marquer comme "vu" (badge à 0) mais garder les données
     if (newShowPanel) {
+      console.log('🔔 Clic sur cloche - Ouverture panneau');
+      console.log('📊 demandesConges:', demandesConges.length, 'demandesTravail:', demandesTravail.length);
+      
       setBadgeViewed(true);
       sessionStorage.setItem('badgeViewed', 'true');
+      console.log('✅ badgeViewed mis à true dans sessionStorage');
       
       // Marquer toutes les notifications personnelles comme lues
       if (userNotifications.length > 0) {
@@ -487,10 +491,19 @@ const NotificationBadge = ({ setActiveTab }) => {
       
       // Stocker les IDs des demandes vues
       const allIds = new Set();
-      demandesConges.forEach(d => allIds.add(d.id));
-      demandesTravail.forEach(d => allIds.add(d.id));
+      demandesConges.forEach(d => {
+        console.log('➕ Ajout ID congé:', d.id);
+        allIds.add(d.id);
+      });
+      demandesTravail.forEach(d => {
+        console.log('➕ Ajout ID travail:', d.id);
+        allIds.add(d.id);
+      });
       setViewedDemandesIds(allIds);
-      sessionStorage.setItem('viewedDemandesIds', JSON.stringify([...allIds]));
+      const idsArray = [...allIds];
+      sessionStorage.setItem('viewedDemandesIds', JSON.stringify(idsArray));
+      console.log('✅ IDs stockés dans sessionStorage:', idsArray);
+      console.log('🔍 Vérification sessionStorage:', sessionStorage.getItem('viewedDemandesIds'));
     }
   };
 
