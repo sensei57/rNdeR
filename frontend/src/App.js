@@ -4990,7 +4990,10 @@ const DemandesTravailManager = () => {
       setShowAnnulationModal(false);
       setRaisonAnnulation('');
       fetchDemandes();
-
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de l\'annulation');
+    }
+  };
 
   const handleOpenDemandeMensuelle = () => {
     const today = new Date();
