@@ -5390,6 +5390,7 @@ const DemandesTravailManager = () => {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         )}
       </div>
 
