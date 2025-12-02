@@ -5201,15 +5201,13 @@ const DemandesTravailManager = () => {
         
         {(user?.role === 'Médecin' || user?.role === 'Directeur') && (
           <div className="flex space-x-2">
-            {user?.role === 'Médecin' && (
-              <Button 
-                onClick={handleOpenDemandeMensuelle}
-                className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700"
-              >
-                <Calendar className="h-4 w-4" />
-                <span>Demande Mensuelle</span>
-              </Button>
-            )}
+            <Button 
+              onClick={handleOpenDemandeMensuelle}
+              className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700"
+            >
+              <Calendar className="h-4 w-4" />
+              <span>Demande Mensuelle</span>
+            </Button>
             <Dialog open={showDemandeModal} onOpenChange={setShowDemandeModal}>
               <DialogTrigger asChild>
                 <Button className="flex items-center space-x-2">
