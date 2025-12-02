@@ -406,20 +406,27 @@ const NotificationBadge = ({ setActiveTab }) => {
       // Recharger viewedDemandesIds depuis sessionStorage (au cas où il serait obsolète)
       const storedIds = sessionStorage.getItem('viewedDemandesIds');
       const viewedIds = storedIds ? new Set(JSON.parse(storedIds)) : new Set();
+      console.log('🔄 Refresh notifications - IDs vus:', storedIds ? JSON.parse(storedIds).length : 0);
       
       // Recharger badgeViewed depuis sessionStorage
       const storedBadgeViewed = sessionStorage.getItem('badgeViewed');
       const currentBadgeViewed = storedBadgeViewed === 'true';
+      console.log('🔄 Badge viewed status:', currentBadgeViewed);
       
       // Vérifier s'il y a de VRAIES nouvelles demandes (pas déjà vues)
-      const hasNewDemandes = [...congesEnAttente, ...travailEnAttente].some(
+      const allDemandes = [...congesEnAttente, ...travailEnAttente];
+      const hasNewDemandes = allDemandes.some(
         demande => !viewedIds.has(demande.id)
       );
+      console.log('🆕 Nouvelles demandes détectées?', hasNewDemandes, '- Total demandes:', allDemandes.length);
       
       // Réinitialiser badgeViewed SEULEMENT s'il y a de nouvelles demandes ET que badge était vu
       if (hasNewDemandes && currentBadgeViewed) {
+        console.log('❌ Reset badge à false (nouvelles demandes détectées)');
         setBadgeViewed(false);
         sessionStorage.setItem('badgeViewed', 'false');
+      } else {
+        console.log('✅ Badge reste vu (pas de nouvelles demandes)');
       }
 
       setDemandesConges(congesEnAttente);
