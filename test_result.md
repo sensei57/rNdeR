@@ -473,8 +473,10 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus:
+    - "Badge Notifications V6 FINALE - Correction Refresh Automatique (CRITIQUE)"
+  stuck_tasks:
+    - "Badge Notifications V6 FINALE - Correction Refresh Automatique (CRITIQUE)"
   test_all: false
   test_priority: "high_first"
 
