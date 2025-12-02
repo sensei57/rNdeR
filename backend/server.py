@@ -2283,7 +2283,7 @@ async def get_demandes_jour_travail(
 async def create_demande_mensuelle(
     demande_data: DemandeMensuelleCreate,
     background_tasks: BackgroundTasks,
-    current_user: User = Depends(require_role([ROLES["MEDECIN"]]))
+    current_user: User = Depends(get_current_user)
 ):
     """Créer des demandes de travail pour un mois entier"""
     from datetime import datetime, timedelta
