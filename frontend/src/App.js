@@ -4692,6 +4692,10 @@ const DemandesTravailManager = () => {
     horaire_pause_fin: '14:00'
   });
   const [loading, setLoading] = useState(true);
+  const [showAnnulationModal, setShowAnnulationModal] = useState(false);
+  const [demandeIdAnnulation, setDemandeIdAnnulation] = useState(null);
+  const [raisonAnnulation, setRaisonAnnulation] = useState('');
+  const [typeAnnulation, setTypeAnnulation] = useState(''); // 'demander', 'approuver', 'rejeter', 'directe'
   const { user } = useAuth();
 
   useEffect(() => {
