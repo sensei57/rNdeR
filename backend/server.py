@@ -2369,8 +2369,8 @@ async def create_demande_mensuelle(
             
             current_date += timedelta(days=1)
         
-        # 📤 NOTIFICATION : Notifier le directeur
-        if demandes_creees:
+        # 📤 NOTIFICATION : Notifier le directeur (seulement si c'est le médecin qui fait la demande)
+        if demandes_creees and current_user.role == ROLES["MEDECIN"]:
             user_name = f"Dr. {current_user.prenom} {current_user.nom}"
             details = f"{len(demandes_creees)} demandes pour {date_debut.strftime('%B %Y')}"
             
