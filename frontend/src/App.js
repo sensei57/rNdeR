@@ -2680,6 +2680,59 @@ const PlanningManager = () => {
     }
   };
 
+  const handleAnnulerCreneau = async (creneau) => {
+    // Vérifier si ce créneau vient d'une demande de travail approuvée
+    const demandeTravail = demandesTravail.find(d => 
+      d.medecin_id === creneau.employe_id &&
+      d.date_demandee === creneau.date &&
+      (d.creneau === creneau.creneau || d.creneau === 'JOURNEE_COMPLETE') &&
+      d.statut === 'APPROUVE'
+    );
+
+    if (demandeTravail) {
+      // Si c'est une demande de travail, ouvrir la modale d'annulation
+      setCreneauToCancel({ ...creneau, demande_id: demandeTravail.id });
+      setRaisonAnnulationCreneau('');
+      setShowAnnulationCreneauModal(true);
+    } else {
+      // Si c'est un créneau manuel, suppression directe
+      if (confirm('Êtes-vous sûr de vouloir supprimer ce créneau ?')) {
+        await handleDeleteCreneau(creneau.id);
+      }
+    }
+  };
+
+  const handleSubmitAnnulationCreneau = async (e) => {
+    e.preventDefault();
+    
+    if (!raisonAnnulationCreneau.trim()) {
+      toast.error('La raison est obligatoire');
+      return;
+    }
+
+    try {
+      // Annuler la demande de travail qui a créé ce créneau
+      await axios.post(`${API}/demandes-travail/${creneauToCancel.demande_id}/annuler-directement`, {
+        raison: raisonAnnulationCreneau
+      });
+      
+      toast.success('Créneau annulé avec succès');
+      setShowAnnulationCreneauModal(false);
+      setRaisonAnnulationCreneau('');
+      
+      // Recharger le planning et les demandes
+      if (viewMode === 'semaine') {
+        fetchPlanningSemaine(selectedWeek);
+      } else {
+        fetchPlanningByDate(selectedDate);
+      }
+      fetchDemandesTravail();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de l\'annulation');
+    }
+  };
+
+
   const resetForm = () => {
     setNewCreneau({
       date: selectedDate,
