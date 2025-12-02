@@ -2289,6 +2289,23 @@ async def create_demande_mensuelle(
     from datetime import datetime, timedelta
     from calendar import monthrange
     
+    # Déterminer le médecin concerné
+    if current_user.role == ROLES["DIRECTEUR"]:
+        # Le directeur doit spécifier pour quel médecin
+        if not demande_data.medecin_id:
+            raise HTTPException(status_code=400, detail="Le médecin doit être spécifié")
+        medecin_id = demande_data.medecin_id
+        # Vérifier que le médecin existe
+        medecin = await db.users.find_one({"id": medecin_id, "role": ROLES["MEDECIN"]})
+        if not medecin:
+            raise HTTPException(status_code=404, detail="Médecin non trouvé")
+    elif current_user.role == ROLES["MEDECIN"]:
+        # Le médecin fait la demande pour lui-même
+        medecin_id = current_user.id
+        medecin = current_user
+    else:
+        raise HTTPException(status_code=403, detail="Vous n'avez pas l'autorisation")
+    
     try:
         # Parser la date de début
         date_debut = datetime.strptime(demande_data.date_debut, '%Y-%m-%d')
