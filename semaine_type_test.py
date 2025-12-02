@@ -87,11 +87,11 @@ class SemaineTypeAPITester:
         
         # Login Dr. Ricaud
         success, response = self.run_test(
-            "Login Dr. Ricaud (dr.ricaud@cabinet.fr)",
+            "Login Dr. Ricaud (leblonditmaro.francis@hotmail.fr)",
             "POST", 
             "auth/login",
             200,
-            data={"email": "dr.ricaud@cabinet.fr", "password": "medecin123"}
+            data={"email": "leblonditmaro.francis@hotmail.fr", "password": "medecin123"}
         )
         
         if success and 'access_token' in response:
