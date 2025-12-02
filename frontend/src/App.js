@@ -358,8 +358,14 @@ const NotificationBadge = ({ setActiveTab }) => {
   const [demandesConges, setDemandesConges] = useState([]);
   const [demandesTravail, setDemandesTravail] = useState([]);
   const [userNotifications, setUserNotifications] = useState([]);
-  const [badgeViewed, setBadgeViewed] = useState(false);
-  const [viewedDemandesIds, setViewedDemandesIds] = useState(new Set());
+  const [badgeViewed, setBadgeViewed] = useState(() => {
+    const stored = sessionStorage.getItem('badgeViewed');
+    return stored === 'true';
+  });
+  const [viewedDemandesIds, setViewedDemandesIds] = useState(() => {
+    const stored = sessionStorage.getItem('viewedDemandesIds');
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  });
 
   useEffect(() => {
     if (user?.role === 'Directeur') {
