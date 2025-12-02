@@ -5508,6 +5508,68 @@ const DemandesTravailManager = () => {
         </DialogContent>
       </Dialog>
     </div>
+
+
+      {/* Modal Annulation */}
+      <Dialog open={showAnnulationModal} onOpenChange={setShowAnnulationModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {typeAnnulation === 'demander' && '⚠️ Demander l\'annulation du créneau'}
+              {typeAnnulation === 'approuver' && '✅ Approuver l\'annulation'}
+              {typeAnnulation === 'rejeter' && '❌ Rejeter l\'annulation'}
+              {typeAnnulation === 'directe' && '🗑️ Annuler le créneau'}
+            </DialogTitle>
+            <DialogDescription>
+              {typeAnnulation === 'demander' && 'Expliquez pourquoi vous souhaitez annuler ce créneau. Le directeur examinera votre demande.'}
+              {typeAnnulation === 'approuver' && 'Confirmez l\'approbation de cette demande d\'annulation. Le créneau sera supprimé du planning.'}
+              {typeAnnulation === 'rejeter' && 'Expliquez pourquoi vous refusez cette demande d\'annulation.'}
+              {typeAnnulation === 'directe' && 'Expliquez la raison de cette annulation. Le médecin sera notifié.'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleSubmitAnnulation} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="raison">
+                {typeAnnulation === 'demander' || typeAnnulation === 'directe' ? 'Raison de l\'annulation *' : 'Commentaire *'}
+              </Label>
+              <Textarea
+                id="raison"
+                value={raisonAnnulation}
+                onChange={(e) => setRaisonAnnulation(e.target.value)}
+                placeholder={
+                  typeAnnulation === 'demander' ? 'Ex: Imprévu personnel, maladie...' :
+                  typeAnnulation === 'approuver' ? 'Ex: Demande acceptée, raison valable' :
+                  typeAnnulation === 'rejeter' ? 'Ex: Période critique, besoin en personnel' :
+                  'Ex: Réorganisation interne, urgence...'
+                }
+                rows={4}
+                required
+              />
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setShowAnnulationModal(false)}>
+                Annuler
+              </Button>
+              <Button 
+                type="submit"
+                className={
+                  typeAnnulation === 'approuver' ? 'bg-green-600 hover:bg-green-700' :
+                  typeAnnulation === 'rejeter' ? 'bg-gray-600 hover:bg-gray-700' :
+                  'bg-orange-600 hover:bg-orange-700'
+                }
+              >
+                {typeAnnulation === 'demander' && 'Envoyer la demande'}
+                {typeAnnulation === 'approuver' && 'Approuver l\'annulation'}
+                {typeAnnulation === 'rejeter' && 'Rejeter la demande'}
+                {typeAnnulation === 'directe' && 'Annuler le créneau'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
   );
 };
 
