@@ -391,6 +391,12 @@ class ApprobationJourTravailRequest(BaseModel):
     approuve: bool
     commentaire: str = ""
 
+class DemandeAnnulationRequest(BaseModel):
+    raison: str
+
+class AnnulationDirecteRequest(BaseModel):
+    raison: str
+
 class SalleReservation(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     salle: str
