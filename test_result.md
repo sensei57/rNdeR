@@ -489,9 +489,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Badge Notifications V8 FINALE - Correction Refresh Automatique avec SessionStorage (CRITIQUE)"
-  stuck_tasks:
-    - "Badge Notifications V8 FINALE - Correction Refresh Automatique avec SessionStorage (CRITIQUE)"
+    - "Annulation Demandes de Créneaux - Nouvelle Fonctionnalité"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
