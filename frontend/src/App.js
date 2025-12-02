@@ -403,13 +403,21 @@ const NotificationBadge = ({ setActiveTab }) => {
       const congesEnAttente = congesRes.data.filter(d => d.statut === 'EN_ATTENTE');
       const travailEnAttente = travailRes.data.filter(d => d.statut === 'EN_ATTENTE');
 
+      // Recharger viewedDemandesIds depuis sessionStorage (au cas où il serait obsolète)
+      const storedIds = sessionStorage.getItem('viewedDemandesIds');
+      const viewedIds = storedIds ? new Set(JSON.parse(storedIds)) : new Set();
+      
+      // Recharger badgeViewed depuis sessionStorage
+      const storedBadgeViewed = sessionStorage.getItem('badgeViewed');
+      const currentBadgeViewed = storedBadgeViewed === 'true';
+      
       // Vérifier s'il y a de VRAIES nouvelles demandes (pas déjà vues)
       const hasNewDemandes = [...congesEnAttente, ...travailEnAttente].some(
-        demande => !viewedDemandesIds.has(demande.id)
+        demande => !viewedIds.has(demande.id)
       );
       
-      // Réinitialiser badgeViewed SEULEMENT s'il y a de nouvelles demandes
-      if (hasNewDemandes) {
+      // Réinitialiser badgeViewed SEULEMENT s'il y a de nouvelles demandes ET que badge était vu
+      if (hasNewDemandes && currentBadgeViewed) {
         setBadgeViewed(false);
         sessionStorage.setItem('badgeViewed', 'false');
       }
