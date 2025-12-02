@@ -1720,6 +1720,14 @@ const CongeManager = () => {
                   >
                     Validées ({demandes.filter(d => d.statut === 'APPROUVE').length})
                   </Button>
+                  <Button
+                    size="sm"
+                    variant={filterStatut === 'ANNULE' ? 'default' : 'outline'}
+                    onClick={() => setFilterStatut('ANNULE')}
+                    className={filterStatut === 'ANNULE' ? '' : 'border-red-300 text-red-700 hover:bg-red-50'}
+                  >
+                    Annulées ({demandes.filter(d => d.statut === 'ANNULE').length})
+                  </Button>
                 </div>
               </div>
 
