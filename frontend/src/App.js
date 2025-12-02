@@ -5774,7 +5774,7 @@ const DemandesTravailManager = () => {
                     <SelectValue placeholder="Sans semaine type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Sans semaine type (Journée complète par défaut)</SelectItem>
+                    <SelectItem value="none">Sans semaine type (Journée complète par défaut)</SelectItem>
                     {semainesTypes.map(semaine => (
                       <SelectItem key={semaine.id} value={semaine.id}>
                         {semaine.nom}
