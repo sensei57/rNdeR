@@ -5203,13 +5203,23 @@ const DemandesTravailManager = () => {
         </div>
         
         {(user?.role === 'Médecin' || user?.role === 'Directeur') && (
-          <Dialog open={showDemandeModal} onOpenChange={setShowDemandeModal}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center space-x-2">
-                <Plus className="h-4 w-4" />
-                <span>Nouvelle Demande</span>
+          <div className="flex space-x-2">
+            {user?.role === 'Médecin' && (
+              <Button 
+                onClick={handleOpenDemandeMensuelle}
+                className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700"
+              >
+                <Calendar className="h-4 w-4" />
+                <span>Demande Mensuelle</span>
               </Button>
-            </DialogTrigger>
+            )}
+            <Dialog open={showDemandeModal} onOpenChange={setShowDemandeModal}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center space-x-2">
+                  <Plus className="h-4 w-4" />
+                  <span>Nouvelle Demande</span>
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Nouvelle Demande de Jour de Travail</DialogTitle>
