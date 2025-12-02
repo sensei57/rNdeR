@@ -5000,6 +5000,7 @@ const DemandesTravailManager = () => {
     const today = new Date();
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
     setDemandeMensuelle({
+      medecin_id: user?.role === 'Médecin' ? user.id : '',
       date_debut: firstDay.toISOString().split('T')[0],
       semaine_type_id: '',
       motif: '',
