@@ -411,6 +411,7 @@ const NotificationBadge = ({ setActiveTab }) => {
       // Réinitialiser badgeViewed SEULEMENT s'il y a de nouvelles demandes
       if (hasNewDemandes) {
         setBadgeViewed(false);
+        sessionStorage.setItem('badgeViewed', 'false');
       }
 
       setDemandesConges(congesEnAttente);
