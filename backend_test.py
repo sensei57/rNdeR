@@ -5331,7 +5331,9 @@ def super_admin_main():
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) > 1 and sys.argv[1] == "--super-admin":
+    if len(sys.argv) > 1 and sys.argv[1] == "--annulation":
+        sys.exit(annulation_creneaux_main())
+    elif len(sys.argv) > 1 and sys.argv[1] == "--super-admin":
         sys.exit(super_admin_main())
     elif len(sys.argv) > 1 and sys.argv[1] == "--profile":
         sys.exit(profile_modification_main())
@@ -5344,5 +5346,5 @@ if __name__ == "__main__":
     elif len(sys.argv) > 1 and sys.argv[1] == "--firebase":
         sys.exit(firebase_notification_main())
     else:
-        # Default to super admin tests as requested in review
-        sys.exit(super_admin_main())
+        # Default to annulation tests as requested in review
+        sys.exit(annulation_creneaux_main())
