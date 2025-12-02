@@ -5233,6 +5233,34 @@ const DemandesTravailManager = () => {
                       <strong>Commentaire:</strong> {demande.commentaire_approbation}
                     </p>
                   )}
+                  
+                  {/* Afficher info demande d'annulation */}
+                  {demande.demande_annulation && demande.raison_demande_annulation && (
+                    <div className="text-sm bg-orange-50 border border-orange-200 p-3 rounded">
+                      <strong className="text-orange-800">⚠️ Demande d'annulation:</strong>
+                      <p className="text-gray-700 mt-1">{demande.raison_demande_annulation}</p>
+                      {demande.date_demande_annulation && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Demandée le {new Date(demande.date_demande_annulation).toLocaleDateString('fr-FR')}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Afficher historique si annulé */}
+                  {demande.statut === 'ANNULE' && (
+                    <div className="text-sm bg-red-50 border border-red-200 p-3 rounded">
+                      <strong className="text-red-800">❌ Créneau annulé</strong>
+                      {demande.raison_annulation && (
+                        <p className="text-gray-700 mt-1"><strong>Raison:</strong> {demande.raison_annulation}</p>
+                      )}
+                      {demande.date_annulation && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Annulé le {new Date(demande.date_annulation).toLocaleDateString('fr-FR')}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
                 
                 {/* Boutons Directeur - Approuver/Rejeter demande EN_ATTENTE */}
