@@ -366,11 +366,18 @@ class DemandeJourTravail(BaseModel):
     date_demandee: str  # YYYY-MM-DD
     creneau: str  # "MATIN", "APRES_MIDI", "JOURNEE_COMPLETE"
     motif: Optional[str] = None
-    statut: str = "EN_ATTENTE"  # "EN_ATTENTE", "APPROUVE", "REJETE"
+    statut: str = "EN_ATTENTE"  # "EN_ATTENTE", "APPROUVE", "REJETE", "ANNULE", "DEMANDE_ANNULATION"
     date_demande: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     approuve_par: Optional[str] = None
     date_approbation: Optional[datetime] = None
     commentaire_approbation: Optional[str] = None
+    # Champs pour l'annulation
+    demande_annulation: bool = False
+    raison_demande_annulation: Optional[str] = None
+    date_demande_annulation: Optional[datetime] = None
+    annule_par: Optional[str] = None
+    raison_annulation: Optional[str] = None
+    date_annulation: Optional[datetime] = None
 
 class DemandeJourTravailCreate(BaseModel):
     date_demandee: Optional[str] = None  # Optionnel si semaine_type_id fourni
