@@ -496,6 +496,13 @@ const NotificationBadge = ({ setActiveTab }) => {
       setDemandesTravail(prev => prev.filter(d => d.id !== demandeId));
       setNotifications(prev => ({ ...prev, travail: Math.max(0, prev.travail - 1) }));
     }
+    
+    // Retirer l'ID de la liste des vues
+    setViewedDemandesIds(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(demandeId);
+      return newSet;
+    });
   };
 
   // Pour le directeur : notifications de nouvelles demandes (0 si déjà vues)
