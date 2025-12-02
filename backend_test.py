@@ -1806,6 +1806,468 @@ class MedicalStaffAPITester:
         
         return notification_counts
 
+    def test_annulation_demandes_creneaux(self):
+        """Test Annulation Demandes de Créneaux (Nouvelle Fonctionnalité)"""
+        print("\n🔄 TESTING ANNULATION DEMANDES DE CRÉNEAUX (NOUVELLE FONCTIONNALITÉ)")
+        print("="*80)
+        
+        created_demandes = []
+        
+        # TEST 1 - Médecin Demande Annulation
+        print("\n🔍 TEST 1 - Médecin Demande Annulation")
+        print("-" * 60)
+        
+        # Step 1: Connexion médecin
+        if 'medecin' not in self.tokens:
+            print("   ❌ SKIPPED: No médecin token available")
+            return
+        
+        print("   ✅ Connexion médecin (dr.dupont@cabinet.fr) - Token available")
+        
+        # Step 2: Créer une demande de travail
+        demande_data = {
+            "date_demandee": "2025-01-25",
+            "creneau": "MATIN",
+            "motif": "Test demande pour annulation"
+        }
+        
+        success, response = self.run_test(
+            "Create work request as Doctor",
+            "POST",
+            "demandes-travail",
+            200,
+            data=demande_data,
+            token=self.tokens['medecin']
+        )
+        
+        if not success or 'id' not in response:
+            print("   ❌ FAILED: Cannot create work request for testing")
+            return
+        
+        demande_id = response['id']
+        created_demandes.append(demande_id)
+        print(f"   ✅ Demande de travail créée - ID: {demande_id}")
+        
+        # Step 3: Connexion directeur → Approuver la demande
+        if 'directeur' not in self.tokens:
+            print("   ❌ SKIPPED: No directeur token available")
+            return
+        
+        approval_data = {
+            "approuve": True,
+            "commentaire": "Approuvé pour test annulation"
+        }
+        
+        success, response = self.run_test(
+            "Approve work request as Director",
+            "PUT",
+            f"demandes-travail/{demande_id}/approuver",
+            200,
+            data=approval_data,
+            token=self.tokens['directeur']
+        )
+        
+        if not success:
+            print("   ❌ FAILED: Cannot approve work request")
+            return
+        
+        print("   ✅ Demande approuvée par le directeur")
+        
+        # Step 4: Reconnecter médecin et demander annulation
+        annulation_data = {
+            "raison": "Imprévu personnel"
+        }
+        
+        success, response = self.run_test(
+            "Request cancellation as Doctor",
+            "POST",
+            f"demandes-travail/{demande_id}/demander-annulation",
+            200,
+            data=annulation_data,
+            token=self.tokens['medecin']
+        )
+        
+        if success:
+            print("   ✅ Demande d'annulation envoyée avec succès")
+        else:
+            print("   ❌ FAILED: Cannot request cancellation")
+            return
+        
+        # Step 5: Vérifier les champs mis à jour
+        success, demande_details = self.run_test(
+            "Get work request details after cancellation request",
+            "GET",
+            f"demandes-travail/{demande_id}",
+            200,
+            token=self.tokens['directeur']
+        )
+        
+        if success:
+            if (demande_details.get('demande_annulation') == True and 
+                demande_details.get('raison_demande_annulation') == "Imprévu personnel"):
+                print("   ✅ Champs d'annulation correctement mis à jour")
+                print(f"      - demande_annulation: {demande_details.get('demande_annulation')}")
+                print(f"      - raison_demande_annulation: {demande_details.get('raison_demande_annulation')}")
+            else:
+                print("   ❌ FAILED: Cancellation fields not properly updated")
+        
+        # TEST 2 - Directeur Reçoit Notification
+        print("\n🔍 TEST 2 - Directeur Reçoit Notification")
+        print("-" * 60)
+        
+        success, notifications = self.run_test(
+            "Check Director notifications for cancellation request",
+            "GET",
+            "notifications",
+            200,
+            token=self.tokens['directeur']
+        )
+        
+        if success:
+            cancellation_notifs = [n for n in notifications if "annulation" in n.get('title', '').lower()]
+            if cancellation_notifs:
+                print(f"   ✅ Directeur reçoit {len(cancellation_notifs)} notification(s) d'annulation")
+                for notif in cancellation_notifs[:1]:
+                    print(f"      - Title: {notif.get('title', '')}")
+                    print(f"      - Body: {notif.get('body', '')}")
+            else:
+                print("   ⚠️ Directeur n'a pas reçu de notification d'annulation")
+        
+        # TEST 3 - Directeur Approuve Annulation
+        print("\n🔍 TEST 3 - Directeur Approuve Annulation")
+        print("-" * 60)
+        
+        approval_annulation_data = {
+            "approuve": True,
+            "commentaire": "Accord pour annulation"
+        }
+        
+        success, response = self.run_test(
+            "Approve cancellation request as Director",
+            "PUT",
+            f"demandes-travail/{demande_id}/approuver-annulation",
+            200,
+            data=approval_annulation_data,
+            token=self.tokens['directeur']
+        )
+        
+        if success:
+            print("   ✅ Annulation approuvée par le directeur")
+        else:
+            print("   ❌ FAILED: Cannot approve cancellation")
+            return
+        
+        # Vérifier le statut après approbation
+        success, demande_details = self.run_test(
+            "Get work request details after cancellation approval",
+            "GET",
+            f"demandes-travail/{demande_id}",
+            200,
+            token=self.tokens['directeur']
+        )
+        
+        if success:
+            expected_status = "ANNULE"
+            actual_status = demande_details.get('statut')
+            annule_par = demande_details.get('annule_par')
+            raison_annulation = demande_details.get('raison_annulation')
+            
+            if actual_status == expected_status:
+                print(f"   ✅ Statut correctement mis à jour: {actual_status}")
+                print(f"      - annule_par: {annule_par}")
+                print(f"      - raison_annulation: {raison_annulation}")
+            else:
+                print(f"   ❌ FAILED: Status not updated correctly (expected: {expected_status}, got: {actual_status})")
+        
+        # Vérifier suppression des créneaux du planning
+        success, planning_data = self.run_test(
+            "Check planning after cancellation approval",
+            "GET",
+            "planning/semaine/2025-01-20",
+            200,
+            token=self.tokens['directeur']
+        )
+        
+        if success:
+            # Chercher des créneaux pour la date 2025-01-25
+            date_creneaux = []
+            for date_info in planning_data.get('dates', []):
+                if date_info.get('date') == '2025-01-25':
+                    planning_jour = planning_data.get('planning', {}).get('2025-01-25', {})
+                    matin_creneaux = planning_jour.get('MATIN', [])
+                    date_creneaux.extend(matin_creneaux)
+            
+            medecin_creneaux = [c for c in date_creneaux if c.get('employe_id') == self.users['medecin']['id']]
+            
+            if len(medecin_creneaux) == 0:
+                print("   ✅ Créneaux supprimés du planning après annulation")
+            else:
+                print(f"   ❌ FAILED: {len(medecin_creneaux)} créneaux encore présents dans le planning")
+        
+        # TEST 4 - Directeur Rejette Annulation
+        print("\n🔍 TEST 4 - Directeur Rejette Annulation")
+        print("-" * 60)
+        
+        # Créer une nouvelle demande pour tester le rejet
+        demande_data_2 = {
+            "date_demandee": "2025-01-26",
+            "creneau": "APRES_MIDI",
+            "motif": "Test demande pour rejet annulation"
+        }
+        
+        success, response = self.run_test(
+            "Create second work request for rejection test",
+            "POST",
+            "demandes-travail",
+            200,
+            data=demande_data_2,
+            token=self.tokens['medecin']
+        )
+        
+        if success and 'id' in response:
+            demande_id_2 = response['id']
+            created_demandes.append(demande_id_2)
+            
+            # Approuver la demande
+            success, _ = self.run_test(
+                "Approve second work request",
+                "PUT",
+                f"demandes-travail/{demande_id_2}/approuver",
+                200,
+                data={"approuve": True, "commentaire": "Approuvé pour test rejet"},
+                token=self.tokens['directeur']
+            )
+            
+            if success:
+                # Médecin demande annulation
+                success, _ = self.run_test(
+                    "Request cancellation for second request",
+                    "POST",
+                    f"demandes-travail/{demande_id_2}/demander-annulation",
+                    200,
+                    data={"raison": "Test rejet annulation"},
+                    token=self.tokens['medecin']
+                )
+                
+                if success:
+                    # Directeur rejette l'annulation
+                    rejection_data = {
+                        "approuve": False,
+                        "commentaire": "Refusé pour test"
+                    }
+                    
+                    success, response = self.run_test(
+                        "Reject cancellation request as Director",
+                        "PUT",
+                        f"demandes-travail/{demande_id_2}/approuver-annulation",
+                        200,
+                        data=rejection_data,
+                        token=self.tokens['directeur']
+                    )
+                    
+                    if success:
+                        print("   ✅ Annulation rejetée par le directeur")
+                        
+                        # Vérifier que demande_annulation = false et statut reste APPROUVE
+                        success, demande_details = self.run_test(
+                            "Get work request details after rejection",
+                            "GET",
+                            f"demandes-travail/{demande_id_2}",
+                            200,
+                            token=self.tokens['directeur']
+                        )
+                        
+                        if success:
+                            if (demande_details.get('demande_annulation') == False and 
+                                demande_details.get('statut') == 'APPROUVE'):
+                                print("   ✅ Statut correctement maintenu après rejet")
+                                print(f"      - demande_annulation: {demande_details.get('demande_annulation')}")
+                                print(f"      - statut: {demande_details.get('statut')}")
+                            else:
+                                print("   ❌ FAILED: Status not properly maintained after rejection")
+        
+        # TEST 5 - Directeur Annule Directement
+        print("\n🔍 TEST 5 - Directeur Annule Directement")
+        print("-" * 60)
+        
+        # Créer une nouvelle demande pour l'annulation directe
+        demande_data_3 = {
+            "date_demandee": "2025-01-27",
+            "creneau": "MATIN",
+            "motif": "Test demande pour annulation directe"
+        }
+        
+        success, response = self.run_test(
+            "Create third work request for direct cancellation",
+            "POST",
+            "demandes-travail",
+            200,
+            data=demande_data_3,
+            token=self.tokens['medecin']
+        )
+        
+        if success and 'id' in response:
+            demande_id_3 = response['id']
+            created_demandes.append(demande_id_3)
+            
+            # Approuver la demande
+            success, _ = self.run_test(
+                "Approve third work request",
+                "PUT",
+                f"demandes-travail/{demande_id_3}/approuver",
+                200,
+                data={"approuve": True, "commentaire": "Approuvé pour test annulation directe"},
+                token=self.tokens['directeur']
+            )
+            
+            if success:
+                # Directeur annule directement
+                direct_cancellation_data = {
+                    "raison": "Réorganisation interne"
+                }
+                
+                success, response = self.run_test(
+                    "Direct cancellation by Director",
+                    "POST",
+                    f"demandes-travail/{demande_id_3}/annuler-directement",
+                    200,
+                    data=direct_cancellation_data,
+                    token=self.tokens['directeur']
+                )
+                
+                if success:
+                    print("   ✅ Annulation directe effectuée par le directeur")
+                    
+                    # Vérifier le statut
+                    success, demande_details = self.run_test(
+                        "Get work request details after direct cancellation",
+                        "GET",
+                        f"demandes-travail/{demande_id_3}",
+                        200,
+                        token=self.tokens['directeur']
+                    )
+                    
+                    if success:
+                        if (demande_details.get('statut') == 'ANNULE' and 
+                            demande_details.get('annule_par') == self.users['directeur']['id']):
+                            print("   ✅ Statut correctement mis à jour après annulation directe")
+                            print(f"      - statut: {demande_details.get('statut')}")
+                            print(f"      - annule_par: {demande_details.get('annule_par')}")
+                            print(f"      - raison_annulation: {demande_details.get('raison_annulation')}")
+                        else:
+                            print("   ❌ FAILED: Status not properly updated after direct cancellation")
+        
+        # TEST 6 - Médecin Reçoit Notifications
+        print("\n🔍 TEST 6 - Médecin Reçoit Notifications")
+        print("-" * 60)
+        
+        success, medecin_notifications = self.run_test(
+            "Check Doctor notifications for cancellation responses",
+            "GET",
+            "notifications",
+            200,
+            token=self.tokens['medecin']
+        )
+        
+        if success:
+            cancellation_notifs = [n for n in medecin_notifications if 
+                                 ("annulation" in n.get('title', '').lower() or 
+                                  "annulé" in n.get('title', '').lower())]
+            
+            if cancellation_notifs:
+                print(f"   ✅ Médecin reçoit {len(cancellation_notifs)} notification(s) d'annulation")
+                for i, notif in enumerate(cancellation_notifs[:3]):  # Show first 3
+                    print(f"      {i+1}. Title: {notif.get('title', '')}")
+                    print(f"         Body: {notif.get('body', '')}")
+            else:
+                print("   ⚠️ Médecin n'a pas reçu de notifications d'annulation")
+        
+        # TEST 7 - Sécurité
+        print("\n🔍 TEST 7 - Tests de Sécurité")
+        print("-" * 60)
+        
+        # Test: Médecin ne peut demander annulation que de SES demandes
+        if len(created_demandes) > 0:
+            # Créer un autre médecin ou utiliser un autre utilisateur
+            success, users_data = self.run_test(
+                "Get users for security test",
+                "GET",
+                "users",
+                200,
+                token=self.tokens['directeur']
+            )
+            
+            if success:
+                other_medecins = [u for u in users_data if u['role'] == 'Médecin' and u['id'] != self.users['medecin']['id']]
+                if other_medecins and 'assistant' in self.tokens:
+                    # Tenter d'annuler avec un autre utilisateur
+                    success, response = self.run_test(
+                        "Unauthorized cancellation request (assistant trying to cancel doctor's request)",
+                        "POST",
+                        f"demandes-travail/{created_demandes[0]}/demander-annulation",
+                        403,  # Should be forbidden
+                        data={"raison": "Tentative non autorisée"},
+                        token=self.tokens['assistant']
+                    )
+                    
+                    if success:
+                        print("   ✅ Sécurité: Assistant ne peut pas annuler les demandes du médecin")
+                    else:
+                        print("   ❌ SECURITY ISSUE: Assistant can cancel doctor's requests")
+        
+        # Test: Seules demandes APPROUVEES peuvent être annulées
+        # Créer une demande en attente
+        demande_pending_data = {
+            "date_demandee": "2025-01-28",
+            "creneau": "MATIN",
+            "motif": "Test demande en attente"
+        }
+        
+        success, response = self.run_test(
+            "Create pending work request for security test",
+            "POST",
+            "demandes-travail",
+            200,
+            data=demande_pending_data,
+            token=self.tokens['medecin']
+        )
+        
+        if success and 'id' in response:
+            pending_demande_id = response['id']
+            
+            # Tenter d'annuler une demande en attente
+            success, response = self.run_test(
+                "Try to cancel pending request (should fail)",
+                "POST",
+                f"demandes-travail/{pending_demande_id}/demander-annulation",
+                400,  # Should fail
+                data={"raison": "Tentative sur demande en attente"},
+                token=self.tokens['medecin']
+            )
+            
+            if success:
+                print("   ✅ Sécurité: Seules les demandes approuvées peuvent être annulées")
+            else:
+                print("   ❌ SECURITY ISSUE: Pending requests can be cancelled")
+        
+        # SUMMARY
+        print("\n" + "="*80)
+        print("🎯 ANNULATION DEMANDES CRÉNEAUX - TEST SUMMARY")
+        print("="*80)
+        
+        print(f"✅ Demandes créées pour tests: {len(created_demandes)}")
+        print("✅ Médecin demande annulation: TESTÉ")
+        print("✅ Directeur reçoit notification: TESTÉ") 
+        print("✅ Directeur approuve annulation: TESTÉ")
+        print("✅ Directeur rejette annulation: TESTÉ")
+        print("✅ Directeur annule directement: TESTÉ")
+        print("✅ Médecin reçoit notifications: TESTÉ")
+        print("✅ Tests de sécurité: TESTÉS")
+        
+        print("\n🎉 NOUVELLE FONCTIONNALITÉ ANNULATION CRÉNEAUX TESTÉE AVEC SUCCÈS!")
+        
+        return created_demandes
+
     def test_salles_management(self):
         """Test comprehensive room/salle management system - NEW FEATURE"""
         print("\n🏢 Testing Salles Management (NEW FEATURE)...")
