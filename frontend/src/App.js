@@ -469,6 +469,7 @@ const NotificationBadge = ({ setActiveTab }) => {
     // Si on ouvre le panneau, marquer comme "vu" (badge à 0) mais garder les données
     if (newShowPanel) {
       setBadgeViewed(true);
+      sessionStorage.setItem('badgeViewed', 'true');
       
       // Marquer toutes les notifications personnelles comme lues
       if (userNotifications.length > 0) {
@@ -480,6 +481,7 @@ const NotificationBadge = ({ setActiveTab }) => {
       demandesConges.forEach(d => allIds.add(d.id));
       demandesTravail.forEach(d => allIds.add(d.id));
       setViewedDemandesIds(allIds);
+      sessionStorage.setItem('viewedDemandesIds', JSON.stringify([...allIds]));
     }
   };
 
