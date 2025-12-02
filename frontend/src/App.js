@@ -5235,6 +5235,7 @@ const DemandesTravailManager = () => {
                   )}
                 </div>
                 
+                {/* Boutons Directeur - Approuver/Rejeter demande EN_ATTENTE */}
                 {user?.role === 'Directeur' && demande.statut === 'EN_ATTENTE' && (
                   <div className="flex space-x-2 ml-4">
                     <Button
@@ -5254,6 +5255,65 @@ const DemandesTravailManager = () => {
                       onClick={() => handleApprobation(demande.id, false)}
                     >
                       <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+                
+                {/* Bouton Médecin - Demander annulation si APPROUVE */}
+                {user?.role === 'Médecin' && demande.statut === 'APPROUVE' && demande.medecin_id === user.id && !demande.demande_annulation && (
+                  <div className="flex space-x-2 ml-4">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDemanderAnnulation(demande.id)}
+                      className="text-orange-600 border-orange-600 hover:bg-orange-50"
+                    >
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      Demander annulation
+                    </Button>
+                  </div>
+                )}
+                
+                {/* Badge si demande d'annulation en cours */}
+                {demande.demande_annulation && (
+                  <Badge className="ml-2 bg-orange-100 text-orange-800">
+                    Demande d'annulation en cours
+                  </Badge>
+                )}
+                
+                {/* Boutons Directeur - Gérer demande d'annulation */}
+                {user?.role === 'Directeur' && demande.demande_annulation && (
+                  <div className="flex space-x-2 ml-4">
+                    <Button
+                      size="sm"
+                      onClick={() => handleApprouverAnnulation(demande.id, true)}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <Check className="h-4 w-4 mr-1" />
+                      Approuver annulation
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleApprouverAnnulation(demande.id, false)}
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Refuser
+                    </Button>
+                  </div>
+                )}
+                
+                {/* Bouton Directeur - Annuler directement */}
+                {user?.role === 'Directeur' && demande.statut === 'APPROUVE' && !demande.demande_annulation && (
+                  <div className="flex space-x-2 ml-4">
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleAnnulerDirectement(demande.id)}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Annuler créneau
                     </Button>
                   </div>
                 )}
