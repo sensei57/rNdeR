@@ -102,8 +102,11 @@ class AnnulationCreneauxTester:
         print("-" * 60)
         
         # Step 1: Create work request
+        from datetime import datetime, timedelta
+        future_date = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
+        
         demande_data = {
-            "date_demandee": "2025-01-25",
+            "date_demandee": future_date,
             "creneau": "MATIN",
             "motif": "Test demande pour annulation"
         }
