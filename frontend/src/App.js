@@ -4813,6 +4813,7 @@ const DemandesTravailManager = () => {
   const [typeAnnulation, setTypeAnnulation] = useState(''); // 'demander', 'approuver', 'rejeter', 'directe'
   const [showDemandeMensuelleModal, setShowDemandeMensuelleModal] = useState(false);
   const [demandeMensuelle, setDemandeMensuelle] = useState({
+    medecin_id: '',
     date_debut: '',
     semaine_type_id: '',
     motif: '',
