@@ -2024,15 +2024,41 @@ async def update_configuration(
 @api_router.post("/semaines-types", response_model=SemaineType)
 async def create_semaine_type(
     semaine_data: SemaineTypeCreate,
-    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+    current_user: User = Depends(get_current_user)
 ):
     semaine = SemaineType(**semaine_data.dict())
+    
+    # Si c'est un médecin, assigner automatiquement sa semaine type à lui seul
+    if current_user.role == ROLES["MEDECIN"]:
+        semaine.medecin_id = current_user.id
+    # Si c'est le directeur, il peut créer des semaines globales (medecin_id = None par défaut)
+    
     await db.semaines_types.insert_one(semaine.dict())
     return semaine
 
 @api_router.get("/semaines-types", response_model=List[SemaineType])
 async def get_semaines_types(current_user: User = Depends(get_current_user)):
-    semaines = await db.semaines_types.find({"actif": True}).sort("nom", 1).to_list(1000)
+    # Filtrer selon le rôle
+    if current_user.role == ROLES["MEDECIN"]:
+        # Les médecins ne voient que leurs propres semaines types
+        query = {
+            "actif": True,
+            "medecin_id": current_user.id
+        }
+    elif current_user.role == ROLES["DIRECTEUR"]:
+        # Le directeur voit toutes les semaines types
+        query = {"actif": True}
+    else:
+        # Les autres rôles voient les semaines globales + les leurs
+        query = {
+            "actif": True,
+            "$or": [
+                {"medecin_id": None},  # Semaines globales
+                {"medecin_id": current_user.id}  # Leurs propres semaines
+            ]
+        }
+    
+    semaines = await db.semaines_types.find(query).sort("nom", 1).to_list(1000)
     
     cleaned_semaines = []
     for semaine in semaines:
