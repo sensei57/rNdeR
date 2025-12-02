@@ -2047,7 +2047,7 @@ async def create_semaine_type(
 async def get_semaines_types(current_user: User = Depends(get_current_user)):
     # Filtrer selon le rôle
     if current_user.role == ROLES["MEDECIN"]:
-        # Les médecins ne voient que leurs propres semaines types
+        # Les médecins ne voient QUE leurs propres semaines types (pas les globales)
         query = {
             "actif": True,
             "medecin_id": current_user.id
@@ -2056,13 +2056,10 @@ async def get_semaines_types(current_user: User = Depends(get_current_user)):
         # Le directeur voit toutes les semaines types
         query = {"actif": True}
     else:
-        # Les autres rôles voient les semaines globales + les leurs
+        # Les autres rôles voient uniquement leurs propres semaines
         query = {
             "actif": True,
-            "$or": [
-                {"medecin_id": None},  # Semaines globales
-                {"medecin_id": current_user.id}  # Leurs propres semaines
-            ]
+            "medecin_id": current_user.id
         }
     
     semaines = await db.semaines_types.find(query).sort("nom", 1).to_list(1000)
