@@ -5771,7 +5771,7 @@ const DemandesTravailManager = () => {
                       <SelectValue placeholder="Sélectionner un médecin" />
                     </SelectTrigger>
                     <SelectContent>
-                      {employes.filter(e => e.role === 'Médecin' && e.actif).map(medecin => (
+                      {medecins.filter(m => m.actif).map(medecin => (
                         <SelectItem key={medecin.id} value={medecin.id}>
                           Dr. {medecin.prenom} {medecin.nom}
                         </SelectItem>
