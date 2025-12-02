@@ -5752,6 +5752,28 @@ const DemandesTravailManager = () => {
           
           <form onSubmit={handleSubmitDemandeMensuelle} className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
+              {user?.role === 'Directeur' && (
+                <div className="space-y-2 col-span-2">
+                  <Label htmlFor="medecin-mensuelle">Médecin *</Label>
+                  <Select
+                    value={demandeMensuelle.medecin_id}
+                    onValueChange={(value) => setDemandeMensuelle(prev => ({ ...prev, medecin_id: value }))}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner un médecin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {employes.filter(e => e.role === 'Médecin' && e.actif).map(medecin => (
+                        <SelectItem key={medecin.id} value={medecin.id}>
+                          Dr. {medecin.prenom} {medecin.nom}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
               <div className="space-y-2">
                 <Label htmlFor="date-debut-mensuelle">Mois / Date de début *</Label>
                 <Input
