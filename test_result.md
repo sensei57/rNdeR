@@ -474,9 +474,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Badge Notifications V6 FINALE - Correction Refresh Automatique (CRITIQUE)"
+    - "Badge Notifications V7 FINALE - Correction Refresh Automatique avec SessionStorage (CRITIQUE)"
   stuck_tasks:
-    - "Badge Notifications V6 FINALE - Correction Refresh Automatique (CRITIQUE)"
+    - "Badge Notifications V7 FINALE - Correction Refresh Automatique avec SessionStorage (CRITIQUE)"
   test_all: false
   test_priority: "high_first"
 
