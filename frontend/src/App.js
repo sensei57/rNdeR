@@ -359,6 +359,7 @@ const NotificationBadge = ({ setActiveTab }) => {
   const [demandesTravail, setDemandesTravail] = useState([]);
   const [userNotifications, setUserNotifications] = useState([]);
   const [badgeViewed, setBadgeViewed] = useState(false);
+  const [viewedDemandesIds, setViewedDemandesIds] = useState(new Set());
 
   useEffect(() => {
     if (user?.role === 'Directeur') {
