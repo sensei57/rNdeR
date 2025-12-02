@@ -5065,6 +5065,12 @@ const DemandesTravailManager = () => {
   const handleSubmitDemandeMensuelle = async (e) => {
     e.preventDefault();
     
+    // Vérifier que le médecin est sélectionné si directeur
+    if (user?.role === 'Directeur' && !demandeMensuelle.medecin_id) {
+      toast.error('Veuillez sélectionner un médecin');
+      return;
+    }
+    
     // Construire la liste des jours exclus
     const joursExclus = joursDisponibles
       .filter(j => !j.selectionne)
@@ -5072,6 +5078,7 @@ const DemandesTravailManager = () => {
     
     try {
       const response = await axios.post(`${API}/demandes-travail/mensuelle`, {
+        medecin_id: demandeMensuelle.medecin_id || null,
         date_debut: demandeMensuelle.date_debut,
         semaine_type_id: (demandeMensuelle.semaine_type_id && demandeMensuelle.semaine_type_id !== 'none') ? demandeMensuelle.semaine_type_id : null,
         jours_exclus: joursExclus,
