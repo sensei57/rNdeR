@@ -5361,19 +5361,6 @@ const DemandesTravailManager = () => {
                           Initialiser Semaines Types
                         </Button>
                       )}
-                      
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setShowSemaineTypeModal(true);
-                          setShowDemandeModal(false);
-                        }}
-                        className="w-full mt-2"
-                      >
-                        + Créer Ma Semaine Type
-                      </Button>
                     </div>
                     
                     <div className="space-y-2">
