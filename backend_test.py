@@ -6162,6 +6162,31 @@ def super_admin_main():
         print("❌ Super Admin Protection System has issues!")
         return 1
 
+def semaines_types_privees_main():
+    """Main function for Semaines Types Privées tests"""
+    print("📅 SEMAINES TYPES PRIVÉES - CRÉATION ET FILTRAGE TESTS")
+    print("="*70)
+    
+    tester = MedicalStaffAPITester()
+    
+    # Run the specific test
+    success = tester.test_semaines_types_privees_creation_filtrage()
+    
+    # Print final summary
+    print(f"\n📊 Semaines Types Privées Test Summary:")
+    print(f"   Tests run: {tester.tests_run}")
+    print(f"   Tests passed: {tester.tests_passed}")
+    print(f"   Success rate: {(tester.tests_passed/tester.tests_run*100):.1f}%")
+    
+    if success:
+        print("🎉 Semaines Types Privées System is FULLY FUNCTIONAL!")
+        print("✅ Each doctor only sees their own week types")
+        return 0
+    else:
+        print("❌ Semaines Types Privées System has issues!")
+        print("🔧 Doctors can see week types from other doctors")
+        return 1
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1 and sys.argv[1] == "--annulation":
@@ -6178,6 +6203,8 @@ if __name__ == "__main__":
         sys.exit(quick_main())
     elif len(sys.argv) > 1 and sys.argv[1] == "--firebase":
         sys.exit(firebase_notification_main())
+    elif len(sys.argv) > 1 and sys.argv[1] == "--semaines-types":
+        sys.exit(semaines_types_privees_main())
     else:
-        # Default to annulation tests as requested in review
-        sys.exit(annulation_creneaux_main())
+        # Default to semaines types tests as requested in current review
+        sys.exit(semaines_types_privees_main())
