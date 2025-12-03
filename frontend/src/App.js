@@ -5381,11 +5381,20 @@ const DemandesTravailManager = () => {
                           <SelectValue placeholder="Sélectionnez une semaine type" />
                         </SelectTrigger>
                         <SelectContent>
-                          {semainesTypes.map(semaine => (
-                            <SelectItem key={semaine.id} value={semaine.id}>
-                              {semaine.nom} - {semaine.description}
-                            </SelectItem>
-                          ))}
+                          {semainesTypes
+                            .filter(semaine => {
+                              // Si directeur et médecin sélectionné, filtrer par ce médecin
+                              if (user?.role === 'Directeur' && medecinSelectionne) {
+                                return semaine.medecin_id === medecinSelectionne;
+                              }
+                              // Sinon afficher toutes les semaines (comportement par défaut)
+                              return true;
+                            })
+                            .map(semaine => (
+                              <SelectItem key={semaine.id} value={semaine.id}>
+                                {semaine.nom} - {semaine.description}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                       
