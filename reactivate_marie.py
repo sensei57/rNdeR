@@ -7,7 +7,7 @@ import requests
 import json
 
 def reactivate_marie():
-    base_url = "https://notif-pour-tous.preview.emergentagent.com"
+    base_url = "https://bonjour-hello-22.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     # Login as directeur first
