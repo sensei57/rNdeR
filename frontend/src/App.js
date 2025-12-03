@@ -718,9 +718,35 @@ const NotificationBadge = ({ setActiveTab }) => {
 
 // Dashboard Navigation
 const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, setUser } = useAuth();
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
+
+  const handleStopImpersonation = async () => {
+    try {
+      const originalToken = localStorage.getItem('originalToken');
+      if (originalToken) {
+        // Restaurer le token original
+        localStorage.setItem('token', originalToken);
+        localStorage.removeItem('originalToken');
+        localStorage.removeItem('isImpersonating');
+        
+        // Mettre à jour l'en-tête d'autorisation d'axios
+        axios.defaults.headers.common['Authorization'] = `Bearer ${originalToken}`;
+        
+        // Récupérer les infos du directeur
+        const response = await axios.get(`${API}/users/me`);
+        setUser(response.data);
+        
+        toast.success('Retour à votre compte directeur');
+        
+        // Rafraîchir la page pour éviter les problèmes de state
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.error('Erreur lors du retour au compte directeur');
+    }
+  };
 
   const getInitials = (nom, prenom) => {
     return `${prenom?.[0] || ''}${nom?.[0] || ''}`.toUpperCase();
