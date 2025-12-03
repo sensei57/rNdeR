@@ -833,15 +833,28 @@ const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab 
                 </Badge>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={logout}
-              className="flex items-center space-x-1"
-            >
-              <LogOut className="h-4 w-4" />
-              <span>Déconnexion</span>
-            </Button>
+            <div className="flex items-center space-x-2">
+              {localStorage.getItem('isImpersonating') === 'true' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleStopImpersonation}
+                  className="flex items-center space-x-1 bg-orange-50 border-orange-500 text-orange-700 hover:bg-orange-100"
+                >
+                  <Users className="h-4 w-4" />
+                  <span>Retour Directeur</span>
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={logout}
+                className="flex items-center space-x-1"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Déconnexion</span>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
