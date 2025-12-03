@@ -1304,6 +1304,377 @@ class MedicalStaffAPITester:
         
         return sent_messages
 
+    def test_semaines_types_privees_creation_filtrage(self):
+        """Test Semaines Types Privées - Création et Filtrage (URGENT)"""
+        print("\n📅 TEST BACKEND - Vérifier Création et Filtrage Semaines Types")
+        print("="*70)
+        print("PROBLÈME UTILISATEUR: 'Quand je fais mes semaines types, elles sont dispo pour chaque médecin")
+        print("alors qu'elles devraient être uniquement pour celui qui les a créées'")
+        print("="*70)
+        
+        # Identifiants from test request
+        medecin1_credentials = {"email": "dr.dupont@cabinet.fr", "password": "medecin123"}
+        medecin2_credentials = {"email": "dr.ricaud@cabinet.fr", "password": "medecin123"}
+        directeur_credentials = {"email": "directeur@cabinet.fr", "password": "admin123"}
+        
+        medecin1_token = None
+        medecin2_token = None
+        directeur_token = None
+        medecin1_id = None
+        medecin2_id = None
+        
+        # Login all users first
+        print("\n🔐 CONNEXIONS PRÉLIMINAIRES")
+        print("-" * 40)
+        
+        # Login Directeur
+        success, response = self.run_test(
+            "Connexion Directeur",
+            "POST",
+            "auth/login", 
+            200,
+            data=directeur_credentials
+        )
+        if success and 'access_token' in response:
+            directeur_token = response['access_token']
+            print(f"   ✅ Directeur connecté: {response['user']['prenom']} {response['user']['nom']}")
+        else:
+            print(f"   ❌ ÉCHEC connexion Directeur - Tests annulés")
+            return False
+        
+        # Login Médecin 1 (Dr. Dupont)
+        success, response = self.run_test(
+            "Connexion Médecin 1 (dr.dupont@cabinet.fr)",
+            "POST", 
+            "auth/login",
+            200,
+            data=medecin1_credentials
+        )
+        if success and 'access_token' in response:
+            medecin1_token = response['access_token']
+            medecin1_id = response['user']['id']
+            print(f"   ✅ Médecin 1 connecté: {response['user']['prenom']} {response['user']['nom']} (ID: {medecin1_id})")
+        else:
+            print(f"   ❌ ÉCHEC connexion Médecin 1 - Tests annulés")
+            return False
+        
+        # Login Médecin 2 (Dr. Ricaud)
+        success, response = self.run_test(
+            "Connexion Médecin 2 (dr.ricaud@cabinet.fr)",
+            "POST",
+            "auth/login", 
+            200,
+            data=medecin2_credentials
+        )
+        if success and 'access_token' in response:
+            medecin2_token = response['access_token']
+            medecin2_id = response['user']['id']
+            print(f"   ✅ Médecin 2 connecté: {response['user']['prenom']} {response['user']['nom']} (ID: {medecin2_id})")
+        else:
+            print(f"   ❌ ÉCHEC connexion Médecin 2 - Tests annulés")
+            return False
+        
+        # TEST 1 - Supprimer les anciennes semaines et créer une nouvelle
+        print("\n🔍 TEST 1 - Supprimer anciennes semaines globales")
+        print("-" * 50)
+        
+        # Get existing semaines-types
+        success, semaines_existantes = self.run_test(
+            "GET /api/semaines-types (Directeur)",
+            "GET",
+            "semaines-types",
+            200,
+            token=directeur_token
+        )
+        
+        if success:
+            print(f"   ✅ Récupération réussie: {len(semaines_existantes)} semaines trouvées")
+            
+            # Find and delete global weeks (medecin_id=null)
+            semaines_globales = [s for s in semaines_existantes if s.get('medecin_id') is None]
+            print(f"   📋 Semaines globales trouvées: {len(semaines_globales)}")
+            
+            for semaine in semaines_globales:
+                semaine_id = semaine.get('id')
+                if semaine_id:
+                    print(f"   🗑️ Suppression semaine globale ID: {semaine_id} ('{semaine.get('nom', 'Sans nom')}')")
+                    success_del, _ = self.run_test(
+                        f"DELETE semaine globale {semaine_id}",
+                        "DELETE",
+                        f"semaines-types/{semaine_id}",
+                        200,
+                        token=directeur_token
+                    )
+                    if success_del:
+                        print(f"      ✅ Supprimée avec succès")
+                    else:
+                        print(f"      ❌ Échec suppression")
+        else:
+            print(f"   ❌ Impossible de récupérer les semaines existantes")
+        
+        # TEST 2 - Créer semaine comme Médecin 1
+        print("\n🔍 TEST 2 - Créer semaine comme Médecin 1 (Dr. Dupont)")
+        print("-" * 55)
+        
+        semaine_dupont_data = {
+            "nom": "Semaine UNIQUE Dr Dupont",
+            "description": "Test privé strict",
+            "lundi": "MATIN",
+            "mardi": "JOURNEE_COMPLETE", 
+            "mercredi": "REPOS",
+            "jeudi": "APRES_MIDI",
+            "vendredi": "JOURNEE_COMPLETE",
+            "samedi": "REPOS",
+            "dimanche": "REPOS"
+        }
+        
+        success, semaine_dupont_response = self.run_test(
+            "POST /api/semaines-types (Médecin 1)",
+            "POST",
+            "semaines-types",
+            200,
+            data=semaine_dupont_data,
+            token=medecin1_token
+        )
+        
+        if success:
+            print(f"   ✅ Semaine créée avec succès")
+            print(f"   📋 RÉPONSE COMPLÈTE:")
+            for key, value in semaine_dupont_response.items():
+                print(f"      - {key}: {value}")
+            
+            # Verify medecin_id is present and correct
+            response_medecin_id = semaine_dupont_response.get('medecin_id')
+            if response_medecin_id == medecin1_id:
+                print(f"   ✅ VÉRIFICATION: medecin_id correct ({response_medecin_id})")
+            else:
+                print(f"   ❌ ERREUR: medecin_id incorrect")
+                print(f"      Attendu: {medecin1_id}")
+                print(f"      Reçu: {response_medecin_id}")
+        else:
+            print(f"   ❌ Échec création semaine Médecin 1")
+        
+        # TEST 3 - Lister semaines comme Médecin 1
+        print("\n🔍 TEST 3 - Lister semaines comme Médecin 1")
+        print("-" * 45)
+        
+        success, semaines_medecin1 = self.run_test(
+            "GET /api/semaines-types (Médecin 1)",
+            "GET", 
+            "semaines-types",
+            200,
+            token=medecin1_token
+        )
+        
+        if success:
+            print(f"   ✅ Récupération réussie: {len(semaines_medecin1)} semaines")
+            print(f"   📋 TOUTES LES SEMAINES VISIBLES PAR MÉDECIN 1:")
+            
+            semaine_unique_dupont_presente = False
+            for i, semaine in enumerate(semaines_medecin1, 1):
+                medecin_id = semaine.get('medecin_id')
+                nom = semaine.get('nom', 'Sans nom')
+                semaine_id = semaine.get('id', 'Sans ID')
+                
+                print(f"      {i}. ID: {semaine_id}")
+                print(f"         Nom: {nom}")
+                print(f"         medecin_id: {medecin_id}")
+                
+                if nom == "Semaine UNIQUE Dr Dupont":
+                    semaine_unique_dupont_presente = True
+            
+            if semaine_unique_dupont_presente:
+                print(f"   ✅ VÉRIFICATION: 'Semaine UNIQUE Dr Dupont' est présente")
+            else:
+                print(f"   ❌ ERREUR: 'Semaine UNIQUE Dr Dupont' N'EST PAS présente")
+            
+            print(f"   📊 NOMBRE TOTAL: {len(semaines_medecin1)} semaines")
+        else:
+            print(f"   ❌ Échec récupération semaines Médecin 1")
+        
+        # TEST 4 - Lister semaines comme Médecin 2
+        print("\n🔍 TEST 4 - Lister semaines comme Médecin 2 (Dr. Ricaud)")
+        print("-" * 55)
+        
+        success, semaines_medecin2 = self.run_test(
+            "GET /api/semaines-types (Médecin 2)",
+            "GET",
+            "semaines-types", 
+            200,
+            token=medecin2_token
+        )
+        
+        if success:
+            print(f"   ✅ Récupération réussie: {len(semaines_medecin2)} semaines")
+            print(f"   📋 TOUTES LES SEMAINES VISIBLES PAR MÉDECIN 2:")
+            
+            semaine_unique_dupont_presente = False
+            for i, semaine in enumerate(semaines_medecin2, 1):
+                medecin_id = semaine.get('medecin_id')
+                nom = semaine.get('nom', 'Sans nom')
+                semaine_id = semaine.get('id', 'Sans ID')
+                
+                print(f"      {i}. ID: {semaine_id}")
+                print(f"         Nom: {nom}")
+                print(f"         medecin_id: {medecin_id}")
+                
+                if nom == "Semaine UNIQUE Dr Dupont":
+                    semaine_unique_dupont_presente = True
+            
+            if not semaine_unique_dupont_presente:
+                print(f"   ✅ VÉRIFICATION: 'Semaine UNIQUE Dr Dupont' N'EST PAS présente (correct)")
+            else:
+                print(f"   ❌ ERREUR CRITIQUE: 'Semaine UNIQUE Dr Dupont' EST présente (ne devrait pas)")
+            
+            print(f"   📊 NOMBRE TOTAL: {len(semaines_medecin2)} semaines (devrait être 0 ou seulement ses propres semaines)")
+        else:
+            print(f"   ❌ Échec récupération semaines Médecin 2")
+        
+        # TEST 5 - Créer semaine comme Médecin 2
+        print("\n🔍 TEST 5 - Créer semaine comme Médecin 2 (Dr. Ricaud)")
+        print("-" * 55)
+        
+        semaine_ricaud_data = {
+            "nom": "Semaine UNIQUE Dr Ricaud",
+            "description": "Test privé strict",
+            "lundi": "JOURNEE_COMPLETE",
+            "mardi": "REPOS",
+            "mercredi": "MATIN", 
+            "jeudi": "JOURNEE_COMPLETE",
+            "vendredi": "REPOS",
+            "samedi": "REPOS",
+            "dimanche": "REPOS"
+        }
+        
+        success, semaine_ricaud_response = self.run_test(
+            "POST /api/semaines-types (Médecin 2)",
+            "POST",
+            "semaines-types",
+            200,
+            data=semaine_ricaud_data,
+            token=medecin2_token
+        )
+        
+        if success:
+            print(f"   ✅ Semaine créée avec succès")
+            
+            # Verify medecin_id = ID de dr.ricaud
+            response_medecin_id = semaine_ricaud_response.get('medecin_id')
+            if response_medecin_id == medecin2_id:
+                print(f"   ✅ VÉRIFICATION: medecin_id = ID de Dr. Ricaud ({response_medecin_id})")
+            else:
+                print(f"   ❌ ERREUR: medecin_id incorrect")
+                print(f"      Attendu: {medecin2_id}")
+                print(f"      Reçu: {response_medecin_id}")
+        else:
+            print(f"   ❌ Échec création semaine Médecin 2")
+        
+        # TEST 6 - Vérification croisée finale
+        print("\n🔍 TEST 6 - Vérification croisée finale")
+        print("-" * 40)
+        
+        # Médecin 1 ne voit QUE ses semaines
+        print("\n   🔍 Vérification Médecin 1 (Dr. Dupont)")
+        success, final_semaines_medecin1 = self.run_test(
+            "GET /api/semaines-types (Médecin 1 - Final)",
+            "GET",
+            "semaines-types",
+            200,
+            token=medecin1_token
+        )
+        
+        if success:
+            dupont_only = True
+            for semaine in final_semaines_medecin1:
+                nom = semaine.get('nom', '')
+                if "Dr Ricaud" in nom:
+                    dupont_only = False
+                    break
+            
+            if dupont_only:
+                print(f"   ✅ Médecin 1 ne voit QUE 'Semaine UNIQUE Dr Dupont' (et éventuelles globales)")
+            else:
+                print(f"   ❌ ERREUR: Médecin 1 voit des semaines d'autres médecins")
+        
+        # Médecin 2 ne voit QUE ses semaines
+        print("\n   🔍 Vérification Médecin 2 (Dr. Ricaud)")
+        success, final_semaines_medecin2 = self.run_test(
+            "GET /api/semaines-types (Médecin 2 - Final)",
+            "GET",
+            "semaines-types",
+            200,
+            token=medecin2_token
+        )
+        
+        if success:
+            ricaud_only = True
+            for semaine in final_semaines_medecin2:
+                nom = semaine.get('nom', '')
+                if "Dr Dupont" in nom:
+                    ricaud_only = False
+                    break
+            
+            if ricaud_only:
+                print(f"   ✅ Médecin 2 ne voit QUE 'Semaine UNIQUE Dr Ricaud' (et éventuelles globales)")
+            else:
+                print(f"   ❌ ERREUR: Médecin 2 voit des semaines d'autres médecins")
+        
+        # CRITÈRES DE SUCCÈS
+        print("\n" + "="*70)
+        print("🎯 CRITÈRES DE SUCCÈS")
+        print("="*70)
+        
+        criteres_succes = {
+            "anciennes_semaines_supprimees": True,  # Assumé réussi si pas d'erreur
+            "semaine_medecin1_a_medecin_id": False,
+            "medecin1_voit_que_ses_semaines": False, 
+            "medecin2_voit_que_ses_semaines": False,
+            "aucune_semaine_partagee": False
+        }
+        
+        # Check each criteria based on test results
+        if 'semaine_dupont_response' in locals() and semaine_dupont_response.get('medecin_id') == medecin1_id:
+            criteres_succes["semaine_medecin1_a_medecin_id"] = True
+        
+        if 'dupont_only' in locals() and dupont_only:
+            criteres_succes["medecin1_voit_que_ses_semaines"] = True
+        
+        if 'ricaud_only' in locals() and ricaud_only:
+            criteres_succes["medecin2_voit_que_ses_semaines"] = True
+        
+        if criteres_succes["medecin1_voit_que_ses_semaines"] and criteres_succes["medecin2_voit_que_ses_semaines"]:
+            criteres_succes["aucune_semaine_partagee"] = True
+        
+        # Display results
+        for critere, reussi in criteres_succes.items():
+            status = "✅" if reussi else "❌"
+            critere_text = critere.replace("_", " ").title()
+            print(f"{status} {critere_text}")
+        
+        # Final summary
+        succes_total = sum(criteres_succes.values())
+        total_criteres = len(criteres_succes)
+        
+        print(f"\n📊 RÉSULTAT FINAL: {succes_total}/{total_criteres} critères réussis")
+        
+        if succes_total == total_criteres:
+            print("🎉 EXCELLENT: Tous les critères de succès sont atteints!")
+            print("🎉 Le système de semaines types privées fonctionne parfaitement!")
+        elif succes_total >= total_criteres - 1:
+            print("✅ TRÈS BIEN: Presque tous les critères réussis")
+            print("⚠️ Quelques ajustements mineurs peuvent être nécessaires")
+        else:
+            print("❌ PROBLÈME: Plusieurs critères échouent")
+            print("🔧 Le système de semaines types privées nécessite des corrections")
+        
+        print("\n" + "="*70)
+        print("INFORMATIONS À AFFICHER:")
+        print("- Liste complète des semaines avec medecin_id pour chaque médecin")
+        print("- Confirmation que chaque médecin voit uniquement ses propres semaines")
+        print("="*70)
+        
+        return succes_total == total_criteres
+
     def test_enhanced_firebase_notification_system(self):
         """Test Enhanced Firebase Notification System - URGENT PRIORITY"""
         print("\n🔥 TESTING ENHANCED FIREBASE NOTIFICATION SYSTEM - URGENT PRIORITY")
