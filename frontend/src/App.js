@@ -5095,6 +5095,16 @@ const DemandesTravailManager = () => {
     genererJoursMois(demandeMensuelle.date_debut, semaineTypeId);
   };
 
+  const handleMedecinChangeMensuelle = (medecinId) => {
+    setDemandeMensuelle(prev => ({ 
+      ...prev, 
+      medecin_id: medecinId,
+      semaine_type_id: '' // Réinitialiser la semaine type quand on change de médecin
+    }));
+    // Regénérer les jours sans semaine type
+    genererJoursMois(demandeMensuelle.date_debut, '');
+  };
+
   const toggleJourSelection = (dateStr) => {
     setJoursDisponibles(prev => prev.map(j => 
       j.date === dateStr ? { ...j, selectionne: !j.selectionne } : j
