@@ -6154,7 +6154,12 @@ const AdminManager = () => {
     try {
       const response = await axios.post(`${API}/admin/impersonate/${userId}`);
       
-      // Sauvegarder le token et mettre à jour l'utilisateur
+      // Sauvegarder le token original du directeur
+      const currentToken = localStorage.getItem('token');
+      localStorage.setItem('originalToken', currentToken);
+      localStorage.setItem('isImpersonating', 'true');
+      
+      // Sauvegarder le nouveau token
       localStorage.setItem('token', response.data.access_token);
       
       // Mettre à jour l'en-tête d'autorisation d'axios
@@ -6165,6 +6170,29 @@ const AdminManager = () => {
       toast.success(`Connexion en tant que ${response.data.user.prenom} ${response.data.user.nom}`);
     } catch (error) {
       toast.error('Erreur lors de la connexion à ce compte');
+    }
+  };
+
+  const handleStopImpersonation = async () => {
+    try {
+      const originalToken = localStorage.getItem('originalToken');
+      if (originalToken) {
+        // Restaurer le token original
+        localStorage.setItem('token', originalToken);
+        localStorage.removeItem('originalToken');
+        localStorage.removeItem('isImpersonating');
+        
+        // Mettre à jour l'en-tête d'autorisation d'axios
+        axios.defaults.headers.common['Authorization'] = `Bearer ${originalToken}`;
+        
+        // Récupérer les infos du directeur
+        const response = await axios.get(`${API}/users/me`);
+        setUser(response.data);
+        
+        toast.success('Retour à votre compte directeur');
+      }
+    } catch (error) {
+      toast.error('Erreur lors du retour au compte directeur');
     }
   };
 
