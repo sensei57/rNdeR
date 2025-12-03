@@ -5820,7 +5820,7 @@ const DemandesTravailManager = () => {
                   <Label htmlFor="medecin-mensuelle">Médecin *</Label>
                   <Select
                     value={demandeMensuelle.medecin_id}
-                    onValueChange={(value) => setDemandeMensuelle(prev => ({ ...prev, medecin_id: value }))}
+                    onValueChange={handleMedecinChangeMensuelle}
                     required
                   >
                     <SelectTrigger>
