@@ -785,24 +785,25 @@ async def subscribe_to_notifications(
 ):
     """Enregistre le token FCM d'un utilisateur"""
     try:
-        # Supprimer l'ancien token s'il existe
-        await db.notification_tokens.delete_many({"user_id": current_user.id})
+        fcm_token = subscription_data.get("token")
         
-        # Enregistrer le nouveau token
-        token_doc = {
-            "id": str(uuid.uuid4()),
-            "user_id": current_user.id,
-            "token": subscription_data.get("token"),
-            "created_at": datetime.now(timezone.utc),
-            "active": True
-        }
+        if not fcm_token:
+            raise HTTPException(status_code=400, detail="Token FCM manquant")
         
-        await db.notification_tokens.insert_one(token_doc)
+        # Enregistrer le token directement dans l'utilisateur
+        await db.users.update_one(
+            {"id": current_user.id},
+            {"$set": {"fcm_token": fcm_token, "fcm_updated_at": datetime.now(timezone.utc)}}
+        )
         
-        return {"message": "Token FCM enregistré avec succès"}
+        print(f"✅ Token FCM enregistré pour {current_user.prenom} {current_user.nom}")
         
+        return {"message": "Token FCM enregistré avec succès", "user_id": current_user.id}
+        
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"Erreur lors de l'enregistrement du token: {e}")
+        print(f"❌ Erreur lors de l'enregistrement du token: {e}")
         raise HTTPException(status_code=500, detail="Erreur lors de l'enregistrement")
 
 # Endpoint de diagnostic (GET - pour debug)
