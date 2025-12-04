@@ -611,7 +611,7 @@ const NotificationBadge = ({ setActiveTab }) => {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              removeDemande('travail', demande.id);
+                              deleteDemande('travail', demande.id);
                             }}
                             className="text-red-600 hover:text-red-800 text-lg ml-2 flex-shrink-0 hover:bg-red-100 rounded px-1"
                             title="Retirer de la liste"
