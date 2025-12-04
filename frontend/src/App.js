@@ -534,7 +534,7 @@ const NotificationBadge = ({ setActiveTab }) => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          removeNotification(notif.id);
+                          deleteNotification(notif.id);
                         }}
                         className="text-red-600 hover:text-red-800 text-lg ml-2 flex-shrink-0 hover:bg-red-100 rounded px-1"
                         title="Supprimer cette notification"
