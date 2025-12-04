@@ -8167,8 +8167,11 @@ const ChatManager = () => {
   useEffect(() => {
     fetchUsers();
     fetchGroupes();
+  }, []);
+
+  useEffect(() => {
     fetchMessages();
-  }, [chatType, selectedGroupe]);
+  }, [chatType, selectedGroupe, selectedUser]);
 
   const fetchUsers = async () => {
     try {
@@ -8190,15 +8193,32 @@ const ChatManager = () => {
 
   const fetchMessages = async () => {
     try {
-      let url = `${API}/messages?type_message=${chatType}&limit=100`;
-      if (chatType === 'GROUPE' && selectedGroupe) {
-        url += `&groupe_id=${selectedGroupe.id}`;
+      let url = '';
+      
+      // Messages privés : utiliser l'endpoint de conversation
+      if (chatType === 'PRIVE' && selectedUser) {
+        url = `${API}/messages/conversation/${selectedUser.id}?limit=100`;
+      } 
+      // Messages de groupe
+      else if (chatType === 'GROUPE' && selectedGroupe) {
+        url = `${API}/messages?type_message=${chatType}&groupe_id=${selectedGroupe.id}&limit=100`;
+      }
+      // Messages généraux
+      else if (chatType === 'GENERAL') {
+        url = `${API}/messages?type_message=${chatType}&limit=100`;
+      }
+      else {
+        // Pas de sélection pour messages privés/groupe
+        setMessages([]);
+        setLoading(false);
+        return;
       }
       
       const response = await axios.get(url);
       setMessages(response.data.reverse()); // Ordre chronologique
     } catch (error) {
       console.error('Erreur lors du chargement des messages');
+      setMessages([]);
     } finally {
       setLoading(false);
     }
