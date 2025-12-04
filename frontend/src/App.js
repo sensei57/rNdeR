@@ -381,8 +381,8 @@ const NotificationBadge = ({ setActiveTab }) => {
   const fetchUserNotifications = async () => {
     try {
       const response = await axios.get(`${API}/notifications`);
-      const unreadNotifs = response.data.filter(n => !n.read);
-      setUserNotifications(unreadNotifs);
+      // Garder TOUTES les notifications, pas seulement les non lues
+      setUserNotifications(response.data);
     } catch (error) {
       console.error('Erreur lors du chargement des notifications utilisateur');
     }
@@ -398,38 +398,8 @@ const NotificationBadge = ({ setActiveTab }) => {
       const congesEnAttente = congesRes.data.filter(d => d.statut === 'EN_ATTENTE');
       const travailEnAttente = travailRes.data.filter(d => d.statut === 'EN_ATTENTE');
 
-      // Recharger viewedDemandesIds depuis sessionStorage (au cas où il serait obsolète)
-      const storedIds = sessionStorage.getItem('viewedDemandesIds');
-      const viewedIds = storedIds ? new Set(JSON.parse(storedIds)) : new Set();
-      console.log('🔄 Refresh notifications - IDs vus:', storedIds ? JSON.parse(storedIds).length : 0);
-      
-      // Recharger badgeViewed depuis sessionStorage
-      const storedBadgeViewed = sessionStorage.getItem('badgeViewed');
-      const currentBadgeViewed = storedBadgeViewed === 'true';
-      console.log('🔄 Badge viewed status:', currentBadgeViewed);
-      
-      // Vérifier s'il y a de VRAIES nouvelles demandes (pas déjà vues)
-      const allDemandes = [...congesEnAttente, ...travailEnAttente];
-      const hasNewDemandes = allDemandes.some(
-        demande => !viewedIds.has(demande.id)
-      );
-      console.log('🆕 Nouvelles demandes détectées?', hasNewDemandes, '- Total demandes:', allDemandes.length);
-      
-      // Réinitialiser badgeViewed SEULEMENT s'il y a de nouvelles demandes ET que badge était vu
-      if (hasNewDemandes && currentBadgeViewed) {
-        console.log('❌ Reset badge à false (nouvelles demandes détectées)');
-        setBadgeViewed(false);
-        sessionStorage.setItem('badgeViewed', 'false');
-      } else {
-        console.log('✅ Badge reste vu (pas de nouvelles demandes)');
-      }
-
       setDemandesConges(congesEnAttente);
       setDemandesTravail(travailEnAttente);
-      setNotifications({
-        conges: congesEnAttente.length,
-        travail: travailEnAttente.length
-      });
     } catch (error) {
       console.error('Erreur lors du chargement des notifications');
     }
