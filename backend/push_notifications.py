@@ -1,20 +1,46 @@
 """
-Module pour gérer les notifications push via Firebase Cloud Functions
+Module pour gérer les notifications push via Firebase Admin SDK
 """
 import os
 import logging
-import httpx
+import firebase_admin
+from firebase_admin import credentials, messaging
 
 logger = logging.getLogger(__name__)
 
-# URLs des Cloud Functions Firebase
-FIREBASE_FUNCTION_SEND_PUSH = os.environ.get("FIREBASE_FUNCTION_SEND_PUSH", "")
-FIREBASE_FUNCTION_MULTICAST = os.environ.get("FIREBASE_FUNCTION_MULTICAST", "")
+# Initialisation Firebase Admin SDK
+_firebase_app = None
+
+def initialize_firebase():
+    """Initialise Firebase Admin SDK avec les credentials"""
+    global _firebase_app
+    
+    if _firebase_app is not None:
+        return _firebase_app
+    
+    try:
+        # Chemin vers le fichier de credentials
+        cred_path = os.path.join(os.path.dirname(__file__), 'firebase-credentials.json')
+        
+        if not os.path.exists(cred_path):
+            logger.error(f"Fichier de credentials Firebase introuvable: {cred_path}")
+            return None
+        
+        # Initialiser Firebase Admin
+        cred = credentials.Certificate(cred_path)
+        _firebase_app = firebase_admin.initialize_app(cred)
+        
+        logger.info("✅ Firebase Admin SDK initialisé avec succès")
+        return _firebase_app
+        
+    except Exception as e:
+        logger.error(f"❌ Erreur lors de l'initialisation Firebase: {e}")
+        return None
 
 
 async def send_push_notification(fcm_token: str, title: str, body: str, data: dict = None):
     """
-    Envoie une notification push à un utilisateur via Firebase Cloud Function
+    Envoie une notification push à un utilisateur via Firebase Admin SDK
     
     Args:
         fcm_token: Token FCM de l'utilisateur
@@ -22,40 +48,52 @@ async def send_push_notification(fcm_token: str, title: str, body: str, data: di
         body: Corps de la notification
         data: Données supplémentaires (optionnel)
     """
-    if not FIREBASE_FUNCTION_SEND_PUSH:
-        logger.warning("Firebase Cloud Function URL not configured, skipping push notification")
+    # Initialiser Firebase si pas déjà fait
+    if _firebase_app is None:
+        initialize_firebase()
+    
+    if _firebase_app is None:
+        logger.warning("Firebase non initialisé, notification push non envoyée")
         return False
     
     try:
-        payload = {
-            "token": fcm_token,
-            "title": title,
-            "body": body,
-            "data": data or {}
-        }
-        
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                FIREBASE_FUNCTION_SEND_PUSH, 
-                json=payload, 
-                headers={"Content-Type": "application/json"},
-                timeout=10.0
+        # Construire le message
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title=title,
+                body=body
+            ),
+            data={k: str(v) for k, v in (data or {}).items()},  # Convertir toutes les valeurs en string
+            token=fcm_token,
+            webpush=messaging.WebpushConfig(
+                notification=messaging.WebpushNotification(
+                    icon='/icon-192.png',
+                    badge='/icon-192.png',
+                    require_interaction=True,
+                    vibrate=[200, 100, 200]
+                ),
+                fcm_options=messaging.WebpushFCMOptions(
+                    link='/'
+                )
             )
-            
-            if response.status_code == 200:
-                logger.info(f"Push notification sent successfully via Cloud Function")
-                return True
-            else:
-                logger.error(f"Failed to send push notification: {response.status_code} - {response.text}")
-                return False
+        )
+        
+        # Envoyer la notification
+        response = messaging.send(message)
+        logger.info(f"✅ Push notification envoyée avec succès: {response}")
+        return True
+        
+    except firebase_admin.exceptions.FirebaseError as e:
+        logger.error(f"❌ Erreur Firebase lors de l'envoi: {e}")
+        return False
     except Exception as e:
-        logger.error(f"Error sending push notification: {e}")
+        logger.error(f"❌ Erreur lors de l'envoi de la notification push: {e}")
         return False
 
 
 async def send_push_to_multiple(fcm_tokens: list, title: str, body: str, data: dict = None):
     """
-    Envoie une notification push à plusieurs utilisateurs via Cloud Function
+    Envoie une notification push à plusieurs utilisateurs via Firebase Admin SDK
     
     Args:
         fcm_tokens: Liste des tokens FCM
@@ -63,36 +101,55 @@ async def send_push_to_multiple(fcm_tokens: list, title: str, body: str, data: d
         body: Corps de la notification
         data: Données supplémentaires (optionnel)
     """
-    if not FIREBASE_FUNCTION_MULTICAST or not fcm_tokens:
+    if not fcm_tokens:
+        return 0
+    
+    # Initialiser Firebase si pas déjà fait
+    if _firebase_app is None:
+        initialize_firebase()
+    
+    if _firebase_app is None:
+        logger.warning("Firebase non initialisé, notifications push non envoyées")
         return 0
     
     try:
-        payload = {
-            "tokens": fcm_tokens,
-            "title": title,
-            "body": body,
-            "data": data or {}
-        }
-        
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                FIREBASE_FUNCTION_MULTICAST,
-                json=payload,
-                headers={"Content-Type": "application/json"},
-                timeout=10.0
+        # Construire le message multicast
+        message = messaging.MulticastMessage(
+            notification=messaging.Notification(
+                title=title,
+                body=body
+            ),
+            data={k: str(v) for k, v in (data or {}).items()},
+            tokens=fcm_tokens,
+            webpush=messaging.WebpushConfig(
+                notification=messaging.WebpushNotification(
+                    icon='/icon-192.png',
+                    badge='/icon-192.png',
+                    require_interaction=True,
+                    vibrate=[200, 100, 200]
+                )
             )
-            
-            if response.status_code == 200:
-                result = response.json()
-                success_count = result.get("successCount", 0)
-                logger.info(f"Successfully sent {success_count}/{len(fcm_tokens)} push notifications via Cloud Function")
-                return success_count
-            else:
-                logger.error(f"Failed to send multicast: {response.status_code}")
-                return 0
+        )
+        
+        # Envoyer les notifications
+        response = messaging.send_multicast(message)
+        
+        logger.info(f"✅ Notifications envoyées: {response.success_count}/{len(fcm_tokens)} succès")
+        
+        # Gérer les erreurs individuelles
+        if response.failure_count > 0:
+            failed_tokens = []
+            for idx, resp in enumerate(response.responses):
+                if not resp.success:
+                    failed_tokens.append(fcm_tokens[idx])
+                    logger.warning(f"⚠️ Échec pour token {idx}: {resp.exception}")
+        
+        return response.success_count
+        
     except Exception as e:
-        logger.error(f"Error sending multicast push: {e}")
+        logger.error(f"❌ Erreur lors de l'envoi multicast: {e}")
         return 0
 
 
-# Configuration simplifiée - pas d'initialisation nécessaire
+# Initialiser Firebase au démarrage du module
+initialize_firebase()
