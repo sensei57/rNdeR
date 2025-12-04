@@ -769,6 +769,21 @@ async def mark_notification_read(
     
     return {"message": "Notification marquée comme lue"}
 
+@api_router.delete("/notifications/{notification_id}")
+async def delete_notification(
+    notification_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Supprime une notification"""
+    result = await db.notifications.delete_one(
+        {"id": notification_id, "user_id": current_user.id}
+    )
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Notification non trouvée")
+    
+    return {"message": "Notification supprimée"}
+
 @api_router.post("/notifications/send-daily-planning")
 async def trigger_daily_planning(
     background_tasks: BackgroundTasks,
