@@ -353,18 +353,13 @@ const PushNotificationManager = () => {
 // Notifications Badge Component
 const NotificationBadge = ({ setActiveTab }) => {
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState({ conges: 0, travail: 0 });
   const [showPanel, setShowPanel] = useState(false);
   const [demandesConges, setDemandesConges] = useState([]);
   const [demandesTravail, setDemandesTravail] = useState([]);
   const [userNotifications, setUserNotifications] = useState([]);
-  const [badgeViewed, setBadgeViewed] = useState(() => {
-    const stored = sessionStorage.getItem('badgeViewed');
-    return stored === 'true';
-  });
-  const [viewedDemandesIds, setViewedDemandesIds] = useState(() => {
-    const stored = sessionStorage.getItem('viewedDemandesIds');
-    return stored ? new Set(JSON.parse(stored)) : new Set();
+  const [lastSeenTimestamp, setLastSeenTimestamp] = useState(() => {
+    const stored = localStorage.getItem('notificationsLastSeen');
+    return stored ? parseInt(stored) : Date.now();
   });
 
   useEffect(() => {
