@@ -405,34 +405,7 @@ const NotificationBadge = ({ setActiveTab }) => {
     }
   };
 
-  const markAsRead = async (notificationId) => {
-    try {
-      await axios.put(`${API}/notifications/${notificationId}/read`);
-      await fetchUserNotifications(); // Recharger pour mettre à jour le badge
-    } catch (error) {
-      console.error('Erreur lors de la mise à jour de la notification');
-    }
-  };
-
-  const markAllAsRead = async () => {
-    try {
-      // Marquer toutes les notifications non lues comme lues
-      const markPromises = userNotifications.map(notif => 
-        axios.put(`${API}/notifications/${notif.id}/read`)
-      );
-      await Promise.all(markPromises);
-      await fetchUserNotifications(); // Recharger pour mettre à jour le badge
-    } catch (error) {
-      console.error('Erreur lors du marquage de toutes les notifications');
-    }
-  };
-
-  const handleNotificationClick = (type, notificationId = null) => {
-    // Marquer comme lu si c'est une notification personnelle
-    if (notificationId) {
-      markAsRead(notificationId);
-    }
-    
+  const handleNotificationClick = (type) => {
     // Naviguer vers la page appropriée
     if (setActiveTab) {
       setActiveTab(type);
@@ -442,75 +415,67 @@ const NotificationBadge = ({ setActiveTab }) => {
     setShowPanel(false);
   };
 
-  const handleBellClick = async () => {
+  const handleBellClick = () => {
     // Ouvrir/fermer le panneau
     const newShowPanel = !showPanel;
     setShowPanel(newShowPanel);
     
-    // Si on ouvre le panneau, marquer comme "vu" (badge à 0) mais garder les données
+    // Si on ouvre le panneau, mettre à jour le timestamp
     if (newShowPanel) {
-      console.log('🔔 Clic sur cloche - Ouverture panneau');
-      console.log('📊 demandesConges:', demandesConges.length, 'demandesTravail:', demandesTravail.length);
-      
-      setBadgeViewed(true);
-      sessionStorage.setItem('badgeViewed', 'true');
-      console.log('✅ badgeViewed mis à true dans sessionStorage');
-      
-      // Marquer toutes les notifications personnelles comme lues
-      if (userNotifications.length > 0) {
-        await markAllAsRead();
-      }
-      
-      // Stocker les IDs des demandes vues
-      const allIds = new Set();
-      demandesConges.forEach(d => {
-        console.log('➕ Ajout ID congé:', d.id);
-        allIds.add(d.id);
-      });
-      demandesTravail.forEach(d => {
-        console.log('➕ Ajout ID travail:', d.id);
-        allIds.add(d.id);
-      });
-      setViewedDemandesIds(allIds);
-      const idsArray = [...allIds];
-      sessionStorage.setItem('viewedDemandesIds', JSON.stringify(idsArray));
-      console.log('✅ IDs stockés dans sessionStorage:', idsArray);
-      console.log('🔍 Vérification sessionStorage:', sessionStorage.getItem('viewedDemandesIds'));
+      const now = Date.now();
+      setLastSeenTimestamp(now);
+      localStorage.setItem('notificationsLastSeen', now.toString());
     }
   };
 
-  const removeNotification = async (notificationId) => {
+  const deleteNotification = async (notificationId) => {
     try {
-      await axios.put(`${API}/notifications/${notificationId}/read`);
+      await axios.delete(`${API}/notifications/${notificationId}`);
       // Retirer de la liste locale
       setUserNotifications(prev => prev.filter(n => n.id !== notificationId));
+      toast.success('Notification supprimée');
     } catch (error) {
       console.error('Erreur lors de la suppression de la notification');
+      toast.error('Erreur lors de la suppression');
     }
   };
 
-  const removeDemande = async (type, demandeId) => {
-    // Pour le directeur: retirer une demande de la liste locale
+  const deleteDemande = async (type, demandeId) => {
+    // Marquer la demande comme "vue" en la retirant de la liste locale
     if (type === 'conge') {
       setDemandesConges(prev => prev.filter(d => d.id !== demandeId));
-      setNotifications(prev => ({ ...prev, conges: Math.max(0, prev.conges - 1) }));
     } else if (type === 'travail') {
       setDemandesTravail(prev => prev.filter(d => d.id !== demandeId));
-      setNotifications(prev => ({ ...prev, travail: Math.max(0, prev.travail - 1) }));
     }
-    
-    // Retirer l'ID de la liste des vues
-    setViewedDemandesIds(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(demandeId);
-      return newSet;
-    });
+    toast.success('Notification retirée');
   };
 
-  // Pour le directeur : notifications de nouvelles demandes (0 si déjà vues)
-  const totalDirectorNotifications = (user?.role === 'Directeur' && !badgeViewed) 
-    ? (notifications.conges + notifications.travail) 
-    : 0;
+  // Compter les NOUVELLES notifications (créées après lastSeenTimestamp)
+  const countNewNotifications = () => {
+    let count = 0;
+    
+    // Pour le directeur : demandes en attente créées après le dernier vu
+    if (user?.role === 'Directeur') {
+      demandesConges.forEach(d => {
+        const createdAt = new Date(d.created_at || d.date_creation || 0).getTime();
+        if (createdAt > lastSeenTimestamp) count++;
+      });
+      demandesTravail.forEach(d => {
+        const createdAt = new Date(d.created_at || d.date_creation || 0).getTime();
+        if (createdAt > lastSeenTimestamp) count++;
+      });
+    }
+    
+    // Pour tous : notifications personnelles créées après le dernier vu
+    userNotifications.forEach(n => {
+      const sentAt = new Date(n.sent_at || 0).getTime();
+      if (sentAt > lastSeenTimestamp) count++;
+    });
+    
+    return count;
+  };
+
+  const totalNotifications = countNewNotifications();
   
   // Pour les autres : notifications personnelles
   const totalUserNotifications = userNotifications.length;
