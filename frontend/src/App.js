@@ -93,8 +93,8 @@ const AuthProvider = ({ children }) => {
 
 // Login Component
 const LoginPage = () => {
-  const [email, setEmail] = useState('directeur@hopital.fr');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
