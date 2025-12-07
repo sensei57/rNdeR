@@ -2837,14 +2837,22 @@ const PlanningManager = () => {
             <Button
               variant={viewMode === 'jour' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setViewMode('jour')}
+              onClick={() => {
+                setViewMode('jour');
+                // Synchroniser la date jour avec la semaine
+                setSelectedDate(selectedWeek);
+              }}
             >
               Vue Jour
             </Button>
             <Button
               variant={viewMode === 'semaine' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setViewMode('semaine')}
+              onClick={() => {
+                setViewMode('semaine');
+                // Synchroniser la semaine avec la date jour
+                setSelectedWeek(selectedDate);
+              }}
             >
               Vue Semaine
             </Button>
