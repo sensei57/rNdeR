@@ -3932,8 +3932,23 @@ const PlanningManager = () => {
                 <p>Aucun créneau programmé le matin</p>
               </div>
             ) : (
-              <div className={`grid ${getRoleGroups(planningMatin).roles.length === 1 ? 'grid-cols-1' : getRoleGroups(planningMatin).roles.length === 2 ? 'grid-cols-2' : 'grid-cols-3'} gap-4`}>
-                {getRoleGroups(planningMatin).roles.map(role => (
+              <div className={`grid ${(() => {
+                const roles = getRoleGroups(planningMatin).roles;
+                // Si directeur et qu'il y a des demandes médecins en attente, ajouter "Médecin" aux rôles
+                if (user?.role === 'Directeur' && !roles.includes('Médecin') && users.some(u => u.role === 'Médecin' && hasDemandeEnAttente(u.id, selectedDate, 'MATIN'))) {
+                  roles.push('Médecin');
+                }
+                return roles.length === 1 ? 'grid-cols-1' : roles.length === 2 ? 'grid-cols-2' : 'grid-cols-3';
+              })()} gap-4`}>
+                {(() => {
+                  const groups = getRoleGroups(planningMatin);
+                  const roles = [...groups.roles];
+                  // Si directeur et qu'il y a des demandes médecins en attente, ajouter "Médecin" aux rôles
+                  if (user?.role === 'Directeur' && !roles.includes('Médecin') && users.some(u => u.role === 'Médecin' && hasDemandeEnAttente(u.id, selectedDate, 'MATIN'))) {
+                    roles.push('Médecin');
+                  }
+                  return roles;
+                })().map(role => (
                   <div key={role} className="space-y-3">
                     <h3 className="font-semibold text-sm text-gray-700 border-b pb-2">
                       {role}s ({getRoleGroups(planningMatin).groups[role]?.length || 0})
