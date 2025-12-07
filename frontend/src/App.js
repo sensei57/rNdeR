@@ -4134,7 +4134,7 @@ const PlanningManager = () => {
                 </div>
               ))}
               
-              {planningApresMidi.length === 0 && (
+              {planningApresMidi.length === 0 && !(user?.role === 'Directeur' && users.some(u => u.role === 'Médecin' && hasDemandeEnAttente(u.id, selectedDate, 'APRES_MIDI'))) && (
                 <div className="text-center py-8 text-gray-500">
                   <CalendarDays className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                   <p>Aucun créneau programmé l'après-midi</p>
