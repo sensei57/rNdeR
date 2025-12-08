@@ -1450,34 +1450,51 @@ async def create_creneau_planning(
     if not employe:
         raise HTTPException(status_code=404, detail="Employé non trouvé")
     
-    # Vérifier les conflits de planning
-    existing = await db.planning.find_one({
-        "date": creneau_data.date,
-        "creneau": creneau_data.creneau,
-        "employe_id": creneau_data.employe_id
-    })
+    # Si JOURNEE_COMPLETE, créer 2 créneaux séparés (MATIN + APRES_MIDI)
+    creneaux_a_creer = []
+    if creneau_data.creneau == "JOURNEE_COMPLETE":
+        creneaux_a_creer = ["MATIN", "APRES_MIDI"]
+    else:
+        creneaux_a_creer = [creneau_data.creneau]
     
-    if existing:
-        raise HTTPException(status_code=400, detail="L'employé a déjà un créneau programmé à cette date/heure")
-    
-    # Vérifier les conflits de salle
-    if creneau_data.salle_attribuee:
-        salle_occupee = await db.planning.find_one({
+    created_creneaux = []
+    for creneau_type in creneaux_a_creer:
+        # Vérifier les conflits de planning
+        existing = await db.planning.find_one({
             "date": creneau_data.date,
-            "creneau": creneau_data.creneau,
-            "salle_attribuee": creneau_data.salle_attribuee
+            "creneau": creneau_type,
+            "employe_id": creneau_data.employe_id
         })
         
-        if salle_occupee:
-            raise HTTPException(status_code=400, detail="La salle est déjà occupée à ce créneau")
+        if existing:
+            raise HTTPException(status_code=400, detail=f"L'employé a déjà un créneau programmé le {creneau_type.lower()}")
+        
+        # Vérifier les conflits de salle
+        if creneau_data.salle_attribuee:
+            salle_occupee = await db.planning.find_one({
+                "date": creneau_data.date,
+                "creneau": creneau_type,
+                "salle_attribuee": creneau_data.salle_attribuee
+            })
+            
+            if salle_occupee:
+                raise HTTPException(status_code=400, detail=f"La salle est déjà occupée le {creneau_type.lower()}")
+        
+        # Créer le créneau
+        creneau_dict = creneau_data.dict()
+        creneau_dict['creneau'] = creneau_type  # Remplacer JOURNEE_COMPLETE par MATIN ou APRES_MIDI
+        creneau_dict['id'] = str(uuid.uuid4())  # Générer un nouvel ID pour chaque créneau
+        
+        creneau = CreneauPlanning(
+            **creneau_dict,
+            employe_role=employe['role']
+        )
+        
+        await db.planning.insert_one(creneau.dict())
+        created_creneaux.append(creneau)
     
-    creneau = CreneauPlanning(
-        **creneau_data.dict(),
-        employe_role=employe['role']
-    )
-    
-    await db.planning.insert_one(creneau.dict())
-    return creneau
+    # Retourner le premier créneau créé (pour compatibilité avec l'ancien code)
+    return created_creneaux[0]
 
 @api_router.get("/planning", response_model=List[Dict[str, Any]])
 async def get_planning(
