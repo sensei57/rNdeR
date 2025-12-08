@@ -4021,11 +4021,37 @@ const PlanningManager = () => {
                         key={`demande-jour-matin-${employe.id}`}
                         className="border-2 border-yellow-500 bg-yellow-50 text-yellow-700 rounded-lg p-3"
                       >
-                        <div className="font-medium">
-                          {employe.prenom} {employe.nom}
-                        </div>
-                        <div className="text-sm font-semibold mt-1">
-                          ⏳ Demande en attente
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="font-medium">
+                              {employe.prenom} {employe.nom}
+                            </div>
+                            <div className="text-sm font-semibold mt-1">
+                              ⏳ Demande en attente
+                            </div>
+                          </div>
+                          <div className="flex space-x-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleApprouverDemandePlanning(employe.id, selectedDate, 'MATIN', true)}
+                              className="text-green-600 hover:text-green-800 hover:bg-green-50 h-8 px-3"
+                              title="Approuver"
+                            >
+                              <Check className="h-4 w-4 mr-1" />
+                              Approuver
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleApprouverDemandePlanning(employe.id, selectedDate, 'MATIN', false)}
+                              className="text-red-600 hover:text-red-800 hover:bg-red-50 h-8 px-3"
+                              title="Refuser"
+                            >
+                              <X className="h-4 w-4 mr-1" />
+                              Refuser
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
