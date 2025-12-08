@@ -5757,7 +5757,7 @@ const DemandesTravailManager = () => {
                 </div>
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                💡 Cliquez sur un jour pour l'inclure ou l'exclure de la demande.
+                💡 Système de clics : 1 clic = 🌅 Matin | 2 clics = 🌆 Après-midi | 3 clics = 🌞 Journée | 4 clics = ⭕ Désactivé
               </p>
             </div>
 
