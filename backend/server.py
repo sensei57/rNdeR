@@ -2739,11 +2739,9 @@ async def get_planning_semaine(
         }
         
         if creneau["date"] in planning_par_jour:
-            # Si c'est un créneau JOURNEE_COMPLETE, l'ajouter dans MATIN et APRES_MIDI
-            if creneau["creneau"] == "JOURNEE_COMPLETE":
-                planning_par_jour[creneau["date"]]["MATIN"].append(enriched_creneau)
-                planning_par_jour[creneau["date"]]["APRES_MIDI"].append(enriched_creneau)
-            else:
+            # Les créneaux JOURNEE_COMPLETE sont déjà séparés en MATIN et APRES_MIDI lors de la création
+            # Donc on ajoute simplement chaque créneau dans sa période correspondante
+            if creneau["creneau"] in planning_par_jour[creneau["date"]]:
                 planning_par_jour[creneau["date"]][creneau["creneau"]].append(enriched_creneau)
     
     return {
