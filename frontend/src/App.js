@@ -4948,17 +4948,25 @@ const DemandesTravailManager = () => {
       return;
     }
     
-    // Construire la liste des jours exclus
-    const joursExclus = joursDisponibles
-      .filter(j => !j.selectionne)
-      .map(j => j.date);
+    // Construire la liste des jours avec leurs créneaux spécifiques
+    const joursAvecCreneaux = joursDisponibles
+      .filter(j => j.selectionne && j.creneau !== null)
+      .map(j => ({
+        date: j.date,
+        creneau: j.creneau
+      }));
+    
+    if (joursAvecCreneaux.length === 0) {
+      toast.error('Veuillez sélectionner au moins un jour');
+      return;
+    }
     
     try {
       const response = await axios.post(`${API}/demandes-travail/mensuelle`, {
         medecin_id: demandeMensuelle.medecin_id || null,
         date_debut: demandeMensuelle.date_debut,
         semaine_type_id: (demandeMensuelle.semaine_type_id && demandeMensuelle.semaine_type_id !== 'none') ? demandeMensuelle.semaine_type_id : null,
-        jours_exclus: joursExclus,
+        jours_avec_creneaux: joursAvecCreneaux, // Nouveau : envoyer date + créneau
         motif: demandeMensuelle.motif
       });
       
