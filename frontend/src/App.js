@@ -4050,94 +4050,111 @@ const PlanningManager = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4">
-            <div className="space-y-3">
-              {planningApresMidi.map(creneau => (
-                <div
-                  key={creneau.id}
-                  className={`border rounded-lg p-3 ${getRoleColor(creneau.employe_role)}`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <div className="font-medium">
-                        {creneau.employe?.prenom} {creneau.employe?.nom} ({creneau.employe?.role})
-                      </div>
-                      
-                      {creneau.salle_attribuee && (
-                        <div className="text-sm text-gray-600">
-                          📍 Salle: {creneau.salle_attribuee}
+            {planningApresMidi.length === 0 && !(user?.role === 'Directeur' && users.some(u => u.role === 'Médecin' && hasDemandeEnAttente(u.id, selectedDate, 'APRES_MIDI'))) ? (
+              <div className="text-center py-8 text-gray-500">
+                <CalendarDays className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                <p>Aucun créneau programmé l'après-midi</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className={`grid ${getRoleGroups(planningApresMidi).roles.length === 1 ? 'grid-cols-1' : getRoleGroups(planningApresMidi).roles.length === 2 ? 'grid-cols-2' : 'grid-cols-3'} gap-4`}>
+                  {getRoleGroups(planningApresMidi).roles.map(role => (
+                    <div key={role} className="space-y-3">
+                      <h3 className="font-semibold text-sm text-gray-700 border-b pb-2">
+                        {role}s ({getRoleGroups(planningApresMidi).groups[role]?.length || 0})
+                      </h3>
+                      {getRoleGroups(planningApresMidi).groups[role]?.map(creneau => (
+                        <div
+                          key={creneau.id}
+                          className={`border rounded-lg p-3 ${getRoleColor(creneau.employe_role)}`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="space-y-1">
+                              <div className="font-medium">
+                                {creneau.employe?.prenom} {creneau.employe?.nom}
+                              </div>
+                              
+                              {creneau.salle_attribuee && (
+                                <div className="text-sm text-gray-600">
+                                  📍 {creneau.salle_attribuee}
+                                </div>
+                              )}
+                              
+                              {creneau.employe?.role === 'Médecin' && getAssistantsForMedecin(creneau.employe_id).length > 0 && (
+                                <div className="text-sm text-blue-600">
+                                  👥 Avec: {getAssistantsForMedecin(creneau.employe_id).map(a => `${a.prenom} ${a.nom}`).join(', ')}
+                                </div>
+                              )}
+                              
+                              {creneau.employe?.role === 'Assistant' && getMedecinsForAssistant(creneau.employe_id).length > 0 && (
+                                <div className="text-sm text-blue-600">
+                                  👨‍⚕️ Avec: Dr. {getMedecinsForAssistant(creneau.employe_id).map(m => `${m.prenom} ${m.nom}`).join(', Dr. ')}
+                                </div>
+                              )}
+                              
+                              {creneau.notes && (
+                                <div className="text-xs text-gray-600 italic truncate">
+                                  📝 {creneau.notes}
+                                </div>
+                              )}
+                            </div>
+                            
+                            {user?.role === 'Directeur' && (
+                              <div className="flex flex-col space-y-1">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleEditCreneau(creneau)}
+                                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 h-7 w-7 p-0"
+                                  title="Modifier"
+                                >
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleAnnulerCreneau(creneau)}
+                                  className="text-red-600 hover:text-red-800 hover:bg-red-50 h-7 w-7 p-0"
+                                  title="Annuler"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      )}
-                      
-                      {/* Afficher les assignations médecin-assistant */}
-                      {creneau.employe?.role === 'Médecin' && getAssistantsForMedecin(creneau.employe_id).length > 0 && (
-                        <div className="text-sm text-blue-600">
-                          👥 Avec: {getAssistantsForMedecin(creneau.employe_id).map(a => `${a.prenom} ${a.nom}`).join(', ')}
-                        </div>
-                      )}
-                      
-                      {creneau.employe?.role === 'Assistant' && getMedecinsForAssistant(creneau.employe_id).length > 0 && (
-                        <div className="text-sm text-blue-600">
-                          👨‍⚕️ Avec: Dr. {getMedecinsForAssistant(creneau.employe_id).map(m => `${m.prenom} ${m.nom}`).join(', Dr. ')}
-                        </div>
-                      )}
-                      
-                      {creneau.notes && (
-                        <div className="text-sm text-gray-600 italic">
-                          📝 {creneau.notes}
-                        </div>
-                      )}
+                      ))}
                     </div>
-                    
-                    {user?.role === 'Directeur' && (
-                      <div className="flex space-x-1">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleEditCreneau(creneau)}
-                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-                          title="Modifier"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleAnnulerCreneau(creneau)}
-                          className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                          title="Annuler"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                  ))}
+                </div>
+                
+                {/* Afficher les demandes en attente APRÈS la grille (Directeur uniquement) */}
+                {user?.role === 'Directeur' && users.filter(u => 
+                  u.role === 'Médecin' && hasDemandeEnAttente(u.id, selectedDate, 'APRES_MIDI')
+                ).length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-sm text-gray-700 border-b pb-2">
+                      Demandes en attente - Après-midi
+                    </h3>
+                    {users.filter(u => 
+                      u.role === 'Médecin' && hasDemandeEnAttente(u.id, selectedDate, 'APRES_MIDI')
+                    ).map(employe => (
+                      <div
+                        key={`demande-jour-apres-midi-${employe.id}`}
+                        className="border-2 border-yellow-500 bg-yellow-50 text-yellow-700 rounded-lg p-3"
+                      >
+                        <div className="font-medium">
+                          {employe.prenom} {employe.nom}
+                        </div>
+                        <div className="text-sm font-semibold mt-1">
+                          ⏳ Demande en attente
+                        </div>
                       </div>
-                    )}
+                    ))}
                   </div>
-                </div>
-              ))}
-              
-              {/* Afficher les demandes en attente (Directeur uniquement) */}
-              {user?.role === 'Directeur' && users.filter(u => 
-                u.role === 'Médecin' && hasDemandeEnAttente(u.id, selectedDate, 'APRES_MIDI')
-              ).map(employe => (
-                <div
-                  key={`demande-jour-apres-midi-${employe.id}`}
-                  className="border-2 border-yellow-500 bg-yellow-50 text-yellow-700 rounded-lg p-3"
-                >
-                  <div className="font-medium">
-                    {employe.prenom} {employe.nom} ({employe.role})
-                  </div>
-                  <div className="text-sm font-semibold mt-1">
-                    ⏳ Demande en attente
-                  </div>
-                </div>
-              ))}
-              
-              {planningApresMidi.length === 0 && !(user?.role === 'Directeur' && users.some(u => u.role === 'Médecin' && hasDemandeEnAttente(u.id, selectedDate, 'APRES_MIDI'))) && (
-                <div className="text-center py-8 text-gray-500">
-                  <CalendarDays className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                  <p>Aucun créneau programmé l'après-midi</p>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
         )}
