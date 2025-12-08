@@ -4335,7 +4335,7 @@ const PlanningManager = () => {
                       <div className="space-y-1">
                         {planningMatinFiltered.map(creneau => (
                           <div
-                            key={`matin-${creneau.id}`}
+                            key={creneau.id}
                             onClick={(e) => {
                               e.stopPropagation();
                               if (user?.role === 'Directeur') {
