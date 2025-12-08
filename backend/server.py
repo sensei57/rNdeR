@@ -2359,31 +2359,16 @@ async def create_demande_mensuelle(
         
         # Créer les demandes jour par jour
         demandes_creees = []
-        current_date = date_debut
-        jours_semaine = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
         
-        while current_date <= date_fin:
-            date_str = current_date.strftime('%Y-%m-%d')
-            
-            # Vérifier si ce jour est exclu
-            if date_str in demande_data.jours_exclus:
-                current_date += timedelta(days=1)
-                continue
-            
-            # Déterminer le créneau selon la semaine type ou défaut
-            creneau = None
-            if semaine_type:
-                jour_semaine = jours_semaine[current_date.weekday()]
-                creneau = semaine_type.get(jour_semaine, 'REPOS')
-            else:
-                # Par défaut, demander la journée complète pour les jours ouvrables
-                if current_date.weekday() < 6:  # Lundi à Samedi
-                    creneau = 'JOURNEE_COMPLETE'
-                else:
-                    creneau = 'REPOS'
-            
-            # Ne créer une demande que si ce n'est pas un jour de repos
-            if creneau and creneau != 'REPOS':
+        # Si jours_avec_creneaux est fourni, utiliser cette liste directement
+        if demande_data.jours_avec_creneaux:
+            for jour_data in demande_data.jours_avec_creneaux:
+                date_str = jour_data.get('date')
+                creneau = jour_data.get('creneau')
+                
+                if not date_str or not creneau:
+                    continue
+                
                 # Vérifier qu'il n'y a pas déjà une demande pour ce jour
                 existing = await db.demandes_travail.find_one({
                     "medecin_id": medecin_id,
@@ -2400,8 +2385,51 @@ async def create_demande_mensuelle(
                     )
                     await db.demandes_travail.insert_one(demande.dict())
                     demandes_creees.append(date_str)
+        else:
+            # Mode legacy : utiliser semaine type ou défaut (rétrocompatibilité)
+            current_date = date_debut
+            jours_semaine = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
             
-            current_date += timedelta(days=1)
+            while current_date <= date_fin:
+                date_str = current_date.strftime('%Y-%m-%d')
+                
+                # Vérifier si ce jour est exclu
+                if date_str in demande_data.jours_exclus:
+                    current_date += timedelta(days=1)
+                    continue
+                
+                # Déterminer le créneau selon la semaine type ou défaut
+                creneau = None
+                if semaine_type:
+                    jour_semaine = jours_semaine[current_date.weekday()]
+                    creneau = semaine_type.get(jour_semaine, 'REPOS')
+                else:
+                    # Par défaut, demander la journée complète pour les jours ouvrables
+                    if current_date.weekday() < 6:  # Lundi à Samedi
+                        creneau = 'JOURNEE_COMPLETE'
+                    else:
+                        creneau = 'REPOS'
+                
+                # Ne créer une demande que si ce n'est pas un jour de repos
+                if creneau and creneau != 'REPOS':
+                    # Vérifier qu'il n'y a pas déjà une demande pour ce jour
+                    existing = await db.demandes_travail.find_one({
+                        "medecin_id": medecin_id,
+                        "date_demandee": date_str,
+                        "statut": {"$in": ["EN_ATTENTE", "APPROUVE"]}
+                    })
+                    
+                    if not existing:
+                        demande = DemandeJourTravail(
+                            medecin_id=medecin_id,
+                            date_demandee=date_str,
+                            creneau=creneau,
+                            motif=demande_data.motif or f"Demande mensuelle {date_debut.strftime('%B %Y')}"
+                        )
+                        await db.demandes_travail.insert_one(demande.dict())
+                        demandes_creees.append(date_str)
+                
+                current_date += timedelta(days=1)
         
         # 📤 NOTIFICATION : Notifier le directeur (seulement si c'est le médecin qui fait la demande)
         if demandes_creees and current_user.role == ROLES["MEDECIN"]:
