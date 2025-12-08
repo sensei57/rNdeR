@@ -4913,9 +4913,30 @@ const DemandesTravailManager = () => {
   };
 
   const toggleJourSelection = (dateStr) => {
-    setJoursDisponibles(prev => prev.map(j => 
-      j.date === dateStr ? { ...j, selectionne: !j.selectionne } : j
-    ));
+    setJoursDisponibles(prev => prev.map(j => {
+      if (j.date !== dateStr) return j;
+      
+      // Système cyclique : null → MATIN → APRES_MIDI → JOURNEE_COMPLETE → null
+      let nouveauCreneau = null;
+      let nouveauSelectionne = false;
+      
+      if (j.creneau === null) {
+        nouveauCreneau = 'MATIN';
+        nouveauSelectionne = true;
+      } else if (j.creneau === 'MATIN') {
+        nouveauCreneau = 'APRES_MIDI';
+        nouveauSelectionne = true;
+      } else if (j.creneau === 'APRES_MIDI') {
+        nouveauCreneau = 'JOURNEE_COMPLETE';
+        nouveauSelectionne = true;
+      } else {
+        // JOURNEE_COMPLETE → retour à null
+        nouveauCreneau = null;
+        nouveauSelectionne = false;
+      }
+      
+      return { ...j, creneau: nouveauCreneau, selectionne: nouveauSelectionne };
+    }));
   };
 
   const handleSubmitDemandeMensuelle = async (e) => {
