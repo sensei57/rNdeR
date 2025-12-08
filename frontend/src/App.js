@@ -2681,10 +2681,9 @@ const PlanningManager = () => {
     : planning.filter(c => filterRole.includes(c.employe_role));
   
   // Séparer les créneaux par période
-  // IMPORTANT : Les créneaux JOURNEE_COMPLETE doivent apparaître dans MATIN et APRES_MIDI
-  const creneauxJourneeComplete = filteredPlanning.filter(c => c.creneau === 'JOURNEE_COMPLETE');
-  const planningMatin = [...filteredPlanning.filter(c => c.creneau === 'MATIN'), ...creneauxJourneeComplete];
-  const planningApresMidi = [...filteredPlanning.filter(c => c.creneau === 'APRES_MIDI'), ...creneauxJourneeComplete];
+  // Le backend crée déjà 2 créneaux séparés (MATIN + APRES_MIDI) pour JOURNEE_COMPLETE
+  const planningMatin = filteredPlanning.filter(c => c.creneau === 'MATIN');
+  const planningApresMidi = filteredPlanning.filter(c => c.creneau === 'APRES_MIDI');
   const planningJournee = filteredPlanning.filter(c => c.creneau === 'JOURNEE');
 
   // Créer des groupes par rôle pour l'affichage en colonnes
