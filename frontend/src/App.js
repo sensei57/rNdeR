@@ -4861,35 +4861,31 @@ const DemandesTravailManager = () => {
   };
 
   const genererJoursMois = (dateDebut, semaineTypeId) => {
-    const date = new Date(dateDebut);
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const lastDay = new Date(year, month + 1, 0).getDate();
+    // Utiliser la date en format ISO pour éviter les problèmes de fuseau horaire
+    const [year, month, dayStart] = dateDebut.split('-').map(Number);
+    const lastDay = new Date(year, month, 0).getDate(); // Dernier jour du mois
     
     const jours = [];
     const joursNoms = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
     const semaineType = semainesTypes.find(s => s.id === semaineTypeId);
     
     for (let day = 1; day <= lastDay; day++) {
-      const currentDate = new Date(year, month, day);
-      const dateStr = currentDate.toISOString().split('T')[0];
+      // Créer la date en format ISO pour éviter décalage fuseau horaire
+      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const currentDate = new Date(dateStr + 'T12:00:00'); // Midi pour éviter problèmes de fuseau
       const jourSemaine = joursNoms[currentDate.getDay()];
       
-      let creneau = 'JOURNEE_COMPLETE';
+      let creneau = null; // Par défaut : rien de sélectionné
       if (semaineType) {
-        creneau = semaineType[jourSemaine] || 'REPOS';
-      } else {
-        // Par défaut : journée complète du lundi au samedi
-        if (currentDate.getDay() === 0) { // Dimanche
-          creneau = 'REPOS';
-        }
+        creneau = semaineType[jourSemaine] || null;
       }
+      // Sinon on laisse null pour permettre la sélection manuelle
       
       jours.push({
         date: dateStr,
         jourNom: jourSemaine,
         creneau: creneau,
-        selectionne: creneau !== 'REPOS'
+        selectionne: false // Par défaut : tout désactivé
       });
     }
     
