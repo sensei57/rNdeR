@@ -5732,24 +5732,26 @@ const DemandesTravailManager = () => {
                     <div 
                       key={jour.date}
                       className={`
-                        p-2 rounded border cursor-pointer text-center text-sm
-                        ${jour.selectionne 
-                          ? 'bg-blue-100 border-blue-500 text-blue-800' 
+                        p-2 rounded border cursor-pointer text-center text-sm transition-colors
+                        ${jour.creneau === 'MATIN' 
+                          ? 'bg-orange-100 border-orange-500 text-orange-800' 
+                          : jour.creneau === 'APRES_MIDI'
+                          ? 'bg-purple-100 border-purple-500 text-purple-800'
+                          : jour.creneau === 'JOURNEE_COMPLETE'
+                          ? 'bg-green-100 border-green-500 text-green-800'
                           : 'bg-gray-100 border-gray-300 text-gray-500'
                         }
-                        ${jour.creneau === 'REPOS' ? 'opacity-40' : ''}
                       `}
-                      onClick={() => jour.creneau !== 'REPOS' && toggleJourSelection(jour.date)}
+                      onClick={() => toggleJourSelection(jour.date)}
                     >
-                      <div className="font-bold">{new Date(jour.date).getDate()}</div>
+                      <div className="font-bold">{new Date(jour.date + 'T12:00:00').getDate()}</div>
                       <div className="text-xs capitalize">{jour.jourNom.substring(0, 3)}</div>
-                      {jour.creneau !== 'REPOS' && (
-                        <div className="text-xs mt-1">
-                          {jour.creneau === 'JOURNEE_COMPLETE' ? 'Journée' :
-                           jour.creneau === 'MATIN' ? 'Matin' : 'AM'}
-                        </div>
-                      )}
-                      {jour.creneau === 'REPOS' && <div className="text-xs">Repos</div>}
+                      <div className="text-xs mt-1 font-semibold">
+                        {jour.creneau === 'JOURNEE_COMPLETE' ? '🌞 Journée' :
+                         jour.creneau === 'MATIN' ? '🌅 Matin' :
+                         jour.creneau === 'APRES_MIDI' ? '🌆 AM' :
+                         '⭕'}
+                      </div>
                     </div>
                   ))}
                 </div>
