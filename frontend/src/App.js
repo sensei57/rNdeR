@@ -2960,7 +2960,9 @@ const PlanningManager = () => {
                   <DialogHeader>
                     <DialogTitle>Nouveau Créneau Planning</DialogTitle>
                     <DialogDescription>
-                      Définissez un nouveau créneau de travail pour un employé
+                      Définissez un nouveau créneau de travail pour un assistant ou secrétaire.
+                      <br />
+                      <span className="text-blue-600 font-medium">ℹ️ Les médecins doivent faire leurs demandes via l'onglet "Demandes de Créneaux"</span>
                     </DialogDescription>
                   </DialogHeader>
                   
