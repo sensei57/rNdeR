@@ -6393,6 +6393,8 @@ if __name__ == "__main__":
         sys.exit(firebase_notification_main())
     elif len(sys.argv) > 1 and sys.argv[1] == "--semaines-types":
         sys.exit(semaines_types_privees_main())
+    elif len(sys.argv) > 1 and sys.argv[1] == "--rapid-validation":
+        sys.exit(rapid_validation_main())
     else:
-        # Default to semaines types tests as requested in current review
-        sys.exit(semaines_types_privees_main())
+        # Default to rapid validation tests as requested in current review
+        sys.exit(rapid_validation_main())
