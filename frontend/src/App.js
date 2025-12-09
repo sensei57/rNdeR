@@ -4086,7 +4086,8 @@ const PlanningManager = () => {
                             )}
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ))}
                 </div>
