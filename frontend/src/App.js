@@ -5061,7 +5061,7 @@ const DemandesTravailManager = () => {
       
       // Recharger le planning
       if (viewMode === 'jour') {
-        await fetchPlanningJour(selectedDate);
+        await fetchPlanningByDate(selectedDate);
       } else {
         await fetchPlanningSemaine(selectedWeek);
       }
