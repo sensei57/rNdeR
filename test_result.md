@@ -539,7 +539,8 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "TEST CONNEXION APRÈS DÉPLOIEMENT - Validation Rapide (POST /api/auth/login, GET /api/users/me, GET /api/users, GET /api/salles, GET /api/configuration)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
