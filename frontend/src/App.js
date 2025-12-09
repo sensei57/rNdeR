@@ -2692,7 +2692,59 @@ const PlanningManager = () => {
     
     const groups = {};
     roles.forEach(role => {
-      groups[role] = planningData.filter(c => c.employe_role === role);
+      let creneaux = planningData.filter(c => c.employe_role === role);
+      
+      // Tri selon le rôle
+      if (role === 'Médecin') {
+        // Tri par salle_attribuee (Box 1, Box 2, etc.)
+        creneaux.sort((a, b) => {
+          const salleA = a.salle_attribuee || '';
+          const salleB = b.salle_attribuee || '';
+          
+          // Extraire le numéro du box si format "Box X"
+          const numA = salleA.match(/Box (\d+)/i)?.[1];
+          const numB = salleB.match(/Box (\d+)/i)?.[1];
+          
+          if (numA && numB) {
+            return parseInt(numA) - parseInt(numB);
+          }
+          
+          // Sinon tri alphabétique
+          return salleA.localeCompare(salleB);
+        });
+      } else if (role === 'Assistant') {
+        // Tri par salle_attente (A, O, C, D, Bleu)
+        const ordreAttente = ['A', 'O', 'C', 'D', 'Bleu'];
+        creneaux.sort((a, b) => {
+          const attenteA = a.salle_attente || '';
+          const attenteB = b.salle_attente || '';
+          
+          const indexA = ordreAttente.indexOf(attenteA);
+          const indexB = ordreAttente.indexOf(attenteB);
+          
+          // Si les deux sont dans l'ordre défini
+          if (indexA !== -1 && indexB !== -1) {
+            return indexA - indexB;
+          }
+          
+          // Mettre en dernier ceux qui ne sont pas dans l'ordre
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+          
+          // Sinon tri alphabétique
+          return attenteA.localeCompare(attenteB);
+        });
+      } else if (role === 'Secrétaire') {
+        // Tri par heure de début (pas de champ spécifique, on pourrait utiliser notes ou autre)
+        // Pour l'instant tri alphabétique par nom
+        creneaux.sort((a, b) => {
+          const nomA = `${a.employe?.nom || ''} ${a.employe?.prenom || ''}`;
+          const nomB = `${b.employe?.nom || ''} ${b.employe?.prenom || ''}`;
+          return nomA.localeCompare(nomB);
+        });
+      }
+      
+      groups[role] = creneaux;
     });
     
     return {
