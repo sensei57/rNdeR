@@ -4189,26 +4189,52 @@ const PlanningManager = () => {
                           }`}
                         >
                           <div className="flex items-start justify-between">
-                            <div className="space-y-1">
+                            <div className="space-y-1 flex-1">
                               <div className="font-medium">
                                 {creneau.employe?.prenom} {creneau.employe?.nom}
                               </div>
                               
-                              {creneau.salle_attribuee && (
+                              {/* MÉDECINS : Afficher Box, Salle d'attente, Assistants */}
+                              {creneau.employe?.role === 'Médecin' && (
+                                <>
+                                  {creneau.salle_attribuee && (
+                                    <div className={`text-sm ${hasAssistant ? 'text-blue-200' : 'text-gray-600'}`}>
+                                      🏥 Box: {creneau.salle_attribuee}
+                                    </div>
+                                  )}
+                                  {creneau.salle_attente && (
+                                    <div className={`text-sm ${hasAssistant ? 'text-blue-200' : 'text-gray-600'}`}>
+                                      ⏳ Salle d'attente: {creneau.salle_attente}
+                                    </div>
+                                  )}
+                                  {getAssistantsForMedecin(creneau.employe_id).length > 0 && (
+                                    <div className={`text-sm ${hasAssistant ? 'text-blue-200 font-semibold' : 'text-blue-600'}`}>
+                                      👥 Assistants: {getAssistantsForMedecin(creneau.employe_id).map(a => `${a.prenom} ${a.nom}`).join(', ')}
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                              
+                              {/* ASSISTANTS : Afficher Box, Médecins */}
+                              {creneau.employe?.role === 'Assistant' && (
+                                <>
+                                  {creneau.salle_attente && (
+                                    <div className={`text-sm ${hasMedecin ? 'text-green-200' : 'text-gray-600'}`}>
+                                      🏥 Box: {creneau.salle_attente}
+                                    </div>
+                                  )}
+                                  {getMedecinsForAssistant(creneau.employe_id).length > 0 && (
+                                    <div className={`text-sm ${hasMedecin ? 'text-green-200 font-semibold' : 'text-blue-600'}`}>
+                                      👨‍⚕️ Médecins: Dr. {getMedecinsForAssistant(creneau.employe_id).map(m => `${m.prenom} ${m.nom}`).join(', Dr. ')}
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                              
+                              {/* SECRÉTAIRES : Affichage simple */}
+                              {creneau.employe?.role === 'Secrétaire' && creneau.salle_attribuee && (
                                 <div className="text-sm text-gray-600">
                                   📍 {creneau.salle_attribuee}
-                                </div>
-                              )}
-                              
-                              {creneau.employe?.role === 'Médecin' && getAssistantsForMedecin(creneau.employe_id).length > 0 && (
-                                <div className="text-sm text-blue-600">
-                                  👥 Avec: {getAssistantsForMedecin(creneau.employe_id).map(a => `${a.prenom} ${a.nom}`).join(', ')}
-                                </div>
-                              )}
-                              
-                              {creneau.employe?.role === 'Assistant' && getMedecinsForAssistant(creneau.employe_id).length > 0 && (
-                                <div className="text-sm text-blue-600">
-                                  👨‍⚕️ Avec: Dr. {getMedecinsForAssistant(creneau.employe_id).map(m => `${m.prenom} ${m.nom}`).join(', Dr. ')}
                                 </div>
                               )}
                               
