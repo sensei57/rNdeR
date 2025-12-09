@@ -4174,10 +4174,18 @@ const PlanningManager = () => {
                       <h3 className="font-semibold text-sm text-gray-700 border-b pb-2">
                         {role}s ({getRoleGroups(planningApresMidi).groups[role]?.length || 0})
                       </h3>
-                      {getRoleGroups(planningApresMidi).groups[role]?.map(creneau => (
+                      {getRoleGroups(planningApresMidi).groups[role]?.map(creneau => {
+                        const hasAssistant = creneau.employe?.role === 'Médecin' && getAssistantsForMedecin(creneau.employe_id).length > 0;
+                        const hasMedecin = creneau.employe?.role === 'Assistant' && getMedecinsForAssistant(creneau.employe_id).length > 0;
+                        
+                        return (
                         <div
                           key={creneau.id}
-                          className={`border rounded-lg p-3 ${getRoleColor(creneau.employe_role)}`}
+                          className={`border rounded-lg p-3 ${
+                            hasAssistant ? 'bg-blue-900 text-white border-blue-900' :
+                            hasMedecin ? 'bg-green-900 text-white border-green-900' :
+                            getRoleColor(creneau.employe_role)
+                          }`}
                         >
                           <div className="flex items-start justify-between">
                             <div className="space-y-1">
