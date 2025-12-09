@@ -3992,38 +3992,71 @@ const PlanningManager = () => {
                       <h3 className="font-semibold text-sm text-gray-700 border-b pb-2">
                         {role}s ({getRoleGroups(planningMatin).groups[role]?.length || 0})
                       </h3>
-                      {getRoleGroups(planningMatin).groups[role]?.map(creneau => (
+                      {getRoleGroups(planningMatin).groups[role]?.map(creneau => {
+                        const hasAssistant = creneau.employe?.role === 'Médecin' && getAssistantsForMedecin(creneau.employe_id).length > 0;
+                        const hasMedecin = creneau.employe?.role === 'Assistant' && getMedecinsForAssistant(creneau.employe_id).length > 0;
+                        
+                        return (
                         <div
                           key={creneau.id}
-                          className={`border rounded-lg p-3 ${getRoleColor(creneau.employe_role)}`}
+                          className={`border rounded-lg p-3 ${
+                            hasAssistant ? 'bg-blue-900 text-white border-blue-900' :
+                            hasMedecin ? 'bg-green-900 text-white border-green-900' :
+                            getRoleColor(creneau.employe_role)
+                          }`}
                         >
                           <div className="flex items-start justify-between">
-                            <div className="space-y-1">
+                            <div className="space-y-1 flex-1">
                               <div className="font-medium">
                                 {creneau.employe?.prenom} {creneau.employe?.nom}
                               </div>
                               
-                              {creneau.salle_attribuee && (
+                              {/* MÉDECINS : Afficher Box, Salle d'attente, Assistants */}
+                              {creneau.employe?.role === 'Médecin' && (
+                                <>
+                                  {creneau.salle_attribuee && (
+                                    <div className={`text-sm ${hasAssistant ? 'text-blue-200' : 'text-gray-600'}`}>
+                                      🏥 Box: {creneau.salle_attribuee}
+                                    </div>
+                                  )}
+                                  {creneau.salle_attente && (
+                                    <div className={`text-sm ${hasAssistant ? 'text-blue-200' : 'text-gray-600'}`}>
+                                      ⏳ Salle d'attente: {creneau.salle_attente}
+                                    </div>
+                                  )}
+                                  {getAssistantsForMedecin(creneau.employe_id).length > 0 && (
+                                    <div className={`text-sm ${hasAssistant ? 'text-blue-200 font-semibold' : 'text-blue-600'}`}>
+                                      👥 Assistants: {getAssistantsForMedecin(creneau.employe_id).map(a => `${a.prenom} ${a.nom}`).join(', ')}
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                              
+                              {/* ASSISTANTS : Afficher Box, Médecins */}
+                              {creneau.employe?.role === 'Assistant' && (
+                                <>
+                                  {creneau.salle_attente && (
+                                    <div className={`text-sm ${hasMedecin ? 'text-green-200' : 'text-gray-600'}`}>
+                                      🏥 Box: {creneau.salle_attente}
+                                    </div>
+                                  )}
+                                  {getMedecinsForAssistant(creneau.employe_id).length > 0 && (
+                                    <div className={`text-sm ${hasMedecin ? 'text-green-200 font-semibold' : 'text-blue-600'}`}>
+                                      👨‍⚕️ Médecins: Dr. {getMedecinsForAssistant(creneau.employe_id).map(m => `${m.prenom} ${m.nom}`).join(', Dr. ')}
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                              
+                              {/* SECRÉTAIRES : Affichage simple */}
+                              {creneau.employe?.role === 'Secrétaire' && creneau.salle_attribuee && (
                                 <div className="text-sm text-gray-600">
                                   📍 {creneau.salle_attribuee}
                                 </div>
                               )}
                               
-                              {/* Afficher les assignations médecin-assistant */}
-                              {creneau.employe?.role === 'Médecin' && getAssistantsForMedecin(creneau.employe_id).length > 0 && (
-                                <div className="text-sm text-blue-600">
-                                  👥 Avec: {getAssistantsForMedecin(creneau.employe_id).map(a => `${a.prenom} ${a.nom}`).join(', ')}
-                                </div>
-                              )}
-                              
-                              {creneau.employe?.role === 'Assistant' && getMedecinsForAssistant(creneau.employe_id).length > 0 && (
-                                <div className="text-sm text-blue-600">
-                                  👨‍⚕️ Avec: Dr. {getMedecinsForAssistant(creneau.employe_id).map(m => `${m.prenom} ${m.nom}`).join(', Dr. ')}
-                                </div>
-                              )}
-                              
                               {creneau.notes && (
-                                <div className="text-xs text-gray-600 italic truncate">
+                                <div className={`text-xs italic truncate ${hasAssistant || hasMedecin ? 'text-gray-300' : 'text-gray-600'}`}>
                                   📝 {creneau.notes}
                                 </div>
                               )}
