@@ -540,7 +540,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "TEST INTERFACE GRAPHIQUE - CONNEXION APRÈS DÉPLOIEMENT"
+    - "TEST COMPLET DE L'APPLICATION AVANT DÉPLOIEMENT - Vérification Rapide"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
