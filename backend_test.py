@@ -6805,7 +6805,7 @@ def deployment_validation_main():
     print("Application: Gestion de cabinet médical avec FastAPI backend et React frontend.")
     print("="*80)
     
-    tester = MedicalStaffAPITester()
+    tester = DeploymentTester()
     
     # Run the comprehensive deployment validation test
     deployment_success = tester.test_deployment_validation_complete()
