@@ -4136,17 +4136,21 @@ logger = logging.getLogger(__name__)
 # Cet endpoint permet d'initialiser la base de données avec les comptes par défaut
 # SÉCURITÉ : Utilise une clé secrète pour éviter les appels non autorisés
 
+class InitDatabaseRequest(BaseModel):
+    secret_key: str
+
 @api_router.post("/init-database")
-async def init_database(secret_key: str):
+async def init_database(request: InitDatabaseRequest):
     """
     Initialise la base de données avec les comptes par défaut.
     Requiert une clé secrète : "cabinet-medical-init-2025"
     
     Usage:
-    POST /api/init-database?secret_key=cabinet-medical-init-2025
+    POST /api/init-database
+    Body: {"secret_key": "cabinet-medical-init-2025"}
     """
     # Vérification de la clé secrète
-    if secret_key != "cabinet-medical-init-2025":
+    if request.secret_key != "cabinet-medical-init-2025":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Clé secrète invalide"
