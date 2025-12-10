@@ -6513,31 +6513,6 @@ def rapid_validation_main():
         print("🔧 Authentication or endpoint issues detected")
         return 1
 
-def rapid_validation_main():
-    """Main function for rapid validation tests"""
-    print("🚀 RAPID VALIDATION TESTS - Backend Deployment Check")
-    print("="*60)
-    
-    tester = MedicalStaffAPITester()
-    
-    # Run the specific test
-    success = tester.test_connexion_apres_deploiement_validation_rapide()
-    
-    # Print final summary
-    print(f"\n📊 Rapid Validation Test Summary:")
-    print(f"   Tests run: {tester.tests_run}")
-    print(f"   Tests passed: {tester.tests_passed}")
-    print(f"   Success rate: {(tester.tests_passed/tester.tests_run*100):.1f}%")
-    
-    if success:
-        print("🎉 RAPID VALIDATION PASSED! Backend is 100% operational!")
-        print("✅ User can connect and all main endpoints work")
-        return 0
-    else:
-        print("❌ RAPID VALIDATION FAILED! Backend needs attention!")
-        print("🔧 Authentication or endpoint issues detected")
-        return 1
-
 class DeploymentTester(MedicalStaffAPITester):
     def test_deployment_validation_complete(self):
         """TEST COMPLET DE L'APPLICATION AVANT DÉPLOIEMENT - Vérification Rapide"""
