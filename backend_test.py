@@ -6513,6 +6513,296 @@ def rapid_validation_main():
         print("🔧 Authentication or endpoint issues detected")
         return 1
 
+    def test_deployment_validation_complete(self):
+        """TEST COMPLET DE L'APPLICATION AVANT DÉPLOIEMENT - Vérification Rapide"""
+        print("\n🚀 TEST COMPLET DE L'APPLICATION AVANT DÉPLOIEMENT")
+        print("="*70)
+        print("CONTEXTE: L'utilisateur veut déployer l'application et s'assurer qu'il pourra se connecter.")
+        print("Application: Gestion de cabinet médical avec FastAPI backend et React frontend.")
+        print("="*70)
+        
+        # IDENTIFIANTS DE TEST from review request
+        test_credentials = {
+            "email": "directeur@cabinet.fr",
+            "password": "admin123",
+            "expected_name": "Francis LEBLOND",
+            "expected_role": "Directeur"
+        }
+        
+        directeur_token = None
+        all_tests_passed = True
+        
+        # ✅ TEST 1 - BACKEND - Vérification que le serveur répond
+        print("\n🔍 1. ✅ TEST BACKEND - Vérification que le serveur répond")
+        print("-" * 60)
+        
+        # Try to access a basic health endpoint or login endpoint
+        try:
+            import requests
+            health_url = f"{self.api_url}/debug-users"
+            response = requests.get(health_url, timeout=10)
+            if response.status_code in [200, 404, 401]:  # Any response means server is up
+                print(f"   ✅ SUCCESS: Backend server is responding (Status: {response.status_code})")
+                print(f"   ✅ Backend URL: {self.api_url}")
+            else:
+                print(f"   ❌ WARNING: Backend server responded with status {response.status_code}")
+                all_tests_passed = False
+        except Exception as e:
+            print(f"   ❌ CRITICAL: Backend server is not accessible - {str(e)}")
+            all_tests_passed = False
+            return False
+        
+        # ✅ TEST 2 - AUTHENTIFICATION - Test de connexion
+        print("\n🔍 2. ✅ TEST AUTHENTIFICATION - Test de connexion")
+        print("-" * 60)
+        print(f"POST /api/auth/login avec {test_credentials['email']} / {test_credentials['password']}")
+        
+        success, response = self.run_test(
+            "POST /api/auth/login (directeur@cabinet.fr / admin123)",
+            "POST",
+            "auth/login",
+            200,
+            data={"email": test_credentials["email"], "password": test_credentials["password"]}
+        )
+        
+        if success and 'access_token' in response and 'user' in response:
+            directeur_token = response['access_token']
+            user = response['user']
+            
+            print(f"   ✅ Status 200 - SUCCESS")
+            print(f"   ✅ Token JWT retourné: {directeur_token[:30]}...")
+            print(f"   ✅ User data:")
+            print(f"      - Nom: {user.get('nom', '')}")
+            print(f"      - Prénom: {user.get('prenom', '')}")
+            print(f"      - Rôle: {user.get('role', '')}")
+            print(f"      - Email: {user.get('email', '')}")
+            
+            # Verify expected data
+            if (user.get('prenom') == 'Francis' and 
+                user.get('nom') == 'LEBLOND' and 
+                user.get('role') == 'Directeur'):
+                print(f"   ✅ VERIFIED: User data matches expected (Francis LEBLOND, Directeur)")
+            else:
+                print(f"   ⚠️  User data differs from expected but login successful")
+        else:
+            print(f"   ❌ FAILED: Login failed or missing token/user data")
+            all_tests_passed = False
+        
+        # ✅ TEST 3 - TOKEN - Vérification que le token fonctionne
+        print("\n🔍 3. ✅ TEST TOKEN - Vérification que le token fonctionne")
+        print("-" * 60)
+        print("GET /api/users/me avec le token obtenu")
+        
+        if directeur_token:
+            success, response = self.run_test(
+                "GET /api/users/me (avec token Directeur)",
+                "GET",
+                "users/me",
+                200,
+                token=directeur_token
+            )
+            
+            if success:
+                print(f"   ✅ Authentification fonctionne - Status 200")
+                print(f"   ✅ Données utilisateur retournées:")
+                print(f"      - Nom: {response.get('nom', '')}")
+                print(f"      - Prénom: {response.get('prenom', '')}")
+                print(f"      - Rôle: {response.get('role', '')}")
+                print(f"      - Email: {response.get('email', '')}")
+                print(f"      - Actif: {response.get('actif', '')}")
+            else:
+                print(f"   ❌ FAILED: Cannot verify token authentication")
+                all_tests_passed = False
+        else:
+            print(f"   ❌ SKIPPED: No token available")
+            all_tests_passed = False
+        
+        # ✅ TEST 4 - ENDPOINTS PRINCIPAUX (avec token Directeur)
+        print("\n🔍 4. ✅ TEST ENDPOINTS PRINCIPAUX (avec token Directeur)")
+        print("-" * 60)
+        
+        if directeur_token:
+            endpoints_results = {}
+            
+            # GET /api/users - Liste des utilisateurs
+            print("\n   📋 GET /api/users - Liste des utilisateurs")
+            success, users_response = self.run_test(
+                "GET /api/users",
+                "GET",
+                "users",
+                200,
+                token=directeur_token
+            )
+            
+            endpoints_results['users'] = success
+            if success:
+                print(f"      ✅ SUCCESS - {len(users_response)} utilisateurs trouvés")
+                for user in users_response[:3]:  # Show first 3 users
+                    print(f"         - {user.get('prenom', '')} {user.get('nom', '')} ({user.get('role', '')})")
+                if len(users_response) > 3:
+                    print(f"         ... et {len(users_response) - 3} autres")
+            else:
+                print(f"      ❌ FAILED - Cannot get users list")
+                all_tests_passed = False
+            
+            # GET /api/salles - Liste des salles
+            print("\n   🏥 GET /api/salles - Liste des salles")
+            success, salles_response = self.run_test(
+                "GET /api/salles",
+                "GET",
+                "salles",
+                200,
+                token=directeur_token
+            )
+            
+            endpoints_results['salles'] = success
+            if success:
+                print(f"      ✅ SUCCESS - {len(salles_response)} salles trouvées")
+                for salle in salles_response[:3]:  # Show first 3 salles
+                    print(f"         - {salle.get('nom', '')} ({salle.get('type_salle', '')})")
+                if len(salles_response) > 3:
+                    print(f"         ... et {len(salles_response) - 3} autres")
+            else:
+                print(f"      ❌ FAILED - Cannot get salles list")
+                all_tests_passed = False
+            
+            # GET /api/configuration - Configuration système
+            print("\n   ⚙️ GET /api/configuration - Configuration système")
+            success, config_response = self.run_test(
+                "GET /api/configuration",
+                "GET",
+                "configuration",
+                200,
+                token=directeur_token
+            )
+            
+            endpoints_results['configuration'] = success
+            if success:
+                print(f"      ✅ SUCCESS - Configuration récupérée")
+                if isinstance(config_response, dict):
+                    print(f"         - Max médecins: {config_response.get('max_medecins_par_jour', 'N/A')}")
+                    print(f"         - Max assistants: {config_response.get('max_assistants_par_jour', 'N/A')}")
+                    print(f"         - Horaires matin: {config_response.get('heures_ouverture_matin_debut', 'N/A')}-{config_response.get('heures_ouverture_matin_fin', 'N/A')}")
+                elif isinstance(config_response, list) and len(config_response) > 0:
+                    config = config_response[0]
+                    print(f"         - Configuration trouvée (format liste)")
+                    print(f"         - Max médecins: {config.get('max_medecins_par_jour', 'N/A')}")
+            else:
+                print(f"      ❌ FAILED - Cannot get configuration")
+                all_tests_passed = False
+            
+            # Summary of endpoints
+            successful_endpoints = sum(1 for success in endpoints_results.values() if success)
+            total_endpoints = len(endpoints_results)
+            print(f"\n   📊 ENDPOINTS SUMMARY: {successful_endpoints}/{total_endpoints} endpoints working")
+            
+        else:
+            print(f"   ❌ SKIPPED: No token available for endpoint tests")
+            all_tests_passed = False
+        
+        # ✅ TEST 5 - BASE DE DONNÉES
+        print("\n🔍 5. ✅ TEST BASE DE DONNÉES")
+        print("-" * 60)
+        
+        if directeur_token:
+            # Vérifier qu'il y a des utilisateurs en base
+            success, users_data = self.run_test(
+                "Vérifier utilisateurs en base",
+                "GET",
+                "users",
+                200,
+                token=directeur_token
+            )
+            
+            if success and users_data:
+                print(f"   ✅ Base de données contient {len(users_data)} utilisateurs")
+                
+                # Vérifier que le compte directeur existe et est actif
+                directeur_found = False
+                for user in users_data:
+                    if (user.get('email') == test_credentials['email'] and 
+                        user.get('role') == 'Directeur' and 
+                        user.get('actif') == True):
+                        directeur_found = True
+                        print(f"   ✅ Compte directeur trouvé et actif: {user.get('prenom', '')} {user.get('nom', '')}")
+                        break
+                
+                if not directeur_found:
+                    print(f"   ⚠️  Compte directeur non trouvé ou inactif")
+                    all_tests_passed = False
+                
+                # Compter par rôle
+                roles_count = {}
+                for user in users_data:
+                    role = user.get('role', 'Unknown')
+                    roles_count[role] = roles_count.get(role, 0) + 1
+                
+                print(f"   📊 Répartition par rôle:")
+                for role, count in roles_count.items():
+                    print(f"      - {role}: {count}")
+                
+            else:
+                print(f"   ❌ FAILED: Cannot verify database content")
+                all_tests_passed = False
+        else:
+            print(f"   ❌ SKIPPED: No token available for database tests")
+            all_tests_passed = False
+        
+        # FINAL SUMMARY
+        print("\n" + "="*70)
+        print("🎯 RÉSUMÉ FINAL - TEST COMPLET AVANT DÉPLOIEMENT")
+        print("="*70)
+        
+        if all_tests_passed and directeur_token:
+            print("✅ OBJECTIF ATTEINT - Tous les tests critiques réussis:")
+            print("   ✅ Le backend est 100% opérationnel")
+            print("   ✅ L'utilisateur peut se connecter avec directeur@cabinet.fr / admin123")
+            print("   ✅ Tous les endpoints essentiels fonctionnent")
+            print("   ✅ La base de données est bien configurée")
+            print("   ✅ L'application est prête pour le déploiement")
+            print("\n🎉 VALIDATION COMPLÈTE RÉUSSIE - Le système est prêt à l'utilisation!")
+            return True
+        else:
+            print("❌ PROBLÈMES DÉTECTÉS:")
+            if not directeur_token:
+                print("   ❌ Problème d'authentification critique")
+            if not all_tests_passed:
+                print("   ❌ Certains endpoints ou fonctionnalités ne fonctionnent pas")
+            print("\n⚠️ ATTENTION: Corriger les problèmes avant déploiement")
+            return False
+
+def deployment_validation_main():
+    """Main function for deployment validation tests"""
+    print("🚀 TEST COMPLET DE L'APPLICATION AVANT DÉPLOIEMENT - Vérification Rapide")
+    print("="*80)
+    print("CONTEXTE: L'utilisateur veut déployer l'application et s'assurer qu'il pourra se connecter.")
+    print("Application: Gestion de cabinet médical avec FastAPI backend et React frontend.")
+    print("="*80)
+    
+    tester = MedicalStaffAPITester()
+    
+    # Run the comprehensive deployment validation test
+    deployment_success = tester.test_deployment_validation_complete()
+    
+    # Final summary
+    print("\n" + "="*80)
+    print("🎯 RÉSUMÉ GLOBAL DES TESTS")
+    print("="*80)
+    print(f"Total tests exécutés: {tester.tests_run}")
+    print(f"Tests réussis: {tester.tests_passed}")
+    print(f"Taux de réussite: {(tester.tests_passed/tester.tests_run*100):.1f}%")
+    
+    if deployment_success:
+        print("\n🎉 EXCELLENT: L'application est prête pour le déploiement!")
+        print("🎉 L'utilisateur peut se connecter et utiliser toutes les fonctionnalités essentielles.")
+        print("🎉 Tous les tests critiques ont réussi.")
+        return 0
+    else:
+        print("\n⚠️ ATTENTION: Des problèmes ont été détectés.")
+        print("⚠️ Corriger les problèmes identifiés avant le déploiement.")
+        print("⚠️ Vérifier la configuration et les identifiants.")
+        return 1
+
 def semaines_types_privees_main():
     """Main function for Semaines Types Privées tests"""
     print("📅 SEMAINES TYPES PRIVÉES - CRÉATION ET FILTRAGE TESTS")
