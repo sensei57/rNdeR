@@ -4,7 +4,7 @@ from datetime import datetime
 import json
 
 class SemainesTypesAPITester:
-    def __init__(self, base_url="https://connection-debug-6.preview.emergentagent.com"):
+    def __init__(self, base_url="https://connect-verify-1.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tokens = {}

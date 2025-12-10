@@ -7,7 +7,7 @@ import requests
 import json
 
 def reactivate_marie():
-    base_url = "https://connection-debug-6.preview.emergentagent.com"
+    base_url = "https://connect-verify-1.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     # Login as directeur first
