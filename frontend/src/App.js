@@ -2549,8 +2549,38 @@ const PlanningManager = () => {
     }
 
     try {
+      // Mettre à jour le créneau principal
       await axios.put(`${API}/planning/${editingCreneau.id}`, newCreneau);
-      toast.success('Créneau modifié avec succès');
+      
+      // Si c'est un médecin et qu'il a des assistants sélectionnés, créer leurs créneaux
+      if (editingCreneau.employe_role === 'Médecin' && newCreneau.medecin_ids && newCreneau.medecin_ids.length > 0) {
+        for (const assistantId of newCreneau.medecin_ids) {
+          try {
+            // Créer un créneau pour chaque assistant sélectionné
+            const assistantCreneau = {
+              date: newCreneau.date,
+              creneau: newCreneau.creneau,
+              employe_id: assistantId,
+              salle_attribuee: newCreneau.salle_attribuee,
+              salle_attente: newCreneau.salle_attente,
+              horaire_debut: newCreneau.horaire_debut,
+              horaire_fin: newCreneau.horaire_fin,
+              horaire_pause_debut: newCreneau.horaire_pause_debut,
+              horaire_pause_fin: newCreneau.horaire_pause_fin,
+              notes: `Associé à Dr. ${editingCreneau.employe?.prenom} ${editingCreneau.employe?.nom}`,
+              medecin_ids: [newCreneau.employe_id] // Lien inverse
+            };
+            await axios.post(`${API}/planning`, assistantCreneau);
+          } catch (err) {
+            console.error('Erreur création créneau assistant:', err);
+            // Continue même si un créneau échoue
+          }
+        }
+        toast.success('Créneau modifié et créneaux assistants créés avec succès');
+      } else {
+        toast.success('Créneau modifié avec succès');
+      }
+      
       setShowEditCreneauModal(false);
       setEditingCreneau(null);
       resetForm();
