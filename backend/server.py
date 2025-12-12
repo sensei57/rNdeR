@@ -3579,6 +3579,94 @@ async def delete_user_permanently(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression: {str(e)}")
 
+@api_router.post("/admin/init-bulk-accounts")
+async def init_bulk_accounts(
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    """
+    Créer tous les comptes utilisateurs en masse (uniquement pour le Directeur)
+    """
+    # Liste des comptes à créer
+    accounts = [
+        # Médecins
+        {"nom": "Pintiliuc", "prenom": "Corina", "role": "Médecin", "email": "corina.pintiliuc@gmail.com"},
+        {"nom": "Duprat", "prenom": "Francois", "role": "Médecin", "email": "francoisduprat2@gmail.com"},
+        {"nom": "Weber-Elouardighi", "prenom": "Hind", "role": "Médecin", "email": "hindweber@outlook.com"},
+        {"nom": "May", "prenom": "Inna", "role": "Médecin", "email": "ophtconseil@aol.com"},
+        {"nom": "Lalangue", "prenom": "Jean-Christian", "role": "Médecin", "email": "jeanla1@outlook.com"},
+        {"nom": "Dohmer-Chan", "prenom": "Joyce", "role": "Médecin", "email": "j.doehmer-chan@aen.lu"},
+        {"nom": "Szabo", "prenom": "Julie", "role": "Médecin", "email": "szabo.julie@hotmail.com"},
+        {"nom": "Bisorca-Gassendorf", "prenom": "Lukas", "role": "Médecin", "email": "dr.bisorca@gmail.com"},
+        {"nom": "Terlinchamp", "prenom": "Matthieu", "role": "Médecin", "email": "matthieu.terlinchamp@gmail.com"},
+        {"nom": "Hyzy", "prenom": "Nicoline", "role": "Médecin", "email": "nicoline.hyzy@gmx.de"},
+        {"nom": "Mediavilla", "prenom": "Roger", "role": "Médecin", "email": "roger.mediavilla1@gmail.com"},
+        {"nom": "Soto", "prenom": "Victor", "role": "Médecin", "email": "vssotob@gmail.com"},
+        
+        # Assistants
+        {"nom": "Rosu", "prenom": "Andrada", "role": "Assistant", "email": "andrada_923@yahoo.com"},
+        {"nom": "Hesse", "prenom": "Pauline", "role": "Assistant", "email": "paulinehesse15@gmail.com"},
+        {"nom": "Muller", "prenom": "Alexia", "role": "Assistant", "email": "alexia.muller29@gmail.com"},
+        {"nom": "Bimboes", "prenom": "Thomas", "role": "Assistant", "email": "thomas.bimboes@gmail.com"},
+        {"nom": "Houdin", "prenom": "Julie", "role": "Assistant", "email": "julie.houdin@live.fr"},
+        {"nom": "Härtwig", "prenom": "Isabel", "role": "Assistant", "email": "isabel.haertwig@web.de"},
+        
+        # Secrétaires
+        {"nom": "Vuillermet", "prenom": "Agnès", "role": "Secrétaire", "email": "av.ophtaetoile@gmail.com"},
+        {"nom": "Monteiro", "prenom": "Marta", "role": "Secrétaire", "email": "martamonteiro969@gmail.com"},
+        {"nom": "Kohn", "prenom": "Nathalie", "role": "Secrétaire", "email": "nathaliekohn1@gmail.com"},
+        {"nom": "Antonacci", "prenom": "Chiara", "role": "Secrétaire", "email": "chiaraant1008@outlook.fr"},
+        {"nom": "Ferreira de Sousa", "prenom": "Patrick", "role": "Secrétaire", "email": "patricksousa1992@hotmail.fr"},
+        {"nom": "Jacinto", "prenom": "Mélanie", "role": "Secrétaire", "email": "jacinto.melanie@hotmail.com"},
+        {"nom": "Heftrich", "prenom": "Juliette", "role": "Secrétaire", "email": "julieheftrich@yahoo.com"},
+    ]
+    
+    # Mot de passe pour tous les comptes
+    password = "azerty"
+    hashed_password = pwd_context.hash(password)
+    
+    created_count = 0
+    skipped_count = 0
+    errors = []
+    
+    for account in accounts:
+        email = account['email']
+        
+        # Vérifier si l'utilisateur existe déjà
+        existing_user = await db.users.find_one({"email": email})
+        
+        if existing_user:
+            skipped_count += 1
+            continue
+        
+        try:
+            # Créer l'utilisateur
+            user_data = {
+                "id": str(uuid.uuid4()),
+                "email": email,
+                "password_hash": hashed_password,
+                "nom": account['nom'],
+                "prenom": account['prenom'],
+                "role": account['role'],
+                "actif": True,
+                "telephone": "",
+                "date_creation": datetime.now(timezone.utc),
+                "is_protected": False
+            }
+            
+            await db.users.insert_one(user_data)
+            created_count += 1
+        except Exception as e:
+            errors.append(f"{account['prenom']} {account['nom']}: {str(e)}")
+    
+    return {
+        "message": "Importation des comptes terminée",
+        "created": created_count,
+        "skipped": skipped_count,
+        "total": len(accounts),
+        "password": "azerty",
+        "errors": errors if errors else None
+    }
+
 @api_router.get("/stocks/permissions", response_model=List[Dict])
 async def get_permissions_stock(current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))):
     # Récupérer permissions avec informations utilisateur
