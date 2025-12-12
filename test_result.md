@@ -543,7 +543,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "TEST COMPLET DE L'APPLICATION AVANT DÉPLOIEMENT - Vérification Rapide"
+    - "Validation/Refus Demandes Créneaux depuis Vue Journalière Planning"
+    - "Liaison Médecin-Assistant lors Modification Créneau Vue Journalière"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
