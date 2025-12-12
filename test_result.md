@@ -550,6 +550,36 @@ test_plan:
   test_priority: "high_first"
 
 frontend:
+  - task: "Validation/Refus Demandes Créneaux depuis Vue Journalière Planning"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "PROBLÈME SIGNALÉ PAR L'UTILISATEUR: 'Quand le directeur essaye de valider ou refuser une demande de créneaux depuis le planning (vue journalière), cela ne fonctionne pas. Il est peut-être pas en lien avec les demandes de créneaux.' DIAGNOSTIC: La fonction handleApprouverDemandePlanning était définie dans un autre composant (DemandeCreneauxManager ligne 5038) mais utilisée dans PlanningManager (lignes 4123, 4133, 4306, 4316), rendant la fonction inaccessible. CORRECTION APPLIQUÉE: 1) Ajout de la fonction handleApprouverDemandePlanning dans le scope de PlanningManager (après handleSubmitAnnulationCreneau ligne 2633), 2) La fonction trouve la demande correspondante dans demandesTravail, 3) Appelle l'API /demandes-travail/{id}/approuver ou /rejeter selon le choix, 4) Recharge le planning et les données après l'action. TESTS REQUIS: 1) Créer une demande de créneau comme Médecin, 2) Se connecter comme Directeur, 3) Aller dans Planning vue journalière, 4) Vérifier que la demande en attente s'affiche avec boutons Approuver/Refuser, 5) Cliquer sur Approuver → vérifier succès et créneau ajouté au planning, 6) Créer nouvelle demande et cliquer Refuser → vérifier succès et demande disparaît."
+        - working: "NA"
+          agent: "main"
+          comment: "CORRECTION TECHNIQUE APPLIQUÉE: La fonction handleApprouverDemandePlanning a été ajoutée dans PlanningManager à la ligne 2634. Elle recherche la demande correspondante (même médecin, date, créneau, statut EN_ATTENTE), l'approuve ou la rejette via API, puis recharge le planning. La fonction gère aussi le cas des JOURNEE_COMPLETE qui peuvent correspondre à MATIN ou APRES_MIDI. Services redémarrés avec succès. En attente de tests pour validation."
+
+  - task: "Liaison Médecin-Assistant lors Modification Créneau Vue Journalière"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "PROBLÈME SIGNALÉ PAR L'UTILISATEUR: 'Dans modifier créneaux dans la vue journalière du planning, ça me propose pas de relier le médecin à un assistant et du coup ça crée pas le créneau pour l'assistant.' DIAGNOSTIC: Dans le modal de modification de créneau (showEditCreneauModal), il y avait bien une section pour lier les médecins aux assistants (lignes 3411-3434) mais il manquait la section inverse pour lier les assistants aux médecins quand on modifie un créneau de médecin. CORRECTIONS APPLIQUÉES: 1) Ajout d'une section 'Assistants attribués' dans le modal de modification pour les médecins (après la salle d'attente), 2) Liste de checkboxes pour sélectionner les assistants à associer au médecin, 3) Modification de handleUpdateCreneau pour créer automatiquement les créneaux des assistants sélectionnés avec les mêmes horaires et salles que le médecin, 4) Ajout d'un message explicatif pour l'utilisateur. TESTS REQUIS: 1) Se connecter comme Directeur, 2) Aller dans Planning vue journalière, 3) Créer ou sélectionner un créneau de médecin, 4) Cliquer 'Modifier', 5) Vérifier présence section 'Assistants attribués' avec checkboxes, 6) Cocher un ou plusieurs assistants, 7) Enregistrer → vérifier que les créneaux des assistants sont créés automatiquement avec liaison au médecin."
+        - working: "NA"
+          agent: "main"
+          comment: "CORRECTION TECHNIQUE APPLIQUÉE: 1) Ajout section Assistants attribués dans modal modification créneau médecin (lignes 3410-3433), 2) La fonction handleUpdateCreneau a été modifiée (ligne 2543) pour créer automatiquement un créneau pour chaque assistant sélectionné avec: date/créneau/salles identiques, note 'Associé à Dr. [nom]', medecin_ids contenant l'ID du médecin (lien inverse). 3) Message de succès adapté selon si des assistants ont été ajoutés. Services redémarrés avec succès. En attente de tests pour validation."
+
   - task: "TEST INTERFACE GRAPHIQUE - CONNEXION APRÈS DÉPLOIEMENT"
     implemented: true
     working: true
