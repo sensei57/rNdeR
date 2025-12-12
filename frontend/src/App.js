@@ -3388,24 +3388,55 @@ const PlanningManager = () => {
               </div>
 
               {editingCreneau.employe_role === 'Médecin' && (
-                <div className="space-y-2">
-                  <Label>Salle d'attente</Label>
-                  <Select
-                    value={newCreneau.salle_attente}
-                    onValueChange={(value) => setNewCreneau({...newCreneau, salle_attente: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez une salle d'attente" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {salles.filter(s => s.type_salle === 'ATTENTE').map(salle => (
-                        <SelectItem key={salle.id} value={salle.nom}>
-                          {salle.nom}
-                        </SelectItem>
+                <>
+                  <div className="space-y-2">
+                    <Label>Salle d'attente</Label>
+                    <Select
+                      value={newCreneau.salle_attente}
+                      onValueChange={(value) => setNewCreneau({...newCreneau, salle_attente: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionnez une salle d'attente" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {salles.filter(s => s.type_salle === 'ATTENTE').map(salle => (
+                          <SelectItem key={salle.id} value={salle.nom}>
+                            {salle.nom}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Assistants attribués</Label>
+                    <div className="border rounded p-3 space-y-2 max-h-40 overflow-y-auto">
+                      {assistants.map(assistant => (
+                        <div key={assistant.id} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={newCreneau.medecin_ids.includes(assistant.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setNewCreneau({...newCreneau, medecin_ids: [...newCreneau.medecin_ids, assistant.id]});
+                              } else {
+                                setNewCreneau({...newCreneau, medecin_ids: newCreneau.medecin_ids.filter(id => id !== assistant.id)});
+                              }
+                            }}
+                            className="w-4 h-4"
+                          />
+                          <label>{assistant.prenom} {assistant.nom}</label>
+                        </div>
                       ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                      {assistants.length === 0 && (
+                        <p className="text-sm text-gray-500">Aucun assistant disponible</p>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      💡 Pour créer automatiquement un créneau pour l'assistant, cochez son nom. Le système créera son créneau avec les mêmes horaires.
+                    </p>
+                  </div>
+                </>
               )}
 
               {editingCreneau.employe_role === 'Assistant' && (
