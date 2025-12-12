@@ -2626,9 +2626,47 @@ const PlanningManager = () => {
       } else {
         fetchPlanningByDate(selectedDate);
       }
-      fetchDemandesTravail();
+      // Recharger les données
+      fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Erreur lors de l\'annulation');
+    }
+  };
+
+  // Approuver/Refuser une demande directement depuis le planning
+  const handleApprouverDemandePlanning = async (employeId, date, creneau, approuver) => {
+    try {
+      // Trouver la demande correspondante
+      const demande = demandesTravail.find(d => 
+        d.medecin_id === employeId && 
+        d.date_demandee === date && 
+        (d.creneau === creneau || d.creneau === 'JOURNEE_COMPLETE') &&
+        d.statut === 'EN_ATTENTE'
+      );
+      
+      if (!demande) {
+        toast.error('Demande introuvable');
+        return;
+      }
+      
+      if (approuver) {
+        await axios.put(`${API}/demandes-travail/${demande.id}/approuver`);
+        toast.success('Demande approuvée ! Créneau ajouté au planning.');
+      } else {
+        await axios.put(`${API}/demandes-travail/${demande.id}/rejeter`);
+        toast.success('Demande refusée');
+      }
+      
+      // Recharger le planning
+      if (viewMode === 'jour') {
+        await fetchPlanningByDate(selectedDate);
+      } else {
+        await fetchPlanningSemaine(selectedWeek);
+      }
+      // Recharger les demandes
+      await fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || `Erreur lors de ${approuver ? 'l\'approbation' : 'le refus'}`);
     }
   };
 
