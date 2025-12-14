@@ -2210,7 +2210,7 @@ async def create_demande_jour_travail(
                     "medecin_id": medecin_id,
                     "date_demandee": date_jour,
                     "creneau": creneau,
-                    "statut": {"$ne": "REJETE"}
+                    "statut": {"$nin": ["REJETE", "ANNULE"]}  # Ignorer les demandes rejetées ET annulées
                 })
                 
                 if not existing:
