@@ -2881,8 +2881,10 @@ const PlanningManager = () => {
 
     try {
       // Annuler la demande de travail qui a créé ce créneau
+      // Envoyer le créneau spécifique pour ne supprimer que celui-ci (et pas toute la journée)
       await axios.post(`${API}/demandes-travail/${creneauToCancel.demande_id}/annuler-directement`, {
-        raison: raisonAnnulationCreneau
+        raison: raisonAnnulationCreneau,
+        creneau_specifique: creneauToCancel.creneau  // MATIN ou APRES_MIDI
       });
       
       toast.success('Créneau annulé avec succès');
