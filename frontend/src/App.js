@@ -2193,6 +2193,164 @@ const SallesManager = () => {
 };
 
 // Planning Component
+// Composant compact du Plan du Cabinet pour le Planning
+const PlanCabinetCompact = ({ selectedDate, selectedCreneau, isDirector }) => {
+  const [planData, setPlanData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [currentCreneau, setCurrentCreneau] = useState(selectedCreneau);
+
+  useEffect(() => {
+    fetchPlanCabinet();
+  }, [selectedDate, currentCreneau]);
+
+  const fetchPlanCabinet = async () => {
+    try {
+      const response = await axios.get(`${API}/cabinet/plan/${selectedDate}?creneau=${currentCreneau}`);
+      setPlanData(response.data);
+    } catch (error) {
+      console.error('Erreur chargement plan:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderSalle = (salle) => {
+    const occupation = salle.occupation;
+    const baseClasses = "absolute border-2 rounded-lg p-2 text-xs font-medium transition-all flex flex-col justify-center items-center";
+    
+    let bgColor = 'bg-gray-100 border-gray-300';
+    let textColor = 'text-gray-600';
+    
+    if (occupation) {
+      switch (salle.type_salle) {
+        case 'MEDECIN':
+          bgColor = 'bg-blue-100 border-blue-400';
+          textColor = 'text-blue-800';
+          break;
+        case 'ASSISTANT':
+          bgColor = 'bg-green-100 border-green-400';
+          textColor = 'text-green-800';
+          break;
+        case 'ATTENTE':
+          bgColor = 'bg-yellow-100 border-yellow-400';
+          textColor = 'text-yellow-800';
+          break;
+      }
+    }
+    
+    const style = {
+      left: `${salle.position_x * 100}px`,
+      top: `${salle.position_y * 100}px`,
+      width: '90px',
+      height: '75px',
+    };
+
+    const getInitiales = (employe) => {
+      if (!employe) return '';
+      const prenom = employe.prenom || '';
+      const nom = employe.nom || '';
+      return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
+    };
+    
+    return (
+      <div
+        key={salle.id}
+        className={`${baseClasses} ${bgColor} ${textColor}`}
+        style={style}
+        title={
+          occupation 
+            ? `${salle.nom} - ${occupation.employe?.prenom} ${occupation.employe?.nom}`
+            : `${salle.nom} - Libre`
+        }
+      >
+        <div className="text-center w-full">
+          <div className="font-bold text-xs mb-1">{salle.nom}</div>
+          {occupation ? (
+            <div className="space-y-1">
+              <div className="text-xs font-bold bg-white bg-opacity-70 rounded-full w-6 h-6 flex items-center justify-center mx-auto border text-[10px]">
+                {getInitiales(occupation.employe)}
+              </div>
+              <div className="text-[10px] leading-tight">
+                {occupation.employe?.prenom} {occupation.employe?.nom?.charAt(0)}.
+              </div>
+            </div>
+          ) : (
+            <div className="text-[10px] text-gray-500 mt-1">Libre</div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  if (loading) {
+    return null;
+  }
+
+  return (
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <MapPin className="h-5 w-5" />
+            <span>Plan du Cabinet</span>
+            <span className="text-sm font-normal text-gray-500">
+              ({new Date(selectedDate).toLocaleDateString('fr-FR')})
+            </span>
+          </div>
+          
+          {/* Sélecteur créneau - visible pour tous mais uniquement pour changer la vue */}
+          <Select value={currentCreneau} onValueChange={setCurrentCreneau}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="MATIN">Matin</SelectItem>
+              <SelectItem value="APRES_MIDI">Après-midi</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {planData && (
+          <>
+            <div className="relative bg-gray-50 rounded-lg p-4 overflow-x-auto" style={{ height: '600px', minWidth: '800px' }}>
+              {planData.salles.map(salle => renderSalle(salle))}
+              
+              {/* Légende */}
+              <div className="absolute bottom-4 right-4 bg-white p-3 rounded-lg shadow-lg border">
+                <h4 className="font-medium mb-2 text-xs">Légende</h4>
+                <div className="space-y-1 text-[10px]">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-blue-100 border border-blue-400 rounded"></div>
+                    <span>Médecin</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-green-100 border border-green-400 rounded"></div>
+                    <span>Assistant</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-yellow-100 border border-yellow-400 rounded"></div>
+                    <span>Attente</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-gray-100 border border-gray-300 rounded"></div>
+                    <span>Libre</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {!isDirector && (
+              <p className="text-xs text-gray-500 mt-2 italic">
+                💡 Seul le Directeur peut modifier le plan du cabinet via le menu dédié
+              </p>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
 const PlanningManager = () => {
   const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
