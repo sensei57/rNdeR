@@ -406,6 +406,7 @@ class DemandeAnnulationRequest(BaseModel):
 
 class AnnulationDirecteRequest(BaseModel):
     raison: str
+    creneau_specifique: Optional[str] = None  # Pour annuler seulement MATIN ou APRES_MIDI d'une JOURNEE_COMPLETE
 
 class SalleReservation(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
