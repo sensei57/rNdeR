@@ -5333,8 +5333,9 @@ const DemandesTravailManager = () => {
       fetchDemandes();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Erreur lors de l\'annulation');
+    }
+  };
 
-  // Approuver/Refuser une demande directement depuis le planning
   const handleOpenDemandeMensuelle = () => {
     const today = new Date();
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
