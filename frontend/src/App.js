@@ -9140,10 +9140,9 @@ const Dashboard = () => {
       items.splice(4, 0, { id: 'demandes-travail', label: 'Demande de créneaux', icon: CalendarDays });
     }
 
-    // Plan Cabinet visible à tous les utilisateurs
-    items.push({ id: 'plan-cabinet', label: 'Plan Cabinet', icon: MapPin });
-
+    // Plan Cabinet visible uniquement au Directeur dans le menu
     if (user?.role === 'Directeur') {
+      items.push({ id: 'plan-cabinet', label: 'Plan Cabinet', icon: MapPin });
       items.push({ id: 'salles', label: 'Gestion Salles', icon: Building2 });
       items.push({ id: 'stocks', label: 'Gestion Stocks', icon: Package });
       items.push({ id: 'admin', label: 'Administration', icon: Settings });
