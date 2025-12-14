@@ -4623,6 +4623,7 @@ const PlanningManager = () => {
             )}
           </CardContent>
         </Card>
+        </>
         )}
 
         {/* Vue Semaine */}
