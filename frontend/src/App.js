@@ -4245,6 +4245,22 @@ const PlanningManager = () => {
 
         {/* Vue Jour - Planning Matin */}
         {viewMode !== 'semaine' && (
+        <>
+        {/* Rappel de la date */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg px-6 py-4 shadow-lg mb-4">
+          <div className="flex items-center justify-center space-x-3">
+            <Calendar className="h-6 w-6" />
+            <h3 className="text-2xl font-bold">
+              {new Date(selectedDate).toLocaleDateString('fr-FR', { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric' 
+              }).replace(/^\w/, c => c.toUpperCase())}
+            </h3>
+          </div>
+        </div>
+        
         <Card>
           <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100">
             <CardTitle className="flex items-center space-x-2">
