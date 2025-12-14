@@ -4623,14 +4623,16 @@ const PlanningManager = () => {
             )}
           </CardContent>
         </Card>
+        </>
+        )}
 
         {/* Plan du Cabinet - Visible pour tous sous le planning journalier */}
-        <PlanCabinetCompact 
-          selectedDate={selectedDate} 
-          selectedCreneau="MATIN" 
-          isDirector={user?.role === 'Directeur'}
-        />
-        </>
+        {viewMode === 'jour' && (
+          <PlanCabinetCompact 
+            selectedDate={selectedDate} 
+            selectedCreneau="MATIN" 
+            isDirector={user?.role === 'Directeur'}
+          />
         )}
 
         {/* Vue Semaine */}
