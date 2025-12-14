@@ -2758,8 +2758,21 @@ const PlanningManager = () => {
       
       // Si c'est un médecin et qu'il a des assistants sélectionnés, créer leurs créneaux
       if (editingCreneau.employe_role === 'Médecin' && newCreneau.medecin_ids && newCreneau.medecin_ids.length > 0) {
+        let assistantsCreated = 0;
+        let assistantsFailed = 0;
+        
         for (const assistantId of newCreneau.medecin_ids) {
           try {
+            // Vérifier d'abord si un créneau existe déjà pour cet assistant à cette date/créneau
+            const existingCreneaux = await axios.get(`${API}/planning/${newCreneau.date}/${newCreneau.creneau}`);
+            const hasExisting = existingCreneaux.data.some(c => c.employe_id === assistantId);
+            
+            if (hasExisting) {
+              console.log(`Créneau déjà existant pour assistant ${assistantId}`);
+              assistantsFailed++;
+              continue;
+            }
+            
             // Créer un créneau pour chaque assistant sélectionné
             const assistantCreneau = {
               date: newCreneau.date,
@@ -2775,12 +2788,20 @@ const PlanningManager = () => {
               medecin_ids: [newCreneau.employe_id] // Lien inverse
             };
             await axios.post(`${API}/planning`, assistantCreneau);
+            assistantsCreated++;
           } catch (err) {
             console.error('Erreur création créneau assistant:', err);
-            // Continue même si un créneau échoue
+            assistantsFailed++;
           }
         }
-        toast.success('Créneau modifié et créneaux assistants créés avec succès');
+        
+        if (assistantsCreated > 0) {
+          toast.success(`Créneau modifié et ${assistantsCreated} créneau(x) assistant(s) créé(s) avec succès`);
+        } else if (assistantsFailed > 0) {
+          toast.warning(`Créneau modifié mais impossible de créer les créneaux assistants (peut-être déjà existants)`);
+        } else {
+          toast.success('Créneau modifié avec succès');
+        }
       } else {
         toast.success('Créneau modifié avec succès');
       }
