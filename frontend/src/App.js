@@ -5110,14 +5110,6 @@ const PlanningManager = () => {
         </>
       )}
 
-      {/* Plan du Cabinet - Visible pour tous, modifiable uniquement par le Directeur */}
-      {viewMode === 'jour' && (
-        <PlanCabinetCompact 
-          selectedDate={selectedDate} 
-          selectedCreneau="MATIN" 
-          isDirector={user?.role === 'Directeur'}
-        />
-      )}
     </div>
   );
 };
