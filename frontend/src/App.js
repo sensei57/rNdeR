@@ -2672,8 +2672,42 @@ const PlanningManager = () => {
     }
 
     try {
-      await axios.post(`${API}/planning`, newCreneau);
-      toast.success('Créneau créé avec succès');
+      // Créer le créneau principal
+      const response = await axios.post(`${API}/planning`, newCreneau);
+      const createdCreneau = response.data;
+      
+      // Déterminer le rôle de l'employé créé
+      const employe = users.find(u => u.id === newCreneau.employe_id);
+      
+      // Si c'est un médecin et qu'il a des assistants sélectionnés, créer leurs créneaux
+      if (employe?.role === 'Médecin' && newCreneau.medecin_ids && newCreneau.medecin_ids.length > 0) {
+        for (const assistantId of newCreneau.medecin_ids) {
+          try {
+            // Créer un créneau pour chaque assistant sélectionné
+            const assistantCreneau = {
+              date: newCreneau.date,
+              creneau: newCreneau.creneau,
+              employe_id: assistantId,
+              salle_attribuee: newCreneau.salle_attribuee,
+              salle_attente: newCreneau.salle_attente,
+              horaire_debut: newCreneau.horaire_debut,
+              horaire_fin: newCreneau.horaire_fin,
+              horaire_pause_debut: newCreneau.horaire_pause_debut,
+              horaire_pause_fin: newCreneau.horaire_pause_fin,
+              notes: `Associé à Dr. ${employe.prenom} ${employe.nom}`,
+              medecin_ids: [newCreneau.employe_id] // Lien inverse
+            };
+            await axios.post(`${API}/planning`, assistantCreneau);
+          } catch (err) {
+            console.error('Erreur création créneau assistant:', err);
+            // Continue même si un créneau échoue
+          }
+        }
+        toast.success('Créneau créé et créneaux assistants créés avec succès');
+      } else {
+        toast.success('Créneau créé avec succès');
+      }
+      
       setShowPlanningModal(false);
       resetForm();
       fetchPlanningByDate(selectedDate);
