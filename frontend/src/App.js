@@ -2293,61 +2293,71 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
   return (
     <Card className="mt-6">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <MapPin className="h-5 w-5" />
-            <span>Plan du Cabinet</span>
-            <span className="text-sm font-normal text-gray-500">
-              ({new Date(selectedDate).toLocaleDateString('fr-FR')})
-            </span>
-          </div>
-          
-          {/* Sélecteur créneau - visible pour tous mais uniquement pour changer la vue */}
-          <Select value={currentCreneau} onValueChange={setCurrentCreneau}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="MATIN">Matin</SelectItem>
-              <SelectItem value="APRES_MIDI">Après-midi</SelectItem>
-            </SelectContent>
-          </Select>
+        <CardTitle className="flex items-center space-x-2">
+          <MapPin className="h-5 w-5" />
+          <span>Plan du Cabinet</span>
+          <span className="text-sm font-normal text-gray-500">
+            ({new Date(selectedDate).toLocaleDateString('fr-FR')})
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {planData && (
-          <>
-            <div className="relative bg-gray-50 rounded-lg p-4 overflow-x-auto" style={{ height: '600px', minWidth: '800px' }}>
-              {planData.salles.map(salle => renderSalle(salle))}
-              
-              {/* Légende */}
-              <div className="absolute bottom-4 right-4 bg-white p-3 rounded-lg shadow-lg border">
-                <h4 className="font-medium mb-2 text-xs">Légende</h4>
-                <div className="space-y-1 text-[10px]">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-blue-100 border border-blue-400 rounded"></div>
-                    <span>Médecin</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-green-100 border border-green-400 rounded"></div>
-                    <span>Assistant</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-yellow-100 border border-yellow-400 rounded"></div>
-                    <span>Attente</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-gray-100 border border-gray-300 rounded"></div>
-                    <span>Libre</span>
-                  </div>
-                </div>
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          {/* Plan Matin */}
+          {planMatin && (
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold text-blue-600 flex items-center space-x-2">
+                <CalendarDays className="h-5 w-5" />
+                <span>Matin</span>
+              </h3>
+              <div className="relative bg-blue-50 rounded-lg p-4 overflow-x-auto border border-blue-200" style={{ height: '500px', minWidth: '700px' }}>
+                {planMatin.salles.map(salle => renderSalle(salle))}
               </div>
             </div>
-            {!isDirector && (
-              <p className="text-xs text-gray-500 mt-2 italic">
-                💡 Seul le Directeur peut modifier le plan du cabinet via le menu dédié
-              </p>
-            )}
+          )}
+          
+          {/* Plan Après-midi */}
+          {planApresMidi && (
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold text-orange-600 flex items-center space-x-2">
+                <CalendarDays className="h-5 w-5" />
+                <span>Après-midi</span>
+              </h3>
+              <div className="relative bg-orange-50 rounded-lg p-4 overflow-x-auto border border-orange-200" style={{ height: '500px', minWidth: '700px' }}>
+                {planApresMidi.salles.map(salle => renderSalle(salle))}
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Légende commune */}
+        <div className="mt-4 bg-white p-4 rounded-lg shadow border">
+          <h4 className="font-medium mb-3 text-sm">Légende</h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 bg-blue-100 border border-blue-400 rounded"></div>
+              <span>Médecin</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 bg-green-100 border border-green-400 rounded"></div>
+              <span>Assistant</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 bg-yellow-100 border border-yellow-400 rounded"></div>
+              <span>Attente</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 bg-gray-100 border border-gray-300 rounded"></div>
+              <span>Libre</span>
+            </div>
+          </div>
+        </div>
+        
+        {!isDirector && (
+          <p className="text-xs text-gray-500 mt-3 italic">
+            💡 Seul le Directeur peut modifier le plan du cabinet via le menu dédié
+          </p>
+        )}
           </>
         )}
       </CardContent>
