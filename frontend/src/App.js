@@ -2358,8 +2358,6 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
             💡 Seul le Directeur peut modifier le plan du cabinet via le menu dédié
           </p>
         )}
-          </>
-        )}
       </CardContent>
     </Card>
   );
