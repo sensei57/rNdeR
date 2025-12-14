@@ -543,8 +543,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Validation/Refus Demandes Créneaux depuis Vue Journalière Planning"
-    - "Liaison Médecin-Assistant lors Modification Créneau Vue Journalière"
+    - "Création Comptes Utilisateurs en Masse sur Version Déployée"
+    - "Restriction Accès Plan Cabinet + Copie sous Planning Journalier"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
