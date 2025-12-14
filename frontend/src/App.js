@@ -2313,8 +2313,8 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
                 <CalendarDays className="h-5 w-5" />
                 <span>Matin</span>
               </h3>
-              <div className="relative bg-blue-50 rounded-lg p-4 overflow-x-auto border border-blue-200" style={{ height: '500px', minWidth: '700px' }}>
-                {planMatin.salles.map(salle => renderSalle(salle))}
+              <div className="relative bg-blue-50 rounded-lg p-4 overflow-hidden border border-blue-200" style={{ height: '750px', width: '550px' }}>
+                {planMatin.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => renderSalle(salle))}
               </div>
             </div>
           )}
@@ -2326,8 +2326,8 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
                 <CalendarDays className="h-5 w-5" />
                 <span>Après-midi</span>
               </h3>
-              <div className="relative bg-orange-50 rounded-lg p-4 overflow-x-auto border border-orange-200" style={{ height: '500px', minWidth: '700px' }}>
-                {planApresMidi.salles.map(salle => renderSalle(salle))}
+              <div className="relative bg-orange-50 rounded-lg p-4 overflow-hidden border border-orange-200" style={{ height: '750px', width: '550px' }}>
+                {planApresMidi.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => renderSalle(salle))}
               </div>
             </div>
           )}
