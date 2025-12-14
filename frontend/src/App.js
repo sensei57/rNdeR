@@ -3179,7 +3179,17 @@ const PlanningManager = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigateWeek('prev')}
+              onClick={() => {
+                if (viewMode === 'jour') {
+                  // Navigation jour par jour
+                  const currentDate = new Date(selectedDate);
+                  currentDate.setDate(currentDate.getDate() - 1);
+                  setSelectedDate(currentDate.toISOString().split('T')[0]);
+                } else {
+                  // Navigation semaine par semaine
+                  navigateWeek('prev');
+                }
+              }}
               className="px-2"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -3193,7 +3203,17 @@ const PlanningManager = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigateWeek('next')}
+              onClick={() => {
+                if (viewMode === 'jour') {
+                  // Navigation jour par jour
+                  const currentDate = new Date(selectedDate);
+                  currentDate.setDate(currentDate.getDate() + 1);
+                  setSelectedDate(currentDate.toISOString().split('T')[0]);
+                } else {
+                  // Navigation semaine par semaine
+                  navigateWeek('next');
+                }
+              }}
               className="px-2"
             >
               <ChevronRight className="h-4 w-4" />
