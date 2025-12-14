@@ -580,6 +580,33 @@ frontend:
           agent: "main"
           comment: "CORRECTION TECHNIQUE APPLIQUÉE: 1) Ajout section Assistants attribués dans modal modification créneau médecin (lignes 3410-3433), 2) La fonction handleUpdateCreneau a été modifiée (ligne 2543) pour créer automatiquement un créneau pour chaque assistant sélectionné avec: date/créneau/salles identiques, note 'Associé à Dr. [nom]', medecin_ids contenant l'ID du médecin (lien inverse). 3) Message de succès adapté selon si des assistants ont été ajoutés. Services redémarrés avec succès. En attente de tests pour validation."
 
+  - task: "Endpoint API Création Comptes en Masse"
+    implemented: true
+    working: "tested_locally"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "tested_locally"
+          agent: "main"
+          comment: "NOUVELLE FONCTIONNALITÉ DEMANDÉE: L'utilisateur veut créer 25 comptes (12 Médecins, 6 Assistants, 7 Secrétaires) sur sa version déployée car les comptes créés précédemment étaient uniquement sur la version preview. SOLUTION IMPLÉMENTÉE: Création d'un endpoint API POST /api/admin/init-bulk-accounts (ligne 3585) accessible uniquement au Directeur. L'endpoint crée automatiquement tous les comptes avec le mot de passe 'azerty' et vérifie les doublons avant insertion. Retourne le nombre de comptes créés, ignorés, et les erreurs éventuelles. TESTÉ EN LOCAL: L'endpoint fonctionne correctement (25 skipped car comptes déjà présents sur preview). INSTRUCTIONS FOURNIES À L'UTILISATEUR: 2 méthodes pour créer les comptes sur la version déployée: 1) Via console navigateur avec script JavaScript, 2) Via curl en ligne de commande. L'utilisateur doit exécuter ce script sur sa version déployée (connect-verify-1.emergent.host) pour créer les comptes."
+
+  - task: "Restriction Accès Plan Cabinet + Copie sous Planning"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "DEMANDE UTILISATEUR: 'Cacher la section Plan du Cabinet aux employés (sauf le directeur) mais mettre une copie de cette section en dessous du planning journalier pour tout le monde (toujours modifiable uniquement par le directeur)'. OBJECTIF: Les employés doivent pouvoir consulter le plan du cabinet depuis le planning journalier sans avoir accès au menu Plan Cabinet complet qui permet les modifications."
+        - working: "NA"
+          agent: "main"
+          comment: "IMPLÉMENTATION RÉALISÉE: 1) MENU NAVIGATION: Modification de getMenuItems() (ligne 9143) pour rendre 'Plan Cabinet' visible uniquement au Directeur dans le menu latéral. Les employés ne voient plus cette option dans la navigation. 2) COMPOSANT COMPACT: Création du composant PlanCabinetCompact (ligne 2196) - version allégée et en lecture seule du plan du cabinet. Ce composant affiche: le plan des salles avec occupations en temps réel, sélecteur de créneau (Matin/Après-midi), légende des couleurs, message indiquant que seul le Directeur peut modifier. 3) INTÉGRATION PLANNING: Le composant PlanCabinetCompact est ajouté sous le planning journalier (ligne 4915) uniquement en vue 'jour', visible pour TOUS les utilisateurs (Médecins, Assistants, Secrétaires, Directeur). 4) CONTRÔLE ACCÈS: Le Directeur garde accès au menu Plan Cabinet complet pour les modifications ET voit la version lecture seule dans le planning. Les employés voient uniquement la version lecture seule dans le planning. RÉSULTAT: Les employés peuvent consulter en temps réel l'occupation des salles depuis le planning sans pouvoir modifier, tandis que le Directeur conserve son accès complet aux modifications via le menu dédié. Frontend compilé avec succès. En attente de tests utilisateur."
+
   - task: "TEST INTERFACE GRAPHIQUE - CONNEXION APRÈS DÉPLOIEMENT"
     implemented: true
     working: true
