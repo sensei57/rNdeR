@@ -4440,10 +4440,8 @@ const PlanningManager = () => {
             )}
           </CardContent>
         </Card>
-        )}
 
         {/* Vue Jour - Planning Après-midi */}
-        {viewMode !== 'semaine' && (
         <Card>
           <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100">
             <CardTitle className="flex items-center space-x-2">
