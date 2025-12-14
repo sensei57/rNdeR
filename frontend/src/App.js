@@ -2242,8 +2242,11 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
       }
     }
     
+    // Ajuster position_x pour supprimer colonnes 0 et 6 (décaler de -1 si > 0)
+    const adjustedX = salle.position_x > 0 ? salle.position_x - 1 : 0;
+    
     const style = {
-      left: `${salle.position_x * 100}px`,
+      left: `${adjustedX * 100}px`,
       top: `${salle.position_y * 100}px`,
       width: '90px',
       height: '75px',
