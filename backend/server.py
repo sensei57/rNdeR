@@ -2722,7 +2722,11 @@ async def annuler_directement_demande_travail(
     
     # Supprimer les créneaux du planning
     creneaux_a_supprimer = []
-    if demande["creneau"] == "JOURNEE_COMPLETE":
+    
+    # Si un créneau spécifique est précisé, supprimer uniquement celui-ci
+    if request.creneau_specifique:
+        creneaux_a_supprimer = [request.creneau_specifique]
+    elif demande["creneau"] == "JOURNEE_COMPLETE":
         creneaux_a_supprimer = ["MATIN", "APRES_MIDI"]
     else:
         creneaux_a_supprimer = [demande["creneau"]]
@@ -2733,6 +2737,23 @@ async def annuler_directement_demande_travail(
             "creneau": creneau_type,
             "employe_id": demande["medecin_id"]
         })
+    
+    # Si on a annulé seulement un créneau d'une JOURNEE_COMPLETE, 
+    # ne pas marquer la demande comme ANNULE, juste supprimer le créneau
+    if request.creneau_specifique and demande["creneau"] == "JOURNEE_COMPLETE":
+        # Ne pas changer le statut de la demande, juste supprimer le créneau
+        pass
+    else:
+        # Annuler complètement la demande
+        await db.demandes_travail.update_one(
+            {"id": demande_id},
+            {"$set": {
+                "statut": "ANNULE",
+                "annule_par": current_user.id,
+                "raison_annulation": request.raison,
+                "date_annulation": datetime.now(timezone.utc)
+            }}
+        )
     
     # 📤 NOTIFICATION : Notifier le médecin de l'annulation
     date_str = demande["date_demandee"]
