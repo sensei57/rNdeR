@@ -2709,17 +2709,6 @@ async def annuler_directement_demande_travail(
     if demande["statut"] != "APPROUVE":
         raise HTTPException(status_code=400, detail="Seules les demandes approuvées peuvent être annulées")
     
-    # Annuler la demande
-    await db.demandes_travail.update_one(
-        {"id": demande_id},
-        {"$set": {
-            "statut": "ANNULE",
-            "annule_par": current_user.id,
-            "raison_annulation": request.raison,
-            "date_annulation": datetime.now(timezone.utc)
-        }}
-    )
-    
     # Supprimer les créneaux du planning
     creneaux_a_supprimer = []
     
@@ -2738,11 +2727,18 @@ async def annuler_directement_demande_travail(
             "employe_id": demande["medecin_id"]
         })
     
-    # Si on a annulé seulement un créneau d'une JOURNEE_COMPLETE, 
-    # ne pas marquer la demande comme ANNULE, juste supprimer le créneau
+    # Gérer le statut de la demande
     if request.creneau_specifique and demande["creneau"] == "JOURNEE_COMPLETE":
-        # Ne pas changer le statut de la demande, juste supprimer le créneau
-        pass
+        # Si on annule seulement MATIN ou APRES_MIDI d'une JOURNEE_COMPLETE
+        # Mettre à jour le créneau de la demande pour refléter ce qui reste
+        creneau_restant = "APRES_MIDI" if request.creneau_specifique == "MATIN" else "MATIN"
+        await db.demandes_travail.update_one(
+            {"id": demande_id},
+            {"$set": {
+                "creneau": creneau_restant,
+                "commentaire_modification": f"Créneau {request.creneau_specifique} annulé par le Directeur. Raison: {request.raison}"
+            }}
+        )
     else:
         # Annuler complètement la demande
         await db.demandes_travail.update_one(
