@@ -2884,10 +2884,16 @@ const PlanningManager = () => {
       }
       
       if (approuver) {
-        await axios.put(`${API}/demandes-travail/${demande.id}/approuver`);
+        await axios.put(`${API}/demandes-travail/${demande.id}/approuver`, {
+          approuve: true,
+          commentaire: ''
+        });
         toast.success('Demande approuvée ! Créneau ajouté au planning.');
       } else {
-        await axios.put(`${API}/demandes-travail/${demande.id}/rejeter`);
+        await axios.put(`${API}/demandes-travail/${demande.id}/rejeter`, {
+          approuve: false,
+          commentaire: ''
+        });
         toast.success('Demande refusée');
       }
       
