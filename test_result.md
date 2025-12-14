@@ -543,8 +543,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Création Comptes Utilisateurs en Masse sur Version Déployée"
-    - "Restriction Accès Plan Cabinet + Copie sous Planning Journalier"
+    - "Navigation Dates Planning : Flèches Haut Jour/Jour, Bas Semaine/Semaine"
+    - "Rappel Date Format Complet dans Vue Journalière Planning"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
