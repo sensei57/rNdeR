@@ -2193,20 +2193,24 @@ const SallesManager = () => {
 };
 
 // Planning Component
-// Composant compact du Plan du Cabinet pour le Planning
-const PlanCabinetCompact = ({ selectedDate, selectedCreneau, isDirector }) => {
-  const [planData, setPlanData] = useState(null);
+// Composant compact du Plan du Cabinet pour le Planning - Affiche MATIN et APRÈS-MIDI
+const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
+  const [planMatin, setPlanMatin] = useState(null);
+  const [planApresMidi, setPlanApresMidi] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [currentCreneau, setCurrentCreneau] = useState(selectedCreneau);
 
   useEffect(() => {
-    fetchPlanCabinet();
-  }, [selectedDate, currentCreneau]);
+    fetchPlans();
+  }, [selectedDate]);
 
-  const fetchPlanCabinet = async () => {
+  const fetchPlans = async () => {
     try {
-      const response = await axios.get(`${API}/cabinet/plan/${selectedDate}?creneau=${currentCreneau}`);
-      setPlanData(response.data);
+      const [matinResponse, apresMidiResponse] = await Promise.all([
+        axios.get(`${API}/cabinet/plan/${selectedDate}?creneau=MATIN`),
+        axios.get(`${API}/cabinet/plan/${selectedDate}?creneau=APRES_MIDI`)
+      ]);
+      setPlanMatin(matinResponse.data);
+      setPlanApresMidi(apresMidiResponse.data);
     } catch (error) {
       console.error('Erreur chargement plan:', error);
     } finally {
