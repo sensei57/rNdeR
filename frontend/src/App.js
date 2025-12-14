@@ -2767,11 +2767,13 @@ const PlanningManager = () => {
         for (const assistantId of newCreneau.medecin_ids) {
           try {
             // Vérifier d'abord si un créneau existe déjà pour cet assistant à cette date/créneau
-            const existingCreneaux = await axios.get(`${API}/planning/${newCreneau.date}/${newCreneau.creneau}`);
-            const hasExisting = existingCreneaux.data.some(c => c.employe_id === assistantId);
+            const existingCreneaux = await axios.get(`${API}/planning/${newCreneau.date}`);
+            const hasExisting = existingCreneaux.data.some(c => 
+              c.employe_id === assistantId && c.creneau === newCreneau.creneau
+            );
             
             if (hasExisting) {
-              console.log(`Créneau déjà existant pour assistant ${assistantId}`);
+              console.log(`Créneau déjà existant pour assistant ${assistantId} le ${newCreneau.date} ${newCreneau.creneau}`);
               assistantsFailed++;
               continue;
             }
