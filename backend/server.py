@@ -2721,11 +2721,28 @@ async def annuler_directement_demande_travail(
         creneaux_a_supprimer = [demande["creneau"]]
     
     for creneau_type in creneaux_a_supprimer:
-        await db.planning.delete_one({
-            "date": demande["date_demandee"],
-            "creneau": creneau_type,
-            "employe_id": demande["medecin_id"]
+        # IMPORTANT : Vérifier s'il y a d'autres demandes APPROUVEES pour ce même créneau
+        # Si oui, ne PAS supprimer le créneau du planning
+        autres_demandes = await db.demandes_travail.count_documents({
+            "medecin_id": demande["medecin_id"],
+            "date_demandee": demande["date_demandee"],
+            "$or": [
+                {"creneau": creneau_type},
+                {"creneau": "JOURNEE_COMPLETE"}  # JOURNEE_COMPLETE couvre aussi ce créneau
+            ],
+            "statut": "APPROUVE",
+            "id": {"$ne": demande_id}  # Exclure la demande actuelle
         })
+        
+        # Ne supprimer le créneau que s'il n'y a pas d'autre demande approuvée
+        if autres_demandes == 0:
+            await db.planning.delete_one({
+                "date": demande["date_demandee"],
+                "creneau": creneau_type,
+                "employe_id": demande["medecin_id"]
+            })
+        else:
+            print(f"Créneau {creneau_type} du {demande['date_demandee']} conservé car {autres_demandes} autre(s) demande(s) approuvée(s)")
     
     # Gérer le statut de la demande
     if request.creneau_specifique and demande["creneau"] == "JOURNEE_COMPLETE":
