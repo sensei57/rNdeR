@@ -4493,12 +4493,12 @@ const PlanningManager = () => {
                                 </>
                               )}
                               
-                              {/* ASSISTANTS : Afficher Box, Médecins avec leurs box/salles */}
+                              {/* ASSISTANTS : Afficher sa salle de travail et médecins associés */}
                               {creneau.employe?.role === 'Assistant' && (
                                 <>
-                                  {creneau.salle_attente && (
+                                  {creneau.salle_attribuee && (
                                     <div className={`text-sm ${hasMedecin ? 'text-green-200' : 'text-gray-600'}`}>
-                                      🏥 Box: {creneau.salle_attente}
+                                      🏥 Salle de travail: {creneau.salle_attribuee}
                                     </div>
                                   )}
                                   {getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0 && (
@@ -4685,12 +4685,12 @@ const PlanningManager = () => {
                                 </>
                               )}
                               
-                              {/* ASSISTANTS : Afficher Box, Médecins avec leurs box/salles */}
+                              {/* ASSISTANTS : Afficher sa salle de travail et médecins associés */}
                               {creneau.employe?.role === 'Assistant' && (
                                 <>
-                                  {creneau.salle_attente && (
+                                  {creneau.salle_attribuee && (
                                     <div className={`text-sm ${hasMedecin ? 'text-green-200' : 'text-gray-600'}`}>
-                                      🏥 Box: {creneau.salle_attente}
+                                      🏥 Salle de travail: {creneau.salle_attribuee}
                                     </div>
                                   )}
                                   {getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0 && (
