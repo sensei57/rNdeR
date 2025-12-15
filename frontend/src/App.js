@@ -2790,17 +2790,19 @@ const PlanningManager = () => {
             };
             
             if (existingCreneau) {
-              // Mettre à jour le créneau existant avec les nouvelles infos du médecin
+              // L'assistant a déjà un créneau : juste ajouter ce médecin à ses medecin_ids
+              // SANS changer son box/salle pour éviter les conflits
+              const updatedMedecinIds = existingCreneau.medecin_ids && existingCreneau.medecin_ids.length > 0 
+                ? [...new Set([...existingCreneau.medecin_ids, newCreneau.employe_id])] 
+                : [newCreneau.employe_id];
+              
               await axios.put(`${API}/planning/${existingCreneau.id}`, {
-                ...assistantCreneauData,
-                // Conserver les médecins existants s'il y en a d'autres
-                medecin_ids: existingCreneau.medecin_ids && existingCreneau.medecin_ids.length > 0 
-                  ? [...new Set([...existingCreneau.medecin_ids, newCreneau.employe_id])] 
-                  : [newCreneau.employe_id]
+                medecin_ids: updatedMedecinIds
+                // On ne modifie PAS salle_attribuee ni salle_attente pour éviter les conflits
               });
               assistantsUpdated++;
             } else {
-              // Créer un nouveau créneau pour cet assistant
+              // Créer un nouveau créneau pour cet assistant avec le box du médecin
               await axios.post(`${API}/planning`, assistantCreneauData);
               assistantsCreated++;
             }
