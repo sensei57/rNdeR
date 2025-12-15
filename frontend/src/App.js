@@ -7050,6 +7050,19 @@ const AdminManager = () => {
                             <Button
                               size="sm"
                               variant="outline"
+                              onClick={() => {
+                                setSelectedUser(userItem);
+                                setShowNotificationModal(true);
+                              }}
+                              className="text-blue-600 hover:text-blue-800"
+                              title="Envoyer une notification"
+                            >
+                              <Bell className="h-3 w-3 mr-1" />
+                              Notification
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
                               onClick={() => handleToggleActive(userItem.id)}
                               className={userItem.actif ? "text-red-600 hover:text-red-800" : "text-green-600 hover:text-green-800"}
                             >
