@@ -3344,6 +3344,16 @@ const PlanningManager = () => {
                   {filterRole.includes('Secrétaire') ? '✓ ' : ''}Secrétaires
                 </Button>
               </div>
+              <div className="border-l pl-4 ml-4">
+                <Button
+                  variant={showDetails ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setShowDetails(!showDetails)}
+                  className="flex items-center"
+                >
+                  {showDetails ? '👁️ Masquer détails' : '👁️ Afficher détails'}
+                </Button>
+              </div>
             </div>
           )}
           
