@@ -2934,8 +2934,9 @@ const PlanningManager = () => {
         body.creneau_partiel = creneauPartiel;
       }
       
-      await axios.put(`${API}/demandes-travail/${demande.id}/approuver`, body);
+      const response = await axios.put(`${API}/demandes-travail/${demande.id}/approuver`, body);
       
+      // L'opération backend a réussi, afficher le message approprié
       if (approuver) {
         if (creneauPartiel) {
           const creneauRestant = creneauPartiel === 'MATIN' ? 'après-midi' : 'matin';
@@ -2954,15 +2955,20 @@ const PlanningManager = () => {
         }
       }
       
-      // Recharger le planning
-      if (viewMode === 'jour') {
-        await fetchPlanningByDate(selectedDate);
-      } else {
-        await fetchPlanningSemaine(selectedWeek);
+      // Recharger le planning et les demandes (entourer d'un try/catch séparé pour ne pas masquer le succès)
+      try {
+        if (viewMode === 'jour') {
+          await fetchPlanningByDate(selectedDate);
+        } else {
+          await fetchPlanningSemaine(selectedWeek);
+        }
+        await fetchData();
+      } catch (reloadError) {
+        console.error('Erreur rechargement données:', reloadError);
+        // Ne pas afficher d'erreur à l'utilisateur car l'opération principale a réussi
       }
-      // Recharger les demandes
-      await fetchData();
     } catch (error) {
+      console.error('Erreur approbation/refus:', error);
       toast.error(error.response?.data?.detail || `Erreur lors de ${approuver ? 'l\'approbation' : 'le refus'}`);
     }
   };
