@@ -2240,15 +2240,47 @@ async def create_demande_jour_travail(
         if not demande_data.date_demandee or not demande_data.creneau:
             raise HTTPException(status_code=400, detail="Date et créneau requis pour une demande individuelle")
         
-        existing = await db.demandes_travail.find_one({
+        # Vérification intelligente des conflits de créneaux
+        # On doit vérifier s'il y a un conflit RÉEL entre les créneaux
+        
+        # Récupérer toutes les demandes actives pour ce médecin à cette date
+        demandes_existantes = await db.demandes_travail.find({
             "medecin_id": medecin_id,
             "date_demandee": demande_data.date_demandee,
-            "creneau": demande_data.creneau,
-            "statut": {"$nin": ["REJETE", "ANNULE"]}  # Ignorer les demandes rejetées ET annulées
-        })
+            "statut": {"$nin": ["REJETE", "ANNULE"]}
+        }).to_list(length=None)
         
-        if existing:
-            raise HTTPException(status_code=400, detail="Une demande existe déjà pour cette date/créneau")
+        # Analyser les conflits
+        creneau_demande = demande_data.creneau
+        
+        for demande_existante in demandes_existantes:
+            creneau_existant = demande_existante["creneau"]
+            
+            # Cas 1 : Demande identique (doublon strict)
+            if creneau_demande == creneau_existant:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Une demande {creneau_existant} existe déjà pour cette date"
+                )
+            
+            # Cas 2 : JOURNEE_COMPLETE en conflit avec MATIN ou APRES_MIDI
+            if creneau_demande == "JOURNEE_COMPLETE" and creneau_existant in ["MATIN", "APRES_MIDI"]:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Impossible de demander une journée complète : vous avez déjà une demande pour l'{creneau_existant}. Annulez-la d'abord ou demandez seulement le créneau manquant."
+                )
+            
+            # Cas 3 : MATIN ou APRES_MIDI en conflit avec JOURNEE_COMPLETE existante
+            if creneau_demande in ["MATIN", "APRES_MIDI"] and creneau_existant == "JOURNEE_COMPLETE":
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Impossible de demander {creneau_demande} : vous avez déjà une demande pour la JOURNEE_COMPLETE. Annulez-la d'abord ou gardez la journée complète."
+                )
+            
+            # Cas 4 : MATIN + APRES_MIDI séparés = OK (pas de conflit)
+            # Si creneau_demande = MATIN et creneau_existant = APRES_MIDI → OK
+            # Si creneau_demande = APRES_MIDI et creneau_existant = MATIN → OK
+            # Aucune exception levée dans ce cas
         
         demande = DemandeJourTravail(
             medecin_id=medecin_id,
