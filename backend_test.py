@@ -7284,6 +7284,8 @@ if __name__ == "__main__":
         sys.exit(semaines_types_privees_main())
     elif len(sys.argv) > 1 and sys.argv[1] == "--rapid-validation":
         sys.exit(rapid_validation_main())
+    elif len(sys.argv) > 1 and sys.argv[1] == "--bug-identification":
+        sys.exit(complete_application_bug_identification_main())
     else:
-        # Default to deployment validation tests as requested in current review
-        sys.exit(deployment_validation_main())
+        # Default to complete bug identification as requested in current review
+        sys.exit(complete_application_bug_identification_main())
