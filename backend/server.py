@@ -2598,16 +2598,29 @@ async def approuver_demande_jour_travail(
     if request.creneau_partiel and demande["creneau"] == "JOURNEE_COMPLETE":
         # Approbation ou refus partiel d'une JOURNEE_COMPLETE
         if request.approuve:
-            # Approuver seulement le créneau partiel spécifié
+            # Approuver seulement le créneau partiel spécifié, créer une nouvelle demande pour l'autre
             creneau_restant = "APRES_MIDI" if request.creneau_partiel == "MATIN" else "MATIN"
             
+            # Marquer la demande originale comme approuvée pour ce créneau uniquement
             update_data = {
-                "creneau": request.creneau_partiel,  # Modifier la demande pour refléter seulement le créneau approuvé
+                "creneau": request.creneau_partiel,  # La demande originale représente maintenant le créneau approuvé
                 "statut": "APPROUVE",
                 "approuve_par": current_user.id,
                 "date_approbation": datetime.now(timezone.utc),
                 "commentaire_approbation": request.commentaire or f"Approuvé partiellement : {request.creneau_partiel} uniquement"
             }
+            
+            # Créer une nouvelle demande pour le créneau restant (EN_ATTENTE)
+            nouvelle_demande = DemandeTravail(
+                id=str(uuid.uuid4()),
+                medecin_id=demande["medecin_id"],
+                date_demandee=demande["date_demandee"],
+                creneau=creneau_restant,
+                statut="EN_ATTENTE",
+                date_creation=datetime.now(timezone.utc),
+                commentaire=f"Créneau restant après approbation partielle de {request.creneau_partiel}"
+            )
+            await db.demandes_travail.insert_one(nouvelle_demande.dict())
         else:
             # Refuser seulement le créneau partiel, créer une nouvelle demande pour l'autre
             creneau_restant = "APRES_MIDI" if request.creneau_partiel == "MATIN" else "MATIN"
