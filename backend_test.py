@@ -7608,6 +7608,7 @@ class DeploymentTester(MedicalStaffAPITester):
         
         return test_results
 
+
 def complete_application_bug_identification_main():
     """Main function for complete application bug identification"""
     tester = MedicalStaffAPITester()
