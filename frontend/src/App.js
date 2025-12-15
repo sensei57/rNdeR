@@ -4488,7 +4488,7 @@ const PlanningManager = () => {
                               </div>
                               
                               {/* MÉDECINS : Afficher Box, Salle d'attente, Assistants */}
-                              {creneau.employe?.role === 'Médecin' && (
+                              {showDetails && creneau.employe?.role === 'Médecin' && (
                                 <>
                                   {creneau.salle_attribuee && (
                                     <div className={`text-sm ${hasAssistant ? 'text-blue-200' : 'text-gray-600'}`}>
@@ -4509,7 +4509,7 @@ const PlanningManager = () => {
                               )}
                               
                               {/* ASSISTANTS : Afficher sa salle de travail et médecins associés */}
-                              {creneau.employe?.role === 'Assistant' && (
+                              {showDetails && creneau.employe?.role === 'Assistant' && (
                                 <>
                                   {creneau.salle_attribuee && (
                                     <div className={`text-sm ${hasMedecin ? 'text-green-200' : 'text-gray-600'}`}>
@@ -4693,7 +4693,7 @@ const PlanningManager = () => {
                               </div>
                               
                               {/* MÉDECINS : Afficher Box, Salle d'attente, Assistants */}
-                              {creneau.employe?.role === 'Médecin' && (
+                              {showDetails && creneau.employe?.role === 'Médecin' && (
                                 <>
                                   {creneau.salle_attribuee && (
                                     <div className={`text-sm ${hasAssistant ? 'text-blue-200' : 'text-gray-600'}`}>
@@ -4714,7 +4714,7 @@ const PlanningManager = () => {
                               )}
                               
                               {/* ASSISTANTS : Afficher sa salle de travail et médecins associés */}
-                              {creneau.employe?.role === 'Assistant' && (
+                              {showDetails && creneau.employe?.role === 'Assistant' && (
                                 <>
                                   {creneau.salle_attribuee && (
                                     <div className={`text-sm ${hasMedecin ? 'text-green-200' : 'text-gray-600'}`}>
