@@ -400,6 +400,7 @@ class DemandeMensuelleCreate(BaseModel):
 class ApprobationJourTravailRequest(BaseModel):
     approuve: bool
     commentaire: str = ""
+    creneau_partiel: Optional[str] = None  # "MATIN" ou "APRES_MIDI" pour approuver/refuser partiellement une JOURNEE_COMPLETE
 
 class DemandeAnnulationRequest(BaseModel):
     raison: str
