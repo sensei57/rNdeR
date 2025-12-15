@@ -2955,6 +2955,9 @@ const PlanningManager = () => {
         }
       }
       
+      // Attendre un peu pour laisser le backend finaliser toutes les opérations
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       // Recharger le planning et les demandes (entourer d'un try/catch séparé pour ne pas masquer le succès)
       try {
         if (viewMode === 'jour') {
@@ -2966,6 +2969,7 @@ const PlanningManager = () => {
       } catch (reloadError) {
         console.error('Erreur rechargement données:', reloadError);
         // Ne pas afficher d'erreur à l'utilisateur car l'opération principale a réussi
+        // L'utilisateur peut rafraîchir manuellement si besoin
       }
     } catch (error) {
       console.error('Erreur approbation/refus:', error);
