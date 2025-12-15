@@ -7654,7 +7654,7 @@ const StocksManager = () => {
 
       {/* Modal Nouvel Article */}
       <Dialog open={showArticleModal} onOpenChange={setShowArticleModal}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingArticle ? 'Modifier' : 'Nouvel'} Article</DialogTitle>
           </DialogHeader>
