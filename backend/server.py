@@ -2594,13 +2594,38 @@ async def approuver_demande_jour_travail(
                     detail=f"Impossible d'approuver {creneau_a_approuver} : ce médecin a déjà JOURNEE_COMPLETE approuvée. Refusez d'abord l'autre demande."
                 )
     
-    statut = "APPROUVE" if request.approuve else "REJETE"
-    update_data = {
-        "statut": statut,
-        "approuve_par": current_user.id,
-        "date_approbation": datetime.now(timezone.utc),
-        "commentaire_approbation": request.commentaire
-    }
+    # Gestion de l'approbation/refus partiel pour JOURNEE_COMPLETE
+    if request.creneau_partiel and demande["creneau"] == "JOURNEE_COMPLETE":
+        # Approbation ou refus partiel d'une JOURNEE_COMPLETE
+        if request.approuve:
+            # Approuver seulement le créneau partiel spécifié
+            creneau_restant = "APRES_MIDI" if request.creneau_partiel == "MATIN" else "MATIN"
+            
+            update_data = {
+                "creneau": request.creneau_partiel,  # Modifier la demande pour refléter seulement le créneau approuvé
+                "statut": "APPROUVE",
+                "approuve_par": current_user.id,
+                "date_approbation": datetime.now(timezone.utc),
+                "commentaire_approbation": request.commentaire or f"Approuvé partiellement : {request.creneau_partiel} uniquement"
+            }
+        else:
+            # Refuser seulement le créneau partiel, garder l'autre en attente
+            creneau_restant = "APRES_MIDI" if request.creneau_partiel == "MATIN" else "MATIN"
+            
+            update_data = {
+                "creneau": creneau_restant,  # Modifier la demande pour refléter seulement le créneau restant
+                "statut": "EN_ATTENTE",  # Reste en attente pour l'autre créneau
+                "commentaire_approbation": request.commentaire or f"Refusé partiellement : {request.creneau_partiel} refusé, {creneau_restant} reste en attente"
+            }
+    else:
+        # Approbation ou refus standard (total)
+        statut = "APPROUVE" if request.approuve else "REJETE"
+        update_data = {
+            "statut": statut,
+            "approuve_par": current_user.id,
+            "date_approbation": datetime.now(timezone.utc),
+            "commentaire_approbation": request.commentaire
+        }
     
     result = await db.demandes_travail.update_one({"id": demande_id}, {"$set": update_data})
     if result.matched_count == 0:
@@ -2613,11 +2638,11 @@ async def approuver_demande_jour_travail(
         notify_user_request_status,
         demande["medecin_id"],
         "Demande de jour de travail",
-        statut,
+        update_data.get("statut", "MODIFIE"),
         details
     )
     
-    # Si la demande est approuvée, créer automatiquement un créneau dans le planning
+    # Si la demande est approuvée (totalement ou partiellement), créer automatiquement un créneau dans le planning
     if request.approuve:
         # Récupérer les informations du médecin
         medecin = await db.users.find_one({"id": demande["medecin_id"]})
@@ -2626,9 +2651,14 @@ async def approuver_demande_jour_travail(
         
         # Créer le(s) créneau(x) selon le type
         creneaux_a_creer = []
-        if demande["creneau"] == "JOURNEE_COMPLETE":
+        if request.creneau_partiel:
+            # Approbation partielle : créer seulement le créneau spécifié
+            creneaux_a_creer = [request.creneau_partiel]
+        elif demande["creneau"] == "JOURNEE_COMPLETE":
+            # Approbation totale d'une JOURNEE_COMPLETE
             creneaux_a_creer = ["MATIN", "APRES_MIDI"]
         else:
+            # Approbation d'un créneau simple
             creneaux_a_creer = [demande["creneau"]]
         
         for creneau_type in creneaux_a_creer:
