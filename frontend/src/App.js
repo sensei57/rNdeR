@@ -3115,6 +3115,19 @@ const PlanningManager = () => {
       // Vérifier le créneau
       if (demande.creneau === 'JOURNEE_COMPLETE') return true;
       if (demande.creneau === creneau) return true;
+  
+  // Nouvelle fonction pour récupérer la demande complète
+  const getDemandeEnAttente = (employeId, date, creneau) => {
+    if (!demandesTravail || demandesTravail.length === 0) return null;
+    
+    return demandesTravail.find(demande => {
+      if (demande.medecin_id !== employeId) return false;
+      if (demande.statut !== 'EN_ATTENTE') return false;
+      if (demande.date_demandee !== date) return false;
+      
+      // Vérifier le créneau
+      if (demande.creneau === 'JOURNEE_COMPLETE') return true;
+      if (demande.creneau === creneau) return true;
       
       return false;
     });
