@@ -4420,7 +4420,7 @@ const PlanningManager = () => {
                         {role}s ({getRoleGroups(planningMatin).groups[role]?.length || 0})
                       </h3>
                       {getRoleGroups(planningMatin).groups[role]?.map(creneau => {
-                        const hasAssistant = creneau.employe?.role === 'Médecin' && getAssistantsForMedecin(creneau.employe_id).length > 0;
+                        const hasAssistant = creneau.employe?.role === 'Médecin' && getAssistantsForMedecinInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0;
                         const hasMedecin = creneau.employe?.role === 'Assistant' && getMedecinsForAssistant(creneau.employe_id).length > 0;
                         
                         return (
@@ -4606,7 +4606,7 @@ const PlanningManager = () => {
                         {role}s ({getRoleGroups(planningApresMidi).groups[role]?.length || 0})
                       </h3>
                       {getRoleGroups(planningApresMidi).groups[role]?.map(creneau => {
-                        const hasAssistant = creneau.employe?.role === 'Médecin' && getAssistantsForMedecin(creneau.employe_id).length > 0;
+                        const hasAssistant = creneau.employe?.role === 'Médecin' && getAssistantsForMedecinInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0;
                         const hasMedecin = creneau.employe?.role === 'Assistant' && getMedecinsForAssistant(creneau.employe_id).length > 0;
                         
                         return (
