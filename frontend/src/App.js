@@ -3131,6 +3131,37 @@ const PlanningManager = () => {
       .filter(a => a); // Filtrer les undefined
   };
 
+  // Récupérer les médecins avec leurs infos (box/salle) qui travaillent avec un assistant ce jour-là
+  const getMedecinsForAssistantInPlanning = (assistantId, date, creneau) => {
+    if (!planning || planning.length === 0) return [];
+    
+    // Trouver le créneau de l'assistant
+    const assistantCreneau = planning.find(p => 
+      p.employe_id === assistantId && 
+      p.date === date && 
+      p.creneau === creneau
+    );
+    
+    if (!assistantCreneau || !assistantCreneau.medecin_ids || assistantCreneau.medecin_ids.length === 0) {
+      return [];
+    }
+    
+    // Récupérer les créneaux des médecins associés
+    return planning
+      .filter(p => 
+        p.date === date && 
+        p.creneau === creneau && 
+        p.employe_role === 'Médecin' && 
+        assistantCreneau.medecin_ids.includes(p.employe_id)
+      )
+      .map(p => ({
+        medecin: p.employe,
+        box: p.salle_attribuee,
+        salleAttente: p.salle_attente
+      }))
+      .filter(m => m.medecin); // Filtrer les undefined
+  };
+
   // Récupérer les médecins assignés à un assistant
   const getMedecinsForAssistant = (assistantId) => {
     if (!assignations || assignations.length === 0) return [];
