@@ -3459,7 +3459,7 @@ const PlanningManager = () => {
                           <SelectValue placeholder="Sélectionnez un employé" />
                         </SelectTrigger>
                         <SelectContent>
-                          {users.filter(u => u.role !== 'Médecin').map(employe => (
+                          {users.map(employe => (
                             <SelectItem key={employe.id} value={employe.id}>
                               {employe.prenom} {employe.nom} ({employe.role})
                             </SelectItem>
