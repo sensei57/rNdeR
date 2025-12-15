@@ -547,9 +547,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Navigation Dates Planning : Flèches Haut Jour/Jour, Bas Semaine/Semaine"
-    - "Rappel Date Format Complet dans Vue Journalière Planning"
-  stuck_tasks: []
+    - "Bugs Planning Journalier Persistent - Diagnostic Complet"
+  stuck_tasks:
+    - "Bugs Planning Journalier Persistent - Diagnostic Complet"
   test_all: false
   test_priority: "high_first"
 
