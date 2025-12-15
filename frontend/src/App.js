@@ -3105,6 +3105,22 @@ const PlanningManager = () => {
       .filter(a => a); // Filtrer les undefined
   };
 
+  // Récupérer les assistants qui travaillent avec un médecin ce jour-là dans le planning
+  const getAssistantsForMedecinInPlanning = (medecinId, date, creneau) => {
+    if (!planning || planning.length === 0) return [];
+    
+    return planning
+      .filter(p => 
+        p.date === date && 
+        p.creneau === creneau && 
+        p.employe_role === 'Assistant' && 
+        p.medecin_ids && 
+        p.medecin_ids.includes(medecinId)
+      )
+      .map(p => p.employe)
+      .filter(a => a); // Filtrer les undefined
+  };
+
   // Récupérer les médecins assignés à un assistant
   const getMedecinsForAssistant = (assistantId) => {
     if (!assignations || assignations.length === 0) return [];
