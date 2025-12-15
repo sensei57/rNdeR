@@ -2759,9 +2759,10 @@ const PlanningManager = () => {
       // Mettre à jour le créneau principal
       await axios.put(`${API}/planning/${editingCreneau.id}`, newCreneau);
       
-      // Si c'est un médecin et qu'il a des assistants sélectionnés, créer leurs créneaux
+      // Si c'est un médecin et qu'il a des assistants sélectionnés, créer/mettre à jour leurs créneaux
       if (editingCreneau.employe_role === 'Médecin' && newCreneau.medecin_ids && newCreneau.medecin_ids.length > 0) {
         let assistantsCreated = 0;
+        let assistantsUpdated = 0;
         let assistantsFailed = 0;
         
         const errors = [];
@@ -2770,21 +2771,11 @@ const PlanningManager = () => {
           try {
             // Vérifier d'abord si un créneau existe déjà pour cet assistant à cette date/créneau
             const existingCreneaux = await axios.get(`${API}/planning/${newCreneau.date}`);
-            const hasExisting = existingCreneaux.data.some(c => 
+            const existingCreneau = existingCreneaux.data.find(c => 
               c.employe_id === assistantId && c.creneau === newCreneau.creneau
             );
             
-            if (hasExisting) {
-              const assistant = users.find(u => u.id === assistantId);
-              const assistantName = assistant ? `${assistant.prenom} ${assistant.nom}` : 'Assistant';
-              console.log(`Créneau déjà existant pour ${assistantName} le ${newCreneau.date} ${newCreneau.creneau}`);
-              errors.push(`${assistantName} a déjà un créneau`);
-              assistantsFailed++;
-              continue;
-            }
-            
-            // Créer un créneau pour chaque assistant sélectionné
-            const assistantCreneau = {
+            const assistantCreneauData = {
               date: newCreneau.date,
               creneau: newCreneau.creneau,
               employe_id: assistantId,
@@ -2797,10 +2788,24 @@ const PlanningManager = () => {
               notes: `Associé à Dr. ${editingCreneau.employe?.prenom} ${editingCreneau.employe?.nom}`,
               medecin_ids: [newCreneau.employe_id] // Lien inverse
             };
-            await axios.post(`${API}/planning`, assistantCreneau);
-            assistantsCreated++;
+            
+            if (existingCreneau) {
+              // Mettre à jour le créneau existant avec les nouvelles infos du médecin
+              await axios.put(`${API}/planning/${existingCreneau.id}`, {
+                ...assistantCreneauData,
+                // Conserver les médecins existants s'il y en a d'autres
+                medecin_ids: existingCreneau.medecin_ids && existingCreneau.medecin_ids.length > 0 
+                  ? [...new Set([...existingCreneau.medecin_ids, newCreneau.employe_id])] 
+                  : [newCreneau.employe_id]
+              });
+              assistantsUpdated++;
+            } else {
+              // Créer un nouveau créneau pour cet assistant
+              await axios.post(`${API}/planning`, assistantCreneauData);
+              assistantsCreated++;
+            }
           } catch (err) {
-            console.error('Erreur création créneau assistant:', err);
+            console.error('Erreur création/modification créneau assistant:', err);
             const assistant = users.find(u => u.id === assistantId);
             const assistantName = assistant ? `${assistant.prenom} ${assistant.nom}` : 'Assistant';
             const errorMsg = err.response?.data?.detail || err.message;
@@ -2809,10 +2814,13 @@ const PlanningManager = () => {
           }
         }
         
-        if (assistantsCreated > 0) {
-          toast.success(`Créneau modifié et ${assistantsCreated} créneau(x) assistant(s) créé(s) avec succès`);
+        if (assistantsCreated > 0 || assistantsUpdated > 0) {
+          const messages = [];
+          if (assistantsCreated > 0) messages.push(`${assistantsCreated} créneau(x) créé(s)`);
+          if (assistantsUpdated > 0) messages.push(`${assistantsUpdated} créneau(x) mis à jour`);
+          toast.success(`Créneau médecin modifié avec succès. Assistants: ${messages.join(', ')}`);
         } else if (assistantsFailed > 0) {
-          toast.error(`Créneau modifié mais impossible de créer les créneaux assistants:\n${errors.join('\n')}`);
+          toast.warning(`Créneau médecin modifié, mais problème avec les assistants:\n${errors.join('\n')}`);
         } else {
           toast.success('Créneau modifié avec succès');
         }
