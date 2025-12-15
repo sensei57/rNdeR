@@ -4194,7 +4194,7 @@ const PlanningManager = () => {
       {/* Modal Créer Nouvelle Semaine Type */}
       {user?.role === 'Directeur' && (
         <Dialog open={showCreateSemaineTypeModal} onOpenChange={setShowCreateSemaineTypeModal}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Créer une Nouvelle Semaine Type</DialogTitle>
               <DialogDescription>
