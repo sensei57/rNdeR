@@ -57,8 +57,8 @@
 ##   test_priority: "high_first"  # or "sequential" or "stuck_first"
 ##
 ## agent_communication:
-##     -agent: "main"  # or "testing" or "user"
-##     -message: "Communication message between agents"
+##     -agent: "main"
+##     -message: "TEST COMPLET DE L'APPLICATION - L'utilisateur demande un test général pour identifier les bugs. Je vais effectuer un test complet du backend et du frontend. Services redémarrés avec succès (backend, frontend, MongoDB tous en RUNNING). Tests prioritaires: 1) Fonctionnalités critiques (authentification, planning, demandes), 2) Tâches récemment implémentées marquées needs_retesting=true (validation demandes créneaux vue journalière, liaison médecin-assistant, restriction plan cabinet), 3) Endpoints principaux pour vérifier stabilité générale."
 
 # Protocol Guidelines for Main agent
 #
