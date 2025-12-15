@@ -7771,7 +7771,7 @@ const StocksManager = () => {
 
       {/* Modal d'affichage d'image */}
       <Dialog open={showImageModal} onOpenChange={setShowImageModal}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedImage?.nom}</DialogTitle>
           </DialogHeader>
