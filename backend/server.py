@@ -2609,14 +2609,29 @@ async def approuver_demande_jour_travail(
                 "commentaire_approbation": request.commentaire or f"Approuvé partiellement : {request.creneau_partiel} uniquement"
             }
         else:
-            # Refuser seulement le créneau partiel, garder l'autre en attente
+            # Refuser seulement le créneau partiel, créer une nouvelle demande pour l'autre
             creneau_restant = "APRES_MIDI" if request.creneau_partiel == "MATIN" else "MATIN"
             
+            # Marquer la demande originale comme partiellement refusée
             update_data = {
-                "creneau": creneau_restant,  # Modifier la demande pour refléter seulement le créneau restant
-                "statut": "EN_ATTENTE",  # Reste en attente pour l'autre créneau
-                "commentaire_approbation": request.commentaire or f"Refusé partiellement : {request.creneau_partiel} refusé, {creneau_restant} reste en attente"
+                "creneau": request.creneau_partiel,  # La demande originale représente maintenant le créneau refusé
+                "statut": "REJETE",  # Refusée pour cette partie
+                "approuve_par": current_user.id,
+                "date_approbation": datetime.now(timezone.utc),
+                "commentaire_approbation": request.commentaire or f"Refusé partiellement : {request.creneau_partiel} refusé"
             }
+            
+            # Créer une nouvelle demande pour le créneau restant (EN_ATTENTE)
+            nouvelle_demande = DemandeTravail(
+                id=str(uuid.uuid4()),
+                medecin_id=demande["medecin_id"],
+                date_demandee=demande["date_demandee"],
+                creneau=creneau_restant,
+                statut="EN_ATTENTE",
+                date_creation=datetime.now(timezone.utc),
+                commentaire=f"Créneau restant après refus partiel de {request.creneau_partiel}"
+            )
+            await db.demandes_travail.insert_one(nouvelle_demande.dict())
     else:
         # Approbation ou refus standard (total)
         statut = "APPROUVE" if request.approuve else "REJETE"
