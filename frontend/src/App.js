@@ -2775,34 +2775,27 @@ const PlanningManager = () => {
               c.employe_id === assistantId && c.creneau === newCreneau.creneau
             );
             
-            const assistantCreneauData = {
-              date: newCreneau.date,
-              creneau: newCreneau.creneau,
-              employe_id: assistantId,
-              salle_attribuee: newCreneau.salle_attribuee,
-              salle_attente: newCreneau.salle_attente,
-              horaire_debut: newCreneau.horaire_debut,
-              horaire_fin: newCreneau.horaire_fin,
-              horaire_pause_debut: newCreneau.horaire_pause_debut,
-              horaire_pause_fin: newCreneau.horaire_pause_fin,
-              notes: `Associé à Dr. ${editingCreneau.employe?.prenom} ${editingCreneau.employe?.nom}`,
-              medecin_ids: [newCreneau.employe_id] // Lien inverse
-            };
-            
             if (existingCreneau) {
               // L'assistant a déjà un créneau : juste ajouter ce médecin à ses medecin_ids
-              // SANS changer son box/salle pour éviter les conflits
               const updatedMedecinIds = existingCreneau.medecin_ids && existingCreneau.medecin_ids.length > 0 
                 ? [...new Set([...existingCreneau.medecin_ids, newCreneau.employe_id])] 
                 : [newCreneau.employe_id];
               
               await axios.put(`${API}/planning/${existingCreneau.id}`, {
                 medecin_ids: updatedMedecinIds
-                // On ne modifie PAS salle_attribuee ni salle_attente pour éviter les conflits
               });
               assistantsUpdated++;
             } else {
-              // Créer un nouveau créneau pour cet assistant avec le box du médecin
+              // Créer un nouveau créneau pour l'assistant SANS salle
+              // L'assistant devra définir sa propre salle (A, B, C, D, O, Blue)
+              const assistantCreneauData = {
+                date: newCreneau.date,
+                creneau: newCreneau.creneau,
+                employe_id: assistantId,
+                notes: `Associé à Dr. ${editingCreneau.employe?.prenom} ${editingCreneau.employe?.nom}`,
+                medecin_ids: [newCreneau.employe_id]
+              };
+              
               await axios.post(`${API}/planning`, assistantCreneauData);
               assistantsCreated++;
             }
