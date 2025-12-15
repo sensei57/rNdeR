@@ -4500,7 +4500,7 @@ const PlanningManager = () => {
                                 </>
                               )}
                               
-                              {/* ASSISTANTS : Afficher Box, Médecins */}
+                              {/* ASSISTANTS : Afficher Box, Médecins avec leurs box/salles */}
                               {creneau.employe?.role === 'Assistant' && (
                                 <>
                                   {creneau.salle_attente && (
@@ -4508,9 +4508,15 @@ const PlanningManager = () => {
                                       🏥 Box: {creneau.salle_attente}
                                     </div>
                                   )}
-                                  {getMedecinsForAssistant(creneau.employe_id).length > 0 && (
-                                    <div className={`text-sm ${hasMedecin ? 'text-green-200 font-semibold' : 'text-blue-600'}`}>
-                                      👨‍⚕️ Médecins: Dr. {getMedecinsForAssistant(creneau.employe_id).map(m => `${m.prenom} ${m.nom}`).join(', Dr. ')}
+                                  {getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0 && (
+                                    <div className={`text-sm ${hasMedecin ? 'text-green-200' : 'text-blue-600'}`}>
+                                      {getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).map(info => (
+                                        <div key={info.medecin.id} className="mt-1">
+                                          👨‍⚕️ Associé à Dr. {info.medecin.prenom} {info.medecin.nom}
+                                          {info.box && ` - BOXE ${info.box}`}
+                                          {info.salleAttente && ` (Salle d'attente: ${info.salleAttente})`}
+                                        </div>
+                                      ))}
                                     </div>
                                   )}
                                 </>
@@ -4686,7 +4692,7 @@ const PlanningManager = () => {
                                 </>
                               )}
                               
-                              {/* ASSISTANTS : Afficher Box, Médecins */}
+                              {/* ASSISTANTS : Afficher Box, Médecins avec leurs box/salles */}
                               {creneau.employe?.role === 'Assistant' && (
                                 <>
                                   {creneau.salle_attente && (
@@ -4694,9 +4700,15 @@ const PlanningManager = () => {
                                       🏥 Box: {creneau.salle_attente}
                                     </div>
                                   )}
-                                  {getMedecinsForAssistant(creneau.employe_id).length > 0 && (
-                                    <div className={`text-sm ${hasMedecin ? 'text-green-200 font-semibold' : 'text-blue-600'}`}>
-                                      👨‍⚕️ Médecins: Dr. {getMedecinsForAssistant(creneau.employe_id).map(m => `${m.prenom} ${m.nom}`).join(', Dr. ')}
+                                  {getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0 && (
+                                    <div className={`text-sm ${hasMedecin ? 'text-green-200' : 'text-blue-600'}`}>
+                                      {getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).map(info => (
+                                        <div key={info.medecin.id} className="mt-1">
+                                          👨‍⚕️ Associé à Dr. {info.medecin.prenom} {info.medecin.nom}
+                                          {info.box && ` - BOXE ${info.box}`}
+                                          {info.salleAttente && ` (Salle d'attente: ${info.salleAttente})`}
+                                        </div>
+                                      ))}
                                     </div>
                                   )}
                                 </>
