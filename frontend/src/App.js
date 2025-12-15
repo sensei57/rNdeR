@@ -6910,6 +6910,27 @@ const AdminManager = () => {
     }
   };
 
+  const handleSendNotification = async () => {
+    if (!notificationMessage || notificationMessage.trim().length === 0) {
+      toast.error('Le message ne peut pas être vide');
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/admin/send-notification`, {
+        user_id: selectedUser.id,
+        message: notificationMessage
+      });
+      
+      toast.success(`Notification envoyée à ${selectedUser.prenom} ${selectedUser.nom}`);
+      setShowNotificationModal(false);
+      setNotificationMessage('');
+      setSelectedUser(null);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de l\'envoi de la notification');
+    }
+  };
+
   const getRoleColor = (role) => {
     switch (role) {
       case 'Directeur': return 'bg-purple-100 text-purple-800';
