@@ -256,7 +256,7 @@ const PushNotificationManager = () => {
 
       // Obtenir le token FCM
       const token = await getToken(messaging, {
-        vapidKey: 'BLDFCJN6pePvpIaVCTQtAhcwNhlusiMzFjPDdzll12vBWZcvkYJ4Bc60R9RSBcTx-hpqwT3ngTWn4lgVh4qQS-E'
+        vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY
       });
 
       if (token) {
