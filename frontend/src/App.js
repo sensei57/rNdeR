@@ -4589,6 +4589,18 @@ const PlanningManager = () => {
                             </div>
                           </div>
                           <div className="flex space-x-1">
+                            {isJourneeComplete && (
+                              <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => handleApprouverDemandePlanning(employe.id, selectedDate, 'MATIN', true, null)}
+                                className="bg-green-600 hover:bg-green-700 text-white h-8 px-3"
+                                title="Approuver la journée complète"
+                              >
+                                <Check className="h-4 w-4 mr-1" />
+                                Approuver Journée
+                              </Button>
+                            )}
                             <Button
                               size="sm"
                               variant="ghost"
@@ -4597,7 +4609,7 @@ const PlanningManager = () => {
                               title={isJourneeComplete ? "Approuver Matin uniquement" : "Approuver"}
                             >
                               <Check className="h-4 w-4 mr-1" />
-                              {isJourneeComplete ? 'Approuver Matin' : 'Approuver'}
+                              {isJourneeComplete ? 'Matin' : 'Approuver'}
                             </Button>
                             <Button
                               size="sm"
