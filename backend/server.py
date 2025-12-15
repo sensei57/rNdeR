@@ -1964,6 +1964,29 @@ async def get_my_today_notification(current_user: User = Depends(get_current_use
     
     return notification
 
+@api_router.post("/admin/send-notification")
+async def send_custom_notification(
+    request: dict,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    """Envoyer une notification personnalisée à un utilisateur"""
+    user_id = request.get("user_id")
+    message = request.get("message")
+    
+    if not user_id or not message:
+        raise HTTPException(status_code=400, detail="user_id et message requis")
+    
+    # Vérifier que l'utilisateur existe
+    target_user = await db.users.find_one({"id": user_id})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    # Envoyer la notification
+    title = f"📢 Message du directeur"
+    await send_notification_to_user(user_id, title, message)
+    
+    return {"message": "Notification envoyée avec succès"}
+
 # Gestion des salles
 @api_router.post("/salles", response_model=Salle)
 async def create_salle(
