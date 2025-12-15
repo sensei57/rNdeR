@@ -2937,15 +2937,19 @@ const PlanningManager = () => {
       
       if (approuver) {
         if (creneauPartiel) {
-          toast.success(`${creneauPartiel} approuvé ! Créneau ajouté au planning.`);
+          const creneauRestant = creneauPartiel === 'MATIN' ? 'après-midi' : 'matin';
+          const creneauApprouve = creneauPartiel === 'MATIN' ? 'Matin' : 'Après-midi';
+          toast.success(`✅ ${creneauApprouve} approuvé. La demande reste en attente pour l'${creneauRestant}.`);
         } else {
-          toast.success('Demande approuvée ! Créneau ajouté au planning.');
+          toast.success('✅ Demande approuvée ! Créneau(x) ajouté(s) au planning.');
         }
       } else {
         if (creneauPartiel) {
-          toast.success(`${creneauPartiel} refusé. ${creneauPartiel === 'MATIN' ? 'APRES_MIDI' : 'MATIN'} reste en attente.`);
+          const creneauRestant = creneauPartiel === 'MATIN' ? 'après-midi' : 'matin';
+          const creneauRefuse = creneauPartiel === 'MATIN' ? 'Matin' : 'Après-midi';
+          toast.warning(`${creneauRefuse} refusé. La demande reste en attente pour l'${creneauRestant}.`);
         } else {
-          toast.success('Demande refusée');
+          toast.error('Demande refusée');
         }
       }
       
