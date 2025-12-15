@@ -4451,9 +4451,9 @@ const PlanningManager = () => {
                                       ⏳ Salle d'attente: {creneau.salle_attente}
                                     </div>
                                   )}
-                                  {getAssistantsForMedecin(creneau.employe_id).length > 0 && (
+                                  {getAssistantsForMedecinInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0 && (
                                     <div className={`text-sm ${hasAssistant ? 'text-blue-200 font-semibold' : 'text-blue-600'}`}>
-                                      👥 Assistants: {getAssistantsForMedecin(creneau.employe_id).map(a => `${a.prenom} ${a.nom}`).join(', ')}
+                                      👥 Assistants: {getAssistantsForMedecinInPlanning(creneau.employe_id, creneau.date, creneau.creneau).map(a => `${a.prenom} ${a.nom}`).join(', ')}
                                     </div>
                                   )}
                                 </>
@@ -4637,9 +4637,9 @@ const PlanningManager = () => {
                                       ⏳ Salle d'attente: {creneau.salle_attente}
                                     </div>
                                   )}
-                                  {getAssistantsForMedecin(creneau.employe_id).length > 0 && (
+                                  {getAssistantsForMedecinInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0 && (
                                     <div className={`text-sm ${hasAssistant ? 'text-blue-200 font-semibold' : 'text-blue-600'}`}>
-                                      👥 Assistants: {getAssistantsForMedecin(creneau.employe_id).map(a => `${a.prenom} ${a.nom}`).join(', ')}
+                                      👥 Assistants: {getAssistantsForMedecinInPlanning(creneau.employe_id, creneau.date, creneau.creneau).map(a => `${a.prenom} ${a.nom}`).join(', ')}
                                     </div>
                                   )}
                                 </>
