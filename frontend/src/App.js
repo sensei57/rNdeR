@@ -2905,7 +2905,7 @@ const PlanningManager = () => {
   };
 
   // Approuver/Refuser une demande directement depuis le planning
-  const handleApprouverDemandePlanning = async (employeId, date, creneau, approuver) => {
+  const handleApprouverDemandePlanning = async (employeId, date, creneau, approuver, creneauPartiel = null) => {
     try {
       // Trouver la demande correspondante
       const demande = demandesTravail.find(d => 
@@ -2920,18 +2920,30 @@ const PlanningManager = () => {
         return;
       }
       
+      // Préparer le body avec ou sans créneau partiel
+      const body = {
+        approuve: approuver,
+        commentaire: ''
+      };
+      
+      if (creneauPartiel) {
+        body.creneau_partiel = creneauPartiel;
+      }
+      
+      await axios.put(`${API}/demandes-travail/${demande.id}/approuver`, body);
+      
       if (approuver) {
-        await axios.put(`${API}/demandes-travail/${demande.id}/approuver`, {
-          approuve: true,
-          commentaire: ''
-        });
-        toast.success('Demande approuvée ! Créneau ajouté au planning.');
+        if (creneauPartiel) {
+          toast.success(`${creneauPartiel} approuvé ! Créneau ajouté au planning.`);
+        } else {
+          toast.success('Demande approuvée ! Créneau ajouté au planning.');
+        }
       } else {
-        await axios.put(`${API}/demandes-travail/${demande.id}/approuver`, {
-          approuve: false,
-          commentaire: ''
-        });
-        toast.success('Demande refusée');
+        if (creneauPartiel) {
+          toast.success(`${creneauPartiel} refusé. ${creneauPartiel === 'MATIN' ? 'APRES_MIDI' : 'MATIN'} reste en attente.`);
+        } else {
+          toast.success('Demande refusée');
+        }
       }
       
       // Recharger le planning
