@@ -6242,7 +6242,7 @@ const DemandesTravailManager = () => {
 
       {/* Modal Créer Semaine Type */}
       <Dialog open={showSemaineTypeModal} onOpenChange={setShowSemaineTypeModal}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Créer Ma Semaine Type</DialogTitle>
             <DialogDescription>
