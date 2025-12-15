@@ -2635,14 +2635,14 @@ async def approuver_demande_jour_travail(
             }
             
             # Créer une nouvelle demande pour le créneau restant (EN_ATTENTE)
-            nouvelle_demande = DemandeTravail(
+            nouvelle_demande = DemandeJourTravail(
                 id=str(uuid.uuid4()),
                 medecin_id=demande["medecin_id"],
                 date_demandee=demande["date_demandee"],
                 creneau=creneau_restant,
                 statut="EN_ATTENTE",
-                date_creation=datetime.now(timezone.utc),
-                commentaire=f"Créneau restant après refus partiel de {request.creneau_partiel}"
+                date_demande=datetime.now(timezone.utc),
+                motif=f"Créneau restant après refus partiel de {request.creneau_partiel}"
             )
             await db.demandes_travail.insert_one(nouvelle_demande.dict())
     else:
