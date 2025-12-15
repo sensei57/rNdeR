@@ -6770,10 +6770,12 @@ const AdminManager = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [notificationMessage, setNotificationMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
