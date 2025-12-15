@@ -6772,6 +6772,23 @@ class DeploymentTester(MedicalStaffAPITester):
             print("\n⚠️ ATTENTION: Corriger les problèmes avant déploiement")
             return False
 
+def complete_application_bug_identification_main():
+    """Main function for complete application bug identification"""
+    tester = MedicalStaffAPITester()
+    test_results = tester.test_complete_application_bug_identification()
+    
+    # Return appropriate exit code based on results
+    if test_results:
+        total_tests = sum(results["total"] for results in test_results.values())
+        total_passed = sum(results["passed"] for results in test_results.values())
+        success_rate = (total_passed / total_tests) * 100 if total_tests > 0 else 0
+        
+        if success_rate >= 85:
+            return 0  # Success
+        else:
+            return 1  # Some issues found
+    return 1
+
 def deployment_validation_main():
     """Main function for deployment validation tests"""
     print("🚀 TEST COMPLET DE L'APPLICATION AVANT DÉPLOIEMENT - Vérification Rapide")
