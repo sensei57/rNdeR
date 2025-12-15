@@ -2206,15 +2206,35 @@ async def create_demande_jour_travail(
             if creneau and creneau != 'REPOS':
                 date_jour = (date_debut + timedelta(days=i)).strftime('%Y-%m-%d')
                 
-                # Vérifier si une demande existe déjà
-                existing = await db.demandes_travail.find_one({
+                # Vérification intelligente des conflits (même logique que demande individuelle)
+                demandes_existantes = await db.demandes_travail.find({
                     "medecin_id": medecin_id,
                     "date_demandee": date_jour,
-                    "creneau": creneau,
-                    "statut": {"$nin": ["REJETE", "ANNULE"]}  # Ignorer les demandes rejetées ET annulées
-                })
+                    "statut": {"$nin": ["REJETE", "ANNULE"]}
+                }).to_list(length=None)
                 
-                if not existing:
+                conflit = False
+                for demande_existante in demandes_existantes:
+                    creneau_existant = demande_existante["creneau"]
+                    
+                    # Doublon strict
+                    if creneau == creneau_existant:
+                        conflit = True
+                        break
+                    
+                    # JOURNEE_COMPLETE vs MATIN/APRES_MIDI
+                    if creneau == "JOURNEE_COMPLETE" and creneau_existant in ["MATIN", "APRES_MIDI"]:
+                        conflit = True
+                        break
+                    
+                    # MATIN/APRES_MIDI vs JOURNEE_COMPLETE
+                    if creneau in ["MATIN", "APRES_MIDI"] and creneau_existant == "JOURNEE_COMPLETE":
+                        conflit = True
+                        break
+                    
+                    # MATIN + APRES_MIDI = OK (pas de conflit)
+                
+                if not conflit:
                     demande = DemandeJourTravail(
                         medecin_id=medecin_id,
                         date_demandee=date_jour,
