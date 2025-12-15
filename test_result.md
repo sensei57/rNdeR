@@ -614,6 +614,20 @@ frontend:
         - working: "NA"
           agent: "main"
           comment: "IMPLÉMENTATION RÉALISÉE: 1) MENU NAVIGATION: Modification de getMenuItems() (ligne 9143) pour rendre 'Plan Cabinet' visible uniquement au Directeur dans le menu latéral. Les employés ne voient plus cette option dans la navigation. 2) COMPOSANT COMPACT: Création du composant PlanCabinetCompact (ligne 2196) - version allégée et en lecture seule du plan du cabinet. Ce composant affiche: le plan des salles avec occupations en temps réel, sélecteur de créneau (Matin/Après-midi), légende des couleurs, message indiquant que seul le Directeur peut modifier. 3) INTÉGRATION PLANNING: Le composant PlanCabinetCompact est ajouté sous le planning journalier (ligne 4915) uniquement en vue 'jour', visible pour TOUS les utilisateurs (Médecins, Assistants, Secrétaires, Directeur). 4) CONTRÔLE ACCÈS: Le Directeur garde accès au menu Plan Cabinet complet pour les modifications ET voit la version lecture seule dans le planning. Les employés voient uniquement la version lecture seule dans le planning. RÉSULTAT: Les employés peuvent consulter en temps réel l'occupation des salles depuis le planning sans pouvoir modifier, tandis que le Directeur conserve son accès complet aux modifications via le menu dédié. Frontend compilé avec succès. En attente de tests utilisateur."
+  - task: "Bugs Planning Journalier Persistent - Diagnostic Complet"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 2
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "BUGS PLANNING JOURNALIER PERSISTENT - L'utilisateur signale que les deux bugs persistent en version déployée : 1) Le nom de l'assistant ne s'affiche toujours pas sous Box/Salle d'attente, 2) La modification de créneau médecin ne crée/met pas à jour les créneaux assistants. URL TEST: https://quality-check-20.preview.emergentagent.com, IDENTIFIANTS: directeur@cabinet.fr / admin123. Tests diagnostiques requis selon 6 phases: PHASE 1 (Créer scénario test complet), PHASE 2 (Vérifier affichage assistant), PHASE 3 (Tester modification créneau), PHASE 4 (Vérifier appels API), PHASE 5 (Vérifier données), PHASE 6 (Critères diagnostic)."
+        - working: false
+          agent: "testing"
+          comment: "🔍 DIAGNOSTIC COMPLET EFFECTUÉ - ROOT CAUSE IDENTIFIÉE! ❌ PROBLÈME CRITIQUE DÉCOUVERT: Dr. Jean Bernard existe et est actif (visible dans Gestion Personnel) mais N'APPARAÎT PAS dans le dropdown 'Sélectionnez un employé' du modal Nouveau Créneau Planning. 📊 DONNÉES VÉRIFIÉES: 1) ✅ Médecins en base: Dr. Jean Bernard (dr.bernard@cabinet.fr) - actif=true, 2) ✅ Assistants en base: Julie Moreau, Sophie Petit - actifs=true, 3) ❌ Dropdown planning: Seuls Directeurs, Assistants, Secrétaires visibles - AUCUN MÉDECIN, 4) ❌ API /users/by-role/Médecin: Retourne erreur au lieu des médecins actifs. 🎯 ROOT CAUSE: Le filtre des utilisateurs dans le modal de création de créneau ne récupère pas correctement les médecins actifs, empêchant la création de créneaux médecins et donc l'association médecin-assistant. 🔧 CORRECTION REQUISE: Vérifier la fonction de récupération des utilisateurs dans le modal planning (ligne ~3440 App.js) et l'endpoint /api/users/by-role/Médecin. IMPACT: Sans médecins dans le dropdown, impossible de créer des créneaux médecins, donc impossible de tester l'affichage des assistants sous les médecins. Les deux bugs signalés sont liés à ce problème fondamental de récupération des données utilisateurs."
 
   - task: "TEST INTERFACE GRAPHIQUE - CONNEXION APRÈS DÉPLOIEMENT"
     implemented: true
