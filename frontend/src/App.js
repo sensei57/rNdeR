@@ -2927,7 +2927,7 @@ const PlanningManager = () => {
         });
         toast.success('Demande approuvée ! Créneau ajouté au planning.');
       } else {
-        await axios.put(`${API}/demandes-travail/${demande.id}/rejeter`, {
+        await axios.put(`${API}/demandes-travail/${demande.id}/approuver`, {
           approuve: false,
           commentaire: ''
         });
