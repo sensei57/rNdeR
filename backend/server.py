@@ -2559,6 +2559,40 @@ async def approuver_demande_jour_travail(
                     detail=f"Cabinet complet pour ce créneau. Maximum : {config.max_medecins_par_jour} médecins"
                 )
     
+    # Avant d'approuver, vérifier les conflits avec demandes déjà APPROUVÉES
+    if request.approuve:
+        demandes_approuvees = await db.demandes_travail.find({
+            "medecin_id": demande["medecin_id"],
+            "date_demandee": demande["date_demandee"],
+            "statut": "APPROUVE",
+            "id": {"$ne": demande_id}
+        }).to_list(length=None)
+        
+        for demande_approuvee in demandes_approuvees:
+            creneau_approuve = demande_approuvee["creneau"]
+            creneau_a_approuver = demande["creneau"]
+            
+            # Conflit : même créneau
+            if creneau_a_approuver == creneau_approuve:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Impossible d'approuver : ce médecin a déjà une demande approuvée pour {creneau_approuve}"
+                )
+            
+            # Conflit : JOURNEE vs MATIN/APRES_MIDI
+            if creneau_a_approuver == "JOURNEE_COMPLETE" and creneau_approuve in ["MATIN", "APRES_MIDI"]:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Impossible d'approuver JOURNEE_COMPLETE : ce médecin a déjà {creneau_approuve} approuvé. Refusez d'abord l'autre demande ou approuvez seulement le créneau manquant."
+                )
+            
+            # Conflit : MATIN/APRES_MIDI vs JOURNEE
+            if creneau_a_approuver in ["MATIN", "APRES_MIDI"] and creneau_approuve == "JOURNEE_COMPLETE":
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Impossible d'approuver {creneau_a_approuver} : ce médecin a déjà JOURNEE_COMPLETE approuvée. Refusez d'abord l'autre demande."
+                )
+    
     statut = "APPROUVE" if request.approuve else "REJETE"
     update_data = {
         "statut": statut,
