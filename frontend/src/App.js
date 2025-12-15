@@ -3127,6 +3127,10 @@ const PlanningManager = () => {
       // Vérifier le créneau
       if (demande.creneau === 'JOURNEE_COMPLETE') return true;
       if (demande.creneau === creneau) return true;
+      
+      return false;
+    });
+  };
   
   // Nouvelle fonction pour récupérer la demande complète
   const getDemandeEnAttente = (employeId, date, creneau) => {
