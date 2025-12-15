@@ -4522,7 +4522,8 @@ const PlanningManager = () => {
                                 </div>
                               )}
                               
-                              {creneau.notes && (
+                              {/* Notes : Afficher seulement si ce n'est pas un assistant avec médecins associés (pour éviter doublon) */}
+                              {creneau.notes && !(creneau.employe?.role === 'Assistant' && getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0) && (
                                 <div className={`text-xs italic truncate ${hasAssistant || hasMedecin ? 'text-gray-300' : 'text-gray-600'}`}>
                                   📝 {creneau.notes}
                                 </div>
@@ -4714,7 +4715,8 @@ const PlanningManager = () => {
                                 </div>
                               )}
                               
-                              {creneau.notes && (
+                              {/* Notes : Afficher seulement si ce n'est pas un assistant avec médecins associés (pour éviter doublon) */}
+                              {creneau.notes && !(creneau.employe?.role === 'Assistant' && getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0) && (
                                 <div className={`text-xs italic truncate ${hasAssistant || hasMedecin ? 'text-gray-300' : 'text-gray-600'}`}>
                                   📝 {creneau.notes}
                                 </div>
