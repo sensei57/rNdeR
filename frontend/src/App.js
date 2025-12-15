@@ -2374,6 +2374,7 @@ const PlanningManager = () => {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('jour');
   const [filterRole, setFilterRole] = useState(['Médecin', 'Assistant', 'Secrétaire']); // Tous sélectionnés par défaut
+  const [showDetails, setShowDetails] = useState(true); // Afficher ou masquer les détails (Box, Salle d'attente, Assistants)
   const [users, setUsers] = useState([]);
   const [salles, setSalles] = useState([]);
   const [medecins, setMedecins] = useState([]);
