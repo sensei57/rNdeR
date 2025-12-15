@@ -4695,7 +4695,11 @@ const PlanningManager = () => {
                     </h3>
                     {users.filter(u => 
                       u.role === 'Médecin' && hasDemandeEnAttente(u.id, selectedDate, 'APRES_MIDI')
-                    ).map(employe => (
+                    ).map(employe => {
+                      const demande = getDemandeEnAttente(employe.id, selectedDate, 'APRES_MIDI');
+                      const isJourneeComplete = demande?.creneau === 'JOURNEE_COMPLETE';
+                      
+                      return (
                       <div
                         key={`demande-jour-apres-midi-${employe.id}`}
                         className="border-2 border-yellow-500 bg-yellow-50 text-yellow-700 rounded-lg p-3"
@@ -4706,34 +4710,35 @@ const PlanningManager = () => {
                               {employe.prenom} {employe.nom}
                             </div>
                             <div className="text-sm font-semibold mt-1">
-                              ⏳ Demande en attente
+                              ⏳ Demande en attente {isJourneeComplete && '(Journée complète)'}
                             </div>
                           </div>
                           <div className="flex space-x-1">
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => handleApprouverDemandePlanning(employe.id, selectedDate, 'APRES_MIDI', true)}
+                              onClick={() => handleApprouverDemandePlanning(employe.id, selectedDate, 'APRES_MIDI', true, isJourneeComplete ? 'APRES_MIDI' : null)}
                               className="text-green-600 hover:text-green-800 hover:bg-green-50 h-8 px-3"
-                              title="Approuver"
+                              title={isJourneeComplete ? "Approuver Après-midi uniquement" : "Approuver"}
                             >
                               <Check className="h-4 w-4 mr-1" />
-                              Approuver
+                              {isJourneeComplete ? 'Approuver Après-midi' : 'Approuver'}
                             </Button>
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => handleApprouverDemandePlanning(employe.id, selectedDate, 'APRES_MIDI', false)}
+                              onClick={() => handleApprouverDemandePlanning(employe.id, selectedDate, 'APRES_MIDI', false, isJourneeComplete ? 'APRES_MIDI' : null)}
                               className="text-red-600 hover:text-red-800 hover:bg-red-50 h-8 px-3"
-                              title="Refuser"
+                              title={isJourneeComplete ? "Refuser Après-midi uniquement" : "Refuser"}
                             >
                               <X className="h-4 w-4 mr-1" />
-                              Refuser
+                              {isJourneeComplete ? 'Refuser Après-midi' : 'Refuser'}
                             </Button>
                           </div>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
