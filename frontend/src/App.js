@@ -7146,6 +7146,48 @@ const AdminManager = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Modal d'envoi de notification */}
+      <Dialog open={showNotificationModal} onOpenChange={setShowNotificationModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              📢 Envoyer une notification à {selectedUser?.prenom} {selectedUser?.nom}
+            </DialogTitle>
+            <DialogDescription>
+              Le message sera envoyé comme notification push sur le téléphone de l'utilisateur
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Message de la notification</Label>
+              <textarea
+                className="w-full min-h-[100px] p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={notificationMessage}
+                onChange={(e) => setNotificationMessage(e.target.value)}
+                placeholder="Écrivez votre message ici..."
+                maxLength={200}
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                {notificationMessage.length}/200 caractères
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => {
+                setShowNotificationModal(false);
+                setNotificationMessage('');
+              }}>
+                Annuler
+              </Button>
+              <Button onClick={handleSendNotification} className="bg-blue-600 hover:bg-blue-700">
+                <Send className="h-4 w-4 mr-2" />
+                Envoyer la notification
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Modal de suppression définitive */}
       {/* Modal de modification d'email */}
       <Dialog open={showEmailModal} onOpenChange={setShowEmailModal}>
