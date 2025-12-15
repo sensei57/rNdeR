@@ -6772,6 +6772,424 @@ class DeploymentTester(MedicalStaffAPITester):
             print("\n⚠️ ATTENTION: Corriger les problèmes avant déploiement")
             return False
 
+    def test_complete_application_bug_identification(self):
+        """TEST COMPLET DE L'APPLICATION - Identification des Bugs"""
+        print("\n🔍 TEST COMPLET DE L'APPLICATION - Identification des Bugs")
+        print("="*80)
+        print("CONTEXTE: Test général de l'application pour identifier les bugs potentiels")
+        print("SYSTÈME: Gestion de cabinet médical avec authentification, personnel, planning, etc.")
+        print("="*80)
+        
+        # Store test results for detailed reporting
+        test_results = {
+            "authentication": {"passed": 0, "total": 0, "issues": []},
+            "endpoints": {"passed": 0, "total": 0, "issues": []},
+            "personnel": {"passed": 0, "total": 0, "issues": []},
+            "work_requests": {"passed": 0, "total": 0, "issues": []},
+            "leave_requests": {"passed": 0, "total": 0, "issues": []},
+            "stocks": {"passed": 0, "total": 0, "issues": []},
+            "administration": {"passed": 0, "total": 0, "issues": []},
+            "notifications": {"passed": 0, "total": 0, "issues": []},
+            "security": {"passed": 0, "total": 0, "issues": []}
+        }
+        
+        # 1. TESTS AUTHENTIFICATION (Critique)
+        print("\n🔐 1. TESTS AUTHENTIFICATION (Critique)")
+        print("-" * 60)
+        
+        auth_tests = [
+            ("directeur@cabinet.fr", "admin123", "Directeur"),
+            ("dr.dupont@cabinet.fr", "medecin123", "Médecin"),
+            ("julie.moreau@cabinet.fr", "assistant123", "Assistant"),
+            ("admin@cabinet.fr", "SuperAdmin2025!", "Super Admin")
+        ]
+        
+        for email, password, role in auth_tests:
+            test_results["authentication"]["total"] += 1
+            success, response = self.run_test(
+                f"Login {role} ({email})",
+                "POST",
+                "auth/login",
+                200,
+                data={"email": email, "password": password}
+            )
+            
+            if success and 'access_token' in response:
+                self.tokens[role.lower().replace(" ", "_")] = response['access_token']
+                self.users[role.lower().replace(" ", "_")] = response['user']
+                test_results["authentication"]["passed"] += 1
+                print(f"   ✅ {role}: Login successful")
+            else:
+                test_results["authentication"]["issues"].append(f"Login failed for {role} ({email})")
+                print(f"   ❌ {role}: Login failed")
+        
+        # Test JWT verification
+        if "directeur" in self.tokens:
+            test_results["authentication"]["total"] += 1
+            success, response = self.run_test(
+                "JWT Token Verification",
+                "GET",
+                "users/me",
+                200,
+                token=self.tokens["directeur"]
+            )
+            if success:
+                test_results["authentication"]["passed"] += 1
+                print(f"   ✅ JWT Token verification successful")
+            else:
+                test_results["authentication"]["issues"].append("JWT token verification failed")
+                print(f"   ❌ JWT Token verification failed")
+        
+        # 2. TESTS ENDPOINTS PRINCIPAUX (Critique)
+        print("\n🌐 2. TESTS ENDPOINTS PRINCIPAUX (Critique)")
+        print("-" * 60)
+        
+        if "directeur" in self.tokens:
+            main_endpoints = [
+                ("users", "Liste utilisateurs"),
+                ("salles", "Liste salles"),
+                ("configuration", "Configuration système"),
+                ("planning/semaine/2025-01-20", "Planning semaine")
+            ]
+            
+            for endpoint, description in main_endpoints:
+                test_results["endpoints"]["total"] += 1
+                success, response = self.run_test(
+                    f"GET /{endpoint}",
+                    "GET",
+                    endpoint,
+                    200,
+                    token=self.tokens["directeur"]
+                )
+                if success:
+                    test_results["endpoints"]["passed"] += 1
+                    print(f"   ✅ {description}: OK")
+                else:
+                    test_results["endpoints"]["issues"].append(f"{description} endpoint failed")
+                    print(f"   ❌ {description}: Failed")
+        
+        # 3. TESTS GESTION PERSONNEL (Priorité Haute)
+        print("\n👥 3. TESTS GESTION PERSONNEL (Priorité Haute)")
+        print("-" * 60)
+        
+        if "directeur" in self.tokens:
+            # Test users by role
+            roles = ["Médecin", "Assistant", "Secrétaire"]
+            for role in roles:
+                test_results["personnel"]["total"] += 1
+                success, response = self.run_test(
+                    f"GET users by role: {role}",
+                    "GET",
+                    f"users/by-role/{role}",
+                    200,
+                    token=self.tokens["directeur"]
+                )
+                if success:
+                    test_results["personnel"]["passed"] += 1
+                    print(f"   ✅ {role}s: {len(response)} found")
+                else:
+                    test_results["personnel"]["issues"].append(f"Failed to get {role}s")
+                    print(f"   ❌ {role}s: Failed to retrieve")
+        
+        # 4. TESTS DEMANDES DE TRAVAIL (Priorité Haute)
+        print("\n💼 4. TESTS DEMANDES DE TRAVAIL (Priorité Haute)")
+        print("-" * 60)
+        
+        created_work_request_id = None
+        
+        # Create work request as médecin
+        if "médecin" in self.tokens:
+            test_results["work_requests"]["total"] += 1
+            work_request_data = {
+                "date_demandee": "2025-01-25",
+                "creneau": "MATIN",
+                "motif": "Test demande de travail"
+            }
+            success, response = self.run_test(
+                "Create work request (Médecin)",
+                "POST",
+                "demandes-travail",
+                200,
+                data=work_request_data,
+                token=self.tokens["médecin"]
+            )
+            if success and 'id' in response:
+                created_work_request_id = response['id']
+                test_results["work_requests"]["passed"] += 1
+                print(f"   ✅ Work request created: {created_work_request_id}")
+            else:
+                test_results["work_requests"]["issues"].append("Failed to create work request")
+                print(f"   ❌ Work request creation failed")
+        
+        # Get work requests
+        if "directeur" in self.tokens:
+            test_results["work_requests"]["total"] += 1
+            success, response = self.run_test(
+                "Get work requests (Directeur)",
+                "GET",
+                "demandes-travail",
+                200,
+                token=self.tokens["directeur"]
+            )
+            if success:
+                test_results["work_requests"]["passed"] += 1
+                print(f"   ✅ Work requests retrieved: {len(response)} found")
+            else:
+                test_results["work_requests"]["issues"].append("Failed to get work requests")
+                print(f"   ❌ Work requests retrieval failed")
+        
+        # Approve work request
+        if "directeur" in self.tokens and created_work_request_id:
+            test_results["work_requests"]["total"] += 1
+            approval_data = {"approuve": True, "commentaire": "Test approval"}
+            success, response = self.run_test(
+                "Approve work request (Directeur)",
+                "PUT",
+                f"demandes-travail/{created_work_request_id}/approuver",
+                200,
+                data=approval_data,
+                token=self.tokens["directeur"]
+            )
+            if success:
+                test_results["work_requests"]["passed"] += 1
+                print(f"   ✅ Work request approved successfully")
+            else:
+                test_results["work_requests"]["issues"].append("Failed to approve work request")
+                print(f"   ❌ Work request approval failed")
+        
+        # 5. TESTS DEMANDES DE CONGÉS (Priorité Haute)
+        print("\n🏖️ 5. TESTS DEMANDES DE CONGÉS (Priorité Haute)")
+        print("-" * 60)
+        
+        created_leave_request_id = None
+        
+        # Create leave request
+        if "médecin" in self.tokens:
+            test_results["leave_requests"]["total"] += 1
+            leave_request_data = {
+                "date_debut": "2025-01-30",
+                "date_fin": "2025-01-30",
+                "type_conge": "CONGE_PAYE",
+                "creneau": "MATIN",
+                "motif": "Test congé"
+            }
+            success, response = self.run_test(
+                "Create leave request (Médecin)",
+                "POST",
+                "conges",
+                200,
+                data=leave_request_data,
+                token=self.tokens["médecin"]
+            )
+            if success and 'id' in response:
+                created_leave_request_id = response['id']
+                test_results["leave_requests"]["passed"] += 1
+                print(f"   ✅ Leave request created: {created_leave_request_id}")
+            else:
+                test_results["leave_requests"]["issues"].append("Failed to create leave request")
+                print(f"   ❌ Leave request creation failed")
+        
+        # Get leave requests
+        if "directeur" in self.tokens:
+            test_results["leave_requests"]["total"] += 1
+            success, response = self.run_test(
+                "Get leave requests (Directeur)",
+                "GET",
+                "conges",
+                200,
+                token=self.tokens["directeur"]
+            )
+            if success:
+                test_results["leave_requests"]["passed"] += 1
+                print(f"   ✅ Leave requests retrieved: {len(response)} found")
+            else:
+                test_results["leave_requests"]["issues"].append("Failed to get leave requests")
+                print(f"   ❌ Leave requests retrieval failed")
+        
+        # 6. TESTS STOCKS (Priorité Moyenne)
+        print("\n📦 6. TESTS STOCKS (Priorité Moyenne)")
+        print("-" * 60)
+        
+        if "directeur" in self.tokens:
+            # Test stock categories
+            test_results["stocks"]["total"] += 1
+            success, response = self.run_test(
+                "Get stock categories",
+                "GET",
+                "stocks/categories",
+                200,
+                token=self.tokens["directeur"]
+            )
+            if success:
+                test_results["stocks"]["passed"] += 1
+                print(f"   ✅ Stock categories: {len(response)} found")
+            else:
+                test_results["stocks"]["issues"].append("Failed to get stock categories")
+                print(f"   ❌ Stock categories retrieval failed")
+            
+            # Test stock articles
+            test_results["stocks"]["total"] += 1
+            success, response = self.run_test(
+                "Get stock articles",
+                "GET",
+                "stocks/articles",
+                200,
+                token=self.tokens["directeur"]
+            )
+            if success:
+                test_results["stocks"]["passed"] += 1
+                print(f"   ✅ Stock articles: {len(response)} found")
+            else:
+                test_results["stocks"]["issues"].append("Failed to get stock articles")
+                print(f"   ❌ Stock articles retrieval failed")
+        
+        # 7. TESTS ADMINISTRATION (Priorité Haute)
+        print("\n⚙️ 7. TESTS ADMINISTRATION (Priorité Haute)")
+        print("-" * 60)
+        
+        if "directeur" in self.tokens:
+            # Test admin users list
+            test_results["administration"]["total"] += 1
+            success, response = self.run_test(
+                "Get admin users list",
+                "GET",
+                "admin/users",
+                200,
+                token=self.tokens["directeur"]
+            )
+            if success:
+                test_results["administration"]["passed"] += 1
+                print(f"   ✅ Admin users list: {len(response)} users")
+            else:
+                test_results["administration"]["issues"].append("Failed to get admin users list")
+                print(f"   ❌ Admin users list failed")
+            
+            # Test user activation/deactivation
+            if success and len(response) > 1:
+                # Find a non-director user to test with
+                test_user = None
+                for user in response:
+                    if user.get('role') != 'Directeur' and not user.get('is_protected', False):
+                        test_user = user
+                        break
+                
+                if test_user:
+                    test_results["administration"]["total"] += 1
+                    success_toggle, toggle_response = self.run_test(
+                        f"Toggle user active status",
+                        "PUT",
+                        f"admin/users/{test_user['id']}/toggle-active",
+                        200,
+                        token=self.tokens["directeur"]
+                    )
+                    if success_toggle:
+                        test_results["administration"]["passed"] += 1
+                        print(f"   ✅ User toggle active: Success")
+                    else:
+                        test_results["administration"]["issues"].append("Failed to toggle user active status")
+                        print(f"   ❌ User toggle active: Failed")
+        
+        # 8. TESTS NOTIFICATIONS (Priorité Moyenne)
+        print("\n🔔 8. TESTS NOTIFICATIONS (Priorité Moyenne)")
+        print("-" * 60)
+        
+        if "directeur" in self.tokens:
+            test_results["notifications"]["total"] += 1
+            success, response = self.run_test(
+                "Get notifications",
+                "GET",
+                "notifications",
+                200,
+                token=self.tokens["directeur"]
+            )
+            if success:
+                test_results["notifications"]["passed"] += 1
+                print(f"   ✅ Notifications: {len(response)} found")
+            else:
+                test_results["notifications"]["issues"].append("Failed to get notifications")
+                print(f"   ❌ Notifications retrieval failed")
+        
+        # 9. TESTS DE SÉCURITÉ (Important)
+        print("\n🛡️ 9. TESTS DE SÉCURITÉ (Important)")
+        print("-" * 60)
+        
+        # Test unauthorized access to admin endpoints
+        if "médecin" in self.tokens:
+            test_results["security"]["total"] += 1
+            success, response = self.run_test(
+                "Unauthorized admin access (Médecin)",
+                "GET",
+                "admin/users",
+                403,  # Should be forbidden
+                token=self.tokens["médecin"]
+            )
+            if success:
+                test_results["security"]["passed"] += 1
+                print(f"   ✅ Admin access correctly blocked for Médecin")
+            else:
+                test_results["security"]["issues"].append("Médecin can access admin endpoints")
+                print(f"   ❌ Security breach: Médecin can access admin endpoints")
+        
+        # Test access without token
+        test_results["security"]["total"] += 1
+        success, response = self.run_test(
+            "Access without token",
+            "GET",
+            "users",
+            401,  # Should be unauthorized
+        )
+        if success:
+            test_results["security"]["passed"] += 1
+            print(f"   ✅ Access correctly blocked without token")
+        else:
+            test_results["security"]["issues"].append("Endpoints accessible without authentication")
+            print(f"   ❌ Security breach: Endpoints accessible without token")
+        
+        # SUMMARY REPORT
+        print("\n" + "="*80)
+        print("🎯 RAPPORT COMPLET D'IDENTIFICATION DES BUGS")
+        print("="*80)
+        
+        total_tests = 0
+        total_passed = 0
+        critical_issues = []
+        
+        for category, results in test_results.items():
+            total_tests += results["total"]
+            total_passed += results["passed"]
+            
+            if results["total"] > 0:
+                success_rate = (results["passed"] / results["total"]) * 100
+                status = "✅" if success_rate >= 90 else "⚠️" if success_rate >= 70 else "❌"
+                
+                print(f"{status} {category.upper()}: {results['passed']}/{results['total']} ({success_rate:.1f}%)")
+                
+                if results["issues"]:
+                    for issue in results["issues"]:
+                        print(f"   🐛 BUG: {issue}")
+                        if category in ["authentication", "security"]:
+                            critical_issues.append(f"{category}: {issue}")
+        
+        overall_success_rate = (total_passed / total_tests) * 100 if total_tests > 0 else 0
+        
+        print(f"\n📊 RÉSULTAT GLOBAL: {total_passed}/{total_tests} tests réussis ({overall_success_rate:.1f}%)")
+        
+        if critical_issues:
+            print(f"\n🚨 PROBLÈMES CRITIQUES IDENTIFIÉS:")
+            for issue in critical_issues:
+                print(f"   ❌ {issue}")
+        
+        if overall_success_rate >= 95:
+            print(f"\n🎉 EXCELLENT: Application très stable, bugs mineurs seulement")
+        elif overall_success_rate >= 85:
+            print(f"\n✅ BON: Application stable avec quelques bugs à corriger")
+        elif overall_success_rate >= 70:
+            print(f"\n⚠️ MOYEN: Application fonctionnelle mais plusieurs bugs identifiés")
+        else:
+            print(f"\n❌ CRITIQUE: Application instable, bugs majeurs détectés")
+        
+        return test_results
+
 def complete_application_bug_identification_main():
     """Main function for complete application bug identification"""
     tester = MedicalStaffAPITester()
