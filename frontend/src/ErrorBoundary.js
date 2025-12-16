@@ -28,8 +28,9 @@ class ErrorBoundary extends React.Component {
   }
 
   handleReload = () => {
-    // Recharger la page
-    window.location.reload();
+    // Recharger la page actuelle (celle où l'erreur s'est produite)
+    // true = force le rechargement depuis le serveur, pas depuis le cache
+    window.location.reload(true);
   };
 
   handleGoHome = () => {
