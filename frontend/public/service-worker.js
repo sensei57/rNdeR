@@ -2,18 +2,35 @@
 
 // Service Worker simplifié pour PWA et notifications push
 
-const CACHE_NAME = 'gestion-cabinet-v1';
+const CACHE_NAME = 'gestion-cabinet-v2'; // Incrémenté pour forcer le rafraîchissement
 
 // Installation du Service Worker
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installation');
+  console.log('Service Worker: Installation v2');
+  // Force le nouveau SW à prendre le contrôle immédiatement
   self.skipWaiting();
 });
 
 // Activation du Service Worker
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activation');
-  event.waitUntil(self.clients.claim());
+  console.log('Service Worker: Activation v2');
+  
+  // Nettoyer les anciens caches
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Service Worker: Suppression ancien cache', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => {
+      // Prendre le contrôle immédiatement
+      return self.clients.claim();
+    })
+  );
 });
 
 // PAS de cache fetch pour éviter les erreurs
