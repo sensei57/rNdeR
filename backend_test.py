@@ -7539,6 +7539,13 @@ def semaines_types_privees_main():
         print("🔧 Doctors can see week types from other doctors")
         return 1
 
+def journee_complete_bug_main():
+    """Main function for JOURNEE_COMPLETE bug testing"""
+    tester = MedicalStaffAPITester()
+    success = tester.test_journee_complete_bug_urgent()
+    return 0 if success else 1
+
+class MedicalStaffAPITesterExtended(MedicalStaffAPITester):
     def test_journee_complete_bug_urgent(self):
         """TEST URGENT - TRACER EXACTEMENT CE QUI SE PASSE AVEC JOURNEE_COMPLETE"""
         print("\n🐛 TEST URGENT - BUG JOURNEE_COMPLETE ASSISTANT/SECRÉTAIRE")
