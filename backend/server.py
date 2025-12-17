@@ -2699,10 +2699,10 @@ async def approuver_demande_jour_travail(
     
     # Si la demande est approuvée (totalement ou partiellement), créer automatiquement un créneau dans le planning
     if request.approuve:
-        # Récupérer les informations du médecin
-        medecin = await db.users.find_one({"id": demande["medecin_id"]})
-        if not medecin:
-            raise HTTPException(status_code=404, detail="Médecin non trouvé")
+        # Récupérer les informations de l'employé (médecin, assistant, secrétaire)
+        employe = await db.users.find_one({"id": demande["medecin_id"]})
+        if not employe:
+            raise HTTPException(status_code=404, detail="Employé non trouvé")
         
         # Créer le(s) créneau(x) selon le type
         creneaux_a_creer = []
