@@ -5959,9 +5959,9 @@ class MedicalStaffAPITester:
         print("-" * 50)
         
         success, planning_data = self.run_test(
-            "GET /api/planning/2025-01-15",
+            "GET /api/planning/2025-02-28",
             "GET",
-            "planning/2025-01-15",
+            "planning/2025-02-28",
             200,
             token=directeur_token
         )
@@ -7945,9 +7945,9 @@ class MedicalStaffAPITesterExtended(MedicalStaffAPITester):
         print("-" * 50)
         
         success, planning_data = self.run_test(
-            "GET /api/planning/2025-01-15",
+            "GET /api/planning/2025-02-28",
             "GET",
-            "planning/2025-01-15",
+            "planning/2025-02-28",
             200,
             token=directeur_token
         )
