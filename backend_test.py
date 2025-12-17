@@ -7807,7 +7807,7 @@ def semaines_types_privees_main():
 
 def journee_complete_bug_main():
     """Main function for JOURNEE_COMPLETE bug testing"""
-    tester = MedicalStaffAPITesterExtended()
+    tester = MedicalStaffAPITester()
     success = tester.test_journee_complete_bug_urgent()
     return 0 if success else 1
 
