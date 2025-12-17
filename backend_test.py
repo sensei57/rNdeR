@@ -5888,7 +5888,7 @@ class MedicalStaffAPITester:
         print("-" * 50)
         
         demande_data = {
-            "date_demandee": "2025-01-15",
+            "date_demandee": "2025-02-28",
             "creneau": "JOURNEE_COMPLETE",
             "motif": "Test debug journée",
             "medecin_id": assistant_id
@@ -7877,7 +7877,7 @@ class MedicalStaffAPITesterExtended(MedicalStaffAPITester):
         print("-" * 50)
         
         demande_data = {
-            "date_demandee": "2025-01-15",
+            "date_demandee": "2025-02-28",
             "creneau": "JOURNEE_COMPLETE",
             "motif": "Test debug journée",
             "medecin_id": assistant_id
