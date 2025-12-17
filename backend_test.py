@@ -7449,6 +7449,22 @@ class DeploymentTester(MedicalStaffAPITester):
             return False
 
 
+def journee_complete_assistant_bug_main():
+    """Run JOURNEE_COMPLETE assistant bug test as requested"""
+    tester = MedicalStaffAPITester()
+    
+    print("🚀 Running JOURNEE_COMPLETE Assistant Bug Test...")
+    
+    # Run the specific bug test
+    success = tester.test_journee_complete_assistant_bug()
+    
+    if success:
+        print("🎉 JOURNEE_COMPLETE assistant test completed - No bug found!")
+        return 0
+    else:
+        print("❌ JOURNEE_COMPLETE assistant bug confirmed!")
+        return 1
+
 def complete_application_bug_identification_main():
     """Main function for complete application bug identification"""
     tester = MedicalStaffAPITester()
