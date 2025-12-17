@@ -6206,6 +6206,8 @@ def profile_modification_main():
         print(f"⚠️  Check the failed tests above for issues that need to be addressed")
         return 1
 
+# Add the test method to the class properly
+def add_journee_complete_test_to_class():
     def test_journee_complete_assistant_bug(self):
         """Test JOURNEE_COMPLETE bug for assistants/secretaries - CRITICAL BUG REPRODUCTION"""
         print("\n🐛 TEST CRITIQUE - DEMANDE JOURNEE_COMPLETE POUR ASSISTANT/SECRETAIRE")
