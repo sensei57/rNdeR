@@ -2725,12 +2725,30 @@ async def approuver_demande_jour_travail(
             })
             
             if not existing_creneau:
-                # Créer le créneau
+                # Déterminer les horaires selon le rôle et le créneau
+                horaire_debut = None
+                horaire_fin = None
+                horaire_pause_debut = None
+                horaire_pause_fin = None
+                
+                if employe["role"] == "Secrétaire":
+                    if creneau_type == "MATIN":
+                        horaire_debut = employe.get("horaire_matin_debut")
+                        horaire_fin = employe.get("horaire_matin_fin")
+                    else:  # APRES_MIDI
+                        horaire_debut = employe.get("horaire_apres_midi_debut")
+                        horaire_fin = employe.get("horaire_apres_midi_fin")
+                
+                # Créer le créneau avec les horaires
                 creneau_planning = CreneauPlanning(
                     date=demande["date_demandee"],
                     creneau=creneau_type,
                     employe_id=demande["medecin_id"],
                     employe_role=employe["role"],
+                    horaire_debut=horaire_debut,
+                    horaire_fin=horaire_fin,
+                    horaire_pause_debut=horaire_pause_debut,
+                    horaire_pause_fin=horaire_pause_fin,
                     salle_attribuee=None,
                     salle_attente=None,
                     notes=None
