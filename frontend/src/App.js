@@ -3481,7 +3481,7 @@ const PlanningManager = () => {
                           <SelectContent>
                             <SelectItem value="MATIN">Matin</SelectItem>
                             <SelectItem value="APRES_MIDI">Après-midi</SelectItem>
-                            <SelectItem value="JOURNEE">Journée complète</SelectItem>
+                            <SelectItem value="JOURNEE_COMPLETE">Journée complète</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
