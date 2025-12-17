@@ -7561,6 +7561,8 @@ if __name__ == "__main__":
         sys.exit(rapid_validation_main())
     elif len(sys.argv) > 1 and sys.argv[1] == "--bug-identification":
         sys.exit(complete_application_bug_identification_main())
+    elif len(sys.argv) > 1 and sys.argv[1] == "--journee-complete-bug":
+        sys.exit(journee_complete_assistant_bug_main())
     else:
-        # Default to complete bug identification as requested in current review
-        sys.exit(complete_application_bug_identification_main())
+        # Default to JOURNEE_COMPLETE bug test as requested in current review
+        sys.exit(journee_complete_assistant_bug_main())
