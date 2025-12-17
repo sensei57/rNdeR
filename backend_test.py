@@ -5913,6 +5913,9 @@ class MedicalStaffAPITester:
             print(f"   ✅ Médecin ID: {response.get('medecin_id', 'N/A')}")
         else:
             print(f"   ❌ CRITICAL FAILURE: Cannot create JOURNEE_COMPLETE demand")
+            print(f"   ❌ Success: {success}")
+            print(f"   ❌ Response: {response}")
+            print(f"   ❌ Response type: {type(response)}")
             return False
         
         # ÉTAPE 4 : Approuver la demande sans creneau_partiel
