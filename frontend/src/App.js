@@ -3630,7 +3630,7 @@ const PlanningManager = () => {
                     {/* Horaires pour secrétaires */}
                     {users.find(u => u.id === newCreneau.employe_id)?.role === 'Secrétaire' && (
                       <>
-                        {newCreneau.creneau === 'JOURNEE' ? (
+                        {newCreneau.creneau === 'JOURNEE_COMPLETE' ? (
                           /* Disposition pour journée complète */
                           <>
                             <div className="grid grid-cols-2 gap-4">
