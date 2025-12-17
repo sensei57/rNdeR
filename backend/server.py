@@ -2624,10 +2624,12 @@ async def approuver_demande_jour_travail(
             # Approuver seulement le créneau partiel spécifié, créer une nouvelle demande pour l'autre
             creneau_restant = "APRES_MIDI" if request.creneau_partiel == "MATIN" else "MATIN"
             
+            statut = "APPROUVE"  # Définir la variable statut pour éviter UnboundLocalError
+            
             # Marquer la demande originale comme approuvée pour ce créneau uniquement
             update_data = {
                 "creneau": request.creneau_partiel,  # La demande originale représente maintenant le créneau approuvé
-                "statut": "APPROUVE",
+                "statut": statut,
                 "approuve_par": current_user.id,
                 "date_approbation": datetime.now(timezone.utc),
                 "commentaire_approbation": request.commentaire or f"Approuvé partiellement : {request.creneau_partiel} uniquement"
