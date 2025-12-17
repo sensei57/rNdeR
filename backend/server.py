@@ -2717,7 +2717,7 @@ async def approuver_demande_jour_travail(
             creneaux_a_creer = [demande["creneau"]]
         
         for creneau_type in creneaux_a_creer:
-            # Vérifier si un créneau n'existe pas déjà pour ce médecin à cette date/heure
+            # Vérifier si un créneau n'existe pas déjà pour cet employé à cette date/heure
             existing_creneau = await db.planning.find_one({
                 "date": demande["date_demandee"],
                 "creneau": creneau_type,
@@ -2730,7 +2730,7 @@ async def approuver_demande_jour_travail(
                     date=demande["date_demandee"],
                     creneau=creneau_type,
                     employe_id=demande["medecin_id"],
-                    employe_role=medecin["role"],
+                    employe_role=employe["role"],
                     salle_attribuee=None,
                     salle_attente=None,
                     notes=None
