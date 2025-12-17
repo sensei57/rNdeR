@@ -5908,7 +5908,7 @@ class MedicalStaffAPITester:
             print(f"   ✅ SUCCESS: Demande créée")
             print(f"   ✅ Demande ID: {demande_id}")
             print(f"   ✅ Date: {((response[0] if isinstance(response, list) else response)).get('date_demandee', 'N/A')}")
-            print(f"   ✅ Créneau: {response.get('creneau', 'N/A')}")
+            print(f"   ✅ Créneau: {((response[0] if isinstance(response, list) else response)).get('creneau', 'N/A')}")
             print(f"   ✅ Statut: {response.get('statut', 'N/A')}")
             print(f"   ✅ Médecin ID: {response.get('medecin_id', 'N/A')}")
         else:
