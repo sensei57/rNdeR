@@ -3239,6 +3239,22 @@ const PlanningManager = () => {
     return classes;
   };
 
+  // Déterminer si le fond est foncé pour adapter la couleur des détails
+  const isCreneauDarkBackground = (creneau) => {
+    const completion = getCreneauCompletionLevel(creneau);
+    const role = creneau.employe_role;
+    
+    if (role === 'Médecin') {
+      return completion >= 33; // blue-400 et plus foncé
+    } else if (role === 'Assistant') {
+      return completion >= 50; // green-600 et plus foncé
+    } else if (role === 'Secrétaire') {
+      return completion >= 50; // yellow-500 et plus foncé
+    }
+    
+    return false;
+  };
+
   // Récupérer les médecins assignés à un assistant
   const getMedecinsForAssistant = (assistantId) => {
     if (!assignations || assignations.length === 0) return [];
