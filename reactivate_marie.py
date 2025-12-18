@@ -7,7 +7,7 @@ import requests
 import json
 
 def reactivate_marie():
-    base_url = "https://quality-check-20.preview.emergentagent.com"
+    base_url = "https://med-calendar-text.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     # Login as directeur first
