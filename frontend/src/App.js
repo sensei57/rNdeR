@@ -4749,6 +4749,9 @@ const PlanningManager = () => {
                         {role}s ({getRoleGroups(planningApresMidi).groups[role]?.length || 0})
                       </h3>
                       {getRoleGroups(planningApresMidi).groups[role]?.map(creneau => {
+                        const hasAssistant = creneau.employe?.role === 'Médecin' && getAssistantsForMedecinInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0;
+                        const hasMedecin = creneau.employe?.role === 'Assistant' && getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0;
+                        
                         return (
                         <div
                           key={creneau.id}
