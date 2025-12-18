@@ -3170,6 +3170,75 @@ const PlanningManager = () => {
       .filter(m => m.medecin); // Filtrer les undefined
   };
 
+  // Calculer le niveau de remplissage d'un créneau (0-100%)
+  const getCreneauCompletionLevel = (creneau) => {
+    if (!creneau) return 0;
+    
+    let totalFields = 0;
+    let filledFields = 0;
+    
+    if (creneau.employe_role === 'Médecin') {
+      // Pour un médecin : box, salle d'attente, assistants
+      totalFields = 3;
+      if (creneau.salle_attribuee) filledFields++;
+      if (creneau.salle_attente) filledFields++;
+      if (getAssistantsForMedecinInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0) filledFields++;
+    } else if (creneau.employe_role === 'Assistant') {
+      // Pour un assistant : salle de travail, médecins associés
+      totalFields = 2;
+      if (creneau.salle_attribuee) filledFields++;
+      if (getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0) filledFields++;
+    } else if (creneau.employe_role === 'Secrétaire') {
+      // Pour une secrétaire : salle, horaires
+      totalFields = 2;
+      if (creneau.salle_attribuee) filledFields++;
+      if (creneau.horaire_debut && creneau.horaire_fin) filledFields++;
+    }
+    
+    return totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
+  };
+
+  // Obtenir les classes CSS selon le niveau de remplissage avec transition
+  const getCreneauBackgroundClasses = (creneau) => {
+    const completion = getCreneauCompletionLevel(creneau);
+    const role = creneau.employe_role;
+    
+    // Base : transition fluide
+    let classes = 'transition-all duration-500 ease-in-out ';
+    
+    if (role === 'Médecin') {
+      if (completion >= 100) {
+        classes += 'bg-blue-900 text-white border-blue-900';
+      } else if (completion >= 66) {
+        classes += 'bg-blue-700 text-white border-blue-700';
+      } else if (completion >= 33) {
+        classes += 'bg-blue-400 text-white border-blue-400';
+      } else {
+        classes += 'bg-blue-100 text-blue-900 border-blue-200';
+      }
+    } else if (role === 'Assistant') {
+      if (completion >= 100) {
+        classes += 'bg-green-900 text-white border-green-900';
+      } else if (completion >= 50) {
+        classes += 'bg-green-600 text-white border-green-600';
+      } else {
+        classes += 'bg-green-100 text-green-900 border-green-200';
+      }
+    } else if (role === 'Secrétaire') {
+      if (completion >= 100) {
+        classes += 'bg-yellow-700 text-white border-yellow-700';
+      } else if (completion >= 50) {
+        classes += 'bg-yellow-500 text-white border-yellow-500';
+      } else {
+        classes += 'bg-yellow-100 text-yellow-900 border-yellow-200';
+      }
+    } else {
+      classes += 'bg-gray-100 text-gray-900 border-gray-300';
+    }
+    
+    return classes;
+  };
+
   // Récupérer les médecins assignés à un assistant
   const getMedecinsForAssistant = (assistantId) => {
     if (!assignations || assignations.length === 0) return [];
