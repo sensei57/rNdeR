@@ -3214,7 +3214,7 @@ const PlanningManager = () => {
       } else if (completion >= 33) {
         classes += 'bg-blue-400 text-white border-blue-400';
       } else {
-        classes += 'bg-blue-100 text-blue-900 border-blue-200';
+        classes += 'bg-blue-50 text-blue-900 border-blue-300';
       }
     } else if (role === 'Assistant') {
       if (completion >= 100) {
@@ -3222,7 +3222,7 @@ const PlanningManager = () => {
       } else if (completion >= 50) {
         classes += 'bg-green-600 text-white border-green-600';
       } else {
-        classes += 'bg-green-100 text-green-900 border-green-200';
+        classes += 'bg-green-50 text-green-900 border-green-300';
       }
     } else if (role === 'Secrétaire') {
       if (completion >= 100) {
@@ -3230,7 +3230,7 @@ const PlanningManager = () => {
       } else if (completion >= 50) {
         classes += 'bg-yellow-500 text-white border-yellow-500';
       } else {
-        classes += 'bg-yellow-100 text-yellow-900 border-yellow-200';
+        classes += 'bg-yellow-50 text-yellow-900 border-yellow-300';
       }
     } else {
       classes += 'bg-gray-100 text-gray-900 border-gray-300';
