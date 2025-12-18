@@ -209,7 +209,7 @@ const NotificationToday = () => {
 // Push Notification Manager Component
 const PushNotificationManager = () => {
   const { user } = useAuth();
-  const [permission, setPermission] = useState(Notification.permission);
+  const [permission, setPermission] = useState(typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default');
   const [subscribed, setSubscribed] = useState(false);
 
   useEffect(() => {
