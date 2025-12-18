@@ -4548,17 +4548,10 @@ const PlanningManager = () => {
                         {role}s ({getRoleGroups(planningMatin).groups[role]?.length || 0})
                       </h3>
                       {getRoleGroups(planningMatin).groups[role]?.map(creneau => {
-                        const hasAssistant = creneau.employe?.role === 'Médecin' && getAssistantsForMedecinInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0;
-                        const hasMedecin = creneau.employe?.role === 'Assistant' && getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0;
-                        
                         return (
                         <div
                           key={creneau.id}
-                          className={`border rounded-lg p-3 ${
-                            hasAssistant ? 'bg-blue-900 text-white border-blue-900' :
-                            hasMedecin ? 'bg-green-900 text-white border-green-900' :
-                            getRoleColor(creneau.employe_role)
-                          }`}
+                          className={`border rounded-lg p-3 ${getCreneauBackgroundClasses(creneau)}`}
                         >
                           <div className="flex items-start justify-between">
                             <div className="space-y-1 flex-1">
