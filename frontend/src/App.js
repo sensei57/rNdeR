@@ -5010,11 +5010,6 @@ const PlanningManager = () => {
                                 {creneau.salle_attribuee}
                               </div>
                             )}
-                            {user?.role === 'Directeur' && (
-                              <div className="text-[10px] text-blue-600 mt-1">
-                                ✏️ Cliquer pour modifier
-                              </div>
-                            )}
                           </div>
                         ))}
                         {/* Afficher les employés en congé */}
@@ -5071,11 +5066,6 @@ const PlanningManager = () => {
                             {creneau.salle_attribuee && (
                               <div className="text-xs opacity-75">
                                 {creneau.salle_attribuee}
-                              </div>
-                            )}
-                            {user?.role === 'Directeur' && (
-                              <div className="text-[10px] text-blue-600 mt-1">
-                                ✏️ Cliquer pour modifier
                               </div>
                             )}
                           </div>
