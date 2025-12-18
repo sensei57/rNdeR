@@ -4566,6 +4566,7 @@ const PlanningManager = () => {
                       {getRoleGroups(planningMatin).groups[role]?.map(creneau => {
                         const hasAssistant = creneau.employe?.role === 'Médecin' && getAssistantsForMedecinInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0;
                         const hasMedecin = creneau.employe?.role === 'Assistant' && getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0;
+                        const isDark = isCreneauDarkBackground(creneau);
                         
                         return (
                         <div
@@ -4582,17 +4583,17 @@ const PlanningManager = () => {
                               {showDetails && creneau.employe?.role === 'Médecin' && (
                                 <>
                                   {creneau.salle_attribuee && (
-                                    <div className={`text-sm ${hasAssistant ? 'text-blue-200' : 'text-gray-600'}`}>
+                                    <div className={`text-sm ${isDark ? 'text-white opacity-90' : 'text-gray-600'}`}>
                                       🏥 Box: {creneau.salle_attribuee}
                                     </div>
                                   )}
                                   {creneau.salle_attente && (
-                                    <div className={`text-sm ${hasAssistant ? 'text-blue-200' : 'text-gray-600'}`}>
+                                    <div className={`text-sm ${isDark ? 'text-white opacity-90' : 'text-gray-600'}`}>
                                       ⏳ Salle d'attente: {creneau.salle_attente}
                                     </div>
                                   )}
                                   {getAssistantsForMedecinInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0 && (
-                                    <div className={`text-sm ${hasAssistant ? 'text-blue-200 font-semibold' : 'text-blue-600'}`}>
+                                    <div className={`text-sm ${isDark ? 'text-white font-semibold' : 'text-blue-600'}`}>
                                       👥 Assistants: {getAssistantsForMedecinInPlanning(creneau.employe_id, creneau.date, creneau.creneau).map(a => `${a.prenom} ${a.nom}`).join(', ')}
                                     </div>
                                   )}
