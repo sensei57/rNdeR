@@ -4583,12 +4583,12 @@ const PlanningManager = () => {
                               {showDetails && creneau.employe?.role === 'Médecin' && (
                                 <>
                                   {creneau.salle_attribuee && (
-                                    <div className={`text-sm ${isDark ? 'text-white opacity-90' : 'text-gray-600'}`}>
+                                    <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
                                       🏥 Box: {creneau.salle_attribuee}
                                     </div>
                                   )}
                                   {creneau.salle_attente && (
-                                    <div className={`text-sm ${isDark ? 'text-white opacity-90' : 'text-gray-600'}`}>
+                                    <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
                                       ⏳ Salle d'attente: {creneau.salle_attente}
                                     </div>
                                   )}
@@ -4604,12 +4604,12 @@ const PlanningManager = () => {
                               {showDetails && creneau.employe?.role === 'Assistant' && (
                                 <>
                                   {creneau.salle_attribuee && (
-                                    <div className={`text-sm ${hasMedecin ? 'text-green-200' : 'text-gray-600'}`}>
+                                    <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
                                       🏥 Salle de travail: {creneau.salle_attribuee}
                                     </div>
                                   )}
                                   {getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0 && (
-                                    <div className={`text-sm ${hasMedecin ? 'text-green-200' : 'text-blue-600'}`}>
+                                    <div className={`text-sm ${isDark ? 'text-white' : 'text-blue-600'}`}>
                                       {getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).map(info => (
                                         <div key={info.medecin.id} className="mt-1">
                                           👨‍⚕️ Associé à Dr. {info.medecin.prenom} {info.medecin.nom}
@@ -4624,14 +4624,14 @@ const PlanningManager = () => {
                               
                               {/* SECRÉTAIRES : Affichage simple */}
                               {creneau.employe?.role === 'Secrétaire' && creneau.salle_attribuee && (
-                                <div className="text-sm text-gray-600">
+                                <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
                                   📍 {creneau.salle_attribuee}
                                 </div>
                               )}
                               
                               {/* Notes : Afficher seulement si ce n'est pas un assistant avec médecins associés (pour éviter doublon) */}
                               {creneau.notes && !(creneau.employe?.role === 'Assistant' && getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0) && (
-                                <div className={`text-xs italic truncate ${hasAssistant || hasMedecin ? 'text-gray-300' : 'text-gray-600'}`}>
+                                <div className={`text-xs italic truncate ${isDark ? 'text-white opacity-80' : 'text-gray-600'}`}>
                                   📝 {creneau.notes}
                                 </div>
                               )}
@@ -4785,12 +4785,12 @@ const PlanningManager = () => {
                               {showDetails && creneau.employe?.role === 'Médecin' && (
                                 <>
                                   {creneau.salle_attribuee && (
-                                    <div className={`text-sm ${isDark ? 'text-white opacity-90' : 'text-gray-600'}`}>
+                                    <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
                                       🏥 Box: {creneau.salle_attribuee}
                                     </div>
                                   )}
                                   {creneau.salle_attente && (
-                                    <div className={`text-sm ${isDark ? 'text-white opacity-90' : 'text-gray-600'}`}>
+                                    <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
                                       ⏳ Salle d'attente: {creneau.salle_attente}
                                     </div>
                                   )}
@@ -4806,12 +4806,12 @@ const PlanningManager = () => {
                               {showDetails && creneau.employe?.role === 'Assistant' && (
                                 <>
                                   {creneau.salle_attribuee && (
-                                    <div className={`text-sm ${hasMedecin ? 'text-green-200' : 'text-gray-600'}`}>
+                                    <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
                                       🏥 Salle de travail: {creneau.salle_attribuee}
                                     </div>
                                   )}
                                   {getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0 && (
-                                    <div className={`text-sm ${hasMedecin ? 'text-green-200' : 'text-blue-600'}`}>
+                                    <div className={`text-sm ${isDark ? 'text-white' : 'text-blue-600'}`}>
                                       {getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).map(info => (
                                         <div key={info.medecin.id} className="mt-1">
                                           👨‍⚕️ Associé à Dr. {info.medecin.prenom} {info.medecin.nom}
@@ -4826,14 +4826,14 @@ const PlanningManager = () => {
                               
                               {/* SECRÉTAIRES : Affichage simple */}
                               {creneau.employe?.role === 'Secrétaire' && creneau.salle_attribuee && (
-                                <div className="text-sm text-gray-600">
+                                <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
                                   📍 {creneau.salle_attribuee}
                                 </div>
                               )}
                               
                               {/* Notes : Afficher seulement si ce n'est pas un assistant avec médecins associés (pour éviter doublon) */}
                               {creneau.notes && !(creneau.employe?.role === 'Assistant' && getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0) && (
-                                <div className={`text-xs italic truncate ${hasAssistant || hasMedecin ? 'text-gray-300' : 'text-gray-600'}`}>
+                                <div className={`text-xs italic truncate ${isDark ? 'text-white opacity-80' : 'text-gray-600'}`}>
                                   📝 {creneau.notes}
                                 </div>
                               )}
