@@ -5668,6 +5668,25 @@ const DemandesTravailManager = () => {
     const joursNoms = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
     const semaineType = semainesTypes.find(s => s.id === semaineTypeId);
     
+    // Déterminer le jour de la semaine du 1er du mois (0=dimanche, 1=lundi, etc.)
+    const premierJourDate = new Date(`${year}-${String(month).padStart(2, '0')}-01T12:00:00`);
+    const premierJourSemaine = premierJourDate.getDay();
+    
+    // Calculer combien de cases vides ajouter pour que lundi soit toujours en première colonne
+    // Si dimanche (0), on ajoute 6 cases vides; si lundi (1), 0 cases; si mardi (2), 1 case; etc.
+    const casesVides = premierJourSemaine === 0 ? 6 : premierJourSemaine - 1;
+    
+    // Ajouter les cases vides au début
+    for (let i = 0; i < casesVides; i++) {
+      jours.push({
+        date: null,
+        jourNom: null,
+        creneau: null,
+        selectionne: false,
+        estVide: true
+      });
+    }
+    
     for (let day = 1; day <= lastDay; day++) {
       // Créer la date en format ISO pour éviter décalage fuseau horaire
       const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -5684,7 +5703,8 @@ const DemandesTravailManager = () => {
         date: dateStr,
         jourNom: jourSemaine,
         creneau: creneau,
-        selectionne: false // Par défaut : tout désactivé
+        selectionne: false, // Par défaut : tout désactivé
+        estVide: false
       });
     }
     
