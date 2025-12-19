@@ -5647,7 +5647,15 @@ const DemandesTravailManager = () => {
 
   const handleOpenDemandeMensuelle = () => {
     const today = new Date();
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    // Si on est après le 1er du mois, proposer le mois suivant
+    let firstDay;
+    if (today.getDate() > 1) {
+      // Mois suivant
+      firstDay = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+    } else {
+      // On est le 1er, on peut proposer le mois actuel
+      firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    }
     setDemandeMensuelle({
       medecin_id: user?.role === 'Médecin' ? user.id : '',
       date_debut: firstDay.toISOString().split('T')[0],
