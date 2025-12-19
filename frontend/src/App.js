@@ -6464,11 +6464,6 @@ const DemandesTravailManager = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <span>📅 Demande de Créneaux sur 1 Mois</span>
-              {demandeMensuelle.date_debut && (
-                <span className="text-lg font-bold text-blue-600">
-                  - {new Date(demandeMensuelle.date_debut + 'T12:00:00').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
-                </span>
-              )}
             </DialogTitle>
             <DialogDescription>
               Créez plusieurs demandes de créneaux pour tout un mois. Vous pouvez utiliser une semaine type ou personnaliser jour par jour.
