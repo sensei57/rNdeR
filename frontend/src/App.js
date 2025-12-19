@@ -6550,38 +6550,57 @@ const DemandesTravailManager = () => {
             {/* Liste des jours avec cases à cocher */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <Label>Jours demandés</Label>
+                <div className="flex items-center space-x-2">
+                  <Label>Jours demandés</Label>
+                  {demandeMensuelle.date_debut && (
+                    <span className="text-lg font-bold text-blue-600 capitalize">
+                      - {new Date(demandeMensuelle.date_debut + 'T12:00:00').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                    </span>
+                  )}
+                </div>
                 <div className="text-sm text-gray-600">
                   {joursDisponibles.filter(j => j.selectionne).length} jour(s) sélectionné(s)
                 </div>
               </div>
               <div className="border rounded-lg p-4 bg-gray-50 max-h-[300px] overflow-y-auto">
-                <div className="grid grid-cols-7 gap-2">
-                  {joursDisponibles.map(jour => (
-                    <div 
-                      key={jour.date}
-                      className={`
-                        p-2 rounded border cursor-pointer text-center text-sm transition-colors
-                        ${jour.creneau === 'MATIN' 
-                          ? 'bg-orange-100 border-orange-500 text-orange-800' 
-                          : jour.creneau === 'APRES_MIDI'
-                          ? 'bg-purple-100 border-purple-500 text-purple-800'
-                          : jour.creneau === 'JOURNEE_COMPLETE'
-                          ? 'bg-green-100 border-green-500 text-green-800'
-                          : 'bg-gray-100 border-gray-300 text-gray-500'
-                        }
-                      `}
-                      onClick={() => toggleJourSelection(jour.date)}
-                    >
-                      <div className="font-bold">{new Date(jour.date + 'T12:00:00').getDate()}</div>
-                      <div className="text-xs capitalize">{jour.jourNom.substring(0, 3)}</div>
-                      <div className="text-xs mt-1 font-semibold">
-                        {jour.creneau === 'JOURNEE_COMPLETE' ? '🌞 Journée' :
-                         jour.creneau === 'MATIN' ? '🌅 Matin' :
-                         jour.creneau === 'APRES_MIDI' ? '🌆 AM' :
-                         '⭕'}
-                      </div>
+                {/* En-têtes des jours de la semaine (Lundi en premier) */}
+                <div className="grid grid-cols-7 gap-2 mb-2">
+                  {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(jour => (
+                    <div key={jour} className="text-center text-xs font-semibold text-gray-600 py-1">
+                      {jour}
                     </div>
+                  ))}
+                </div>
+                {/* Grille des jours */}
+                <div className="grid grid-cols-7 gap-2">
+                  {joursDisponibles.map((jour, index) => (
+                    jour.estVide ? (
+                      <div key={`vide-${index}`} className="p-2 rounded text-center text-sm"></div>
+                    ) : (
+                      <div 
+                        key={jour.date}
+                        className={`
+                          p-2 rounded border cursor-pointer text-center text-sm transition-colors
+                          ${jour.creneau === 'MATIN' 
+                            ? 'bg-orange-100 border-orange-500 text-orange-800' 
+                            : jour.creneau === 'APRES_MIDI'
+                            ? 'bg-purple-100 border-purple-500 text-purple-800'
+                            : jour.creneau === 'JOURNEE_COMPLETE'
+                            ? 'bg-green-100 border-green-500 text-green-800'
+                            : 'bg-gray-100 border-gray-300 text-gray-500'
+                          }
+                        `}
+                        onClick={() => toggleJourSelection(jour.date)}
+                      >
+                        <div className="font-bold">{new Date(jour.date + 'T12:00:00').getDate()}</div>
+                        <div className="text-xs mt-1 font-semibold">
+                          {jour.creneau === 'JOURNEE_COMPLETE' ? '🌞 Journée' :
+                           jour.creneau === 'MATIN' ? '🌅 Matin' :
+                           jour.creneau === 'APRES_MIDI' ? '🌆 AM' :
+                           '⭕'}
+                        </div>
+                      </div>
+                    )
                   ))}
                 </div>
               </div>
