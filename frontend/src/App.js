@@ -4636,7 +4636,7 @@ const PlanningManager = () => {
       </div>
 
         {/* Vue Jour - Planning Matin */}
-        {viewMode !== 'semaine' && (
+        {viewMode === 'jour' && (
         <>
         {/* Rappel de la date */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg px-6 py-4 shadow-lg mb-4">
