@@ -3406,6 +3406,17 @@ const PlanningManager = () => {
             >
               Vue Semaine
             </Button>
+            <Button
+              variant={viewMode === 'mois' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setViewMode('mois');
+                // Synchroniser le mois avec la date actuelle
+                setSelectedMonth(selectedDate.slice(0, 7));
+              }}
+            >
+              Vue Mois
+            </Button>
           </div>
           
           {/* Filtre par rôle - Sélection multiple pour le directeur */}
