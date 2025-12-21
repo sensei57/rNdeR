@@ -3560,21 +3560,33 @@ const PlanningManager = () => {
                   const currentDate = new Date(selectedDate);
                   currentDate.setDate(currentDate.getDate() - 1);
                   setSelectedDate(currentDate.toISOString().split('T')[0]);
-                } else {
+                } else if (viewMode === 'semaine') {
                   // Navigation semaine par semaine
                   navigateWeek('prev');
+                } else if (viewMode === 'mois') {
+                  // Navigation mois par mois
+                  navigateMonth('prev');
                 }
               }}
               className="px-2"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Input
-              type="date"
-              value={viewMode === 'semaine' ? selectedWeek : selectedDate}
-              onChange={(e) => viewMode === 'semaine' ? setSelectedWeek(e.target.value) : setSelectedDate(e.target.value)}
-              className="w-auto"
-            />
+            {viewMode === 'mois' ? (
+              <Input
+                type="month"
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="w-auto"
+              />
+            ) : (
+              <Input
+                type="date"
+                value={viewMode === 'semaine' ? selectedWeek : selectedDate}
+                onChange={(e) => viewMode === 'semaine' ? setSelectedWeek(e.target.value) : setSelectedDate(e.target.value)}
+                className="w-auto"
+              />
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -3584,9 +3596,12 @@ const PlanningManager = () => {
                   const currentDate = new Date(selectedDate);
                   currentDate.setDate(currentDate.getDate() + 1);
                   setSelectedDate(currentDate.toISOString().split('T')[0]);
-                } else {
+                } else if (viewMode === 'semaine') {
                   // Navigation semaine par semaine
                   navigateWeek('next');
+                } else if (viewMode === 'mois') {
+                  // Navigation mois par mois
+                  navigateMonth('next');
                 }
               }}
               className="px-2"
