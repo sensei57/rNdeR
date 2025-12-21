@@ -2440,6 +2440,8 @@ const PlanningManager = () => {
     const today = new Date().toISOString().split('T')[0];
     if (viewMode === 'semaine') {
       setSelectedWeek(today);
+    } else if (viewMode === 'mois') {
+      setSelectedMonth(today.slice(0, 7));
     } else {
       setSelectedDate(today);
     }
