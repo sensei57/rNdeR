@@ -2484,8 +2484,10 @@ const PlanningManager = () => {
       fetchPlanningByDate(selectedDate);
     } else if (viewMode === 'semaine') {
       fetchPlanningSemaine(selectedWeek);
+    } else if (viewMode === 'mois') {
+      fetchPlanningMois(selectedMonth);
     }
-  }, [selectedDate, selectedWeek, viewMode, user?.role]);
+  }, [selectedDate, selectedWeek, selectedMonth, viewMode, user?.role]);
 
   const getMondayOfWeek = (date) => {
     const selectedDate = new Date(date);
