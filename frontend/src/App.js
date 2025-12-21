@@ -2370,11 +2370,16 @@ const PlanningManager = () => {
   const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedWeek, setSelectedWeek] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // Format YYYY-MM
   const [planning, setPlanning] = useState([]);
+  const [planningMois, setPlanningMois] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('jour');
   const [filterRole, setFilterRole] = useState(['Médecin', 'Assistant', 'Secrétaire']); // Tous sélectionnés par défaut
+  const [filterEmployeMois, setFilterEmployeMois] = useState('tous'); // Filtre employé pour vue mois
   const [showDetails, setShowDetails] = useState(true); // Afficher ou masquer les détails (Box, Salle d'attente, Assistants)
+  const [showMoisDetailsModal, setShowMoisDetailsModal] = useState(false); // Modal détails vue mois
+  const [moisDetailsData, setMoisDetailsData] = useState({ date: '', creneau: '', employes: [] }); // Données pour le modal
   const [users, setUsers] = useState([]);
   const [salles, setSalles] = useState([]);
   const [medecins, setMedecins] = useState([]);
