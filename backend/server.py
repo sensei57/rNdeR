@@ -1050,7 +1050,20 @@ async def register_user(user_data: UserCreate):
 @api_router.post("/auth/login", response_model=Token)
 async def login(user_login: UserLogin):
     user = await db.users.find_one({"email": user_login.email})
-    if not user or not verify_password(user_login.password, user.get('password_hash')):
+    print(f"[DEBUG LOGIN] Email: {user_login.email}")
+    print(f"[DEBUG LOGIN] User found: {user is not None}")
+    if user:
+        print(f"[DEBUG LOGIN] Password hash exists: {user.get('password_hash') is not None}")
+        try:
+            verify_result = verify_password(user_login.password, user.get('password_hash'))
+            print(f"[DEBUG LOGIN] Verify result: {verify_result}")
+        except Exception as e:
+            print(f"[DEBUG LOGIN] Verify error: {e}")
+            verify_result = False
+    else:
+        verify_result = False
+    
+    if not user or not verify_result:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email ou mot de passe incorrect"
