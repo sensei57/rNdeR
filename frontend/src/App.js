@@ -5529,6 +5529,279 @@ const PlanningManager = () => {
         </>
       )}
 
+      {/* VUE MENSUELLE */}
+      {viewMode === 'mois' && (
+        <Card className="mt-4">
+          <CardHeader className="bg-gradient-to-r from-indigo-50 to-indigo-100">
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center space-x-2">
+                <Calendar className="h-5 w-5" />
+                <span>
+                  📅 Planning Mensuel - {new Date(selectedMonth + '-01').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                </span>
+              </span>
+              {/* Filtre employé pour le directeur */}
+              {user?.role === 'Directeur' && (
+                <div className="flex items-center space-x-2">
+                  <Label className="text-sm">Filtrer par employé:</Label>
+                  <Select value={filterEmployeMois} onValueChange={setFilterEmployeMois}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Tous les employés" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="tous">👥 Tous les employés</SelectItem>
+                      <SelectItem value="medecins">👨‍⚕️ Médecins uniquement</SelectItem>
+                      {users.filter(u => u.actif && u.role !== 'Directeur').map(emp => (
+                        <SelectItem key={emp.id} value={emp.id}>
+                          {emp.role === 'Médecin' ? '👨‍⚕️' : emp.role === 'Assistant' ? '👥' : '📋'} {emp.prenom} {emp.nom}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-2 text-gray-500">Chargement du planning...</p>
+              </div>
+            ) : (
+              <div className="border rounded-lg overflow-hidden">
+                {/* En-têtes des jours */}
+                <div className="grid grid-cols-7 bg-gray-100 border-b">
+                  {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(jour => (
+                    <div key={jour} className="text-center py-2 font-semibold text-gray-700 border-r last:border-r-0">
+                      {jour}
+                    </div>
+                  ))}
+                </div>
+                {/* Grille du calendrier */}
+                <div className="grid grid-cols-7">
+                  {(() => {
+                    const [year, month] = selectedMonth.split('-').map(Number);
+                    const firstDay = new Date(year, month - 1, 1);
+                    const lastDay = new Date(year, month, 0).getDate();
+                    const startDay = firstDay.getDay();
+                    const casesVides = startDay === 0 ? 6 : startDay - 1;
+                    
+                    const jours = [];
+                    
+                    // Cases vides avant le 1er
+                    for (let i = 0; i < casesVides; i++) {
+                      jours.push(
+                        <div key={`vide-${i}`} className="border-r border-b bg-gray-50 min-h-[100px]"></div>
+                      );
+                    }
+                    
+                    // Jours du mois
+                    for (let day = 1; day <= lastDay; day++) {
+                      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                      const isToday = dateStr === new Date().toISOString().split('T')[0];
+                      
+                      // Filtrer le planning selon le filtre sélectionné
+                      let planningFiltre = planningMois.filter(p => p.date === dateStr);
+                      if (user?.role === 'Directeur') {
+                        if (filterEmployeMois === 'medecins') {
+                          planningFiltre = planningFiltre.filter(p => p.employe_role === 'Médecin');
+                        } else if (filterEmployeMois !== 'tous') {
+                          planningFiltre = planningFiltre.filter(p => p.employe_id === filterEmployeMois);
+                        }
+                      }
+                      
+                      const creneauxMatin = planningFiltre.filter(p => p.creneau === 'MATIN');
+                      const creneauxAM = planningFiltre.filter(p => p.creneau === 'APRES_MIDI');
+                      const medecinsMatinCount = creneauxMatin.filter(p => p.employe_role === 'Médecin').length;
+                      const medecinsAMCount = creneauxAM.filter(p => p.employe_role === 'Médecin').length;
+                      
+                      jours.push(
+                        <div 
+                          key={dateStr} 
+                          className={`border-r border-b min-h-[100px] ${isToday ? 'bg-blue-50 ring-2 ring-blue-400' : 'bg-white'}`}
+                        >
+                          {/* Numéro du jour */}
+                          <div className={`text-right p-1 text-sm font-semibold ${isToday ? 'text-blue-600' : 'text-gray-600'}`}>
+                            {day}
+                          </div>
+                          
+                          {/* Créneaux */}
+                          <div className="px-1 space-y-1">
+                            {/* VUE DIRECTEUR */}
+                            {user?.role === 'Directeur' && (
+                              <>
+                                {/* Matin */}
+                                <div 
+                                  className={`text-xs p-1 rounded cursor-pointer transition-colors ${
+                                    creneauxMatin.length > 0 
+                                      ? 'bg-orange-100 hover:bg-orange-200 text-orange-800' 
+                                      : 'bg-gray-100 text-gray-400'
+                                  }`}
+                                  onClick={() => creneauxMatin.length > 0 && showMoisCreneauDetails(dateStr, 'MATIN')}
+                                  title={creneauxMatin.length > 0 ? "Cliquez pour voir les détails" : "Aucun créneau"}
+                                >
+                                  <div className="font-semibold">🌅 Matin</div>
+                                  {filterEmployeMois === 'tous' || filterEmployeMois === 'medecins' ? (
+                                    <div className="text-center font-bold text-lg">{medecinsMatinCount}</div>
+                                  ) : (
+                                    <div className="text-center">{creneauxMatin.length > 0 ? '✅' : '-'}</div>
+                                  )}
+                                  {filterEmployeMois === 'tous' && (
+                                    <div className="text-[10px] text-center">médecin(s)</div>
+                                  )}
+                                </div>
+                                
+                                {/* Après-midi */}
+                                <div 
+                                  className={`text-xs p-1 rounded cursor-pointer transition-colors ${
+                                    creneauxAM.length > 0 
+                                      ? 'bg-purple-100 hover:bg-purple-200 text-purple-800' 
+                                      : 'bg-gray-100 text-gray-400'
+                                  }`}
+                                  onClick={() => creneauxAM.length > 0 && showMoisCreneauDetails(dateStr, 'APRES_MIDI')}
+                                  title={creneauxAM.length > 0 ? "Cliquez pour voir les détails" : "Aucun créneau"}
+                                >
+                                  <div className="font-semibold">🌆 Après-midi</div>
+                                  {filterEmployeMois === 'tous' || filterEmployeMois === 'medecins' ? (
+                                    <div className="text-center font-bold text-lg">{medecinsAMCount}</div>
+                                  ) : (
+                                    <div className="text-center">{creneauxAM.length > 0 ? '✅' : '-'}</div>
+                                  )}
+                                  {filterEmployeMois === 'tous' && (
+                                    <div className="text-[10px] text-center">médecin(s)</div>
+                                  )}
+                                </div>
+                              </>
+                            )}
+                            
+                            {/* VUE EMPLOYE */}
+                            {user?.role !== 'Directeur' && (
+                              <>
+                                {/* Matin */}
+                                <div 
+                                  className={`text-xs p-1 rounded ${
+                                    creneauxMatin.length > 0 
+                                      ? 'bg-green-100 text-green-800' 
+                                      : 'bg-gray-100 text-gray-400'
+                                  }`}
+                                >
+                                  <div className="font-semibold">🌅 Matin</div>
+                                  <div className="text-center font-bold">
+                                    {creneauxMatin.length > 0 ? '✅ Présent' : '-'}
+                                  </div>
+                                </div>
+                                
+                                {/* Après-midi */}
+                                <div 
+                                  className={`text-xs p-1 rounded ${
+                                    creneauxAM.length > 0 
+                                      ? 'bg-green-100 text-green-800' 
+                                      : 'bg-gray-100 text-gray-400'
+                                  }`}
+                                >
+                                  <div className="font-semibold">🌆 Après-midi</div>
+                                  <div className="text-center font-bold">
+                                    {creneauxAM.length > 0 ? '✅ Présent' : '-'}
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    }
+                    
+                    return jours;
+                  })()}
+                </div>
+              </div>
+            )}
+            
+            {/* Légende */}
+            <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600">
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-orange-100 rounded"></div>
+                <span>Matin</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-purple-100 rounded"></div>
+                <span>Après-midi</span>
+              </div>
+              {user?.role === 'Directeur' && (
+                <div className="flex items-center space-x-2">
+                  <span className="text-gray-500">💡 Cliquez sur un créneau pour voir les détails</span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Modal Détails Vue Mois */}
+      <Dialog open={showMoisDetailsModal} onOpenChange={setShowMoisDetailsModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              📋 Détails du {new Date(moisDetailsData.date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+              {moisDetailsData.creneau === 'MATIN' ? ' - Matin 🌅' : ' - Après-midi 🌆'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {moisDetailsData.employes.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">Aucun employé présent</p>
+            ) : (
+              <>
+                {/* Médecins */}
+                {moisDetailsData.employes.filter(e => e.employe_role === 'Médecin').length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-blue-700 mb-2">👨‍⚕️ Médecins ({moisDetailsData.employes.filter(e => e.employe_role === 'Médecin').length})</h4>
+                    {moisDetailsData.employes.filter(e => e.employe_role === 'Médecin').map(emp => (
+                      <div key={emp.id} className="bg-blue-50 border border-blue-200 rounded p-2 mb-1">
+                        <div className="font-medium">Dr. {emp.employe?.prenom} {emp.employe?.nom}</div>
+                        {emp.salle_attribuee && <div className="text-xs text-gray-600">🏥 Box: {emp.salle_attribuee}</div>}
+                        {emp.salle_attente && <div className="text-xs text-gray-600">⏳ Salle d'attente: {emp.salle_attente}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Assistants */}
+                {moisDetailsData.employes.filter(e => e.employe_role === 'Assistant').length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-green-700 mb-2">👥 Assistants ({moisDetailsData.employes.filter(e => e.employe_role === 'Assistant').length})</h4>
+                    {moisDetailsData.employes.filter(e => e.employe_role === 'Assistant').map(emp => (
+                      <div key={emp.id} className="bg-green-50 border border-green-200 rounded p-2 mb-1">
+                        <div className="font-medium">{emp.employe?.prenom} {emp.employe?.nom}</div>
+                        {emp.salle_attribuee && <div className="text-xs text-gray-600">🏥 Salle: {emp.salle_attribuee}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Secrétaires */}
+                {moisDetailsData.employes.filter(e => e.employe_role === 'Secrétaire').length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-purple-700 mb-2">📋 Secrétaires ({moisDetailsData.employes.filter(e => e.employe_role === 'Secrétaire').length})</h4>
+                    {moisDetailsData.employes.filter(e => e.employe_role === 'Secrétaire').map(emp => (
+                      <div key={emp.id} className="bg-purple-50 border border-purple-200 rounded p-2 mb-1">
+                        <div className="font-medium">{emp.employe?.prenom} {emp.employe?.nom}</div>
+                        {emp.salle_attribuee && <div className="text-xs text-gray-600">📍 {emp.salle_attribuee}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+          <div className="flex justify-end mt-4">
+            <Button variant="outline" onClick={() => setShowMoisDetailsModal(false)}>
+              Fermer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 };
