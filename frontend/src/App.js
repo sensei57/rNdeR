@@ -2636,6 +2636,85 @@ const PlanningManager = () => {
       console.error('Erreur lors du chargement du planning:', error);
     }
   };
+
+  // Fonction pour récupérer le planning du mois entier
+  const fetchPlanningMois = async (mois) => {
+    try {
+      setLoading(true);
+      const [year, month] = mois.split('-').map(Number);
+      const firstDay = new Date(year, month - 1, 1);
+      const lastDay = new Date(year, month, 0);
+      
+      // Récupérer tous les jours du mois
+      const allPlanning = [];
+      const promises = [];
+      
+      for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().split('T')[0];
+        promises.push(axios.get(`${API}/planning/${dateStr}`));
+      }
+      
+      const responses = await Promise.all(promises);
+      responses.forEach(res => {
+        allPlanning.push(...res.data);
+      });
+      
+      // Filtrer selon les permissions
+      let planningData = allPlanning;
+      if (user?.role !== 'Directeur') {
+        planningData = allPlanning.filter(p => p.employe_id === user.id);
+      }
+      
+      setPlanningMois(planningData);
+    } catch (error) {
+      console.error('Erreur lors du chargement du planning mensuel:', error);
+      toast.error('Erreur lors du chargement du planning mensuel');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Naviguer entre les mois
+  const navigateMonth = (direction) => {
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const newDate = new Date(year, month - 1 + (direction === 'prev' ? -1 : 1), 1);
+    setSelectedMonth(newDate.toISOString().slice(0, 7));
+  };
+
+  // Obtenir les créneaux d'un jour spécifique pour la vue mois
+  const getCreneauxMoisByDate = (date, creneau) => {
+    return planningMois.filter(p => p.date === date && p.creneau === creneau);
+  };
+
+  // Compter les médecins présents pour un jour/créneau
+  const countMedecinsPresents = (date, creneau) => {
+    return planningMois.filter(p => 
+      p.date === date && 
+      p.creneau === creneau && 
+      p.employe_role === 'Médecin'
+    ).length;
+  };
+
+  // Afficher les détails d'un créneau dans le modal
+  const showMoisCreneauDetails = (date, creneau) => {
+    const employes = planningMois.filter(p => p.date === date && p.creneau === creneau);
+    setMoisDetailsData({
+      date,
+      creneau,
+      employes
+    });
+    setShowMoisDetailsModal(true);
+  };
+
+  // Vérifier si un employé est présent à une date/créneau
+  const isEmployePresent = (date, creneau) => {
+    return planningMois.some(p => 
+      p.date === date && 
+      p.creneau === creneau && 
+      p.employe_id === user.id
+    );
+  };
+
   // Fonctions pour l'attribution (Directeur uniquement)
   const handleSlotClick = (date, period) => {
     if (user?.role !== 'Directeur') return;
