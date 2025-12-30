@@ -5100,7 +5100,7 @@ const PlanningManager = () => {
                                   variant="ghost"
                                   onClick={() => handleDuplicateCreneau(creneau)}
                                   className={`h-7 w-7 p-0 ${hasAssistant || hasMedecin ? 'text-white hover:bg-white hover:bg-opacity-20' : 'text-green-600 hover:text-green-800 hover:bg-green-50'}`}
-                                  title="Dupliquer vers Après-midi"
+                                  title="Dupliquer vers Matin"
                                 >
                                   <Copy className="h-3 w-3" />
                                 </Button>
