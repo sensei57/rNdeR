@@ -2376,6 +2376,7 @@ const PlanningManager = () => {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('jour');
   const [filterRole, setFilterRole] = useState(['Médecin', 'Assistant', 'Secrétaire']); // Tous sélectionnés par défaut
+  const [filterEmploye, setFilterEmploye] = useState('tous'); // Filtre employé pour vue jour/semaine
   const [filterEmployeMois, setFilterEmployeMois] = useState('tous'); // Filtre employé pour vue mois
   const [showDetails, setShowDetails] = useState(true); // Afficher ou masquer les détails (Box, Salle d'attente, Assistants)
   const [showMoisDetailsModal, setShowMoisDetailsModal] = useState(false); // Modal détails vue mois
