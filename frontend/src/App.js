@@ -6801,6 +6801,86 @@ const DemandesTravailManager = () => {
           </Dialog>
           </div>
         )}
+
+        {/* Boutons pour Assistants et Secrétaires */}
+        {(user?.role === 'Assistant' || user?.role === 'Secrétaire') && (
+          <div className="flex space-x-2">
+            <Button 
+              onClick={handleOpenDemandeHebdo}
+              className="flex items-center space-x-2 bg-teal-600 hover:bg-teal-700"
+            >
+              <Calendar className="h-4 w-4" />
+              <span>Demande Hebdomadaire</span>
+            </Button>
+            
+            <Dialog open={showDemandeModal} onOpenChange={setShowDemandeModal}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center space-x-2">
+                  <Plus className="h-4 w-4" />
+                  <span>Nouvelle Demande</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Nouvelle Demande de Jour de Travail</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleCreateDemande} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Date *</Label>
+                    <Input
+                      type="date"
+                      value={newDemande.date_demandee}
+                      onChange={(e) => setNewDemande({...newDemande, date_demandee: e.target.value})}
+                      min={new Date().toISOString().split('T')[0]}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Créneau *</Label>
+                    <Select
+                      value={newDemande.creneau}
+                      onValueChange={(value) => setNewDemande({...newDemande, creneau: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="MATIN">🌅 Matin</SelectItem>
+                        <SelectItem value="APRES_MIDI">🌆 Après-midi</SelectItem>
+                        <SelectItem value="JOURNEE_COMPLETE">🌞 Journée complète</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Motif (optionnel)</Label>
+                    <Textarea
+                      value={newDemande.motif}
+                      onChange={(e) => setNewDemande({...newDemande, motif: e.target.value})}
+                      placeholder="Raison de la demande..."
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-2">
+                    <Button type="button" variant="outline" onClick={() => setShowDemandeModal(false)}>
+                      Annuler
+                    </Button>
+                    <Button type="submit">Créer</Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
+        
+        {/* Bouton Demande Hebdo pour le Directeur (pour assistants/secrétaires) */}
+        {user?.role === 'Directeur' && (
+          <Button 
+            onClick={handleOpenDemandeHebdo}
+            className="flex items-center space-x-2 bg-teal-600 hover:bg-teal-700"
+          >
+            <Calendar className="h-4 w-4" />
+            <span>Demande Hebdo (Assistants)</span>
+          </Button>
+        )}
       </div>
 
       {/* Alerte capacité pour le directeur */}
