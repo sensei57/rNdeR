@@ -5760,9 +5760,15 @@ const PlanningManager = () => {
                 <span>Après-midi</span>
               </div>
               {user?.role === 'Directeur' && (
-                <div className="flex items-center space-x-2">
-                  <span className="text-gray-500">💡 Cliquez sur un créneau pour voir les détails</span>
-                </div>
+                <>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-yellow-600 font-semibold">(+N)</span>
+                    <span>= demandes en attente</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-gray-500">💡 Cliquez sur un créneau pour voir les détails</span>
+                  </div>
+                </>
               )}
             </div>
           </CardContent>
