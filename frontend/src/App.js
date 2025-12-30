@@ -3567,6 +3567,25 @@ const PlanningManager = () => {
                   {showDetails ? '👁️ Masquer détails' : '👁️ Afficher détails'}
                 </Button>
               </div>
+              {/* Filtre par employé spécifique */}
+              {viewMode !== 'mois' && (
+                <div className="border-l pl-4 ml-4 flex items-center space-x-2">
+                  <Label className="text-sm whitespace-nowrap">Employé:</Label>
+                  <Select value={filterEmploye} onValueChange={setFilterEmploye}>
+                    <SelectTrigger className="w-[180px] h-8">
+                      <SelectValue placeholder="Tous" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="tous">👥 Tous les employés</SelectItem>
+                      {users.filter(u => u.actif && u.role !== 'Directeur').map(emp => (
+                        <SelectItem key={emp.id} value={emp.id}>
+                          {emp.role === 'Médecin' ? '👨‍⚕️' : emp.role === 'Assistant' ? '👥' : '📋'} {emp.prenom} {emp.nom}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
           )}
           
