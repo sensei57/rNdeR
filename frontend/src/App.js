@@ -3875,11 +3875,11 @@ const PlanningManager = () => {
                           // Ajuster automatiquement les horaires pour les secrétaires selon le créneau
                           if (employe?.role === 'Secrétaire') {
                             if (newCreneau.creneau === 'MATIN') {
-                              horaires = { horaire_debut: '08:00', horaire_fin: '12:00' };
+                              horaires = { horaire_debut: '08:00', horaire_fin: '12:00', horaire_pause_debut: '', horaire_pause_fin: '' };
                             } else if (newCreneau.creneau === 'APRES_MIDI') {
-                              horaires = { horaire_debut: '14:00', horaire_fin: '18:00' };
+                              horaires = { horaire_debut: '14:00', horaire_fin: '18:00', horaire_pause_debut: '', horaire_pause_fin: '' };
                             } else {
-                              horaires = { horaire_debut: '08:00', horaire_fin: '18:00' };
+                              horaires = { horaire_debut: '08:00', horaire_fin: '18:00', horaire_pause_debut: '12:00', horaire_pause_fin: '14:00' };
                             }
                           }
                           
