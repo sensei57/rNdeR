@@ -3659,21 +3659,33 @@ const PlanningManager = () => {
               {viewMode !== 'mois' && (
                 <div className="border-l pl-4 ml-4 flex items-center space-x-2">
                   <Label className="text-sm whitespace-nowrap">Employé:</Label>
-                  <Select value={filterEmploye} onValueChange={setFilterEmploye}>
-                    <SelectTrigger className="w-[250px] h-8">
+                  <Select value={filterEmploye} onValueChange={(val) => { setFilterEmploye(val); setSearchEmploye(''); }}>
+                    <SelectTrigger className="w-[280px] h-8">
                       <SelectValue placeholder="Tous" />
                     </SelectTrigger>
                     <SelectContent>
+                      <div className="p-2 border-b">
+                        <Input
+                          placeholder="🔍 Rechercher un employé..."
+                          value={searchEmploye}
+                          onChange={(e) => setSearchEmploye(e.target.value)}
+                          className="h-8"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
                       <SelectItem value="tous">👥 Tous les employés</SelectItem>
-                      {users.filter(u => u.actif && u.role !== 'Directeur').map(emp => {
+                      {sortEmployeesByRoleThenName(
+                        filterEmployeesBySearch(
+                          users.filter(u => u.actif && u.role !== 'Directeur'),
+                          searchEmploye
+                        )
+                      ).map(emp => {
                         // Calculer les demi-journées travaillées selon la vue
                         let demiJournees = 0;
                         if (viewMode === 'jour') {
-                          // Vue jour : compter les créneaux du jour
                           const creneauxJour = planning.filter(p => p.employe_id === emp.id);
                           demiJournees = creneauxJour.length;
                         } else if (viewMode === 'semaine' && planningSemaine?.planning) {
-                          // Vue semaine : compter les créneaux de la semaine
                           planningSemaine.dates?.forEach(date => {
                             const matin = (planningSemaine.planning[date]?.MATIN || []).filter(c => c.employe_id === emp.id);
                             const apresMidi = (planningSemaine.planning[date]?.APRES_MIDI || []).filter(c => c.employe_id === emp.id);
@@ -3681,7 +3693,6 @@ const PlanningManager = () => {
                             if (apresMidi.length > 0) demiJournees += 1;
                           });
                         }
-                        // Convertir en jours (2 demi-journées = 1 jour)
                         const jours = demiJournees / 2;
                         const joursStr = jours % 1 === 0 ? jours.toString() : jours.toFixed(1).replace('.', ',');
                         
