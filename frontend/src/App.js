@@ -6006,6 +6006,7 @@ const DemandesTravailManager = () => {
   });
   const [joursHebdoDisponibles, setJoursHebdoDisponibles] = useState([]);
   const [planningResume, setPlanningResume] = useState({}); // Résumé des présences par jour
+  const [users, setUsers] = useState([]); // Liste des utilisateurs pour le filtre
   
   const { user } = useAuth();
 
@@ -6015,8 +6016,18 @@ const DemandesTravailManager = () => {
     fetchSemainesTypes();
     if (user?.role === 'Directeur') {
       fetchMedecins();
+      fetchUsers();
     }
   }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get(`${API}/users`);
+      setUsers(response.data.filter(u => u.actif));
+    } catch (error) {
+      console.error('Erreur lors du chargement des utilisateurs');
+    }
+  };
 
   const fetchMedecins = async () => {
     try {
