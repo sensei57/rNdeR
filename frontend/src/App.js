@@ -5757,24 +5757,41 @@ const PlanningManager = () => {
                 <div className="flex items-center space-x-2">
                   <Label className="text-sm">Filtrer par employé:</Label>
                   <Select value={filterEmployeMois} onValueChange={setFilterEmployeMois}>
-                    <SelectTrigger className="w-[280px]">
+                    <SelectTrigger className="w-[300px]">
                       <SelectValue placeholder="Tous les employés" />
                     </SelectTrigger>
                     <SelectContent>
+                      <div className="p-2 border-b">
+                        <Input
+                          placeholder="🔍 Rechercher..."
+                          className="h-8"
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => {
+                            const term = e.target.value.toLowerCase();
+                            const items = e.target.closest('.select-content')?.querySelectorAll('[data-employee-name]');
+                            items?.forEach(item => {
+                              const name = item.getAttribute('data-employee-name');
+                              item.style.display = name?.includes(term) ? '' : 'none';
+                            });
+                          }}
+                        />
+                      </div>
                       <SelectItem value="tous">👥 Tous les employés</SelectItem>
                       <SelectItem value="medecins">👨‍⚕️ Médecins uniquement</SelectItem>
-                      {users.filter(u => u.actif && u.role !== 'Directeur').map(emp => {
-                        // Calculer les demi-journées travaillées ce mois
+                      {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role !== 'Directeur')).map(emp => {
                         let demiJournees = 0;
                         planningMois.filter(p => p.employe_id === emp.id).forEach(p => {
                           demiJournees += 1;
                         });
-                        // Convertir en jours (2 demi-journées = 1 jour)
                         const jours = demiJournees / 2;
                         const joursStr = jours % 1 === 0 ? jours.toString() : jours.toFixed(1).replace('.', ',');
                         
                         return (
-                          <SelectItem key={emp.id} value={emp.id}>
+                          <SelectItem 
+                            key={emp.id} 
+                            value={emp.id}
+                            data-employee-name={`${emp.prenom} ${emp.nom}`.toLowerCase()}
+                          >
                             {emp.role === 'Médecin' ? '👨‍⚕️' : emp.role === 'Assistant' ? '👥' : '📋'} {emp.prenom} {emp.nom} ({joursStr} {jours <= 1 ? 'jour' : 'jours'})
                           </SelectItem>
                         );
