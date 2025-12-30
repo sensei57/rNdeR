@@ -5785,19 +5785,51 @@ const PlanningManager = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 max-h-[400px] overflow-y-auto">
-            {moisDetailsData.employes.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">Aucun employé présent</p>
+            {moisDetailsData.employes.length === 0 && demandesTravail.filter(d => 
+              d.date_demandee === moisDetailsData.date && 
+              d.statut === 'EN_ATTENTE' &&
+              (d.creneau === moisDetailsData.creneau || d.creneau === 'JOURNEE_COMPLETE')
+            ).length === 0 ? (
+              <p className="text-gray-500 text-center py-4">Aucun employé présent ni demande en attente</p>
             ) : (
               <>
-                {/* Médecins */}
+                {/* Médecins Présents */}
                 {moisDetailsData.employes.filter(e => e.employe_role === 'Médecin').length > 0 && (
                   <div>
-                    <h4 className="font-semibold text-blue-700 mb-2">👨‍⚕️ Médecins ({moisDetailsData.employes.filter(e => e.employe_role === 'Médecin').length})</h4>
+                    <h4 className="font-semibold text-blue-700 mb-2">👨‍⚕️ Médecins Présents ({moisDetailsData.employes.filter(e => e.employe_role === 'Médecin').length})</h4>
                     {moisDetailsData.employes.filter(e => e.employe_role === 'Médecin').map(emp => (
                       <div key={emp.id} className="bg-blue-50 border border-blue-200 rounded p-2 mb-1">
                         <div className="font-medium">Dr. {emp.employe?.prenom} {emp.employe?.nom}</div>
                         {emp.salle_attribuee && <div className="text-xs text-gray-600">🏥 Box: {emp.salle_attribuee}</div>}
                         {emp.salle_attente && <div className="text-xs text-gray-600">⏳ Salle d'attente: {emp.salle_attente}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Demandes en Attente */}
+                {demandesTravail.filter(d => 
+                  d.date_demandee === moisDetailsData.date && 
+                  d.statut === 'EN_ATTENTE' &&
+                  (d.creneau === moisDetailsData.creneau || d.creneau === 'JOURNEE_COMPLETE')
+                ).length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-yellow-700 mb-2">⏳ Demandes en Attente ({demandesTravail.filter(d => 
+                      d.date_demandee === moisDetailsData.date && 
+                      d.statut === 'EN_ATTENTE' &&
+                      (d.creneau === moisDetailsData.creneau || d.creneau === 'JOURNEE_COMPLETE')
+                    ).length})</h4>
+                    {demandesTravail.filter(d => 
+                      d.date_demandee === moisDetailsData.date && 
+                      d.statut === 'EN_ATTENTE' &&
+                      (d.creneau === moisDetailsData.creneau || d.creneau === 'JOURNEE_COMPLETE')
+                    ).map(demande => (
+                      <div key={demande.id} className="bg-yellow-50 border border-yellow-300 rounded p-2 mb-1">
+                        <div className="font-medium">Dr. {demande.medecin?.prenom} {demande.medecin?.nom}</div>
+                        <div className="text-xs text-yellow-700">
+                          📋 {demande.creneau === 'JOURNEE_COMPLETE' ? 'Journée complète' : demande.creneau}
+                        </div>
+                        {demande.motif && <div className="text-xs text-gray-500 italic">"{demande.motif}"</div>}
                       </div>
                     ))}
                   </div>
