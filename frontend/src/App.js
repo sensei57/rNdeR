@@ -6605,6 +6605,7 @@ const DemandesTravailManager = () => {
           </p>
         </div>
         
+        {/* Boutons pour Médecins et Directeur */}
         {(user?.role === 'Médecin' || user?.role === 'Directeur') && (
           <div className="flex space-x-2">
             <Button 
