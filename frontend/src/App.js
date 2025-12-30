@@ -4913,11 +4913,20 @@ const PlanningManager = () => {
                                 </>
                               )}
                               
-                              {/* SECRÉTAIRES : Affichage simple */}
-                              {creneau.employe?.role === 'Secrétaire' && creneau.salle_attribuee && (
-                                <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
-                                  📍 {creneau.salle_attribuee}
-                                </div>
+                              {/* SECRÉTAIRES : Affichage avec horaires */}
+                              {creneau.employe?.role === 'Secrétaire' && (
+                                <>
+                                  {creneau.salle_attribuee && (
+                                    <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
+                                      📍 {creneau.salle_attribuee}
+                                    </div>
+                                  )}
+                                  {(creneau.horaire_debut || creneau.horaire_fin) && (
+                                    <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
+                                      🕐 {creneau.horaire_debut || '?'} - {creneau.horaire_fin || '?'}
+                                    </div>
+                                  )}
+                                </>
                               )}
                               
                               {/* Notes : Afficher seulement si ce n'est pas un assistant avec médecins associés (pour éviter doublon) */}
@@ -5124,11 +5133,20 @@ const PlanningManager = () => {
                                 </>
                               )}
                               
-                              {/* SECRÉTAIRES : Affichage simple */}
-                              {creneau.employe?.role === 'Secrétaire' && creneau.salle_attribuee && (
-                                <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
-                                  📍 {creneau.salle_attribuee}
-                                </div>
+                              {/* SECRÉTAIRES : Affichage avec horaires */}
+                              {creneau.employe?.role === 'Secrétaire' && (
+                                <>
+                                  {creneau.salle_attribuee && (
+                                    <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
+                                      📍 {creneau.salle_attribuee}
+                                    </div>
+                                  )}
+                                  {(creneau.horaire_debut || creneau.horaire_fin) && (
+                                    <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
+                                      🕐 {creneau.horaire_debut || '?'} - {creneau.horaire_fin || '?'}
+                                    </div>
+                                  )}
+                                </>
                               )}
                               
                               {/* Notes : Afficher seulement si ce n'est pas un assistant avec médecins associés (pour éviter doublon) */}
