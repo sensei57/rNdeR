@@ -5626,17 +5626,28 @@ const PlanningManager = () => {
                 <div className="flex items-center space-x-2">
                   <Label className="text-sm">Filtrer par employé:</Label>
                   <Select value={filterEmployeMois} onValueChange={setFilterEmployeMois}>
-                    <SelectTrigger className="w-[200px]">
+                    <SelectTrigger className="w-[280px]">
                       <SelectValue placeholder="Tous les employés" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="tous">👥 Tous les employés</SelectItem>
                       <SelectItem value="medecins">👨‍⚕️ Médecins uniquement</SelectItem>
-                      {users.filter(u => u.actif && u.role !== 'Directeur').map(emp => (
-                        <SelectItem key={emp.id} value={emp.id}>
-                          {emp.role === 'Médecin' ? '👨‍⚕️' : emp.role === 'Assistant' ? '👥' : '📋'} {emp.prenom} {emp.nom}
-                        </SelectItem>
-                      ))}
+                      {users.filter(u => u.actif && u.role !== 'Directeur').map(emp => {
+                        // Calculer les demi-journées travaillées ce mois
+                        let demiJournees = 0;
+                        planningMois.filter(p => p.employe_id === emp.id).forEach(p => {
+                          demiJournees += 1;
+                        });
+                        // Convertir en jours (2 demi-journées = 1 jour)
+                        const jours = demiJournees / 2;
+                        const joursStr = jours % 1 === 0 ? jours.toString() : jours.toFixed(1).replace('.', ',');
+                        
+                        return (
+                          <SelectItem key={emp.id} value={emp.id}>
+                            {emp.role === 'Médecin' ? '👨‍⚕️' : emp.role === 'Assistant' ? '👥' : '📋'} {emp.prenom} {emp.nom} ({joursStr} {jours <= 1 ? 'jour' : 'jours'})
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
