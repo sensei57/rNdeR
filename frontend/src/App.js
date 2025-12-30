@@ -5996,6 +5996,17 @@ const DemandesTravailManager = () => {
     jours_exclus: []
   });
   const [joursDisponibles, setJoursDisponibles] = useState([]);
+  
+  // États pour la demande hebdomadaire (assistants/secrétaires)
+  const [showDemandeHebdoModal, setShowDemandeHebdoModal] = useState(false);
+  const [demandeHebdo, setDemandeHebdo] = useState({
+    employe_id: '',
+    date_debut: '',
+    motif: ''
+  });
+  const [joursHebdoDisponibles, setJoursHebdoDisponibles] = useState([]);
+  const [planningResume, setPlanningResume] = useState({}); // Résumé des présences par jour
+  
   const { user } = useAuth();
 
   useEffect(() => {
