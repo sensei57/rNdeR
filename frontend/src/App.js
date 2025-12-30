@@ -19,6 +19,30 @@ import { toast } from "sonner";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Fonction utilitaire pour trier les employés par rôle (Médecin > Assistant > Secrétaire) puis par prénom
+const sortEmployeesByRoleThenName = (employees) => {
+  const roleOrder = { 'Médecin': 1, 'Assistant': 2, 'Secrétaire': 3, 'Directeur': 4 };
+  return [...employees].sort((a, b) => {
+    // D'abord trier par rôle
+    const roleA = roleOrder[a.role] || 99;
+    const roleB = roleOrder[b.role] || 99;
+    if (roleA !== roleB) return roleA - roleB;
+    // Ensuite par prénom (alphabétique)
+    return (a.prenom || '').localeCompare(b.prenom || '', 'fr');
+  });
+};
+
+// Fonction pour filtrer les employés par recherche de nom/prénom
+const filterEmployeesBySearch = (employees, searchTerm) => {
+  if (!searchTerm || searchTerm.trim() === '') return employees;
+  const term = searchTerm.toLowerCase().trim();
+  return employees.filter(emp => 
+    (emp.prenom && emp.prenom.toLowerCase().includes(term)) ||
+    (emp.nom && emp.nom.toLowerCase().includes(term)) ||
+    (`${emp.prenom} ${emp.nom}`.toLowerCase().includes(term))
+  );
+};
+
 // Auth Context
 const AuthContext = createContext();
 
