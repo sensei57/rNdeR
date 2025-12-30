@@ -3416,8 +3416,9 @@ const PlanningManager = () => {
       const creneauxMatin = planning.MATIN?.filter(c => c.employe_id === employeId) || [];
       const creneauxApresMidi = planning.APRES_MIDI?.filter(c => c.employe_id === employeId) || [];
       
-      total += creneauxMatin.length * 0.5;
-      total += creneauxApresMidi.length * 0.5;
+      // Chaque créneau (MATIN ou APRES_MIDI) = 1 demi-journée
+      if (creneauxMatin.length > 0) total += 1;
+      if (creneauxApresMidi.length > 0) total += 1;
     });
     
     return total;
