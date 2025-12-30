@@ -4138,6 +4138,7 @@ const PlanningManager = () => {
               </Dialog>
             </div>
           )}
+        </div>
 
       {/* Modal de modification de créneau */}
       {user?.role === 'Directeur' && editingCreneau && (
