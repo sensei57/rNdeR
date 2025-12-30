@@ -2656,10 +2656,18 @@ const PlanningManager = () => {
         promises.push(axios.get(`${API}/planning/${dateStr}`));
       }
       
-      const responses = await Promise.all(promises);
+      // Récupérer aussi les demandes de travail en attente
+      const [demandesRes, ...responses] = await Promise.all([
+        axios.get(`${API}/demandes-travail`),
+        ...promises
+      ]);
+      
       responses.forEach(res => {
         allPlanning.push(...res.data);
       });
+      
+      // Mettre à jour les demandes de travail
+      setDemandesTravail(demandesRes.data);
       
       // Filtrer selon les permissions
       let planningData = allPlanning;
@@ -2694,6 +2702,15 @@ const PlanningManager = () => {
       p.date === date && 
       p.creneau === creneau && 
       p.employe_role === 'Médecin'
+    ).length;
+  };
+
+  // Compter les demandes de médecins en attente pour un jour/créneau
+  const countMedecinsEnAttente = (date, creneau) => {
+    return demandesTravail.filter(d => 
+      d.date_demandee === date && 
+      d.statut === 'EN_ATTENTE' &&
+      (d.creneau === creneau || d.creneau === 'JOURNEE_COMPLETE')
     ).length;
   };
 
