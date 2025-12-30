@@ -3233,12 +3233,54 @@ const PlanningManager = () => {
     roles.forEach(role => {
       let creneaux = planningData.filter(c => c.employe_role === role);
       
-      // Tri par prénom pour tous les rôles
-      creneaux.sort((a, b) => {
-        const prenomA = a.employe?.prenom || '';
-        const prenomB = b.employe?.prenom || '';
-        return prenomA.localeCompare(prenomB, 'fr');
-      });
+      // Tri selon le rôle
+      if (role === 'Médecin') {
+        // Tri par salle_attribuee (Box 1, Box 2, etc.)
+        creneaux.sort((a, b) => {
+          const salleA = a.salle_attribuee || '';
+          const salleB = b.salle_attribuee || '';
+          
+          // Extraire le numéro du box si format "Box X"
+          const numA = salleA.match(/Box (\d+)/i)?.[1];
+          const numB = salleB.match(/Box (\d+)/i)?.[1];
+          
+          if (numA && numB) {
+            return parseInt(numA) - parseInt(numB);
+          }
+          
+          // Sinon tri alphabétique par prénom
+          const prenomA = a.employe?.prenom || '';
+          const prenomB = b.employe?.prenom || '';
+          return prenomA.localeCompare(prenomB, 'fr');
+        });
+      } else if (role === 'Assistant') {
+        // Tri par salle_attente (A, O, C, D, Bleu) puis par prénom
+        const ordreAttente = ['A', 'O', 'C', 'D', 'Bleu'];
+        creneaux.sort((a, b) => {
+          const attenteA = a.salle_attente || '';
+          const attenteB = b.salle_attente || '';
+          
+          const indexA = ordreAttente.indexOf(attenteA);
+          const indexB = ordreAttente.indexOf(attenteB);
+          
+          // Si les deux sont dans l'ordre défini
+          if (indexA !== -1 && indexB !== -1 && indexA !== indexB) {
+            return indexA - indexB;
+          }
+          
+          // Sinon tri par prénom
+          const prenomA = a.employe?.prenom || '';
+          const prenomB = b.employe?.prenom || '';
+          return prenomA.localeCompare(prenomB, 'fr');
+        });
+      } else if (role === 'Secrétaire') {
+        // Tri alphabétique par prénom
+        creneaux.sort((a, b) => {
+          const prenomA = a.employe?.prenom || '';
+          const prenomB = b.employe?.prenom || '';
+          return prenomA.localeCompare(prenomB, 'fr');
+        });
+      }
       
       groups[role] = creneaux;
     });
