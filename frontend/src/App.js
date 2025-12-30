@@ -3239,10 +3239,6 @@ const PlanningManager = () => {
         const prenomB = b.employe?.prenom || '';
         return prenomA.localeCompare(prenomB, 'fr');
       });
-          const nomB = `${b.employe?.nom || ''} ${b.employe?.prenom || ''}`;
-          return nomA.localeCompare(nomB);
-        });
-      }
       
       groups[role] = creneaux;
     });
