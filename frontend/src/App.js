@@ -2460,6 +2460,7 @@ const PlanningManager = () => {
   const [showAnnulationCreneauModal, setShowAnnulationCreneauModal] = useState(false);
   const [creneauToCancel, setCreneauToCancel] = useState(null);
   const [raisonAnnulationCreneau, setRaisonAnnulationCreneau] = useState('');
+  const [searchEmploye, setSearchEmploye] = useState(''); // Recherche employé
 
   const goToToday = () => {
     const today = new Date().toISOString().split('T')[0];
