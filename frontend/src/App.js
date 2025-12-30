@@ -5634,6 +5634,8 @@ const PlanningManager = () => {
                       const creneauxAM = planningFiltre.filter(p => p.creneau === 'APRES_MIDI');
                       const medecinsMatinCount = creneauxMatin.filter(p => p.employe_role === 'Médecin').length;
                       const medecinsAMCount = creneauxAM.filter(p => p.employe_role === 'Médecin').length;
+                      const enAttenteMatinCount = countMedecinsEnAttente(dateStr, 'MATIN');
+                      const enAttenteAMCount = countMedecinsEnAttente(dateStr, 'APRES_MIDI');
                       
                       jours.push(
                         <div 
@@ -5653,16 +5655,21 @@ const PlanningManager = () => {
                                 {/* Matin */}
                                 <div 
                                   className={`text-xs p-1 rounded cursor-pointer transition-colors ${
-                                    creneauxMatin.length > 0 
+                                    creneauxMatin.length > 0 || enAttenteMatinCount > 0
                                       ? 'bg-orange-100 hover:bg-orange-200 text-orange-800' 
                                       : 'bg-gray-100 text-gray-400'
                                   }`}
-                                  onClick={() => creneauxMatin.length > 0 && showMoisCreneauDetails(dateStr, 'MATIN')}
-                                  title={creneauxMatin.length > 0 ? "Cliquez pour voir les détails" : "Aucun créneau"}
+                                  onClick={() => (creneauxMatin.length > 0 || enAttenteMatinCount > 0) && showMoisCreneauDetails(dateStr, 'MATIN')}
+                                  title={creneauxMatin.length > 0 || enAttenteMatinCount > 0 ? "Cliquez pour voir les détails" : "Aucun créneau"}
                                 >
                                   <div className="font-semibold">🌅 Matin</div>
                                   {filterEmployeMois === 'tous' || filterEmployeMois === 'medecins' ? (
-                                    <div className="text-center font-bold text-lg">{medecinsMatinCount}</div>
+                                    <div className="text-center font-bold text-lg">
+                                      {medecinsMatinCount}
+                                      {enAttenteMatinCount > 0 && (
+                                        <span className="text-yellow-600 text-sm"> (+{enAttenteMatinCount})</span>
+                                      )}
+                                    </div>
                                   ) : (
                                     <div className="text-center">{creneauxMatin.length > 0 ? '✅' : '-'}</div>
                                   )}
@@ -5674,16 +5681,21 @@ const PlanningManager = () => {
                                 {/* Après-midi */}
                                 <div 
                                   className={`text-xs p-1 rounded cursor-pointer transition-colors ${
-                                    creneauxAM.length > 0 
+                                    creneauxAM.length > 0 || enAttenteAMCount > 0
                                       ? 'bg-purple-100 hover:bg-purple-200 text-purple-800' 
                                       : 'bg-gray-100 text-gray-400'
                                   }`}
-                                  onClick={() => creneauxAM.length > 0 && showMoisCreneauDetails(dateStr, 'APRES_MIDI')}
-                                  title={creneauxAM.length > 0 ? "Cliquez pour voir les détails" : "Aucun créneau"}
+                                  onClick={() => (creneauxAM.length > 0 || enAttenteAMCount > 0) && showMoisCreneauDetails(dateStr, 'APRES_MIDI')}
+                                  title={creneauxAM.length > 0 || enAttenteAMCount > 0 ? "Cliquez pour voir les détails" : "Aucun créneau"}
                                 >
                                   <div className="font-semibold">🌆 Après-midi</div>
                                   {filterEmployeMois === 'tous' || filterEmployeMois === 'medecins' ? (
-                                    <div className="text-center font-bold text-lg">{medecinsAMCount}</div>
+                                    <div className="text-center font-bold text-lg">
+                                      {medecinsAMCount}
+                                      {enAttenteAMCount > 0 && (
+                                        <span className="text-yellow-600 text-sm"> (+{enAttenteAMCount})</span>
+                                      )}
+                                    </div>
                                   ) : (
                                     <div className="text-center">{creneauxAM.length > 0 ? '✅' : '-'}</div>
                                   )}
