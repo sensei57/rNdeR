@@ -6343,6 +6343,153 @@ const DemandesTravailManager = () => {
     }
   };
 
+  // ===== DEMANDE HEBDOMADAIRE (Assistants/Secrétaires) =====
+  const handleOpenDemandeHebdo = () => {
+    const today = new Date();
+    // Trouver le lundi de la semaine prochaine
+    const dayOfWeek = today.getDay();
+    const daysUntilMonday = dayOfWeek === 0 ? 1 : (8 - dayOfWeek);
+    const nextMonday = new Date(today);
+    nextMonday.setDate(today.getDate() + daysUntilMonday);
+    
+    setDemandeHebdo({
+      employe_id: user?.role === 'Directeur' ? '' : user?.id,
+      date_debut: nextMonday.toISOString().split('T')[0],
+      motif: ''
+    });
+    genererJoursSemaine(nextMonday.toISOString().split('T')[0]);
+    setShowDemandeHebdoModal(true);
+  };
+
+  const genererJoursSemaine = async (dateDebut) => {
+    const startDate = new Date(dateDebut + 'T12:00:00');
+    // Trouver le lundi de cette semaine
+    const day = startDate.getDay();
+    const monday = new Date(startDate);
+    monday.setDate(startDate.getDate() - (day === 0 ? 6 : day - 1));
+    
+    const jours = [];
+    const joursNoms = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+    const resume = {};
+    
+    for (let i = 0; i < 7; i++) {
+      const currentDate = new Date(monday);
+      currentDate.setDate(monday.getDate() + i);
+      const dateStr = currentDate.toISOString().split('T')[0];
+      
+      jours.push({
+        date: dateStr,
+        jourNom: joursNoms[i],
+        creneau: null,
+        selectionne: false
+      });
+      
+      // Récupérer le planning pour ce jour
+      try {
+        const res = await axios.get(`${API}/planning/${dateStr}`);
+        const medecins = res.data.filter(p => p.employe_role === 'Médecin');
+        const assistants = res.data.filter(p => p.employe_role === 'Assistant');
+        resume[dateStr] = {
+          medecinsMatin: medecins.filter(p => p.creneau === 'MATIN').length,
+          medecinsAM: medecins.filter(p => p.creneau === 'APRES_MIDI').length,
+          assistantsMatin: assistants.filter(p => p.creneau === 'MATIN').length,
+          assistantsAM: assistants.filter(p => p.creneau === 'APRES_MIDI').length
+        };
+      } catch (error) {
+        resume[dateStr] = { medecinsMatin: 0, medecinsAM: 0, assistantsMatin: 0, assistantsAM: 0 };
+      }
+    }
+    
+    setJoursHebdoDisponibles(jours);
+    setPlanningResume(resume);
+  };
+
+  const handleDateDebutHebdoChange = (newDate) => {
+    setDemandeHebdo(prev => ({ ...prev, date_debut: newDate }));
+    genererJoursSemaine(newDate);
+  };
+
+  const toggleJourHebdoSelection = (dateStr) => {
+    setJoursHebdoDisponibles(prev => prev.map(j => {
+      if (j.date !== dateStr) return j;
+      
+      // Système cyclique : null → MATIN → APRES_MIDI → JOURNEE_COMPLETE → null
+      let nouveauCreneau = null;
+      let nouveauSelectionne = false;
+      
+      if (j.creneau === null) {
+        nouveauCreneau = 'MATIN';
+        nouveauSelectionne = true;
+      } else if (j.creneau === 'MATIN') {
+        nouveauCreneau = 'APRES_MIDI';
+        nouveauSelectionne = true;
+      } else if (j.creneau === 'APRES_MIDI') {
+        nouveauCreneau = 'JOURNEE_COMPLETE';
+        nouveauSelectionne = true;
+      } else {
+        nouveauCreneau = null;
+        nouveauSelectionne = false;
+      }
+      
+      return { ...j, creneau: nouveauCreneau, selectionne: nouveauSelectionne };
+    }));
+  };
+
+  const handleSubmitDemandeHebdo = async (e) => {
+    e.preventDefault();
+    
+    if (user?.role === 'Directeur' && !demandeHebdo.employe_id) {
+      toast.error('Veuillez sélectionner un employé');
+      return;
+    }
+    
+    const joursAvecCreneaux = joursHebdoDisponibles
+      .filter(j => j.selectionne && j.creneau !== null)
+      .map(j => ({
+        date: j.date,
+        creneau: j.creneau
+      }));
+    
+    if (joursAvecCreneaux.length === 0) {
+      toast.error('Veuillez sélectionner au moins un jour');
+      return;
+    }
+    
+    try {
+      // Créer les demandes une par une (ou créer un endpoint batch)
+      for (const jour of joursAvecCreneaux) {
+        if (jour.creneau === 'JOURNEE_COMPLETE') {
+          // Créer 2 demandes : matin + après-midi
+          await axios.post(`${API}/demandes-travail`, {
+            medecin_id: demandeHebdo.employe_id || user?.id,
+            date_demandee: jour.date,
+            creneau: 'MATIN',
+            motif: demandeHebdo.motif || 'Demande hebdomadaire'
+          });
+          await axios.post(`${API}/demandes-travail`, {
+            medecin_id: demandeHebdo.employe_id || user?.id,
+            date_demandee: jour.date,
+            creneau: 'APRES_MIDI',
+            motif: demandeHebdo.motif || 'Demande hebdomadaire'
+          });
+        } else {
+          await axios.post(`${API}/demandes-travail`, {
+            medecin_id: demandeHebdo.employe_id || user?.id,
+            date_demandee: jour.date,
+            creneau: jour.creneau,
+            motif: demandeHebdo.motif || 'Demande hebdomadaire'
+          });
+        }
+      }
+      
+      toast.success('Demandes hebdomadaires créées avec succès');
+      setShowDemandeHebdoModal(false);
+      fetchDemandes();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la création des demandes');
+    }
+  };
+
   const resetForm = () => {
     setNewDemande({
       date_demandee: '',
