@@ -4956,7 +4956,13 @@ const PlanningManager = () => {
                                   )}
                                   {(creneau.horaire_debut || creneau.horaire_fin) && (
                                     <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
-                                      🕐 {creneau.horaire_debut || '?'} - {creneau.horaire_fin || '?'}
+                                      {creneau.horaire_pause_debut && creneau.horaire_pause_fin ? (
+                                        // Affichage avec pause (journée complète)
+                                        <>🕐 {creneau.horaire_debut || '?'} - {creneau.horaire_pause_debut} / {creneau.horaire_pause_fin} - {creneau.horaire_fin || '?'}</>
+                                      ) : (
+                                        // Affichage simple (matin ou après-midi)
+                                        <>🕐 {creneau.horaire_debut || '?'} - {creneau.horaire_fin || '?'}</>
+                                      )}
                                     </div>
                                   )}
                                 </>
@@ -5176,7 +5182,13 @@ const PlanningManager = () => {
                                   )}
                                   {(creneau.horaire_debut || creneau.horaire_fin) && (
                                     <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
-                                      🕐 {creneau.horaire_debut || '?'} - {creneau.horaire_fin || '?'}
+                                      {creneau.horaire_pause_debut && creneau.horaire_pause_fin ? (
+                                        // Affichage avec pause (journée complète)
+                                        <>🕐 {creneau.horaire_debut || '?'} - {creneau.horaire_pause_debut} / {creneau.horaire_pause_fin} - {creneau.horaire_fin || '?'}</>
+                                      ) : (
+                                        // Affichage simple (matin ou après-midi)
+                                        <>🕐 {creneau.horaire_debut || '?'} - {creneau.horaire_fin || '?'}</>
+                                      )}
                                     </div>
                                   )}
                                 </>
