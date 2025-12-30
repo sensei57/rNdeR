@@ -2959,6 +2959,63 @@ const PlanningManager = () => {
     }
   };
 
+  // Dupliquer un créneau vers l'autre période (matin ↔ après-midi)
+  const handleDuplicateCreneau = async (creneau) => {
+    const nouveauCreneau = creneau.creneau === 'MATIN' ? 'APRES_MIDI' : 'MATIN';
+    const creneauLabel = nouveauCreneau === 'MATIN' ? 'Matin' : 'Après-midi';
+    
+    try {
+      // Créer le nouveau créneau avec les mêmes informations
+      await axios.post(`${API}/planning`, {
+        employe_id: creneau.employe_id,
+        date: creneau.date,
+        creneau: nouveauCreneau,
+        salle_attribuee: creneau.salle_attribuee,
+        salle_attente: creneau.salle_attente,
+        notes: creneau.notes,
+        horaire_debut: creneau.horaire_debut,
+        horaire_fin: creneau.horaire_fin
+      });
+      
+      // Si c'est un médecin avec des assistants, dupliquer aussi les assignations
+      if (creneau.employe_role === 'Médecin') {
+        const assistantsAssignes = getAssistantsForMedecinInPlanning(creneau.employe_id, creneau.date, creneau.creneau);
+        for (const assistant of assistantsAssignes) {
+          // Vérifier si l'assistant a un créneau pour la nouvelle période
+          const assistantCreneau = planning.find(p => 
+            p.employe_id === assistant.id && 
+            p.date === creneau.date && 
+            p.creneau === nouveauCreneau
+          );
+          
+          if (assistantCreneau) {
+            // Créer l'assignation pour la nouvelle période
+            await axios.post(`${API}/assignations`, {
+              medecin_id: creneau.employe_id,
+              assistant_id: assistant.id,
+              date: creneau.date,
+              creneau: nouveauCreneau
+            });
+          }
+        }
+      }
+      
+      toast.success(`Créneau dupliqué vers ${creneauLabel}`);
+      
+      if (viewMode === 'semaine') {
+        fetchPlanningSemaine(selectedWeek);
+      } else {
+        fetchPlanningByDate(selectedDate);
+      }
+    } catch (error) {
+      if (error.response?.status === 400) {
+        toast.error(`Un créneau existe déjà pour ${creneauLabel}`);
+      } else {
+        toast.error('Erreur lors de la duplication');
+      }
+    }
+  };
+
   const handleAnnulerCreneau = async (creneau) => {
     // Vérifier si ce créneau vient d'une demande de travail approuvée
     const demandeTravail = demandesTravail.find(d => 
