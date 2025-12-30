@@ -3867,9 +3867,29 @@ const PlanningManager = () => {
                           <SelectValue placeholder="Sélectionnez un employé" />
                         </SelectTrigger>
                         <SelectContent>
-                          {users.map(employe => (
-                            <SelectItem key={employe.id} value={employe.id}>
-                              {employe.prenom} {employe.nom} ({employe.role})
+                          <div className="p-2 border-b">
+                            <Input
+                              placeholder="🔍 Rechercher..."
+                              className="h-8"
+                              onClick={(e) => e.stopPropagation()}
+                              onChange={(e) => {
+                                // Filtrage local via data attribute
+                                const term = e.target.value.toLowerCase();
+                                const items = e.target.closest('.select-content')?.querySelectorAll('[data-employee-name]');
+                                items?.forEach(item => {
+                                  const name = item.getAttribute('data-employee-name');
+                                  item.style.display = name?.includes(term) ? '' : 'none';
+                                });
+                              }}
+                            />
+                          </div>
+                          {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role !== 'Directeur')).map(employe => (
+                            <SelectItem 
+                              key={employe.id} 
+                              value={employe.id}
+                              data-employee-name={`${employe.prenom} ${employe.nom}`.toLowerCase()}
+                            >
+                              {employe.role === 'Médecin' ? '👨‍⚕️' : employe.role === 'Assistant' ? '👥' : '📋'} {employe.prenom} {employe.nom}
                             </SelectItem>
                           ))}
                         </SelectContent>
