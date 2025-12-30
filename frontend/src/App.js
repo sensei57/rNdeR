@@ -3829,7 +3829,23 @@ const PlanningManager = () => {
                         <Label>Créneau *</Label>
                         <Select
                           value={newCreneau.creneau}
-                          onValueChange={(value) => setNewCreneau({...newCreneau, creneau: value})}
+                          onValueChange={(value) => {
+                            const employe = users.find(u => u.id === newCreneau.employe_id);
+                            let horaires = { horaire_debut: newCreneau.horaire_debut, horaire_fin: newCreneau.horaire_fin };
+                            
+                            // Ajuster automatiquement les horaires pour les secrétaires
+                            if (employe?.role === 'Secrétaire') {
+                              if (value === 'MATIN') {
+                                horaires = { horaire_debut: '08:00', horaire_fin: '12:00' };
+                              } else if (value === 'APRES_MIDI') {
+                                horaires = { horaire_debut: '14:00', horaire_fin: '18:00' };
+                              } else if (value === 'JOURNEE_COMPLETE') {
+                                horaires = { horaire_debut: '08:00', horaire_fin: '18:00' };
+                              }
+                            }
+                            
+                            setNewCreneau({...newCreneau, creneau: value, ...horaires});
+                          }}
                         >
                           <SelectTrigger>
                             <SelectValue />
