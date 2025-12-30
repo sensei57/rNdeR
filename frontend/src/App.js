@@ -3569,240 +3569,236 @@ const PlanningManager = () => {
           <h2 className="text-2xl font-bold text-gray-800">Planning Interactif</h2>
           <p className="text-gray-600 mt-1">Gérez les horaires et affectations du personnel</p>
         </div>
+      </div>
+      
+      {/* Ligne 1 : Vue Jour/Semaine/Mois + Filtres par rôle */}
+      <div className="flex flex-wrap items-center gap-4 mb-4">
+        {/* Mode d'affichage - Disponible pour tous */}
+        <div className="flex space-x-2">
+          <Button
+            variant={viewMode === 'jour' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              setViewMode('jour');
+              setSelectedDate(selectedWeek);
+            }}
+          >
+            Vue Jour
+          </Button>
+          <Button
+            variant={viewMode === 'semaine' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              setViewMode('semaine');
+              setSelectedWeek(selectedDate);
+            }}
+          >
+            Vue Semaine
+          </Button>
+          <Button
+            variant={viewMode === 'mois' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              setViewMode('mois');
+              setSelectedMonth(selectedDate.slice(0, 7));
+            }}
+          >
+            Vue Mois
+          </Button>
+        </div>
         
-        <div className="flex items-center space-x-4">
-          {/* Mode d'affichage - Disponible pour tous */}
-          <div className="flex space-x-2">
-            <Button
-              variant={viewMode === 'jour' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => {
-                setViewMode('jour');
-                // Synchroniser la date jour avec la semaine
-                setSelectedDate(selectedWeek);
-              }}
-            >
-              Vue Jour
-            </Button>
-            <Button
-              variant={viewMode === 'semaine' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => {
-                setViewMode('semaine');
-                // Synchroniser la semaine avec la date jour
-                setSelectedWeek(selectedDate);
-              }}
-            >
-              Vue Semaine
-            </Button>
-            <Button
-              variant={viewMode === 'mois' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => {
-                setViewMode('mois');
-                // Synchroniser le mois avec la date actuelle
-                setSelectedMonth(selectedDate.slice(0, 7));
-              }}
-            >
-              Vue Mois
-            </Button>
-          </div>
-          
-          {/* Filtre par rôle - Sélection multiple pour le directeur */}
-          {user?.role === 'Directeur' && (
-            <div className="flex items-center space-x-4">
+        {/* Filtre par rôle - Sélection multiple pour le directeur */}
+        {user?.role === 'Directeur' && (
+          <>
+            <div className="border-l pl-4 flex items-center space-x-2">
               <span className="text-sm font-medium">Filtres :</span>
-              <div className="flex space-x-2">
-                <Button
-                  variant={filterRole.length === 3 ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={selectAllRoles}
-                >
-                  Tous
-                </Button>
-              </div>
-              <div className="flex space-x-2">
-                <Button
-                  variant={filterRole.includes('Médecin') ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handleRoleToggle('Médecin')}
-                >
-                  {filterRole.includes('Médecin') ? '✓ ' : ''}Médecins
-                </Button>
-                <Button
-                  variant={filterRole.includes('Assistant') ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handleRoleToggle('Assistant')}
-                >
-                  {filterRole.includes('Assistant') ? '✓ ' : ''}Assistants
-                </Button>
-                <Button
-                  variant={filterRole.includes('Secrétaire') ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handleRoleToggle('Secrétaire')}
-                >
-                  {filterRole.includes('Secrétaire') ? '✓ ' : ''}Secrétaires
-                </Button>
-              </div>
-              <div className="border-l pl-4 ml-4">
-                <Button
-                  variant={showDetails ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setShowDetails(!showDetails)}
-                  className="flex items-center"
-                >
-                  {showDetails ? '👁️ Masquer détails' : '👁️ Afficher détails'}
-                </Button>
-              </div>
-              {/* Filtre par employé spécifique */}
-              {viewMode !== 'mois' && (
-                <div className="border-l pl-4 ml-4 flex items-center space-x-2">
-                  <Label className="text-sm whitespace-nowrap">Employé:</Label>
-                  <Select value={filterEmploye} onValueChange={(val) => { setFilterEmploye(val); setSearchEmploye(''); }}>
-                    <SelectTrigger className="w-[280px] h-8">
-                      <SelectValue placeholder="Tous" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <div className="p-2 border-b">
-                        <Input
-                          placeholder="🔍 Rechercher un employé..."
-                          value={searchEmploye}
-                          onChange={(e) => setSearchEmploye(e.target.value)}
-                          className="h-8"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </div>
-                      <SelectItem value="tous">👥 Tous les employés</SelectItem>
-                      {sortEmployeesByRoleThenName(
-                        filterEmployeesBySearch(
-                          users.filter(u => u.actif && u.role !== 'Directeur'),
-                          searchEmploye
-                        )
-                      ).map(emp => {
-                        // Calculer les demi-journées travaillées selon la vue
-                        let demiJournees = 0;
-                        if (viewMode === 'jour') {
-                          const creneauxJour = planning.filter(p => p.employe_id === emp.id);
-                          demiJournees = creneauxJour.length;
-                        } else if (viewMode === 'semaine' && planningSemaine?.planning) {
-                          planningSemaine.dates?.forEach(date => {
-                            const matin = (planningSemaine.planning[date]?.MATIN || []).filter(c => c.employe_id === emp.id);
-                            const apresMidi = (planningSemaine.planning[date]?.APRES_MIDI || []).filter(c => c.employe_id === emp.id);
-                            if (matin.length > 0) demiJournees += 1;
-                            if (apresMidi.length > 0) demiJournees += 1;
-                          });
-                        }
-                        const jours = demiJournees / 2;
-                        const joursStr = jours % 1 === 0 ? jours.toString() : jours.toFixed(1).replace('.', ',');
-                        
-                        return (
-                          <SelectItem key={emp.id} value={emp.id}>
-                            {emp.role === 'Médecin' ? '👨‍⚕️' : emp.role === 'Assistant' ? '👥' : '📋'} {emp.prenom} {emp.nom} ({joursStr} {jours <= 1 ? 'jour' : 'jours'})
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              <Button
+                variant={filterRole.length === 3 ? 'default' : 'outline'}
+                size="sm"
+                onClick={selectAllRoles}
+              >
+                Tous
+              </Button>
+              <Button
+                variant={filterRole.includes('Médecin') ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleRoleToggle('Médecin')}
+              >
+                {filterRole.includes('Médecin') ? '✓ ' : ''}Médecins
+              </Button>
+              <Button
+                variant={filterRole.includes('Assistant') ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleRoleToggle('Assistant')}
+              >
+                {filterRole.includes('Assistant') ? '✓ ' : ''}Assistants
+              </Button>
+              <Button
+                variant={filterRole.includes('Secrétaire') ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleRoleToggle('Secrétaire')}
+              >
+                {filterRole.includes('Secrétaire') ? '✓ ' : ''}Secrétaires
+              </Button>
             </div>
-          )}
-          
-          {/* Navigation et sélecteur de date */}
+            <div className="border-l pl-4">
+              <Button
+                variant={showDetails ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setShowDetails(!showDetails)}
+              >
+                {showDetails ? '👁️ Masquer détails' : '👁️ Afficher détails'}
+              </Button>
+            </div>
+          </>
+        )}
+      </div>
+      
+      {/* Ligne 2 : Filtre employé + Navigation + Actions */}
+      <div className="flex flex-wrap items-center gap-4 mb-4">
+        {/* Filtre par employé spécifique (Directeur) */}
+        {user?.role === 'Directeur' && viewMode !== 'mois' && (
           <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (viewMode === 'jour') {
-                  // Navigation jour par jour
-                  const currentDate = new Date(selectedDate);
-                  currentDate.setDate(currentDate.getDate() - 1);
-                  setSelectedDate(currentDate.toISOString().split('T')[0]);
-                } else if (viewMode === 'semaine') {
-                  // Navigation semaine par semaine
-                  navigateWeek('prev');
-                } else if (viewMode === 'mois') {
-                  // Navigation mois par mois
-                  navigateMonth('prev');
-                }
-              }}
-              className="px-2"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            {viewMode === 'mois' ? (
-              <Input
-                type="month"
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="w-auto"
-              />
-            ) : (
-              <Input
-                type="date"
-                value={viewMode === 'semaine' ? selectedWeek : selectedDate}
-                onChange={(e) => viewMode === 'semaine' ? setSelectedWeek(e.target.value) : setSelectedDate(e.target.value)}
-                className="w-auto"
-              />
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (viewMode === 'jour') {
-                  // Navigation jour par jour
-                  const currentDate = new Date(selectedDate);
-                  currentDate.setDate(currentDate.getDate() + 1);
-                  setSelectedDate(currentDate.toISOString().split('T')[0]);
-                } else if (viewMode === 'semaine') {
-                  // Navigation semaine par semaine
-                  navigateWeek('next');
-                } else if (viewMode === 'mois') {
-                  // Navigation mois par mois
-                  navigateMonth('next');
-                }
-              }}
-              className="px-2"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={goToToday}
-            >
-              Aujourd'hui
-            </Button>
+            <Label className="text-sm whitespace-nowrap">Employé:</Label>
+            <Select value={filterEmploye} onValueChange={(val) => { setFilterEmploye(val); setSearchEmploye(''); }}>
+              <SelectTrigger className="w-[280px] h-8">
+                <SelectValue placeholder="Tous" />
+              </SelectTrigger>
+              <SelectContent>
+                <div className="p-2 border-b">
+                  <Input
+                    placeholder="🔍 Rechercher un employé..."
+                    value={searchEmploye}
+                    onChange={(e) => setSearchEmploye(e.target.value)}
+                    className="h-8"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+                <SelectItem value="tous">👥 Tous les employés</SelectItem>
+                {sortEmployeesByRoleThenName(
+                  filterEmployeesBySearch(
+                    users.filter(u => u.actif && u.role !== 'Directeur'),
+                    searchEmploye
+                  )
+                ).map(emp => {
+                  let demiJournees = 0;
+                  if (viewMode === 'jour') {
+                    const creneauxJour = planning.filter(p => p.employe_id === emp.id);
+                    demiJournees = creneauxJour.length;
+                  } else if (viewMode === 'semaine' && planningSemaine?.planning) {
+                    planningSemaine.dates?.forEach(date => {
+                      const matin = (planningSemaine.planning[date]?.MATIN || []).filter(c => c.employe_id === emp.id);
+                      const apresMidi = (planningSemaine.planning[date]?.APRES_MIDI || []).filter(c => c.employe_id === emp.id);
+                      if (matin.length > 0) demiJournees += 1;
+                      if (apresMidi.length > 0) demiJournees += 1;
+                    });
+                  }
+                  const jours = demiJournees / 2;
+                  const joursStr = jours % 1 === 0 ? jours.toString() : jours.toFixed(1).replace('.', ',');
+                  
+                  return (
+                    <SelectItem key={emp.id} value={emp.id}>
+                      {emp.role === 'Médecin' ? '👨‍⚕️' : emp.role === 'Assistant' ? '👥' : '📋'} {emp.prenom} {emp.nom} ({joursStr} {jours <= 1 ? 'jour' : 'jours'})
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
           </div>
-          
-          {user?.role === 'Directeur' && (
-            <div>
-              <Button
-                onClick={generateNotifications}
-                variant="outline"
-                className="flex items-center space-x-2"
-              >
-                <Send className="h-4 w-4" />
-                <span>Générer Notifications</span>
-              </Button>
-              
-              <Button
-                onClick={() => setShowSemaineTypeModal(true)}
-                variant="outline"
-                className="flex items-center space-x-2"
-              >
-                <Calendar className="h-4 w-4" />
-                <span>Appliquer Semaine Type</span>
-              </Button>
-              
-              <Dialog open={showPlanningModal} onOpenChange={setShowPlanningModal}>
-                <DialogTrigger asChild>
-                  <Button className="flex items-center space-x-2">
-                    <Plus className="h-4 w-4" />
-                    <span>Nouveau Créneau</span>
-                  </Button>
-                </DialogTrigger>
+        )}
+        
+        {/* Navigation et sélecteur de date */}
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (viewMode === 'jour') {
+                const currentDate = new Date(selectedDate);
+                currentDate.setDate(currentDate.getDate() - 1);
+                setSelectedDate(currentDate.toISOString().split('T')[0]);
+              } else if (viewMode === 'semaine') {
+                navigateWeek('prev');
+              } else if (viewMode === 'mois') {
+                navigateMonth('prev');
+              }
+            }}
+            className="px-2"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          {viewMode === 'mois' ? (
+            <Input
+              type="month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="w-auto"
+            />
+          ) : (
+            <Input
+              type="date"
+              value={viewMode === 'semaine' ? selectedWeek : selectedDate}
+              onChange={(e) => viewMode === 'semaine' ? setSelectedWeek(e.target.value) : setSelectedDate(e.target.value)}
+              className="w-auto"
+            />
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (viewMode === 'jour') {
+                const currentDate = new Date(selectedDate);
+                currentDate.setDate(currentDate.getDate() + 1);
+                setSelectedDate(currentDate.toISOString().split('T')[0]);
+              } else if (viewMode === 'semaine') {
+                navigateWeek('next');
+              } else if (viewMode === 'mois') {
+                navigateMonth('next');
+              }
+            }}
+            className="px-2"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={goToToday}
+          >
+            Aujourd'hui
+          </Button>
+        </div>
+        
+        {/* Actions du directeur */}
+        {user?.role === 'Directeur' && (
+          <div className="flex items-center space-x-2 border-l pl-4">
+            <Button
+              onClick={generateNotifications}
+              variant="outline"
+              size="sm"
+              className="flex items-center space-x-2"
+            >
+              <Send className="h-4 w-4" />
+              <span>Notifications</span>
+            </Button>
+            
+            <Button
+              onClick={() => setShowSemaineTypeModal(true)}
+              variant="outline"
+              size="sm"
+              className="flex items-center space-x-2"
+            >
+              <Calendar className="h-4 w-4" />
+              <span>Semaine Type</span>
+            </Button>
+            
+            <Dialog open={showPlanningModal} onOpenChange={setShowPlanningModal}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="flex items-center space-x-2">
+                  <Plus className="h-4 w-4" />
+                  <span>Nouveau Créneau</span>
+                </Button>
+              </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Nouveau Créneau Planning</DialogTitle>
