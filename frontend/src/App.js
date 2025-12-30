@@ -5196,28 +5196,42 @@ const PlanningManager = () => {
               
               {/* Créneaux par jour avec filtrage */}
               {planningSemaine.dates.map(date => {
-                // Filtrer les créneaux selon les rôles sélectionnés
+                // Filtrer les créneaux selon les rôles sélectionnés et l'employé spécifique
                 const planningMatinFiltered = filterRole.length === 0
                   ? []
-                  : (planningSemaine.planning[date]?.MATIN || []).filter(c => filterRole.includes(c.employe_role));
+                  : (planningSemaine.planning[date]?.MATIN || []).filter(c => {
+                      if (!filterRole.includes(c.employe_role)) return false;
+                      if (filterEmploye !== 'tous' && c.employe_id !== filterEmploye) return false;
+                      return true;
+                    });
                 
                 const planningApresMidiFiltered = filterRole.length === 0
                   ? []
-                  : (planningSemaine.planning[date]?.APRES_MIDI || []).filter(c => filterRole.includes(c.employe_role));
+                  : (planningSemaine.planning[date]?.APRES_MIDI || []).filter(c => {
+                      if (!filterRole.includes(c.employe_role)) return false;
+                      if (filterEmploye !== 'tous' && c.employe_id !== filterEmploye) return false;
+                      return true;
+                    });
                 
-                // Trouver les employés en congé ce jour
+                // Trouver les employés en congé ce jour (filtré par employé si sélectionné)
                 const employesEnConge = users.filter(u => 
-                  filterRole.includes(u.role) && isEmployeEnConge(u.id, date)
+                  filterRole.includes(u.role) && 
+                  isEmployeEnConge(u.id, date) &&
+                  (filterEmploye === 'tous' || u.id === filterEmploye)
                 );
                 
                 // Trouver les employés avec demande de travail en attente (matin)
                 const employesDemandeMatinEnAttente = users.filter(u => 
-                  filterRole.includes(u.role) && hasDemandeEnAttente(u.id, date, 'MATIN')
+                  filterRole.includes(u.role) && 
+                  hasDemandeEnAttente(u.id, date, 'MATIN') &&
+                  (filterEmploye === 'tous' || u.id === filterEmploye)
                 );
                 
                 // Trouver les employés avec demande de travail en attente (après-midi)
                 const employesDemandeApresMidiEnAttente = users.filter(u => 
-                  filterRole.includes(u.role) && hasDemandeEnAttente(u.id, date, 'APRES_MIDI')
+                  filterRole.includes(u.role) && 
+                  hasDemandeEnAttente(u.id, date, 'APRES_MIDI') &&
+                  (filterEmploye === 'tous' || u.id === filterEmploye)
                 );
                 
                 return (
