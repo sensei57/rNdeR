@@ -3126,10 +3126,16 @@ const PlanningManager = () => {
     return <div className="flex justify-center p-8">Chargement...</div>;
   }
 
-  // Filtrer le planning selon les rôles sélectionnés (multi-sélection)
+  // Filtrer le planning selon les rôles sélectionnés et l'employé spécifique (multi-sélection)
   const filteredPlanning = filterRole.length === 0
     ? []
-    : planning.filter(c => filterRole.includes(c.employe_role));
+    : planning.filter(c => {
+        // Filtre par rôle
+        if (!filterRole.includes(c.employe_role)) return false;
+        // Filtre par employé spécifique (si sélectionné)
+        if (filterEmploye !== 'tous' && c.employe_id !== filterEmploye) return false;
+        return true;
+      });
   
   // Séparer les créneaux par période
   // Le backend crée déjà 2 créneaux séparés (MATIN + APRES_MIDI) pour JOURNEE_COMPLETE
