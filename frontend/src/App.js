@@ -3865,6 +3865,19 @@ const PlanningManager = () => {
                         value={newCreneau.employe_id}
                         onValueChange={(value) => {
                           const employe = users.find(u => u.id === value);
+                          let horaires = { horaire_debut: '', horaire_fin: '' };
+                          
+                          // Ajuster automatiquement les horaires pour les secrétaires selon le créneau
+                          if (employe?.role === 'Secrétaire') {
+                            if (newCreneau.creneau === 'MATIN') {
+                              horaires = { horaire_debut: '08:00', horaire_fin: '12:00' };
+                            } else if (newCreneau.creneau === 'APRES_MIDI') {
+                              horaires = { horaire_debut: '14:00', horaire_fin: '18:00' };
+                            } else {
+                              horaires = { horaire_debut: '08:00', horaire_fin: '18:00' };
+                            }
+                          }
+                          
                           setNewCreneau({
                             ...newCreneau, 
                             employe_id: value,
@@ -3873,8 +3886,7 @@ const PlanningManager = () => {
                             medecin_ids: [],
                             salle_attribuee: '',
                             salle_attente: '',
-                            horaire_debut: employe?.role === 'Secrétaire' ? '08:00' : '',
-                            horaire_fin: employe?.role === 'Secrétaire' ? '17:00' : ''
+                            ...horaires
                           });
                         }}
                       >
