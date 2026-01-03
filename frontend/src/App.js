@@ -6721,8 +6721,8 @@ const PlanningManager = () => {
                             <React.Fragment key={`${secretaire.id}-${date}`}>
                               <td 
                                 className={`border p-1 text-center cursor-pointer hover:bg-pink-200 transition-colors ${creneauMatin ? 'bg-pink-200' : ''}`}
-                                onClick={() => !creneauMatin && openQuickCreneauModal(secretaire, date, 'MATIN')}
-                                title={creneauMatin ? `${creneauMatin.horaire_debut || ''} - ${creneauMatin.horaire_fin || ''}` : 'Cliquer pour ajouter'}
+                                onClick={() => openQuickCreneauModal(secretaire, date, 'MATIN', creneauMatin)}
+                                title={creneauMatin ? `📝 Cliquer pour modifier - ${creneauMatin.horaire_debut || ''} - ${creneauMatin.horaire_fin || ''}` : 'Cliquer pour ajouter'}
                               >
                                 {creneauMatin ? (
                                   <div className="text-xs">
@@ -6734,8 +6734,8 @@ const PlanningManager = () => {
                               </td>
                               <td 
                                 className={`border p-1 text-center cursor-pointer hover:bg-pink-200 transition-colors ${creneauAM ? 'bg-pink-200' : ''}`}
-                                onClick={() => !creneauAM && openQuickCreneauModal(secretaire, date, 'APRES_MIDI')}
-                                title={creneauAM ? `${creneauAM.horaire_debut || ''} - ${creneauAM.horaire_fin || ''}` : 'Cliquer pour ajouter'}
+                                onClick={() => openQuickCreneauModal(secretaire, date, 'APRES_MIDI', creneauAM)}
+                                title={creneauAM ? `📝 Cliquer pour modifier - ${creneauAM.horaire_debut || ''} - ${creneauAM.horaire_fin || ''}` : 'Cliquer pour ajouter'}
                               >
                                 {creneauAM ? (
                                   <div className="text-xs">
