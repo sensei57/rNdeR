@@ -3714,6 +3714,37 @@ async def toggle_user_active(
         {"id": user_id}, 
         {"$set": {"actif": new_status}}
     )
+    
+    return {"message": "Statut mis à jour", "actif": new_status}
+
+@api_router.put("/admin/users/{user_id}/toggle-vue-planning")
+async def toggle_vue_planning_complete(
+    user_id: str,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    """Toggle l'accès à la vue planning complète (lecture seule) pour un utilisateur"""
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    # Un directeur ne peut pas modifier ses propres droits de vue planning
+    if user_id == current_user.id:
+        raise HTTPException(status_code=400, detail="Vous ne pouvez pas modifier vos propres droits de vue planning")
+    
+    new_status = not user.get('vue_planning_complete', False)
+    
+    result = await db.users.update_one(
+        {"id": user_id}, 
+        {"$set": {"vue_planning_complete": new_status}}
+    )
+    
+    return {
+        "message": f"Vue planning {'activée' if new_status else 'désactivée'}", 
+        "vue_planning_complete": new_status,
+        "user_id": user_id,
+        "user_nom": f"{user.get('prenom', '')} {user.get('nom', '')}"
+    }
+
 @api_router.put("/admin/users/{user_id}/email")
 async def update_user_email(
     user_id: str,
