@@ -2461,6 +2461,15 @@ const PlanningManager = () => {
   const [creneauToCancel, setCreneauToCancel] = useState(null);
   const [raisonAnnulationCreneau, setRaisonAnnulationCreneau] = useState('');
   const [searchEmploye, setSearchEmploye] = useState(''); // Recherche employé
+  
+  // États pour le Planning Hebdo (création directe de créneaux)
+  const [showPlanningHebdoModal, setShowPlanningHebdoModal] = useState(false);
+  const [planningHebdo, setPlanningHebdo] = useState({
+    employe_id: '',
+    date_debut: ''
+  });
+  const [joursHebdoPlanning, setJoursHebdoPlanning] = useState([]);
+  const [planningHebdoResume, setPlanningHebdoResume] = useState({});
 
   const goToToday = () => {
     const today = new Date().toISOString().split('T')[0];
