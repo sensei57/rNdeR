@@ -6328,8 +6328,8 @@ const PlanningManager = () => {
                   📅 Planning Mensuel - {new Date(selectedMonth + '-01').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
                 </span>
               </span>
-              {/* Filtre employé pour le directeur */}
-              {user?.role === 'Directeur' && (
+              {/* Filtre employé pour le directeur ou vue planning complète */}
+              {hasDirectorView() && (
                 <div className="flex items-center space-x-2">
                   <Label className="text-sm">Filtrer par employé:</Label>
                   <Select value={filterEmployeMois} onValueChange={setFilterEmployeMois}>
