@@ -3302,39 +3302,53 @@ const PlanningManager = () => {
     }
   };
 
-  // Ouvrir le modal de création rapide pour la Vue Planning
-  const openQuickCreneauModal = (employe, date, creneau) => {
+  // Ouvrir le modal de création/modification rapide pour la Vue Planning
+  const openQuickCreneauModal = (employe, date, creneau, existingCreneau = null) => {
     setQuickCreneauData({
+      id: existingCreneau?.id || null, // ID pour la modification
       employe_id: employe.id,
       employe: employe,
       date: date,
       creneau: creneau,
-      notes: '',
-      horaire_debut: employe.role === 'Secrétaire' ? (creneau === 'MATIN' ? '08:00' : '14:00') : '',
-      horaire_fin: employe.role === 'Secrétaire' ? (creneau === 'MATIN' ? '12:00' : '18:00') : '',
-      horaire_pause_debut: '',
-      horaire_pause_fin: ''
+      notes: existingCreneau?.notes || '',
+      horaire_debut: existingCreneau?.horaire_debut || (employe.role === 'Secrétaire' ? (creneau === 'MATIN' ? '08:00' : '14:00') : ''),
+      horaire_fin: existingCreneau?.horaire_fin || (employe.role === 'Secrétaire' ? (creneau === 'MATIN' ? '12:00' : '18:00') : ''),
+      horaire_pause_debut: existingCreneau?.horaire_pause_debut || '',
+      horaire_pause_fin: existingCreneau?.horaire_pause_fin || ''
     });
     setShowQuickCreneauModal(true);
   };
 
-  // Créer un créneau rapidement depuis la Vue Planning
+  // Créer ou modifier un créneau rapidement depuis la Vue Planning
   const handleQuickCreneauSubmit = async (e) => {
     e.preventDefault();
     
     try {
-      await axios.post(`${API}/planning`, {
-        employe_id: quickCreneauData.employe_id,
-        date: quickCreneauData.date,
-        creneau: quickCreneauData.creneau,
-        notes: quickCreneauData.notes || 'Présence',
-        horaire_debut: quickCreneauData.horaire_debut || null,
-        horaire_fin: quickCreneauData.horaire_fin || null,
-        horaire_pause_debut: quickCreneauData.horaire_pause_debut || null,
-        horaire_pause_fin: quickCreneauData.horaire_pause_fin || null
-      });
+      if (quickCreneauData.id) {
+        // Modification
+        await axios.put(`${API}/planning/${quickCreneauData.id}`, {
+          notes: quickCreneauData.notes || 'Présence',
+          horaire_debut: quickCreneauData.horaire_debut || null,
+          horaire_fin: quickCreneauData.horaire_fin || null,
+          horaire_pause_debut: quickCreneauData.horaire_pause_debut || null,
+          horaire_pause_fin: quickCreneauData.horaire_pause_fin || null
+        });
+        toast.success('Créneau modifié !');
+      } else {
+        // Création
+        await axios.post(`${API}/planning`, {
+          employe_id: quickCreneauData.employe_id,
+          date: quickCreneauData.date,
+          creneau: quickCreneauData.creneau,
+          notes: quickCreneauData.notes || 'Présence',
+          horaire_debut: quickCreneauData.horaire_debut || null,
+          horaire_fin: quickCreneauData.horaire_fin || null,
+          horaire_pause_debut: quickCreneauData.horaire_pause_debut || null,
+          horaire_pause_fin: quickCreneauData.horaire_pause_fin || null
+        });
+        toast.success('Créneau créé !');
+      }
       
-      toast.success('Créneau créé !');
       setShowQuickCreneauModal(false);
       fetchPlanningTableau(selectedWeek);
     } catch (error) {
