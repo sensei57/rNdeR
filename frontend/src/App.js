@@ -6957,6 +6957,10 @@ const DemandesTravailManager = () => {
   const [showSemaineTypeModal, setShowSemaineTypeModal] = useState(false);
   const [configuration, setConfiguration] = useState(null);
   const [typedemande, setTypeDemande] = useState('individuelle'); // 'individuelle' ou 'semaine'
+  
+  // Récupérer la date du planning depuis le contexte
+  const { planningSelectedDate, planningViewMode } = usePlanning();
+  
   const [newDemande, setNewDemande] = useState({
     date_demandee: '',
     creneau: 'MATIN',
@@ -6964,6 +6968,17 @@ const DemandesTravailManager = () => {
     semaine_type_id: '',
     date_debut_semaine: ''
   });
+  
+  // Pré-remplir la date quand le modal s'ouvre si on vient de la vue journalière
+  useEffect(() => {
+    if (showDemandeModal && planningViewMode === 'jour' && planningSelectedDate) {
+      setNewDemande(prev => ({
+        ...prev,
+        date_demandee: planningSelectedDate
+      }));
+    }
+  }, [showDemandeModal, planningViewMode, planningSelectedDate]);
+  
   const [newSemaineType, setNewSemaineType] = useState({
     nom: '',
     description: '',
