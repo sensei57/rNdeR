@@ -3105,6 +3105,161 @@ const PlanningManager = () => {
     }
   };
 
+  // ===== PLANNING HEBDO (Création directe de créneaux par le directeur) =====
+  const openPlanningHebdoModal = () => {
+    const today = new Date();
+    // Trouver le lundi de la semaine prochaine
+    const dayOfWeek = today.getDay();
+    const daysUntilMonday = dayOfWeek === 0 ? 1 : (8 - dayOfWeek);
+    const nextMonday = new Date(today);
+    nextMonday.setDate(today.getDate() + daysUntilMonday);
+    
+    setPlanningHebdo({
+      employe_id: '',
+      date_debut: nextMonday.toISOString().split('T')[0]
+    });
+    genererJoursHebdoPlanning(nextMonday.toISOString().split('T')[0]);
+    setShowPlanningHebdoModal(true);
+  };
+
+  const genererJoursHebdoPlanning = async (dateDebut) => {
+    const startDate = new Date(dateDebut + 'T12:00:00');
+    // Trouver le lundi de cette semaine
+    const day = startDate.getDay();
+    const monday = new Date(startDate);
+    monday.setDate(startDate.getDate() - (day === 0 ? 6 : day - 1));
+    
+    const jours = [];
+    const joursNoms = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+    const resume = {};
+    
+    for (let i = 0; i < 7; i++) {
+      const currentDate = new Date(monday);
+      currentDate.setDate(monday.getDate() + i);
+      const dateStr = currentDate.toISOString().split('T')[0];
+      
+      jours.push({
+        date: dateStr,
+        jourNom: joursNoms[i],
+        creneau: null,
+        selectionne: false
+      });
+      
+      // Récupérer le planning pour ce jour
+      try {
+        const res = await axios.get(`${API}/planning/${dateStr}`);
+        const medecins = res.data.filter(p => p.employe_role === 'Médecin');
+        const assistants = res.data.filter(p => p.employe_role === 'Assistant');
+        resume[dateStr] = {
+          medecinsMatin: medecins.filter(p => p.creneau === 'MATIN').length,
+          medecinsAM: medecins.filter(p => p.creneau === 'APRES_MIDI').length,
+          assistantsMatin: assistants.filter(p => p.creneau === 'MATIN').length,
+          assistantsAM: assistants.filter(p => p.creneau === 'APRES_MIDI').length
+        };
+      } catch (error) {
+        resume[dateStr] = { medecinsMatin: 0, medecinsAM: 0, assistantsMatin: 0, assistantsAM: 0 };
+      }
+    }
+    
+    setJoursHebdoPlanning(jours);
+    setPlanningHebdoResume(resume);
+  };
+
+  const handleDateHebdoPlanningChange = (newDate) => {
+    setPlanningHebdo(prev => ({ ...prev, date_debut: newDate }));
+    genererJoursHebdoPlanning(newDate);
+  };
+
+  const toggleJourHebdoPlanning = (dateStr) => {
+    setJoursHebdoPlanning(prev => prev.map(j => {
+      if (j.date !== dateStr) return j;
+      
+      // Système cyclique : null → MATIN → APRES_MIDI → JOURNEE_COMPLETE → null
+      let nouveauCreneau = null;
+      let nouveauSelectionne = false;
+      
+      if (j.creneau === null) {
+        nouveauCreneau = 'MATIN';
+        nouveauSelectionne = true;
+      } else if (j.creneau === 'MATIN') {
+        nouveauCreneau = 'APRES_MIDI';
+        nouveauSelectionne = true;
+      } else if (j.creneau === 'APRES_MIDI') {
+        nouveauCreneau = 'JOURNEE_COMPLETE';
+        nouveauSelectionne = true;
+      } else {
+        nouveauCreneau = null;
+        nouveauSelectionne = false;
+      }
+      
+      return { ...j, creneau: nouveauCreneau, selectionne: nouveauSelectionne };
+    }));
+  };
+
+  const handleSubmitPlanningHebdo = async (e) => {
+    e.preventDefault();
+    
+    if (!planningHebdo.employe_id) {
+      toast.error('Veuillez sélectionner un employé');
+      return;
+    }
+    
+    const joursAvecCreneaux = joursHebdoPlanning
+      .filter(j => j.selectionne && j.creneau !== null)
+      .map(j => ({
+        date: j.date,
+        creneau: j.creneau
+      }));
+    
+    if (joursAvecCreneaux.length === 0) {
+      toast.error('Veuillez sélectionner au moins un jour');
+      return;
+    }
+    
+    try {
+      let creneauxCrees = 0;
+      
+      // Créer directement les créneaux de planning (pas de demandes)
+      for (const jour of joursAvecCreneaux) {
+        if (jour.creneau === 'JOURNEE_COMPLETE') {
+          // Créer 2 créneaux : matin + après-midi
+          await axios.post(`${API}/planning`, {
+            employe_id: planningHebdo.employe_id,
+            date: jour.date,
+            creneau: 'MATIN'
+          });
+          await axios.post(`${API}/planning`, {
+            employe_id: planningHebdo.employe_id,
+            date: jour.date,
+            creneau: 'APRES_MIDI'
+          });
+          creneauxCrees += 2;
+        } else {
+          await axios.post(`${API}/planning`, {
+            employe_id: planningHebdo.employe_id,
+            date: jour.date,
+            creneau: jour.creneau
+          });
+          creneauxCrees += 1;
+        }
+      }
+      
+      toast.success(`${creneauxCrees} créneau(x) créé(s) avec succès`);
+      setShowPlanningHebdoModal(false);
+      
+      // Recharger le planning
+      if (viewMode === 'semaine') {
+        fetchPlanningSemaine(selectedWeek);
+      } else if (viewMode === 'mois') {
+        fetchPlanningMois(selectedMonth);
+      } else {
+        fetchPlanningByDate(selectedDate);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la création des créneaux');
+    }
+  };
+
   // Approuver/Refuser une demande directement depuis le planning
   const handleApprouverDemandePlanning = async (employeId, date, creneau, approuver, creneauPartiel = null) => {
     try {
