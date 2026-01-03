@@ -2413,6 +2413,7 @@ const PlanningManager = () => {
   const [assignations, setAssignations] = useState([]);
   const [demandesTravail, setDemandesTravail] = useState([]);
   const [planningSemaine, setPlanningSemaine] = useState(null);
+  const [planningTableau, setPlanningTableau] = useState({}); // Pour la vue Planning
   const [showPlanningModal, setShowPlanningModal] = useState(false);
   const [showEditCreneauModal, setShowEditCreneauModal] = useState(false);
   const [showAttributionModal, setShowAttributionModal] = useState(false);
@@ -2421,6 +2422,19 @@ const PlanningManager = () => {
   const [semainesTypes, setSemainesTypes] = useState([]);
   const [selectedSemaineType, setSelectedSemaineType] = useState(null);
   const [dateDebutSemaine, setDateDebutSemaine] = useState('');
+  // États pour le modal de création rapide dans Vue Planning
+  const [showQuickCreneauModal, setShowQuickCreneauModal] = useState(false);
+  const [quickCreneauData, setQuickCreneauData] = useState({
+    employe_id: '',
+    employe: null,
+    date: '',
+    creneau: '',
+    notes: '',
+    horaire_debut: '',
+    horaire_fin: '',
+    horaire_pause_debut: '',
+    horaire_pause_fin: ''
+  });
   const [newSemaineType, setNewSemaineType] = useState({
     nom: '',
     description: '',
