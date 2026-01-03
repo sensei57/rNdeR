@@ -3973,7 +3973,7 @@ const PlanningManager = () => {
           >
             Vue Mois
           </Button>
-          {user?.role === 'Directeur' && (
+          {hasDirectorView() && (
             <Button
               variant={viewMode === 'planning' ? 'default' : 'outline'}
               size="sm"
@@ -3988,8 +3988,8 @@ const PlanningManager = () => {
           )}
         </div>
         
-        {/* Filtre par rôle - Sélection multiple pour le directeur */}
-        {user?.role === 'Directeur' && viewMode !== 'planning' && (
+        {/* Filtre par rôle - Sélection multiple pour le directeur ou vue planning complète */}
+        {hasDirectorView() && viewMode !== 'planning' && (
           <>
             <div className="border-l pl-4 flex items-center space-x-2">
               <span className="text-sm font-medium">Filtres :</span>
@@ -4037,8 +4037,8 @@ const PlanningManager = () => {
       
       {/* Ligne 2 : Filtre employé + Navigation + Actions */}
       <div className="flex flex-wrap items-center gap-4 mb-4">
-        {/* Filtre par employé spécifique (Directeur) */}
-        {user?.role === 'Directeur' && viewMode !== 'mois' && (
+        {/* Filtre par employé spécifique (Directeur ou vue planning complète) */}
+        {hasDirectorView() && viewMode !== 'mois' && (
           <div className="flex items-center space-x-2">
             <Label className="text-sm whitespace-nowrap">Employé:</Label>
             <Select value={filterEmploye} onValueChange={(val) => { setFilterEmploye(val); setSearchEmploye(''); }}>
