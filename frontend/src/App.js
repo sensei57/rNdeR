@@ -2434,6 +2434,12 @@ const PlanningManager = () => {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewModeLocal] = useState('jour');
   
+  // Fonctions pour gérer les permissions de vue planning
+  // hasDirectorView: peut voir le planning comme un directeur (Directeur OU vue_planning_complete)
+  // canModifyPlanning: peut modifier le planning (Directeur seulement)
+  const hasDirectorView = () => user?.role === 'Directeur' || user?.vue_planning_complete === true;
+  const canModifyPlanning = () => user?.role === 'Directeur';
+  
   // Synchroniser avec le contexte global
   const setSelectedDate = (date) => {
     setSelectedDateLocal(date);
