@@ -8927,6 +8927,17 @@ const AdminManager = () => {
       toast.error('Erreur lors du changement de statut');
     }
   };
+
+  const handleToggleVuePlanning = async (userId) => {
+    try {
+      const response = await axios.put(`${API}/admin/users/${userId}/toggle-vue-planning`);
+      toast.success(response.data.message);
+      fetchAllUsers(); // Recharger la liste
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors du changement de vue planning');
+    }
+  };
+
   const handleDeleteUser = async () => {
     const expectedText = `SUPPRIMER ${selectedUser?.prenom} ${selectedUser?.nom}`;
     
