@@ -9059,6 +9059,25 @@ const AdminManager = () => {
                       </span>
                     </td>
                     <td className="p-3">
+                      {userItem.role !== 'Directeur' && userItem.id !== user?.id ? (
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={userItem.vue_planning_complete || false}
+                            onChange={() => handleToggleVuePlanning(userItem.id)}
+                            className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 cursor-pointer"
+                          />
+                          <span className="text-xs text-gray-600">
+                            {userItem.vue_planning_complete ? 'Activée' : 'Désactivée'}
+                          </span>
+                        </label>
+                      ) : (
+                        <span className="text-xs text-gray-400 italic">
+                          {userItem.role === 'Directeur' ? 'Vue complète par défaut' : '-'}
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-3">
                       <div className="flex space-x-2">
                         {userItem.id !== user?.id && (
                           <>
