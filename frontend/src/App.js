@@ -6087,8 +6087,8 @@ const PlanningManager = () => {
         </Card>
       )}
 
-      {/* Tableau Récapitulatif - Directeur uniquement */}
-      {viewMode === 'semaine' && user?.role === 'Directeur' && planningSemaine && planningSemaine.dates && planningSemaine.dates.length > 0 && (
+      {/* Tableau Récapitulatif - Vue directeur */}
+      {viewMode === 'semaine' && hasDirectorView() && planningSemaine && planningSemaine.dates && planningSemaine.dates.length > 0 && (
         <>
           {/* Récapitulatif Hebdomadaire */}
           <Card className="mt-4">
