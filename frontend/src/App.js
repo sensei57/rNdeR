@@ -2425,13 +2425,26 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
 
 const PlanningManager = () => {
   const { user } = useAuth();
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const { planningSelectedDate, setPlanningSelectedDate, planningViewMode, setPlanningViewMode } = usePlanning();
+  const [selectedDate, setSelectedDateLocal] = useState(new Date().toISOString().split('T')[0]);
   const [selectedWeek, setSelectedWeek] = useState(new Date().toISOString().split('T')[0]);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // Format YYYY-MM
   const [planning, setPlanning] = useState([]);
   const [planningMois, setPlanningMois] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState('jour');
+  const [viewMode, setViewModeLocal] = useState('jour');
+  
+  // Synchroniser avec le contexte global
+  const setSelectedDate = (date) => {
+    setSelectedDateLocal(date);
+    setPlanningSelectedDate(date);
+  };
+  
+  const setViewMode = (mode) => {
+    setViewModeLocal(mode);
+    setPlanningViewMode(mode);
+  };
+  
   const [filterRole, setFilterRole] = useState(['Médecin', 'Assistant', 'Secrétaire']); // Tous sélectionnés par défaut
   const [filterEmploye, setFilterEmploye] = useState('tous'); // Filtre employé pour vue jour/semaine
   const [filterEmployeMois, setFilterEmployeMois] = useState('tous'); // Filtre employé pour vue mois
