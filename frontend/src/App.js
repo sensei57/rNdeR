@@ -5549,6 +5549,7 @@ const PlanningManager = () => {
                               ⏳ Demande en attente {isJourneeComplete && '(Journée complète)'}
                             </div>
                           </div>
+                          {canModifyPlanning() && (
                           <div className="flex space-x-1">
                             {isJourneeComplete && (
                               <Button
@@ -5583,6 +5584,7 @@ const PlanningManager = () => {
                               {isJourneeComplete ? 'Refuser Matin' : 'Refuser'}
                             </Button>
                           </div>
+                          )}
                         </div>
                       </div>
                       );
