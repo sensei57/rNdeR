@@ -6884,12 +6884,15 @@ const PlanningManager = () => {
         </Card>
       )}
 
-      {/* Modal de création rapide pour Vue Planning */}
+      {/* Modal de création/modification rapide pour Vue Planning */}
       <Dialog open={showQuickCreneauModal} onOpenChange={setShowQuickCreneauModal}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {quickCreneauData.employe?.role === 'Secrétaire' ? '🕐 Définir les horaires' : '📝 Ajouter un créneau'}
+              {quickCreneauData.id 
+                ? (quickCreneauData.employe?.role === 'Secrétaire' ? '🕐 Modifier les horaires' : '📝 Modifier le créneau')
+                : (quickCreneauData.employe?.role === 'Secrétaire' ? '🕐 Définir les horaires' : '📝 Ajouter un créneau')
+              }
             </DialogTitle>
             <DialogDescription>
               {quickCreneauData.employe?.prenom} {quickCreneauData.employe?.nom} - {new Date(quickCreneauData.date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} ({quickCreneauData.creneau === 'MATIN' ? 'Matin' : 'Après-midi'})
@@ -6929,13 +6932,30 @@ const PlanningManager = () => {
                 />
               </div>
             )}
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={() => setShowQuickCreneauModal(false)}>
-                Annuler
-              </Button>
-              <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
-                Créer
-              </Button>
+            <div className="flex justify-between">
+              {quickCreneauData.id ? (
+                <Button 
+                  type="button" 
+                  variant="destructive" 
+                  onClick={() => {
+                    if (window.confirm('Voulez-vous vraiment supprimer ce créneau ?')) {
+                      handleDeleteCreneauTableau(quickCreneauData.id);
+                      setShowQuickCreneauModal(false);
+                    }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Supprimer
+                </Button>
+              ) : <div></div>}
+              <div className="flex space-x-2">
+                <Button type="button" variant="outline" onClick={() => setShowQuickCreneauModal(false)}>
+                  Annuler
+                </Button>
+                <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
+                  {quickCreneauData.id ? 'Modifier' : 'Créer'}
+                </Button>
+              </div>
             </div>
           </form>
         </DialogContent>
