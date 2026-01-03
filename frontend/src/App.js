@@ -6771,8 +6771,8 @@ const PlanningManager = () => {
                             <React.Fragment key={`${assistant.id}-${date}`}>
                               <td 
                                 className={`border p-1 text-center cursor-pointer hover:bg-green-200 transition-colors ${creneauMatin ? 'bg-green-200' : ''}`}
-                                onClick={() => !creneauMatin && openQuickCreneauModal(assistant, date, 'MATIN')}
-                                title={creneauMatin?.notes || 'Cliquer pour ajouter'}
+                                onClick={() => openQuickCreneauModal(assistant, date, 'MATIN', creneauMatin)}
+                                title={creneauMatin?.notes ? `📝 ${creneauMatin.notes} - Cliquer pour modifier` : 'Cliquer pour ajouter'}
                               >
                                 {creneauMatin ? (
                                   <span className="text-xs font-semibold text-green-700">PRÉSENT</span>
@@ -6780,8 +6780,8 @@ const PlanningManager = () => {
                               </td>
                               <td 
                                 className={`border p-1 text-center cursor-pointer hover:bg-green-200 transition-colors ${creneauAM ? 'bg-green-200' : ''}`}
-                                onClick={() => !creneauAM && openQuickCreneauModal(assistant, date, 'APRES_MIDI')}
-                                title={creneauAM?.notes || 'Cliquer pour ajouter'}
+                                onClick={() => openQuickCreneauModal(assistant, date, 'APRES_MIDI', creneauAM)}
+                                title={creneauAM?.notes ? `📝 ${creneauAM.notes} - Cliquer pour modifier` : 'Cliquer pour ajouter'}
                               >
                                 {creneauAM ? (
                                   <span className="text-xs font-semibold text-green-700">PRÉSENT</span>
