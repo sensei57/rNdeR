@@ -3292,12 +3292,110 @@ const PlanningManager = () => {
         fetchPlanningSemaine(selectedWeek);
       } else if (viewMode === 'mois') {
         fetchPlanningMois(selectedMonth);
+      } else if (viewMode === 'planning') {
+        fetchPlanningTableau(selectedWeek);
       } else {
         fetchPlanningByDate(selectedDate);
       }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Erreur lors de la création des créneaux');
     }
+  };
+
+  // Ouvrir le modal de création rapide pour la Vue Planning
+  const openQuickCreneauModal = (employe, date, creneau) => {
+    setQuickCreneauData({
+      employe_id: employe.id,
+      employe: employe,
+      date: date,
+      creneau: creneau,
+      notes: '',
+      horaire_debut: employe.role === 'Secrétaire' ? (creneau === 'MATIN' ? '08:00' : '14:00') : '',
+      horaire_fin: employe.role === 'Secrétaire' ? (creneau === 'MATIN' ? '12:00' : '18:00') : '',
+      horaire_pause_debut: '',
+      horaire_pause_fin: ''
+    });
+    setShowQuickCreneauModal(true);
+  };
+
+  // Créer un créneau rapidement depuis la Vue Planning
+  const handleQuickCreneauSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      await axios.post(`${API}/planning`, {
+        employe_id: quickCreneauData.employe_id,
+        date: quickCreneauData.date,
+        creneau: quickCreneauData.creneau,
+        notes: quickCreneauData.notes || 'Présence',
+        horaire_debut: quickCreneauData.horaire_debut || null,
+        horaire_fin: quickCreneauData.horaire_fin || null,
+        horaire_pause_debut: quickCreneauData.horaire_pause_debut || null,
+        horaire_pause_fin: quickCreneauData.horaire_pause_fin || null
+      });
+      
+      toast.success('Créneau créé !');
+      setShowQuickCreneauModal(false);
+      fetchPlanningTableau(selectedWeek);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la création');
+    }
+  };
+
+  // Supprimer un créneau depuis la Vue Planning
+  const handleDeleteCreneauTableau = async (creneauId) => {
+    try {
+      await axios.delete(`${API}/planning/${creneauId}`);
+      toast.success('Créneau supprimé');
+      fetchPlanningTableau(selectedWeek);
+    } catch (error) {
+      toast.error('Erreur lors de la suppression');
+    }
+  };
+
+  // Calculer le total de demi-journées pour un employé sur la semaine
+  const getTotalDemiJournees = (employeId) => {
+    if (!planningTableau.planning) return 0;
+    let total = 0;
+    planningTableau.dates?.forEach(date => {
+      const dayPlanning = planningTableau.planning[date] || [];
+      dayPlanning.forEach(c => {
+        if (c.employe_id === employeId) total++;
+      });
+    });
+    return total;
+  };
+
+  // Obtenir la couleur du total selon les règles
+  const getTotalColor = (total, type = 'employe') => {
+    if (type === 'employe') {
+      // Pour un employé : < 8 vert, = 8 orange, > 8 rouge
+      if (total < 8) return 'bg-green-100 text-green-800';
+      if (total === 8) return 'bg-orange-100 text-orange-800';
+      return 'bg-red-100 text-red-800';
+    } else {
+      // Pour le total médecins : basé sur le nombre de salles médecin
+      const nbSallesMedecin = salles.filter(s => s.type === 'MEDECIN').length || 6;
+      if (total < nbSallesMedecin) return 'bg-green-100 text-green-800';
+      if (total === nbSallesMedecin) return 'bg-orange-100 text-orange-800';
+      return 'bg-red-100 text-red-800';
+    }
+  };
+
+  // Vérifier si un employé a un créneau
+  const getCreneauForEmploye = (employeId, date, creneau) => {
+    if (!planningTableau.planning || !planningTableau.planning[date]) return null;
+    return planningTableau.planning[date].find(c => 
+      c.employe_id === employeId && c.creneau === creneau
+    );
+  };
+
+  // Compter les médecins présents pour un créneau
+  const countMedecinsForCreneau = (date, creneau) => {
+    if (!planningTableau.planning || !planningTableau.planning[date]) return 0;
+    return planningTableau.planning[date].filter(c => 
+      c.employe_role === 'Médecin' && c.creneau === creneau
+    ).length;
   };
 
   // Approuver/Refuser une demande directement depuis le planning
