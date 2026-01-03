@@ -2677,16 +2677,8 @@ const PlanningManager = () => {
         setCongesApprouves(congesRes.data.filter(c => c.statut === 'APPROUVE' && c.utilisateur_id === user.id));
         
         // Vérifier que la structure est correcte
+        // On garde tous les créneaux dans le planning pour pouvoir calculer les associations médecins/assistants
         if (personalPlanning && personalPlanning.dates && personalPlanning.planning) {
-          personalPlanning.planning = Object.fromEntries(
-            Object.entries(personalPlanning.planning).map(([date, slots]) => [
-              date,
-              {
-                MATIN: slots.MATIN?.filter(slot => slot.employe_id === user.id) || [],
-                APRES_MIDI: slots.APRES_MIDI?.filter(slot => slot.employe_id === user.id) || []
-              }
-            ])
-          );
           setPlanningSemaine(personalPlanning);
         } else {
           console.error('Structure de planning invalide:', personalPlanning);
