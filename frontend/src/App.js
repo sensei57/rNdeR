@@ -5708,7 +5708,7 @@ const PlanningManager = () => {
                               )}
                             </div>
                             
-                            {user?.role === 'Directeur' && (
+                            {canModifyPlanning() && (
                               <div className="flex flex-col space-y-1">
                                 <Button
                                   size="sm"
@@ -5747,8 +5747,8 @@ const PlanningManager = () => {
                   ))}
                 </div>
                 
-                {/* Afficher les demandes en attente APRÈS la grille (Directeur uniquement) */}
-                {user?.role === 'Directeur' && users.filter(u => 
+                {/* Afficher les demandes en attente APRÈS la grille (Vue directeur) */}
+                {hasDirectorView() && users.filter(u => 
                   u.role === 'Médecin' && hasDemandeEnAttente(u.id, selectedDate, 'APRES_MIDI')
                 ).length > 0 && (
                   <div className="space-y-3">
