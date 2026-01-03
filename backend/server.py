@@ -57,6 +57,7 @@ class UserBase(BaseModel):
     role: str
     telephone: Optional[str] = None
     actif: bool = True
+    vue_planning_complete: bool = False  # Vue planning comme directeur (lecture seule)
 
 class UserCreate(UserBase):
     password: str
@@ -66,6 +67,7 @@ class UserUpdate(BaseModel):
     prenom: Optional[str] = None
     telephone: Optional[str] = None
     actif: Optional[bool] = None
+    vue_planning_complete: Optional[bool] = None
 
 class User(UserBase):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
