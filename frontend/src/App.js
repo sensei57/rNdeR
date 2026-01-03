@@ -4842,7 +4842,7 @@ const PlanningManager = () => {
       )}
 
       {/* Modal Appliquer Semaine Type */}
-      {user?.role === 'Directeur' && (
+      {canModifyPlanning() && (
         <Dialog open={showSemaineTypeModal} onOpenChange={setShowSemaineTypeModal}>
           <DialogContent>
             <DialogHeader>
