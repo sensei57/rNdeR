@@ -2741,10 +2741,11 @@ const PlanningManager = () => {
       let planningData = planningRes.data;
       let congesData = congesRes.data;
       
-      // Filtrer selon les permissions
-      if (user?.role !== 'Directeur') {
-        // Les non-directeurs voient seulement leur propre planning
-        planningData = planningData.filter(p => p.employe_id === user.id);
+      // Pour les non-directeurs: on garde TOUS les créneaux du jour pour calculer les associations
+      // mais on filtrera à l'affichage pour ne montrer que leurs créneaux personnels
+      // Cela permet aux assistants de voir avec quels médecins ils travaillent et vice-versa
+      if (user?.role !== 'Directeur' && !user?.vue_planning_complete) {
+        // Ne filtrer que les congés, pas le planning (pour garder les associations)
         congesData = congesData.filter(c => c.utilisateur_id === user.id);
       }
       
