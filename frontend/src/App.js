@@ -3578,13 +3578,16 @@ const PlanningManager = () => {
   }
 
   // Filtrer le planning selon les rôles sélectionnés et l'employé spécifique (multi-sélection)
+  // Pour les non-directeurs sans vue_planning_complete, on affiche seulement leurs propres créneaux
   const filteredPlanning = filterRole.length === 0
     ? []
     : planning.filter(c => {
+        // Pour les non-directeurs sans vue_planning_complete: filtrer uniquement leurs créneaux
+        if (!hasDirectorView() && c.employe_id !== user?.id) return false;
         // Filtre par rôle
         if (!filterRole.includes(c.employe_role)) return false;
-        // Filtre par employé spécifique (si sélectionné)
-        if (filterEmploye !== 'tous' && c.employe_id !== filterEmploye) return false;
+        // Filtre par employé spécifique (si sélectionné) - seulement pour directeurs
+        if (hasDirectorView() && filterEmploye !== 'tous' && c.employe_id !== filterEmploye) return false;
         return true;
       });
   
