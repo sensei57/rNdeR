@@ -6033,11 +6033,11 @@ const PlanningManager = () => {
                             key={creneau.id}
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (user?.role === 'Directeur') {
+                              if (canModifyPlanning()) {
                                 handleEditCreneau(creneau);
                               }
                             }}
-                            className={`text-xs p-1 rounded border ${getRoleColor(creneau.employe_role)} ${user?.role === 'Directeur' ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+                            className={`text-xs p-1 rounded border ${getRoleColor(creneau.employe_role)} ${canModifyPlanning() ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
                           >
                             <div className="font-medium truncate">
                               {creneau.employe?.prenom?.[0]}.{creneau.employe?.nom}
@@ -6063,8 +6063,8 @@ const PlanningManager = () => {
                             </div>
                           </div>
                         ))}
-                        {/* Afficher les employés avec demande en attente (Directeur uniquement) */}
-                        {user?.role === 'Directeur' && employesDemandeApresMidiEnAttente.map(employe => (
+                        {/* Afficher les employés avec demande en attente (Vue directeur) */}
+                        {hasDirectorView() && employesDemandeApresMidiEnAttente.map(employe => (
                           <div
                             key={`demande-apres-midi-${employe.id}`}
                             className="text-xs p-1 rounded border-2 border-yellow-500 bg-yellow-50 text-yellow-700"
