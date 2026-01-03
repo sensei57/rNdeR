@@ -4712,7 +4712,7 @@ const PlanningManager = () => {
       )}
       
       {/* Modal d'attribution pour le Directeur */}
-      {user?.role === 'Directeur' && (
+      {canModifyPlanning() && (
         <Dialog open={showAttributionModal} onOpenChange={setShowAttributionModal}>
           <DialogContent>
             <DialogHeader>
