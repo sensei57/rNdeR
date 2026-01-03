@@ -3698,10 +3698,24 @@ const PlanningManager = () => {
 
   // Récupérer les médecins avec leurs infos (box/salle) qui travaillent avec un assistant ce jour-là
   const getMedecinsForAssistantInPlanning = (assistantId, date, creneau) => {
-    if (!planning || planning.length === 0) return [];
+    // Récupérer les créneaux à partir de planning OU planningSemaine selon ce qui est disponible
+    let allCreneaux = [];
+    
+    // D'abord essayer avec planning (vue jour)
+    if (planning && planning.length > 0) {
+      allCreneaux = planning;
+    }
+    // Sinon essayer avec planningSemaine
+    else if (planningSemaine && planningSemaine.planning && planningSemaine.planning[date]) {
+      const matinCreneaux = planningSemaine.planning[date]?.MATIN || [];
+      const amCreneaux = planningSemaine.planning[date]?.APRES_MIDI || [];
+      allCreneaux = [...matinCreneaux, ...amCreneaux];
+    }
+    
+    if (allCreneaux.length === 0) return [];
     
     // Trouver le créneau de l'assistant
-    const assistantCreneau = planning.find(p => 
+    const assistantCreneau = allCreneaux.find(p => 
       p.employe_id === assistantId && 
       p.date === date && 
       p.creneau === creneau
@@ -3712,7 +3726,7 @@ const PlanningManager = () => {
     }
     
     // Récupérer les créneaux des médecins associés
-    return planning
+    return allCreneaux
       .filter(p => 
         p.date === date && 
         p.creneau === creneau && 
