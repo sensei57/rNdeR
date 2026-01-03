@@ -3957,7 +3957,7 @@ const PlanningManager = () => {
             </Button>
             
             <Button 
-              onClick={() => setShowPlanningHebdoModal(true)}
+              onClick={openPlanningHebdoModal}
               size="sm"
               className="flex items-center space-x-2 bg-teal-600 hover:bg-teal-700"
             >
