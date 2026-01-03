@@ -4898,7 +4898,7 @@ const PlanningManager = () => {
                               </div>
                               
                               {/* MÉDECINS : Afficher Box, Salle d'attente, Assistants */}
-                              {showDetails && creneau.employe?.role === 'Médecin' && (
+                              {(showDetails || user?.role !== 'Directeur') && creneau.employe?.role === 'Médecin' && (
                                 <>
                                   {creneau.salle_attribuee && (
                                     <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
@@ -4919,7 +4919,7 @@ const PlanningManager = () => {
                               )}
                               
                               {/* ASSISTANTS : Afficher sa salle de travail et médecins associés */}
-                              {showDetails && creneau.employe?.role === 'Assistant' && (
+                              {(showDetails || user?.role !== 'Directeur') && creneau.employe?.role === 'Assistant' && (
                                 <>
                                   {creneau.salle_attribuee && (
                                     <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
@@ -5124,7 +5124,7 @@ const PlanningManager = () => {
                               </div>
                               
                               {/* MÉDECINS : Afficher Box, Salle d'attente, Assistants */}
-                              {showDetails && creneau.employe?.role === 'Médecin' && (
+                              {(showDetails || user?.role !== 'Directeur') && creneau.employe?.role === 'Médecin' && (
                                 <>
                                   {creneau.salle_attribuee && (
                                     <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
@@ -5145,7 +5145,7 @@ const PlanningManager = () => {
                               )}
                               
                               {/* ASSISTANTS : Afficher sa salle de travail et médecins associés */}
-                              {showDetails && creneau.employe?.role === 'Assistant' && (
+                              {(showDetails || user?.role !== 'Directeur') && creneau.employe?.role === 'Assistant' && (
                                 <>
                                   {creneau.salle_attribuee && (
                                     <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
