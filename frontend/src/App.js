@@ -5921,8 +5921,10 @@ const PlanningManager = () => {
                   filterRole.length === 0
                     ? []
                     : (planningSemaine.planning[date]?.MATIN || []).filter(c => {
+                        // Pour les non-directeurs sans vue_planning_complete: uniquement leurs créneaux
+                        if (!hasDirectorView() && c.employe_id !== user?.id) return false;
                         if (!filterRole.includes(c.employe_role)) return false;
-                        if (filterEmploye !== 'tous' && c.employe_id !== filterEmploye) return false;
+                        if (hasDirectorView() && filterEmploye !== 'tous' && c.employe_id !== filterEmploye) return false;
                         return true;
                       }).map(c => ({ ...c, role: c.employe_role, prenom: c.employe?.prenom }))
                 );
@@ -5931,8 +5933,10 @@ const PlanningManager = () => {
                   filterRole.length === 0
                     ? []
                     : (planningSemaine.planning[date]?.APRES_MIDI || []).filter(c => {
+                        // Pour les non-directeurs sans vue_planning_complete: uniquement leurs créneaux
+                        if (!hasDirectorView() && c.employe_id !== user?.id) return false;
                         if (!filterRole.includes(c.employe_role)) return false;
-                        if (filterEmploye !== 'tous' && c.employe_id !== filterEmploye) return false;
+                        if (hasDirectorView() && filterEmploye !== 'tous' && c.employe_id !== filterEmploye) return false;
                         return true;
                       }).map(c => ({ ...c, role: c.employe_role, prenom: c.employe?.prenom }))
                 );
