@@ -6598,6 +6598,289 @@ const PlanningManager = () => {
         </DialogContent>
       </Dialog>
 
+      {/* ==================== VUE PLANNING INTERACTIF ==================== */}
+      {viewMode === 'planning' && planningTableau.dates && (
+        <Card className="mt-4">
+          <CardHeader className="bg-gradient-to-r from-teal-50 to-teal-100">
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center space-x-2">
+                <Calendar className="h-5 w-5" />
+                <span>📊 Planning Interactif - Semaine du {new Date(planningTableau.dates[0] + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</span>
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 overflow-x-auto">
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
+              </div>
+            ) : (
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border p-2 text-left min-w-[150px]">Employé</th>
+                    {planningTableau.dates.map(date => (
+                      <th key={date} className="border p-1 text-center min-w-[80px]" colSpan={2}>
+                        <div className="font-semibold">
+                          {new Date(date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'short' })}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(date + 'T12:00:00').getDate()}/{new Date(date + 'T12:00:00').getMonth() + 1}
+                        </div>
+                      </th>
+                    ))}
+                    <th className="border p-2 text-center bg-gray-200">Total</th>
+                  </tr>
+                  <tr className="bg-gray-50">
+                    <th className="border p-1"></th>
+                    {planningTableau.dates.map(date => (
+                      <React.Fragment key={`header-${date}`}>
+                        <th className="border p-1 text-center text-xs bg-orange-50">M</th>
+                        <th className="border p-1 text-center text-xs bg-purple-50">AM</th>
+                      </React.Fragment>
+                    ))}
+                    <th className="border p-1 text-center text-xs bg-gray-200">1/2j</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* SECTION SECRÉTAIRES */}
+                  <tr className="bg-pink-100">
+                    <td colSpan={planningTableau.dates.length * 2 + 2} className="border p-2 font-bold text-pink-800">
+                      📋 SECRÉTAIRES
+                    </td>
+                  </tr>
+                  {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role === 'Secrétaire')).map(secretaire => {
+                    const total = getTotalDemiJournees(secretaire.id);
+                    return (
+                      <tr key={secretaire.id} className="hover:bg-pink-50">
+                        <td className="border p-2 font-medium">{secretaire.prenom} {secretaire.nom}</td>
+                        {planningTableau.dates.map(date => {
+                          const creneauMatin = getCreneauForEmploye(secretaire.id, date, 'MATIN');
+                          const creneauAM = getCreneauForEmploye(secretaire.id, date, 'APRES_MIDI');
+                          return (
+                            <React.Fragment key={`${secretaire.id}-${date}`}>
+                              <td 
+                                className={`border p-1 text-center cursor-pointer hover:bg-pink-200 transition-colors ${creneauMatin ? 'bg-pink-200' : ''}`}
+                                onClick={() => !creneauMatin && openQuickCreneauModal(secretaire, date, 'MATIN')}
+                                title={creneauMatin ? `${creneauMatin.horaire_debut || ''} - ${creneauMatin.horaire_fin || ''}` : 'Cliquer pour ajouter'}
+                              >
+                                {creneauMatin ? (
+                                  <div className="text-xs">
+                                    <span className="font-semibold">{creneauMatin.horaire_debut?.substring(0,5)}</span>
+                                    <span>-</span>
+                                    <span className="font-semibold">{creneauMatin.horaire_pause_debut?.substring(0,5) || creneauMatin.horaire_fin?.substring(0,5)}</span>
+                                  </div>
+                                ) : <span className="text-gray-300">+</span>}
+                              </td>
+                              <td 
+                                className={`border p-1 text-center cursor-pointer hover:bg-pink-200 transition-colors ${creneauAM ? 'bg-pink-200' : ''}`}
+                                onClick={() => !creneauAM && openQuickCreneauModal(secretaire, date, 'APRES_MIDI')}
+                                title={creneauAM ? `${creneauAM.horaire_debut || ''} - ${creneauAM.horaire_fin || ''}` : 'Cliquer pour ajouter'}
+                              >
+                                {creneauAM ? (
+                                  <div className="text-xs">
+                                    <span className="font-semibold">{creneauAM.horaire_pause_fin?.substring(0,5) || creneauAM.horaire_debut?.substring(0,5)}</span>
+                                    <span>-</span>
+                                    <span className="font-semibold">{creneauAM.horaire_fin?.substring(0,5)}</span>
+                                  </div>
+                                ) : <span className="text-gray-300">+</span>}
+                              </td>
+                            </React.Fragment>
+                          );
+                        })}
+                        <td className={`border p-2 text-center font-bold ${getTotalColor(total)}`}>{total}</td>
+                      </tr>
+                    );
+                  })}
+
+                  {/* SECTION ASSISTANTS */}
+                  <tr className="bg-green-100">
+                    <td colSpan={planningTableau.dates.length * 2 + 2} className="border p-2 font-bold text-green-800">
+                      👥 ASSISTANTS
+                    </td>
+                  </tr>
+                  {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role === 'Assistant')).map(assistant => {
+                    const total = getTotalDemiJournees(assistant.id);
+                    return (
+                      <tr key={assistant.id} className="hover:bg-green-50">
+                        <td className="border p-2 font-medium">{assistant.prenom} {assistant.nom}</td>
+                        {planningTableau.dates.map(date => {
+                          const creneauMatin = getCreneauForEmploye(assistant.id, date, 'MATIN');
+                          const creneauAM = getCreneauForEmploye(assistant.id, date, 'APRES_MIDI');
+                          return (
+                            <React.Fragment key={`${assistant.id}-${date}`}>
+                              <td 
+                                className={`border p-1 text-center cursor-pointer hover:bg-green-200 transition-colors ${creneauMatin ? 'bg-green-200' : ''}`}
+                                onClick={() => !creneauMatin && openQuickCreneauModal(assistant, date, 'MATIN')}
+                                title={creneauMatin?.notes || 'Cliquer pour ajouter'}
+                              >
+                                {creneauMatin ? (
+                                  <span className="text-xs font-semibold text-green-700">PRÉSENT</span>
+                                ) : <span className="text-gray-300">+</span>}
+                              </td>
+                              <td 
+                                className={`border p-1 text-center cursor-pointer hover:bg-green-200 transition-colors ${creneauAM ? 'bg-green-200' : ''}`}
+                                onClick={() => !creneauAM && openQuickCreneauModal(assistant, date, 'APRES_MIDI')}
+                                title={creneauAM?.notes || 'Cliquer pour ajouter'}
+                              >
+                                {creneauAM ? (
+                                  <span className="text-xs font-semibold text-green-700">PRÉSENT</span>
+                                ) : <span className="text-gray-300">+</span>}
+                              </td>
+                            </React.Fragment>
+                          );
+                        })}
+                        <td className={`border p-2 text-center font-bold ${getTotalColor(total)}`}>{total}</td>
+                      </tr>
+                    );
+                  })}
+
+                  {/* SECTION MÉDECINS */}
+                  <tr className="bg-blue-100">
+                    <td colSpan={planningTableau.dates.length * 2 + 2} className="border p-2 font-bold text-blue-800">
+                      👨‍⚕️ MÉDECINS
+                    </td>
+                  </tr>
+                  {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role === 'Médecin')).map(medecin => {
+                    const total = getTotalDemiJournees(medecin.id);
+                    return (
+                      <tr key={medecin.id} className="hover:bg-blue-50">
+                        <td className="border p-2 font-medium">Dr. {medecin.prenom} {medecin.nom}</td>
+                        {planningTableau.dates.map(date => {
+                          const creneauMatin = getCreneauForEmploye(medecin.id, date, 'MATIN');
+                          const creneauAM = getCreneauForEmploye(medecin.id, date, 'APRES_MIDI');
+                          return (
+                            <React.Fragment key={`${medecin.id}-${date}`}>
+                              <td 
+                                className={`border p-1 text-center cursor-pointer hover:bg-blue-200 transition-colors ${creneauMatin ? 'bg-blue-200' : ''}`}
+                                onClick={() => !creneauMatin && openQuickCreneauModal(medecin, date, 'MATIN')}
+                                title={creneauMatin?.notes || 'Cliquer pour ajouter'}
+                              >
+                                {creneauMatin ? (
+                                  <span className="text-xs font-semibold text-blue-700">M</span>
+                                ) : <span className="text-gray-300">+</span>}
+                              </td>
+                              <td 
+                                className={`border p-1 text-center cursor-pointer hover:bg-blue-200 transition-colors ${creneauAM ? 'bg-blue-200' : ''}`}
+                                onClick={() => !creneauAM && openQuickCreneauModal(medecin, date, 'APRES_MIDI')}
+                                title={creneauAM?.notes || 'Cliquer pour ajouter'}
+                              >
+                                {creneauAM ? (
+                                  <span className="text-xs font-semibold text-blue-700">AM</span>
+                                ) : <span className="text-gray-300">+</span>}
+                              </td>
+                            </React.Fragment>
+                          );
+                        })}
+                        <td className={`border p-2 text-center font-bold ${getTotalColor(total)}`}>{total}</td>
+                      </tr>
+                    );
+                  })}
+
+                  {/* LIGNE TOTAL MÉDECINS */}
+                  <tr className="bg-gray-200 font-bold">
+                    <td className="border p-2">TOTAL MÉDECINS</td>
+                    {planningTableau.dates.map(date => {
+                      const totalMatin = countMedecinsForCreneau(date, 'MATIN');
+                      const totalAM = countMedecinsForCreneau(date, 'APRES_MIDI');
+                      return (
+                        <React.Fragment key={`total-${date}`}>
+                          <td className={`border p-2 text-center ${getTotalColor(totalMatin, 'medecins')}`}>
+                            {totalMatin}
+                          </td>
+                          <td className={`border p-2 text-center ${getTotalColor(totalAM, 'medecins')}`}>
+                            {totalAM}
+                          </td>
+                        </React.Fragment>
+                      );
+                    })}
+                    <td className="border p-2 text-center bg-gray-300">
+                      {planningTableau.dates.reduce((sum, date) => 
+                        sum + countMedecinsForCreneau(date, 'MATIN') + countMedecinsForCreneau(date, 'APRES_MIDI'), 0
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            )}
+
+            {/* Légende */}
+            <div className="mt-4 flex flex-wrap gap-4 text-sm">
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-green-100 rounded border"></div>
+                <span>&lt; limite</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-orange-100 rounded border"></div>
+                <span>= limite</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-red-100 rounded border"></div>
+                <span>&gt; limite</span>
+              </div>
+              <span className="text-gray-500 ml-4">💡 Employés: limite = 8 demi-journées | Médecins: limite = {salles.filter(s => s.type === 'MEDECIN').length || 6} box</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Modal de création rapide pour Vue Planning */}
+      <Dialog open={showQuickCreneauModal} onOpenChange={setShowQuickCreneauModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {quickCreneauData.employe?.role === 'Secrétaire' ? '🕐 Définir les horaires' : '📝 Ajouter un créneau'}
+            </DialogTitle>
+            <DialogDescription>
+              {quickCreneauData.employe?.prenom} {quickCreneauData.employe?.nom} - {new Date(quickCreneauData.date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} ({quickCreneauData.creneau === 'MATIN' ? 'Matin' : 'Après-midi'})
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleQuickCreneauSubmit} className="space-y-4">
+            {quickCreneauData.employe?.role === 'Secrétaire' ? (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Heure début</Label>
+                    <Input
+                      type="time"
+                      value={quickCreneauData.horaire_debut}
+                      onChange={(e) => setQuickCreneauData(prev => ({ ...prev, horaire_debut: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Heure fin</Label>
+                    <Input
+                      type="time"
+                      value={quickCreneauData.horaire_fin}
+                      onChange={(e) => setQuickCreneauData(prev => ({ ...prev, horaire_fin: e.target.value }))}
+                      required
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <Label>Note (optionnel)</Label>
+                <Input
+                  placeholder="Laisser vide pour 'Présence'"
+                  value={quickCreneauData.notes}
+                  onChange={(e) => setQuickCreneauData(prev => ({ ...prev, notes: e.target.value }))}
+                />
+              </div>
+            )}
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setShowQuickCreneauModal(false)}>
+                Annuler
+              </Button>
+              <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
+                Créer
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 };
