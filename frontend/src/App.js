@@ -6419,7 +6419,7 @@ const PlanningManager = () => {
                       
                       // Filtrer le planning selon le filtre sélectionné
                       let planningFiltre = planningMois.filter(p => p.date === dateStr);
-                      if (user?.role === 'Directeur') {
+                      if (hasDirectorView()) {
                         if (filterEmployeMois === 'medecins') {
                           planningFiltre = planningFiltre.filter(p => p.employe_role === 'Médecin');
                         } else if (filterEmployeMois !== 'tous') {
@@ -6446,8 +6446,8 @@ const PlanningManager = () => {
                           
                           {/* Créneaux */}
                           <div className="px-1 space-y-1">
-                            {/* VUE DIRECTEUR */}
-                            {user?.role === 'Directeur' && (
+                            {/* VUE DIRECTEUR ou vue planning complète */}
+                            {hasDirectorView() && (
                               <>
                                 {/* Matin */}
                                 <div 
