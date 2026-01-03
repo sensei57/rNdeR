@@ -2537,6 +2537,8 @@ const PlanningManager = () => {
       fetchPlanningSemaine(selectedWeek);
     } else if (viewMode === 'mois') {
       fetchPlanningMois(selectedMonth);
+    } else if (viewMode === 'planning') {
+      fetchPlanningTableau(selectedWeek);
     }
   }, [selectedDate, selectedWeek, selectedMonth, viewMode, user?.role]);
 
@@ -2555,6 +2557,30 @@ const PlanningManager = () => {
       dates.push(date.toISOString().split('T')[0]);
     }
     return dates;
+  };
+
+  // Fetch pour la vue Planning (tableau interactif)
+  const fetchPlanningTableau = async (date) => {
+    try {
+      setLoading(true);
+      const monday = getMondayOfWeek(date);
+      const weekDates = getWeekDates(monday);
+      
+      const planningData = {};
+      for (const d of weekDates) {
+        const res = await axios.get(`${API}/planning/${d}`);
+        planningData[d] = res.data;
+      }
+      
+      setPlanningTableau({
+        dates: weekDates,
+        planning: planningData
+      });
+    } catch (error) {
+      console.error('Erreur chargement planning tableau:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchPlanningSemaine = async (date) => {
