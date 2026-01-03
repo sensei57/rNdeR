@@ -3809,10 +3809,23 @@ const PlanningManager = () => {
           >
             Vue Mois
           </Button>
+          {user?.role === 'Directeur' && (
+            <Button
+              variant={viewMode === 'planning' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setViewMode('planning');
+                setSelectedWeek(selectedDate);
+              }}
+              className="bg-teal-600 hover:bg-teal-700 text-white"
+            >
+              📊 Vue Planning
+            </Button>
+          )}
         </div>
         
         {/* Filtre par rôle - Sélection multiple pour le directeur */}
-        {user?.role === 'Directeur' && (
+        {user?.role === 'Directeur' && viewMode !== 'planning' && (
           <>
             <div className="border-l pl-4 flex items-center space-x-2">
               <span className="text-sm font-medium">Filtres :</span>
