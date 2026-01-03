@@ -6556,7 +6556,7 @@ const PlanningManager = () => {
                 <div className="w-4 h-4 bg-purple-100 rounded"></div>
                 <span>Après-midi</span>
               </div>
-              {user?.role === 'Directeur' && (
+              {hasDirectorView() && (
                 <>
                   <div className="flex items-center space-x-2">
                     <span className="text-yellow-600 font-semibold">(+N)</span>
