@@ -5012,6 +5012,128 @@ const PlanningManager = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Modal Planning Hebdo (Création directe de créneaux) */}
+      <Dialog open={showPlanningHebdoModal} onOpenChange={setShowPlanningHebdoModal}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <span>📅 Planning Hebdomadaire</span>
+            </DialogTitle>
+            <DialogDescription>
+              Créez directement des créneaux de planning pour une semaine. Cliquez sur les jours pour sélectionner Matin, Après-midi ou Journée complète.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleSubmitPlanningHebdo} className="space-y-6">
+            {/* Sélection employé */}
+            <div className="space-y-2">
+              <Label>Employé *</Label>
+              <Select
+                value={planningHebdo.employe_id}
+                onValueChange={(value) => setPlanningHebdo(prev => ({ ...prev, employe_id: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner un employé" />
+                </SelectTrigger>
+                <SelectContent>
+                  <div className="p-2 border-b">
+                    <Input
+                      placeholder="🔍 Rechercher..."
+                      className="h-8"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                  {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role !== 'Directeur')).map(emp => (
+                    <SelectItem key={emp.id} value={emp.id}>
+                      {emp.role === 'Médecin' ? '👨‍⚕️' : emp.role === 'Assistant' ? '👥' : '📋'} {emp.prenom} {emp.nom}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Sélection de la semaine */}
+            <div className="space-y-2">
+              <Label>Semaine du *</Label>
+              <Input
+                type="date"
+                value={planningHebdo.date_debut}
+                onChange={(e) => handleDateHebdoPlanningChange(e.target.value)}
+              />
+            </div>
+
+            {/* Grille des jours de la semaine */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <Label>Jours de la semaine</Label>
+                <div className="text-sm text-gray-600">
+                  {joursHebdoPlanning.filter(j => j.selectionne).length} jour(s) sélectionné(s)
+                </div>
+              </div>
+              
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <div className="grid grid-cols-7 gap-2">
+                  {joursHebdoPlanning.map(jour => {
+                    const resume = planningHebdoResume[jour.date] || { medecinsMatin: 0, medecinsAM: 0, assistantsMatin: 0, assistantsAM: 0 };
+                    return (
+                      <div 
+                        key={jour.date}
+                        className={`
+                          p-2 rounded border cursor-pointer text-center text-sm transition-colors
+                          ${jour.creneau === 'MATIN' 
+                            ? 'bg-orange-100 border-orange-500 text-orange-800' 
+                            : jour.creneau === 'APRES_MIDI'
+                            ? 'bg-purple-100 border-purple-500 text-purple-800'
+                            : jour.creneau === 'JOURNEE_COMPLETE'
+                            ? 'bg-green-100 border-green-500 text-green-800'
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
+                          }
+                        `}
+                        onClick={() => toggleJourHebdoPlanning(jour.date)}
+                      >
+                        <div className="font-bold capitalize">{jour.jourNom.substring(0, 3)}</div>
+                        <div className="text-xs">{new Date(jour.date + 'T12:00:00').getDate()}/{new Date(jour.date + 'T12:00:00').getMonth() + 1}</div>
+                        <div className="text-xs mt-1 font-semibold">
+                          {jour.creneau === 'JOURNEE_COMPLETE' ? '🌞 Journée' :
+                           jour.creneau === 'MATIN' ? '🌅 Matin' :
+                           jour.creneau === 'APRES_MIDI' ? '🌆 AM' :
+                           '⭕'}
+                        </div>
+                        {/* Résumé des présences */}
+                        <div className="mt-2 pt-2 border-t border-gray-200 text-[10px]">
+                          <div className="text-blue-600">👨‍⚕️ M:{resume.medecinsMatin} | AM:{resume.medecinsAM}</div>
+                          <div className="text-green-600">👥 M:{resume.assistantsMatin} | AM:{resume.assistantsAM}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              
+              <p className="text-xs text-gray-500 mt-2">
+                💡 1 clic = 🌅 Matin | 2 clics = 🌆 Après-midi | 3 clics = 🌞 Journée | 4 clics = ⭕ Désactivé
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                📊 M = Matin | AM = Après-midi | 👨‍⚕️ Médecins présents | 👥 Assistants présents
+              </p>
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button type="button" variant="outline" onClick={() => setShowPlanningHebdoModal(false)}>
+                Annuler
+              </Button>
+              <Button 
+                type="submit"
+                disabled={joursHebdoPlanning.filter(j => j.selectionne).length === 0 || !planningHebdo.employe_id}
+                className="bg-teal-600 hover:bg-teal-700"
+              >
+                Créer {joursHebdoPlanning.filter(j => j.selectionne).length} créneau(x)
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
         {/* Vue Jour - Planning Matin */}
         {viewMode === 'jour' && (
         <>
