@@ -11695,7 +11695,9 @@ function App() {
               path="/" 
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <PlanningProvider>
+                    <Dashboard />
+                  </PlanningProvider>
                 </ProtectedRoute>
               } 
             />
