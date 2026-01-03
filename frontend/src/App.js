@@ -4150,8 +4150,8 @@ const PlanningManager = () => {
           </Button>
         </div>
         
-        {/* Actions du directeur */}
-        {user?.role === 'Directeur' && (
+        {/* Actions du directeur - Modification du planning */}
+        {canModifyPlanning() && (
           <div className="flex items-center space-x-2 border-l pl-4">
             <Button
               onClick={generateNotifications}
