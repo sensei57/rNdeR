@@ -4839,9 +4839,6 @@ const PlanningManager = () => {
         </DialogContent>
       </Dialog>
 
-        </div>
-      </div>
-
         {/* Vue Jour - Planning Matin */}
         {viewMode === 'jour' && (
         <>
