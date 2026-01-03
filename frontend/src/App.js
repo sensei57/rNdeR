@@ -5777,6 +5777,7 @@ const PlanningManager = () => {
                               ⏳ Demande en attente {isJourneeComplete && '(Journée complète)'}
                             </div>
                           </div>
+                          {canModifyPlanning() && (
                           <div className="flex space-x-1">
                             {isJourneeComplete && (
                               <Button
@@ -5811,6 +5812,7 @@ const PlanningManager = () => {
                               {isJourneeComplete ? 'Refuser Après-midi' : 'Refuser'}
                             </Button>
                           </div>
+                          )}
                         </div>
                       </div>
                       );
@@ -5825,7 +5827,7 @@ const PlanningManager = () => {
         {/* Plan du Cabinet - Visible pour tous sous le planning journalier */}
         <PlanCabinetCompact 
           selectedDate={selectedDate} 
-          isDirector={user?.role === 'Directeur'}
+          isDirector={hasDirectorView()}
         />
         </>
         )}
