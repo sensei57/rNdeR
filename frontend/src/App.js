@@ -9018,6 +9018,7 @@ const AdminManager = () => {
                   <th className="text-left p-3">Email</th>
                   <th className="text-left p-3">Rôle</th>
                   <th className="text-left p-3">Statut</th>
+                  <th className="text-left p-3">Vue Planning</th>
                   <th className="text-left p-3">Actions</th>
                 </tr>
               </thead>
