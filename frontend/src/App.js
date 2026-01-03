@@ -4531,7 +4531,7 @@ const PlanningManager = () => {
         </div>
 
       {/* Modal de modification de créneau */}
-      {user?.role === 'Directeur' && editingCreneau && (
+      {canModifyPlanning() && editingCreneau && (
         <Dialog open={showEditCreneauModal} onOpenChange={setShowEditCreneauModal}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
