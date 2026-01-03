@@ -3792,6 +3792,15 @@ const PlanningManager = () => {
               <span>Semaine Type</span>
             </Button>
             
+            <Button 
+              onClick={() => setShowPlanningHebdoModal(true)}
+              size="sm"
+              className="flex items-center space-x-2 bg-teal-600 hover:bg-teal-700"
+            >
+              <Calendar className="h-4 w-4" />
+              <span>Planning Hebdo</span>
+            </Button>
+            
             <Dialog open={showPlanningModal} onOpenChange={setShowPlanningModal}>
               <DialogTrigger asChild>
                 <Button size="sm" className="flex items-center space-x-2">
