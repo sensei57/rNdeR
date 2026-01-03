@@ -7090,16 +7090,6 @@ const DemandesTravailManager = () => {
           </div>
         )}
         
-        {/* Bouton Demande Hebdo pour le Directeur (pour assistants/secrétaires) */}
-        {user?.role === 'Directeur' && (
-          <Button 
-            onClick={handleOpenDemandeHebdo}
-            className="flex items-center space-x-2 bg-teal-600 hover:bg-teal-700"
-          >
-            <Calendar className="h-4 w-4" />
-            <span>Demande Hebdo (Assistants)</span>
-          </Button>
-        )}
       </div>
 
       {/* Alerte capacité pour le directeur */}
