@@ -2640,8 +2640,8 @@ const PlanningManager = () => {
       const mondayDate = getMondayOfWeek(date);
       const mondayStr = mondayDate.toISOString().split('T')[0];
       
-      if (user?.role === 'Directeur') {
-        // Vue globale pour le directeur
+      if (hasDirectorView()) {
+        // Vue globale pour le directeur ou utilisateur avec vue planning complète
         const [usersRes, sallesRes, planningRes, congesRes, demandesTravailRes] = await Promise.all([
           axios.get(`${API}/users`),
           axios.get(`${API}/salles`),
