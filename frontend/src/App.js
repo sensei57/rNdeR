@@ -6919,7 +6919,12 @@ const PlanningManager = () => {
                 <div className="w-4 h-4 bg-red-100 rounded border"></div>
                 <span>&gt; limite</span>
               </div>
-              <span className="text-gray-500 ml-4">💡 Employés: limite = 8 demi-journées | Médecins: limite = {salles.filter(s => s.type === 'MEDECIN').length || 6} box</span>
+              <span className="text-gray-500 ml-4">
+                💡 Médecins: {configurationPlanning?.limite_demi_journees_medecin || 6} demi-journées | 
+                Assistants: {configurationPlanning?.limite_demi_journees_assistant || 8} demi-journées | 
+                Secrétaires: {configurationPlanning?.limite_demi_journees_secretaire || 10} demi-journées | 
+                Box: {salles.filter(s => s.type_salle === 'MEDECIN').length || 6}
+              </span>
             </div>
           </CardContent>
         </Card>
