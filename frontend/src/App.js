@@ -2388,6 +2388,10 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
   const [planMatin, setPlanMatin] = useState(null);
   const [planApresMidi, setPlanApresMidi] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [selectedSalle, setSelectedSalle] = useState(null);
+  const [selectedCreneau, setSelectedCreneau] = useState(null);
+  const [employesPresents, setEmployesPresents] = useState([]);
 
   useEffect(() => {
     fetchPlans();
@@ -2408,12 +2412,87 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
     }
   };
 
-  const renderSalle = (salle) => {
+  // Ouvrir le modal d'assignation
+  const handleSalleClick = async (salle, creneau) => {
+    if (!isDirector) return;
+    
+    setSelectedSalle(salle);
+    setSelectedCreneau(creneau);
+    
+    // Charger les employés présents pour ce créneau
+    try {
+      const response = await axios.get(`${API}/planning/date/${selectedDate}`);
+      const planning = response.data;
+      
+      // Filtrer selon le type de salle
+      let roleFilter = [];
+      if (salle.type_salle === 'MEDECIN') {
+        roleFilter = ['Médecin'];
+      } else if (salle.type_salle === 'ASSISTANT') {
+        roleFilter = ['Assistant'];
+      } else if (salle.type_salle === 'ATTENTE') {
+        roleFilter = ['Médecin']; // Les salles d'attente sont pour les médecins
+      }
+      
+      const presents = planning.filter(p => 
+        p.creneau === creneau && 
+        roleFilter.includes(p.employe_role)
+      ).map(p => ({
+        ...p,
+        isAssigned: salle.type_salle === 'ATTENTE' 
+          ? p.salle_attente === salle.nom
+          : p.salle_attribuee === salle.nom,
+        hasAnySalle: salle.type_salle === 'ATTENTE'
+          ? !!p.salle_attente
+          : !!p.salle_attribuee
+      }));
+      
+      setEmployesPresents(presents);
+      setShowAssignModal(true);
+    } catch (error) {
+      toast.error('Erreur lors du chargement des employés');
+    }
+  };
+
+  // Assigner la salle à un employé
+  const handleAssignSalle = async (creneauId, employe) => {
+    try {
+      const updateData = selectedSalle.type_salle === 'ATTENTE'
+        ? { salle_attente: selectedSalle.nom }
+        : { salle_attribuee: selectedSalle.nom };
+      
+      await axios.put(`${API}/planning/${creneauId}`, updateData);
+      toast.success(`${selectedSalle.nom} assignée à ${employe.prenom} ${employe.nom}`);
+      setShowAssignModal(false);
+      fetchPlans();
+    } catch (error) {
+      toast.error('Erreur lors de l\'assignation');
+    }
+  };
+
+  // Retirer l'assignation
+  const handleRemoveAssign = async (creneauId) => {
+    try {
+      const updateData = selectedSalle.type_salle === 'ATTENTE'
+        ? { salle_attente: '' }
+        : { salle_attribuee: '' };
+      
+      await axios.put(`${API}/planning/${creneauId}`, updateData);
+      toast.success('Assignation retirée');
+      setShowAssignModal(false);
+      fetchPlans();
+    } catch (error) {
+      toast.error('Erreur lors du retrait');
+    }
+  };
+
+  const renderSalle = (salle, creneau) => {
     const occupation = salle.occupation;
     const baseClasses = "absolute border-2 rounded-lg p-2 text-xs font-medium transition-all flex flex-col justify-center items-center";
     
     let bgColor = 'bg-gray-100 border-gray-300';
     let textColor = 'text-gray-600';
+    let cursorClass = isDirector ? 'cursor-pointer hover:shadow-lg hover:scale-105' : '';
     
     if (occupation) {
       switch (salle.type_salle) {
@@ -2452,12 +2531,13 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
     return (
       <div
         key={salle.id}
-        className={`${baseClasses} ${bgColor} ${textColor}`}
+        className={`${baseClasses} ${bgColor} ${textColor} ${cursorClass}`}
         style={style}
+        onClick={() => handleSalleClick(salle, creneau)}
         title={
           occupation 
-            ? `${salle.nom} - ${occupation.employe?.prenom} ${occupation.employe?.nom}`
-            : `${salle.nom} - Libre`
+            ? `${salle.nom} - ${occupation.employe?.prenom} ${occupation.employe?.nom}${isDirector ? ' (Cliquer pour modifier)' : ''}`
+            : `${salle.nom} - Libre${isDirector ? ' (Cliquer pour assigner)' : ''}`
         }
       >
         <div className="text-center w-full">
@@ -2484,6 +2564,7 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
   }
 
   return (
+    <>
     <Card className="mt-6">
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
@@ -2492,6 +2573,11 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
           <span className="text-sm font-normal text-gray-500">
             ({new Date(selectedDate).toLocaleDateString('fr-FR')})
           </span>
+          {isDirector && (
+            <span className="text-xs text-teal-600 font-normal ml-2">
+              💡 Cliquez sur une salle pour l'assigner
+            </span>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -2504,7 +2590,7 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
                 <span>Matin</span>
               </h3>
               <div className="relative bg-blue-50 rounded-lg p-4 overflow-hidden border border-blue-200" style={{ height: '750px', width: '550px' }}>
-                {planMatin.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => renderSalle(salle))}
+                {planMatin.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => renderSalle(salle, 'MATIN'))}
               </div>
             </div>
           )}
@@ -2517,7 +2603,7 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
                 <span>Après-midi</span>
               </h3>
               <div className="relative bg-orange-50 rounded-lg p-4 overflow-hidden border border-orange-200" style={{ height: '750px', width: '550px' }}>
-                {planApresMidi.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => renderSalle(salle))}
+                {planApresMidi.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => renderSalle(salle, 'APRES_MIDI'))}
               </div>
             </div>
           )}
