@@ -1794,24 +1794,62 @@ const CongeManager = () => {
                     </p>
                   )}
                 </div>
-                {user?.role === 'Directeur' && demande.statut === 'EN_ATTENTE' && (
-                  <div className="flex space-x-2">
-                    <Button
-                      size="sm"
-                      onClick={() => handleApprobation(demande.id, true)}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      <Check className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleApprobation(demande.id, false)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
+                <div className="flex flex-col space-y-2">
+                  {/* Boutons d'approbation pour les demandes en attente */}
+                  {user?.role === 'Directeur' && demande.statut === 'EN_ATTENTE' && (
+                    <div className="flex space-x-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleApprobation(demande.id, true)}
+                        className="bg-green-600 hover:bg-green-700"
+                        title="Approuver"
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleApprobation(demande.id, false)}
+                        title="Rejeter"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {/* Boutons pour modifier ou annuler un congé approuvé */}
+                  {user?.role === 'Directeur' && demande.statut === 'APPROUVE' && (
+                    <div className="flex flex-col space-y-2">
+                      {/* Modifier le type */}
+                      <select
+                        className="text-xs p-1 border rounded"
+                        value={demande.type_conge}
+                        onChange={(e) => handleModifierTypeConge(demande.id, e.target.value)}
+                        title="Modifier le type"
+                      >
+                        {typesConge.map(type => (
+                          <option key={type.value} value={type.value}>{type.label}</option>
+                        ))}
+                      </select>
+                      
+                      {/* Bouton Annuler */}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleAnnulerConge(demande.id)}
+                        className="text-red-600 border-red-300 hover:bg-red-50"
+                        title="Annuler ce congé"
+                      >
+                        <X className="h-3 w-3 mr-1" /> Annuler
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {/* Badge annulé */}
+                  {demande.statut === 'ANNULE' && (
+                    <span className="text-xs text-gray-500 italic">Annulé</span>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
