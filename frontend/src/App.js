@@ -7369,9 +7369,18 @@ const PlanningManager = () => {
                     onChange={(e) => setQuickCreneauData(prev => ({ ...prev, salle_attribuee: e.target.value }))}
                   >
                     <option value="">-- Sélectionner une salle --</option>
-                    {salles.filter(s => s.type_salle === 'ASSISTANT').map(salle => (
-                      <option key={salle.id} value={salle.nom}>{salle.nom}</option>
-                    ))}
+                    {salles.filter(s => s.type_salle === 'ASSISTANT').map(salle => {
+                      const isUsed = isSalleUtiliseeJour(salle.nom, quickCreneauData.date);
+                      return (
+                        <option 
+                          key={salle.id} 
+                          value={salle.nom}
+                          style={{ fontWeight: isUsed ? 'bold' : 'normal' }}
+                        >
+                          {salle.nom} {isUsed ? '(déjà utilisée)' : ''}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
                 
@@ -7404,9 +7413,42 @@ const PlanningManager = () => {
                     onChange={(e) => setQuickCreneauData(prev => ({ ...prev, salle_attribuee: e.target.value }))}
                   >
                     <option value="">-- Sélectionner un box --</option>
-                    {salles.filter(s => s.type_salle === 'MEDECIN').map(salle => (
-                      <option key={salle.id} value={salle.nom}>{salle.nom}</option>
-                    ))}
+                    {salles.filter(s => s.type_salle === 'MEDECIN').map(salle => {
+                      const isUsed = isSalleUtiliseeJour(salle.nom, quickCreneauData.date);
+                      return (
+                        <option 
+                          key={salle.id} 
+                          value={salle.nom}
+                          style={{ fontWeight: isUsed ? 'bold' : 'normal' }}
+                        >
+                          {salle.nom} {isUsed ? '(déjà utilisé)' : ''}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+                
+                {/* Salle d'attente */}
+                <div className="space-y-2">
+                  <Label>🪑 Salle d'attente</Label>
+                  <select
+                    className="w-full p-2 border rounded"
+                    value={quickCreneauData.salle_attente || ''}
+                    onChange={(e) => setQuickCreneauData(prev => ({ ...prev, salle_attente: e.target.value }))}
+                  >
+                    <option value="">-- Sélectionner une salle d'attente --</option>
+                    {salles.filter(s => s.type_salle === 'ATTENTE').map(salle => {
+                      const isUsed = isSalleUtiliseeJour(salle.nom, quickCreneauData.date);
+                      return (
+                        <option 
+                          key={salle.id} 
+                          value={salle.nom}
+                          style={{ fontWeight: isUsed ? 'bold' : 'normal' }}
+                        >
+                          {salle.nom} {isUsed ? '(déjà utilisée)' : ''}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
                 
