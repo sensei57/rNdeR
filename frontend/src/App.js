@@ -6181,18 +6181,21 @@ const PlanningManager = () => {
                 {/* Médecins - Demi-journées à la semaine */}
                 {medecins.filter(m => m.actif).length > 0 && (
                   <div>
-                    <h3 className="text-sm font-bold text-gray-700 mb-2">Médecins (Demi-journées/semaine)</h3>
+                    <h3 className="text-sm font-bold text-gray-700 mb-2">Médecins (Demi-journées/semaine) - Limite: {configurationPlanning?.limite_demi_journees_medecin || 6}</h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                       {medecins.filter(m => m.actif).map(medecin => {
                         const demiJournees = calculateDemiJournees(medecin.id, planningSemaine.dates);
                         const conges = calculateConges(medecin.id, planningSemaine.dates);
+                        const limiteMedecin = configurationPlanning?.limite_demi_journees_medecin || 6;
+                        const isOverLimit = demiJournees > limiteMedecin;
                         return (
-                          <div key={medecin.id} className="bg-blue-50 border border-blue-200 rounded p-2">
+                          <div key={medecin.id} className={`${isOverLimit ? 'bg-red-50 border-red-500' : 'bg-blue-50 border-blue-200'} border rounded p-2`}>
                             <div className="text-sm font-medium text-gray-800">
                               Dr. {medecin.prenom} {medecin.nom}
                             </div>
-                            <div className="text-lg font-bold text-blue-600">
-                              {demiJournees} {demiJournees <= 1 ? 'demi-journée' : 'demi-journées'}
+                            <div className={`text-lg font-bold ${isOverLimit ? 'text-red-600' : 'text-blue-600'}`}>
+                              {demiJournees} / {limiteMedecin} {demiJournees <= 1 ? 'demi-journée' : 'demi-journées'}
+                              {isOverLimit && ' ⚠️'}
                             </div>
                             {conges > 0 && (
                               <div className="text-xs text-red-600 font-medium mt-1">
