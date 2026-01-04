@@ -2696,7 +2696,7 @@ const PlanningManager = () => {
   const fetchData = async () => {
     try {
       // Tous les utilisateurs voient toutes les données (personnel et salles)
-      const [usersRes, medecinRes, assistantRes, sallesRes, semainesTypesRes, congesRes, assignationsRes, demandesTravailRes] = await Promise.all([
+      const [usersRes, medecinRes, assistantRes, sallesRes, semainesTypesRes, congesRes, assignationsRes, demandesTravailRes, configRes] = await Promise.all([
         axios.get(`${API}/users`),
         axios.get(`${API}/users/by-role/Médecin`),
         axios.get(`${API}/users/by-role/Assistant`),
@@ -2704,7 +2704,8 @@ const PlanningManager = () => {
         axios.get(`${API}/semaines-types`),
         axios.get(`${API}/conges`),
         axios.get(`${API}/assignations`),
-        axios.get(`${API}/demandes-travail`)
+        axios.get(`${API}/demandes-travail`),
+        axios.get(`${API}/configuration`)
       ]);
       
       setUsers(usersRes.data);
@@ -2716,6 +2717,7 @@ const PlanningManager = () => {
       setCongesApprouves(congesRes.data.filter(c => c.statut === 'APPROUVE'));
       setAssignations(assignationsRes.data);
       setDemandesTravail(demandesTravailRes.data);
+      setConfigurationPlanning(configRes.data);
     } catch (error) {
       toast.error('Erreur lors du chargement des données');
     } finally {
