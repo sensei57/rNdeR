@@ -3495,6 +3495,55 @@ const PlanningManager = () => {
       toast.error('Erreur lors de la suppression');
     }
   };
+  
+  // Obtenir l'affichage pour un assistant (initiales médecins + salle ou note ou PRÉSENT)
+  const getAssistantDisplay = (creneau) => {
+    if (!creneau) return null;
+    
+    // Si médecins associés, afficher leurs initiales
+    if (creneau.medecin_ids && creneau.medecin_ids.length > 0) {
+      // Trouver les médecins associés
+      const medecinsAssocies = users.filter(u => creneau.medecin_ids.includes(u.id));
+      const initiales = medecinsAssocies.map(m => 
+        `${m.prenom?.[0] || ''}${m.nom?.[0] || ''}`.toUpperCase()
+      ).join(' ');
+      
+      // Ajouter la salle si définie
+      if (creneau.salle_attribuee) {
+        return `${initiales} (${creneau.salle_attribuee})`;
+      }
+      return initiales;
+    }
+    
+    // Si salle définie mais pas de médecins
+    if (creneau.salle_attribuee) {
+      return creneau.salle_attribuee;
+    }
+    
+    // Si note personnalisée
+    if (creneau.notes && creneau.notes !== 'Présence') {
+      return creneau.notes;
+    }
+    
+    return 'PRÉSENT';
+  };
+  
+  // Obtenir l'affichage pour un médecin (box ou note ou M/AM)
+  const getMedecinDisplay = (creneau, defaultDisplay) => {
+    if (!creneau) return null;
+    
+    // Si box défini, l'afficher en priorité
+    if (creneau.salle_attribuee) {
+      return creneau.salle_attribuee;
+    }
+    
+    // Si note personnalisée
+    if (creneau.notes && creneau.notes !== 'Présence') {
+      return creneau.notes;
+    }
+    
+    return defaultDisplay;
+  };
 
   // Calculer le total de demi-journées pour un employé sur la semaine
   const getTotalDemiJournees = (employeId) => {
