@@ -1632,6 +1632,12 @@ const CongeManager = () => {
                     <SelectItem value="MATERNITE">Congé maternité</SelectItem>
                     <SelectItem value="PATERNITE">Congé paternité</SelectItem>
                     <SelectItem value="SANS_SOLDE">Congé sans solde</SelectItem>
+                    {user?.role === 'Directeur' && (
+                      <>
+                        <SelectItem value="ABSENT">Absent (non comptabilisé)</SelectItem>
+                        <SelectItem value="REPOS">Repos (non comptabilisé)</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
