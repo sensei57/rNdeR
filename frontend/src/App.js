@@ -2421,7 +2421,7 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
     
     // Charger les employés présents pour ce créneau
     try {
-      const response = await axios.get(`${API}/planning/date/${selectedDate}`);
+      const response = await axios.get(`${API}/planning/${selectedDate}`);
       const planning = response.data;
       
       // Filtrer selon le type de salle
@@ -2450,6 +2450,7 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
       setEmployesPresents(presents);
       setShowAssignModal(true);
     } catch (error) {
+      console.error('Erreur:', error);
       toast.error('Erreur lors du chargement des employés');
     }
   };
