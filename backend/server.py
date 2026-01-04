@@ -1395,6 +1395,58 @@ async def approuver_demande_conge(
     
     return {"message": f"Demande {statut.lower()}e avec succès"}
 
+@api_router.put("/conges/{demande_id}/annuler")
+async def annuler_conge(
+    demande_id: str,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    """Annuler un congé approuvé (Directeur uniquement)"""
+    demande = await db.demandes_conges.find_one({"id": demande_id})
+    if not demande:
+        raise HTTPException(status_code=404, detail="Demande non trouvée")
+    
+    update_data = {
+        "statut": "ANNULE",
+        "annule_par": current_user.id,
+        "date_annulation": datetime.now(timezone.utc)
+    }
+    
+    result = await db.demandes_conges.update_one({"id": demande_id}, {"$set": update_data})
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=400, detail="Erreur lors de l'annulation")
+    
+    return {"message": "Congé annulé avec succès"}
+
+@api_router.put("/conges/{demande_id}/modifier-type")
+async def modifier_type_conge(
+    demande_id: str,
+    nouveau_type: str,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    """Modifier le type d'un congé (Directeur uniquement). 
+    Types: CONGE_PAYE, RTT, MALADIE, ABSENT, REPOS"""
+    demande = await db.demandes_conges.find_one({"id": demande_id})
+    if not demande:
+        raise HTTPException(status_code=404, detail="Demande non trouvée")
+    
+    types_valides = ["CONGE_PAYE", "RTT", "MALADIE", "ABSENT", "REPOS", "AUTRE"]
+    if nouveau_type not in types_valides:
+        raise HTTPException(status_code=400, detail=f"Type invalide. Types valides: {', '.join(types_valides)}")
+    
+    update_data = {
+        "type_conge": nouveau_type,
+        "modifie_par": current_user.id,
+        "date_modification": datetime.now(timezone.utc)
+    }
+    
+    result = await db.demandes_conges.update_one({"id": demande_id}, {"$set": update_data})
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=400, detail="Erreur lors de la modification")
+    
+    return {"message": f"Type de congé modifié en '{nouveau_type}'"}
+
 # Room reservations
 @api_router.post("/salles/reservation", response_model=SalleReservation)
 async def create_reservation_salle(
