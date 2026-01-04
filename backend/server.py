@@ -122,6 +122,17 @@ class CreneauPlanningCreate(BaseModel):
     horaire_pause_fin: Optional[str] = None
     notes: Optional[str] = None
 
+class CreneauPlanningUpdate(BaseModel):
+    medecin_attribue_id: Optional[str] = None
+    medecin_ids: Optional[List[str]] = None
+    salle_attribuee: Optional[str] = None
+    salle_attente: Optional[str] = None
+    horaire_debut: Optional[str] = None
+    horaire_fin: Optional[str] = None
+    horaire_pause_debut: Optional[str] = None
+    horaire_pause_fin: Optional[str] = None
+    notes: Optional[str] = None
+
 # Groupe Chat Models
 class GroupeChat(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
