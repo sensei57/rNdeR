@@ -250,6 +250,9 @@ class ConfigurationCabinet(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     max_medecins_par_jour: int = 4
     max_assistants_par_jour: int = 6
+    limite_demi_journees_medecin: int = 6  # Limite de demi-journées par semaine pour médecins
+    limite_demi_journees_assistant: int = 8  # Limite de demi-journées par semaine pour assistants
+    limite_demi_journees_secretaire: int = 10  # Limite de demi-journées par semaine pour secrétaires
     heures_ouverture_matin_debut: str = "08:00"
     heures_ouverture_matin_fin: str = "12:00"
     heures_ouverture_apres_midi_debut: str = "14:00"
@@ -259,6 +262,9 @@ class ConfigurationCabinet(BaseModel):
 class ConfigurationCabinetUpdate(BaseModel):
     max_medecins_par_jour: Optional[int] = None
     max_assistants_par_jour: Optional[int] = None
+    limite_demi_journees_medecin: Optional[int] = None
+    limite_demi_journees_assistant: Optional[int] = None
+    limite_demi_journees_secretaire: Optional[int] = None
     heures_ouverture_matin_debut: Optional[str] = None
     heures_ouverture_matin_fin: Optional[str] = None
     heures_ouverture_apres_midi_debut: Optional[str] = None
