@@ -2639,6 +2639,79 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
         )}
       </CardContent>
     </Card>
+
+    {/* Modal d'assignation de salle */}
+    <Dialog open={showAssignModal} onOpenChange={setShowAssignModal}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            {selectedSalle?.type_salle === 'ATTENTE' ? '🪑' : '🏥'} Assigner {selectedSalle?.nom}
+          </DialogTitle>
+          <DialogDescription>
+            {selectedCreneau === 'MATIN' ? 'Matin' : 'Après-midi'} - {new Date(selectedDate).toLocaleDateString('fr-FR')}
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="space-y-3">
+          {employesPresents.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center py-4">
+              Aucun {selectedSalle?.type_salle === 'MEDECIN' || selectedSalle?.type_salle === 'ATTENTE' ? 'médecin' : 'assistant'} présent ce créneau
+            </p>
+          ) : (
+            <>
+              <p className="text-xs text-gray-500 mb-2">
+                Les noms en <b>gras</b> ont déjà une salle assignée. Cliquez pour assigner cette salle.
+              </p>
+              {employesPresents.map(emp => (
+                <div
+                  key={emp.id}
+                  className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md ${
+                    emp.isAssigned 
+                      ? 'bg-green-100 border-green-400' 
+                      : emp.hasAnySalle 
+                        ? 'bg-yellow-50 border-yellow-300'
+                        : 'bg-gray-50 border-gray-200 hover:bg-blue-50'
+                  }`}
+                  onClick={() => {
+                    if (emp.isAssigned) {
+                      handleRemoveAssign(emp.id);
+                    } else {
+                      handleAssignSalle(emp.id, emp.employe);
+                    }
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className={`${emp.hasAnySalle ? 'font-bold' : ''}`}>
+                        {emp.employe_role === 'Médecin' ? 'Dr. ' : ''}
+                        {emp.employe?.prenom} {emp.employe?.nom}
+                      </span>
+                      {emp.hasAnySalle && !emp.isAssigned && (
+                        <span className="text-xs text-yellow-600 ml-2">
+                          (déjà en {selectedSalle?.type_salle === 'ATTENTE' ? emp.salle_attente : emp.salle_attribuee})
+                        </span>
+                      )}
+                    </div>
+                    {emp.isAssigned ? (
+                      <span className="text-xs text-green-600 font-semibold">✓ Assigné ici</span>
+                    ) : (
+                      <span className="text-xs text-blue-600">Cliquer pour assigner</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+        
+        <div className="flex justify-end mt-4">
+          <Button variant="outline" onClick={() => setShowAssignModal(false)}>
+            Fermer
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 };
 
