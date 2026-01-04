@@ -6992,24 +6992,26 @@ const PlanningManager = () => {
                         {planningTableau.dates.map(date => {
                           const creneauMatin = getCreneauForEmploye(medecin.id, date, 'MATIN');
                           const creneauAM = getCreneauForEmploye(medecin.id, date, 'APRES_MIDI');
+                          const displayMatin = getMedecinDisplay(creneauMatin, 'M');
+                          const displayAM = getMedecinDisplay(creneauAM, 'AM');
                           return (
                             <React.Fragment key={`${medecin.id}-${date}`}>
                               <td 
                                 className={`border p-1 text-center cursor-pointer hover:bg-blue-200 transition-colors ${creneauMatin ? 'bg-blue-200' : ''}`}
                                 onClick={() => openQuickCreneauModal(medecin, date, 'MATIN', creneauMatin)}
-                                title={creneauMatin?.notes ? `📝 ${creneauMatin.notes} - Cliquer pour modifier` : 'Cliquer pour ajouter'}
+                                title={creneauMatin ? `📝 ${displayMatin} - Cliquer pour modifier` : 'Cliquer pour ajouter'}
                               >
                                 {creneauMatin ? (
-                                  <span className="text-xs font-semibold text-blue-700">M</span>
+                                  <span className="text-xs font-semibold text-blue-700">{displayMatin}</span>
                                 ) : <span className="text-gray-300">+</span>}
                               </td>
                               <td 
                                 className={`border p-1 text-center cursor-pointer hover:bg-blue-200 transition-colors ${creneauAM ? 'bg-blue-200' : ''}`}
                                 onClick={() => openQuickCreneauModal(medecin, date, 'APRES_MIDI', creneauAM)}
-                                title={creneauAM?.notes ? `📝 ${creneauAM.notes} - Cliquer pour modifier` : 'Cliquer pour ajouter'}
+                                title={creneauAM ? `📝 ${displayAM} - Cliquer pour modifier` : 'Cliquer pour ajouter'}
                               >
                                 {creneauAM ? (
-                                  <span className="text-xs font-semibold text-blue-700">AM</span>
+                                  <span className="text-xs font-semibold text-blue-700">{displayAM}</span>
                                 ) : <span className="text-gray-300">+</span>}
                               </td>
                             </React.Fragment>
