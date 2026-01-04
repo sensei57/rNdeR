@@ -7128,12 +7128,83 @@ const PlanningManager = () => {
               }
             </DialogTitle>
             <DialogDescription>
-              {quickCreneauData.employe?.prenom} {quickCreneauData.employe?.nom} - {new Date(quickCreneauData.date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} ({quickCreneauData.creneau === 'MATIN' ? 'Matin' : 'Après-midi'})
+              {quickCreneauData.employe?.prenom} {quickCreneauData.employe?.nom} - {new Date(quickCreneauData.date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+              {quickCreneauData.employe?.role !== 'Secrétaire' && ` (${quickCreneauData.creneau === 'MATIN' ? 'Matin' : 'Après-midi'})`}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleQuickCreneauSubmit} className="space-y-4">
             {quickCreneauData.employe?.role === 'Secrétaire' ? (
               <>
+                {/* Sélection rapide des horaires prédéfinis */}
+                {!quickCreneauData.id && (
+                  <div className="space-y-2">
+                    <Label>⚡ Sélection rapide (journée)</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {horairesSecretaires.map(horaire => {
+                        const hasMatinOrAprem = (horaire.debut_matin && horaire.fin_matin) || (horaire.debut_aprem && horaire.fin_aprem);
+                        return hasMatinOrAprem ? (
+                          <Button
+                            key={horaire.id}
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="text-xs h-auto py-2 hover:bg-pink-50 hover:border-pink-300"
+                            onClick={async () => {
+                              // Créer les créneaux pour la journée avec cet horaire
+                              try {
+                                const promises = [];
+                                
+                                // Créneau matin si défini
+                                if (horaire.debut_matin && horaire.fin_matin) {
+                                  promises.push(axios.post(`${API}/planning`, {
+                                    date: quickCreneauData.date,
+                                    creneau: 'MATIN',
+                                    employe_id: quickCreneauData.employe_id,
+                                    horaire_debut: horaire.debut_matin,
+                                    horaire_fin: horaire.fin_matin,
+                                    notes: ''
+                                  }));
+                                }
+                                
+                                // Créneau après-midi si défini
+                                if (horaire.debut_aprem && horaire.fin_aprem) {
+                                  promises.push(axios.post(`${API}/planning`, {
+                                    date: quickCreneauData.date,
+                                    creneau: 'APRES_MIDI',
+                                    employe_id: quickCreneauData.employe_id,
+                                    horaire_debut: horaire.debut_aprem,
+                                    horaire_fin: horaire.fin_aprem,
+                                    notes: ''
+                                  }));
+                                }
+                                
+                                await Promise.all(promises);
+                                toast.success(`${horaire.nom} appliqué pour ${quickCreneauData.employe?.prenom}`);
+                                setShowQuickCreneauModal(false);
+                                fetchPlanningTableau(selectedWeek);
+                              } catch (error) {
+                                console.error('Erreur:', error);
+                                toast.error(error.response?.data?.detail || 'Erreur lors de la création');
+                              }
+                            }}
+                          >
+                            <div className="text-center">
+                              <div className="font-semibold">{horaire.nom}</div>
+                              <div className="text-[10px] text-gray-500">
+                                {horaire.debut_matin && horaire.fin_matin && `${horaire.debut_matin}-${horaire.fin_matin}`}
+                                {horaire.debut_matin && horaire.fin_matin && horaire.debut_aprem && horaire.fin_aprem && ' / '}
+                                {horaire.debut_aprem && horaire.fin_aprem && `${horaire.debut_aprem}-${horaire.fin_aprem}`}
+                              </div>
+                            </div>
+                          </Button>
+                        ) : null;
+                      })}
+                    </div>
+                    <div className="border-t my-3"></div>
+                    <Label className="text-gray-500">Ou saisie manuelle :</Label>
+                  </div>
+                )}
+                
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Heure début</Label>
