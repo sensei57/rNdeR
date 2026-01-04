@@ -7241,6 +7241,118 @@ const PlanningManager = () => {
                   </div>
                 </div>
               </>
+            ) : quickCreneauData.employe?.role === 'Assistant' ? (
+              <div className="space-y-4">
+                {/* Note optionnelle */}
+                <div className="space-y-2">
+                  <Label>Note (optionnel)</Label>
+                  <Input
+                    placeholder="Laisser vide pour 'Présence'"
+                    value={quickCreneauData.notes}
+                    onChange={(e) => setQuickCreneauData(prev => ({ ...prev, notes: e.target.value }))}
+                  />
+                </div>
+                
+                {/* Médecins présents à cocher */}
+                {getMedecinsPresentsPourCreneau(quickCreneauData.date, quickCreneauData.creneau).length > 0 && (
+                  <div className="space-y-2">
+                    <Label>👨‍⚕️ Médecins associés (présents ce créneau)</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {getMedecinsPresentsPourCreneau(quickCreneauData.date, quickCreneauData.creneau).map(medecin => (
+                        <label key={medecin.id} className="flex items-center space-x-2 cursor-pointer p-2 rounded border hover:bg-blue-50">
+                          <input
+                            type="checkbox"
+                            checked={quickCreneauData.medecin_ids?.includes(medecin.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setQuickCreneauData(prev => ({
+                                  ...prev,
+                                  medecin_ids: [...(prev.medecin_ids || []), medecin.id]
+                                }));
+                              } else {
+                                setQuickCreneauData(prev => ({
+                                  ...prev,
+                                  medecin_ids: (prev.medecin_ids || []).filter(id => id !== medecin.id)
+                                }));
+                              }
+                            }}
+                            className="w-4 h-4 text-blue-600 rounded"
+                          />
+                          <span className="text-sm">
+                            <span className="font-semibold text-blue-600">{medecin.initiales}</span> - Dr. {medecin.prenom} {medecin.nom}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Salle de travail */}
+                <div className="space-y-2">
+                  <Label>🏥 Salle de travail</Label>
+                  <select
+                    className="w-full p-2 border rounded"
+                    value={quickCreneauData.salle_attribuee || ''}
+                    onChange={(e) => setQuickCreneauData(prev => ({ ...prev, salle_attribuee: e.target.value }))}
+                  >
+                    <option value="">-- Sélectionner une salle --</option>
+                    {salles.filter(s => s.type_salle === 'ASSISTANT').map(salle => (
+                      <option key={salle.id} value={salle.nom}>{salle.nom}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Aperçu de l'affichage */}
+                {(quickCreneauData.medecin_ids?.length > 0 || quickCreneauData.salle_attribuee) && (
+                  <div className="bg-green-50 border border-green-200 rounded p-2 text-sm">
+                    <span className="font-semibold">Aperçu: </span>
+                    {quickCreneauData.medecin_ids?.length > 0 ? (
+                      <>
+                        {getMedecinsPresentsPourCreneau(quickCreneauData.date, quickCreneauData.creneau)
+                          .filter(m => quickCreneauData.medecin_ids.includes(m.id))
+                          .map(m => m.initiales)
+                          .join(' ')}
+                        {quickCreneauData.salle_attribuee && ` (${quickCreneauData.salle_attribuee})`}
+                      </>
+                    ) : quickCreneauData.salle_attribuee ? (
+                      `Salle: ${quickCreneauData.salle_attribuee}`
+                    ) : 'PRÉSENT'}
+                  </div>
+                )}
+              </div>
+            ) : quickCreneauData.employe?.role === 'Médecin' ? (
+              <div className="space-y-4">
+                {/* Box de travail */}
+                <div className="space-y-2">
+                  <Label>🏥 Box de travail</Label>
+                  <select
+                    className="w-full p-2 border rounded"
+                    value={quickCreneauData.salle_attribuee || ''}
+                    onChange={(e) => setQuickCreneauData(prev => ({ ...prev, salle_attribuee: e.target.value }))}
+                  >
+                    <option value="">-- Sélectionner un box --</option>
+                    {salles.filter(s => s.type_salle === 'MEDECIN').map(salle => (
+                      <option key={salle.id} value={salle.nom}>{salle.nom}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Note optionnelle */}
+                <div className="space-y-2">
+                  <Label>Note (optionnel)</Label>
+                  <Input
+                    placeholder="Laisser vide pour 'Présence'"
+                    value={quickCreneauData.notes}
+                    onChange={(e) => setQuickCreneauData(prev => ({ ...prev, notes: e.target.value }))}
+                  />
+                </div>
+                
+                {/* Aperçu de l'affichage */}
+                <div className="bg-blue-50 border border-blue-200 rounded p-2 text-sm">
+                  <span className="font-semibold">Aperçu: </span>
+                  {quickCreneauData.salle_attribuee || quickCreneauData.notes || 'PRÉSENT'}
+                </div>
+              </div>
             ) : (
               <div className="space-y-2">
                 <Label>Note (optionnel)</Label>
