@@ -3460,6 +3460,7 @@ const PlanningManager = () => {
         horaire_pause_debut: quickCreneauData.horaire_pause_debut || null,
         horaire_pause_fin: quickCreneauData.horaire_pause_fin || null,
         salle_attribuee: quickCreneauData.salle_attribuee || null,
+        salle_attente: quickCreneauData.salle_attente || null,
         medecin_ids: quickCreneauData.medecin_ids || []
       };
       
@@ -3483,6 +3484,24 @@ const PlanningManager = () => {
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Erreur lors de la création');
     }
+  };
+  
+  // Vérifier si un box/salle est déjà utilisé pour un jour donné
+  const isSalleUtiliseeJour = (salleNom, date) => {
+    if (!planningTableau.planning || !planningTableau.planning[date]) return false;
+    return planningTableau.planning[date].some(p => 
+      p.salle_attribuee === salleNom || p.salle_attente === salleNom
+    );
+  };
+  
+  // Vérifier si un médecin est déjà associé à un assistant pour la journée (matin OU après-midi)
+  const isMedecinDejaAssocieJour = (medecinId, date) => {
+    if (!planningTableau.planning || !planningTableau.planning[date]) return false;
+    return planningTableau.planning[date].some(p => 
+      p.employe_role === 'Assistant' && 
+      p.medecin_ids && 
+      p.medecin_ids.includes(medecinId)
+    );
   };
 
   // Supprimer un créneau depuis la Vue Planning
