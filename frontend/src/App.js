@@ -3430,6 +3430,7 @@ const PlanningManager = () => {
       horaire_pause_debut: existingCreneau?.horaire_pause_debut || '',
       horaire_pause_fin: existingCreneau?.horaire_pause_fin || '',
       salle_attribuee: existingCreneau?.salle_attribuee || '',
+      salle_attente: existingCreneau?.salle_attente || '',
       medecin_ids: existingCreneau?.medecin_ids || []
     });
     setShowQuickCreneauModal(true);
