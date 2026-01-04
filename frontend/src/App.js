@@ -7002,6 +7002,117 @@ const PlanningManager = () => {
                 Box: {salles.filter(s => s.type_salle === 'MEDECIN').length || 6}
               </span>
             </div>
+
+            {/* Horaires prédéfinis pour les secrétaires */}
+            <div className="mt-6 border-t pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-gray-700">🕐 Horaires prédéfinis secrétaires</h3>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowHorairesConfig(!showHorairesConfig)}
+                >
+                  {showHorairesConfig ? 'Masquer' : 'Configurer'}
+                </Button>
+              </div>
+              
+              {/* Affichage rapide des horaires */}
+              <div className="grid grid-cols-3 gap-3 mb-3">
+                {horairesSecretaires.map(horaire => (
+                  <div key={horaire.id} className="bg-pink-50 border border-pink-200 rounded p-2 text-xs">
+                    <div className="font-semibold text-pink-700">{horaire.nom}</div>
+                    <div className="text-gray-600">
+                      {horaire.debut_matin && horaire.fin_matin && (
+                        <span>Matin: {horaire.debut_matin}-{horaire.fin_matin}</span>
+                      )}
+                      {horaire.debut_matin && horaire.fin_matin && horaire.debut_aprem && horaire.fin_aprem && ' | '}
+                      {horaire.debut_aprem && horaire.fin_aprem && (
+                        <span>Après-midi: {horaire.debut_aprem}-{horaire.fin_aprem}</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Formulaire de configuration */}
+              {showHorairesConfig && (
+                <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+                  {horairesSecretaires.map((horaire, index) => (
+                    <div key={horaire.id} className="bg-white border rounded p-3">
+                      <div className="grid grid-cols-5 gap-2 items-end">
+                        <div>
+                          <Label className="text-xs">Nom</Label>
+                          <Input
+                            value={horaire.nom}
+                            onChange={(e) => {
+                              const newHoraires = [...horairesSecretaires];
+                              newHoraires[index].nom = e.target.value;
+                              saveHorairesSecretaires(newHoraires);
+                            }}
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Début matin</Label>
+                          <Input
+                            type="time"
+                            value={horaire.debut_matin}
+                            onChange={(e) => {
+                              const newHoraires = [...horairesSecretaires];
+                              newHoraires[index].debut_matin = e.target.value;
+                              saveHorairesSecretaires(newHoraires);
+                            }}
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Fin matin</Label>
+                          <Input
+                            type="time"
+                            value={horaire.fin_matin}
+                            onChange={(e) => {
+                              const newHoraires = [...horairesSecretaires];
+                              newHoraires[index].fin_matin = e.target.value;
+                              saveHorairesSecretaires(newHoraires);
+                            }}
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Début après-midi</Label>
+                          <Input
+                            type="time"
+                            value={horaire.debut_aprem}
+                            onChange={(e) => {
+                              const newHoraires = [...horairesSecretaires];
+                              newHoraires[index].debut_aprem = e.target.value;
+                              saveHorairesSecretaires(newHoraires);
+                            }}
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Fin après-midi</Label>
+                          <Input
+                            type="time"
+                            value={horaire.fin_aprem}
+                            onChange={(e) => {
+                              const newHoraires = [...horairesSecretaires];
+                              newHoraires[index].fin_aprem = e.target.value;
+                              saveHorairesSecretaires(newHoraires);
+                            }}
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <p className="text-xs text-gray-500 italic">
+                    💡 Laissez les champs vides si l'horaire ne couvre pas le matin ou l'après-midi
+                  </p>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
