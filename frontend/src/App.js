@@ -4275,8 +4275,8 @@ const PlanningManager = () => {
           ) : (
             <Input
               type="date"
-              value={viewMode === 'semaine' ? selectedWeek : selectedDate}
-              onChange={(e) => viewMode === 'semaine' ? setSelectedWeek(e.target.value) : setSelectedDate(e.target.value)}
+              value={(viewMode === 'semaine' || viewMode === 'planning') ? selectedWeek : selectedDate}
+              onChange={(e) => (viewMode === 'semaine' || viewMode === 'planning') ? setSelectedWeek(e.target.value) : setSelectedDate(e.target.value)}
               className="w-auto"
             />
           )}
