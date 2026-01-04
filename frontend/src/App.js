@@ -1450,10 +1450,35 @@ const CongeManager = () => {
     }
   };
 
+  // Annuler un congé (Directeur uniquement)
+  const handleAnnulerConge = async (demandeId) => {
+    if (!window.confirm('Voulez-vous vraiment annuler ce congé ?')) return;
+    
+    try {
+      await axios.put(`${API}/conges/${demandeId}/annuler`);
+      toast.success('Congé annulé avec succès');
+      fetchDemandes();
+    } catch (error) {
+      toast.error('Erreur lors de l\'annulation du congé');
+    }
+  };
+
+  // Modifier le type de congé (Directeur uniquement)
+  const handleModifierTypeConge = async (demandeId, nouveauType) => {
+    try {
+      await axios.put(`${API}/conges/${demandeId}/modifier-type?nouveau_type=${nouveauType}`);
+      toast.success(`Type modifié en "${getTypeCongeLabel(nouveauType)}"`);
+      fetchDemandes();
+    } catch (error) {
+      toast.error('Erreur lors de la modification du type');
+    }
+  };
+
   const getStatutColor = (statut) => {
     switch (statut) {
       case 'APPROUVE': return 'bg-green-100 text-green-800';
       case 'REJETE': return 'bg-red-100 text-red-800';
+      case 'ANNULE': return 'bg-gray-100 text-gray-800';
       case 'EN_ATTENTE': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -1467,10 +1492,26 @@ const CongeManager = () => {
       'FORMATION': 'Formation',
       'MATERNITE': 'Congé maternité',
       'PATERNITE': 'Congé paternité',
-      'SANS_SOLDE': 'Congé sans solde'
+      'SANS_SOLDE': 'Congé sans solde',
+      'ABSENT': 'Absent (non comptabilisé)',
+      'REPOS': 'Repos (non comptabilisé)',
+      'AUTRE': 'Autre'
     };
     return types[type] || type;
   };
+
+  // Types de congés pour le sélecteur (avec ABSENT et REPOS)
+  const typesConge = [
+    { value: 'CONGE_PAYE', label: 'Congé payé' },
+    { value: 'RTT', label: 'RTT' },
+    { value: 'MALADIE', label: 'Congé maladie' },
+    { value: 'FORMATION', label: 'Formation' },
+    { value: 'MATERNITE', label: 'Congé maternité' },
+    { value: 'PATERNITE', label: 'Congé paternité' },
+    { value: 'SANS_SOLDE', label: 'Congé sans solde' },
+    { value: 'ABSENT', label: 'Absent (non comptabilisé)' },
+    { value: 'REPOS', label: 'Repos (non comptabilisé)' }
+  ];
 
   const getCreneauLabel = (creneau) => {
     const creneaux = {
