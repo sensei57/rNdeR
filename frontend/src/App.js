@@ -2466,6 +2466,7 @@ const PlanningManager = () => {
   const [demandesTravail, setDemandesTravail] = useState([]);
   const [planningSemaine, setPlanningSemaine] = useState(null);
   const [planningTableau, setPlanningTableau] = useState({}); // Pour la vue Planning
+  const [configurationPlanning, setConfigurationPlanning] = useState(null); // Configuration des limites
   const [showPlanningModal, setShowPlanningModal] = useState(false);
   const [showEditCreneauModal, setShowEditCreneauModal] = useState(false);
   const [showAttributionModal, setShowAttributionModal] = useState(false);
