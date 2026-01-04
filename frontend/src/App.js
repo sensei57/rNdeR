@@ -7330,32 +7330,41 @@ const PlanningManager = () => {
                 {getMedecinsPresentsPourCreneau(quickCreneauData.date, quickCreneauData.creneau).length > 0 && (
                   <div className="space-y-2">
                     <Label>👨‍⚕️ Médecins associés (présents ce créneau)</Label>
+                    <p className="text-xs text-gray-500">Les médecins en <b>gras</b> sont déjà associés à un assistant ce jour</p>
                     <div className="grid grid-cols-2 gap-2">
-                      {getMedecinsPresentsPourCreneau(quickCreneauData.date, quickCreneauData.creneau).map(medecin => (
-                        <label key={medecin.id} className="flex items-center space-x-2 cursor-pointer p-2 rounded border hover:bg-blue-50">
-                          <input
-                            type="checkbox"
-                            checked={quickCreneauData.medecin_ids?.includes(medecin.id)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setQuickCreneauData(prev => ({
-                                  ...prev,
-                                  medecin_ids: [...(prev.medecin_ids || []), medecin.id]
-                                }));
-                              } else {
-                                setQuickCreneauData(prev => ({
-                                  ...prev,
-                                  medecin_ids: (prev.medecin_ids || []).filter(id => id !== medecin.id)
-                                }));
-                              }
-                            }}
-                            className="w-4 h-4 text-blue-600 rounded"
-                          />
-                          <span className="text-sm">
-                            <span className="font-semibold text-blue-600">{medecin.initiales}</span> - Dr. {medecin.prenom} {medecin.nom}
-                          </span>
-                        </label>
-                      ))}
+                      {getMedecinsPresentsPourCreneau(quickCreneauData.date, quickCreneauData.creneau).map(medecin => {
+                        const isDejaAssocie = isMedecinDejaAssocieJour(medecin.id, quickCreneauData.date);
+                        const isChecked = quickCreneauData.medecin_ids?.includes(medecin.id);
+                        return (
+                          <label 
+                            key={medecin.id} 
+                            className={`flex items-center space-x-2 cursor-pointer p-2 rounded border hover:bg-blue-50 ${isDejaAssocie && !isChecked ? 'bg-yellow-50 border-yellow-300' : ''} ${isChecked ? 'bg-blue-100 border-blue-400' : ''}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setQuickCreneauData(prev => ({
+                                    ...prev,
+                                    medecin_ids: [...(prev.medecin_ids || []), medecin.id]
+                                  }));
+                                } else {
+                                  setQuickCreneauData(prev => ({
+                                    ...prev,
+                                    medecin_ids: (prev.medecin_ids || []).filter(id => id !== medecin.id)
+                                  }));
+                                }
+                              }}
+                              className="w-4 h-4 text-blue-600 rounded"
+                            />
+                            <span className={`text-sm ${isDejaAssocie ? 'font-bold' : ''}`}>
+                              <span className="font-semibold text-blue-600">{medecin.initiales}</span> - Dr. {medecin.prenom} {medecin.nom}
+                              {isDejaAssocie && !isChecked && <span className="text-xs text-yellow-600 ml-1">(déjà attribué)</span>}
+                            </span>
+                          </label>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
