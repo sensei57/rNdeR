@@ -2505,6 +2505,24 @@ const PlanningManager = () => {
   const [showDetails, setShowDetails] = useState(true); // Afficher ou masquer les détails (Box, Salle d'attente, Assistants)
   const [showMoisDetailsModal, setShowMoisDetailsModal] = useState(false); // Modal détails vue mois
   const [moisDetailsData, setMoisDetailsData] = useState({ date: '', creneau: '', employes: [] }); // Données pour le modal
+  
+  // Horaires prédéfinis pour les secrétaires (stockés localement)
+  const [horairesSecretaires, setHorairesSecretaires] = useState(() => {
+    const saved = localStorage.getItem('horairesSecretaires');
+    return saved ? JSON.parse(saved) : [
+      { id: 1, nom: 'Temps plein', debut_matin: '08:00', fin_matin: '12:00', debut_aprem: '14:00', fin_aprem: '18:00' },
+      { id: 2, nom: 'Mi-temps matin', debut_matin: '08:00', fin_matin: '12:00', debut_aprem: '', fin_aprem: '' },
+      { id: 3, nom: 'Mi-temps après-midi', debut_matin: '', fin_matin: '', debut_aprem: '14:00', fin_aprem: '18:00' }
+    ];
+  });
+  const [showHorairesConfig, setShowHorairesConfig] = useState(false);
+  
+  // Sauvegarder les horaires prédéfinis dans localStorage
+  const saveHorairesSecretaires = (newHoraires) => {
+    setHorairesSecretaires(newHoraires);
+    localStorage.setItem('horairesSecretaires', JSON.stringify(newHoraires));
+  };
+  
   const [users, setUsers] = useState([]);
   const [salles, setSalles] = useState([]);
   const [medecins, setMedecins] = useState([]);
