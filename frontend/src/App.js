@@ -2061,37 +2061,85 @@ const SallesManager = () => {
 
       {/* Configuration Modal */}
       <Dialog open={showConfigModal} onOpenChange={setShowConfigModal}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Configuration du Cabinet</DialogTitle>
           </DialogHeader>
           
           {configuration && (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Nombre maximum de médecins par jour</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={configuration.max_medecins_par_jour}
-                  onChange={(e) => setConfiguration({
-                    ...configuration,
-                    max_medecins_par_jour: parseInt(e.target.value)
-                  })}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Max médecins par créneau</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={configuration.max_medecins_par_jour}
+                    onChange={(e) => setConfiguration({
+                      ...configuration,
+                      max_medecins_par_jour: parseInt(e.target.value)
+                    })}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Max assistants par créneau</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={configuration.max_assistants_par_jour}
+                    onChange={(e) => setConfiguration({
+                      ...configuration,
+                      max_assistants_par_jour: parseInt(e.target.value)
+                    })}
+                  />
+                </div>
               </div>
               
-              <div className="space-y-2">
-                <Label>Nombre maximum d'assistants par jour</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={configuration.max_assistants_par_jour}
-                  onChange={(e) => setConfiguration({
-                    ...configuration,
-                    max_assistants_par_jour: parseInt(e.target.value)
-                  })}
-                />
+              {/* Limites de demi-journées par semaine */}
+              <div className="border-t pt-4">
+                <Label className="text-sm font-semibold mb-2 block">Limites demi-journées par semaine (Vue Planning)</Label>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Médecins</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="14"
+                      value={configuration.limite_demi_journees_medecin || 6}
+                      onChange={(e) => setConfiguration({
+                        ...configuration,
+                        limite_demi_journees_medecin: parseInt(e.target.value)
+                      })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Assistants</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="14"
+                      value={configuration.limite_demi_journees_assistant || 8}
+                      onChange={(e) => setConfiguration({
+                        ...configuration,
+                        limite_demi_journees_assistant: parseInt(e.target.value)
+                      })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Secrétaires</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="14"
+                      value={configuration.limite_demi_journees_secretaire || 10}
+                      onChange={(e) => setConfiguration({
+                        ...configuration,
+                        limite_demi_journees_secretaire: parseInt(e.target.value)
+                      })}
+                    />
+                  </div>
+                </div>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
