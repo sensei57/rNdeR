@@ -6240,21 +6240,25 @@ const PlanningManager = () => {
                   </div>
                 )}
 
-                {/* Secrétaires - Heures à la semaine */}
+                {/* Secrétaires - Demi-journées et Heures à la semaine */}
                 {users.filter(u => u.role === 'Secrétaire' && u.actif).length > 0 && (
                   <div>
-                    <h3 className="text-sm font-bold text-gray-700 mb-2">Secrétaires (Heures/semaine)</h3>
+                    <h3 className="text-sm font-bold text-gray-700 mb-2">Secrétaires (Demi-journées/semaine) - Limite: {configurationPlanning?.limite_demi_journees_secretaire || 10}</h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                       {users.filter(u => u.role === 'Secrétaire' && u.actif).map(secretaire => {
                         const heures = calculateHeures(secretaire.id, planningSemaine.dates);
+                        const demiJournees = calculateDemiJournees(secretaire.id, planningSemaine.dates);
                         const conges = calculateConges(secretaire.id, planningSemaine.dates);
+                        const limiteSecretaire = configurationPlanning?.limite_demi_journees_secretaire || 10;
+                        const isOverLimit = demiJournees > limiteSecretaire;
                         return (
-                          <div key={secretaire.id} className="bg-purple-50 border border-purple-200 rounded p-2">
+                          <div key={secretaire.id} className={`${isOverLimit ? 'bg-red-50 border-red-500' : 'bg-purple-50 border-purple-200'} border rounded p-2`}>
                             <div className="text-sm font-medium text-gray-800">
                               {secretaire.prenom} {secretaire.nom}
                             </div>
-                            <div className="text-lg font-bold text-purple-600">
-                              {heures}h
+                            <div className={`text-lg font-bold ${isOverLimit ? 'text-red-600' : 'text-purple-600'}`}>
+                              {demiJournees} / {limiteSecretaire} dj ({heures}h)
+                              {isOverLimit && ' ⚠️'}
                             </div>
                             {conges > 0 && (
                               <div className="text-xs text-red-600 font-medium mt-1">
