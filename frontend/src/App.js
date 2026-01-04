@@ -3428,9 +3428,24 @@ const PlanningManager = () => {
       horaire_debut: existingCreneau?.horaire_debut || (employe.role === 'Secrétaire' ? (creneau === 'MATIN' ? '08:00' : '14:00') : ''),
       horaire_fin: existingCreneau?.horaire_fin || (employe.role === 'Secrétaire' ? (creneau === 'MATIN' ? '12:00' : '18:00') : ''),
       horaire_pause_debut: existingCreneau?.horaire_pause_debut || '',
-      horaire_pause_fin: existingCreneau?.horaire_pause_fin || ''
+      horaire_pause_fin: existingCreneau?.horaire_pause_fin || '',
+      salle_attribuee: existingCreneau?.salle_attribuee || '',
+      medecin_ids: existingCreneau?.medecin_ids || []
     });
     setShowQuickCreneauModal(true);
+  };
+  
+  // Récupérer les médecins présents pour un jour et créneau donné
+  const getMedecinsPresentsPourCreneau = (date, creneau) => {
+    if (!planningTableau.planning || !planningTableau.planning[date]) return [];
+    return planningTableau.planning[date]
+      .filter(p => p.employe_role === 'Médecin' && p.creneau === creneau)
+      .map(p => ({
+        id: p.employe_id,
+        nom: p.employe?.nom,
+        prenom: p.employe?.prenom,
+        initiales: `${p.employe?.prenom?.[0] || ''}${p.employe?.nom?.[0] || ''}`.toUpperCase()
+      }));
   };
 
   // Créer ou modifier un créneau rapidement depuis la Vue Planning
@@ -3438,15 +3453,19 @@ const PlanningManager = () => {
     e.preventDefault();
     
     try {
+      const payload = {
+        notes: quickCreneauData.notes || 'Présence',
+        horaire_debut: quickCreneauData.horaire_debut || null,
+        horaire_fin: quickCreneauData.horaire_fin || null,
+        horaire_pause_debut: quickCreneauData.horaire_pause_debut || null,
+        horaire_pause_fin: quickCreneauData.horaire_pause_fin || null,
+        salle_attribuee: quickCreneauData.salle_attribuee || null,
+        medecin_ids: quickCreneauData.medecin_ids || []
+      };
+      
       if (quickCreneauData.id) {
         // Modification
-        await axios.put(`${API}/planning/${quickCreneauData.id}`, {
-          notes: quickCreneauData.notes || 'Présence',
-          horaire_debut: quickCreneauData.horaire_debut || null,
-          horaire_fin: quickCreneauData.horaire_fin || null,
-          horaire_pause_debut: quickCreneauData.horaire_pause_debut || null,
-          horaire_pause_fin: quickCreneauData.horaire_pause_fin || null
-        });
+        await axios.put(`${API}/planning/${quickCreneauData.id}`, payload);
         toast.success('Créneau modifié !');
       } else {
         // Création
@@ -3454,11 +3473,7 @@ const PlanningManager = () => {
           employe_id: quickCreneauData.employe_id,
           date: quickCreneauData.date,
           creneau: quickCreneauData.creneau,
-          notes: quickCreneauData.notes || 'Présence',
-          horaire_debut: quickCreneauData.horaire_debut || null,
-          horaire_fin: quickCreneauData.horaire_fin || null,
-          horaire_pause_debut: quickCreneauData.horaire_pause_debut || null,
-          horaire_pause_fin: quickCreneauData.horaire_pause_fin || null
+          ...payload
         });
         toast.success('Créneau créé !');
       }
