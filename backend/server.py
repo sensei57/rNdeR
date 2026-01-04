@@ -1642,23 +1642,28 @@ async def get_planning_by_date(
 @api_router.put("/planning/{creneau_id}")
 async def update_creneau_planning(
     creneau_id: str,
-    creneau_data: CreneauPlanningCreate,
+    creneau_data: CreneauPlanningUpdate,
     current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
 ):
-    # Vérifier les conflits avant mise à jour
-    existing = await db.planning.find_one({
-        "date": creneau_data.date,
-        "creneau": creneau_data.creneau,
-        "employe_id": creneau_data.employe_id,
-        "id": {"$ne": creneau_id}
-    })
-    
-    if existing:
-        raise HTTPException(status_code=400, detail="Conflit de planning détecté")
-    
-    result = await db.planning.update_one({"id": creneau_id}, {"$set": creneau_data.dict()})
-    if result.matched_count == 0:
+    # Vérifier que le créneau existe
+    existing_creneau = await db.planning.find_one({"id": creneau_id})
+    if not existing_creneau:
         raise HTTPException(status_code=404, detail="Créneau non trouvé")
+    
+    # Préparer les données à mettre à jour (seulement les champs non-None)
+    update_data = {}
+    for field, value in creneau_data.dict().items():
+        if value is not None:
+            update_data[field] = value
+    
+    # Cas spécial pour medecin_ids qui peut être une liste vide (valide)
+    if creneau_data.medecin_ids is not None:
+        update_data["medecin_ids"] = creneau_data.medecin_ids
+    
+    if update_data:
+        result = await db.planning.update_one({"id": creneau_id}, {"$set": update_data})
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Créneau non trouvé")
     
     return {"message": "Créneau mis à jour avec succès"}
 
