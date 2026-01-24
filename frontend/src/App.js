@@ -7272,24 +7272,38 @@ const PlanningManager = () => {
                           const creneauAM = getCreneauForEmploye(medecin.id, date, 'APRES_MIDI');
                           const displayMatin = getMedecinDisplay(creneauMatin, 'M');
                           const displayAM = getMedecinDisplay(creneauAM, 'AM');
+                          const hasAssistantMatin = medecinHasAssistant(medecin.id, date, 'MATIN');
+                          const hasAssistantAM = medecinHasAssistant(medecin.id, date, 'APRES_MIDI');
                           return (
                             <React.Fragment key={`${medecin.id}-${date}`}>
                               <td 
-                                className={`border p-1 text-center cursor-pointer hover:bg-blue-200 transition-colors ${creneauMatin ? 'bg-blue-200' : ''}`}
+                                className={`border p-1 text-center cursor-pointer transition-colors ${
+                                  creneauMatin 
+                                    ? hasAssistantMatin 
+                                      ? 'bg-indigo-300 hover:bg-indigo-400' 
+                                      : 'bg-blue-200 hover:bg-blue-300'
+                                    : 'hover:bg-blue-100'
+                                }`}
                                 onClick={() => openQuickCreneauModal(medecin, date, 'MATIN', creneauMatin)}
-                                title={creneauMatin ? `📝 ${displayMatin} - Cliquer pour modifier` : 'Cliquer pour ajouter'}
+                                title={creneauMatin ? `📝 ${displayMatin}${hasAssistantMatin ? ' ✓ Avec assistant' : ' ⚠ Sans assistant'} - Cliquer pour modifier` : 'Cliquer pour ajouter'}
                               >
                                 {creneauMatin ? (
-                                  <span className="text-xs font-semibold text-blue-700">{displayMatin}</span>
+                                  <span className={`text-xs font-semibold ${hasAssistantMatin ? 'text-indigo-900' : 'text-blue-700'}`}>{displayMatin}</span>
                                 ) : <span className="text-gray-300">+</span>}
                               </td>
                               <td 
-                                className={`border p-1 text-center cursor-pointer hover:bg-blue-200 transition-colors ${creneauAM ? 'bg-blue-200' : ''}`}
+                                className={`border p-1 text-center cursor-pointer transition-colors ${
+                                  creneauAM 
+                                    ? hasAssistantAM 
+                                      ? 'bg-indigo-300 hover:bg-indigo-400' 
+                                      : 'bg-blue-200 hover:bg-blue-300'
+                                    : 'hover:bg-blue-100'
+                                }`}
                                 onClick={() => openQuickCreneauModal(medecin, date, 'APRES_MIDI', creneauAM)}
-                                title={creneauAM ? `📝 ${displayAM} - Cliquer pour modifier` : 'Cliquer pour ajouter'}
+                                title={creneauAM ? `📝 ${displayAM}${hasAssistantAM ? ' ✓ Avec assistant' : ' ⚠ Sans assistant'} - Cliquer pour modifier` : 'Cliquer pour ajouter'}
                               >
                                 {creneauAM ? (
-                                  <span className="text-xs font-semibold text-blue-700">{displayAM}</span>
+                                  <span className={`text-xs font-semibold ${hasAssistantAM ? 'text-indigo-900' : 'text-blue-700'}`}>{displayAM}</span>
                                 ) : <span className="text-gray-300">+</span>}
                               </td>
                             </React.Fragment>
