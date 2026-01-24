@@ -3810,6 +3810,19 @@ const PlanningManager = () => {
     return defaultDisplay;
   };
 
+  // Vérifier si un médecin a un assistant attribué pour un créneau donné
+  const medecinHasAssistant = (medecinId, date, creneau) => {
+    if (!planningTableau.planning || !planningTableau.planning[date]) return false;
+    
+    // Chercher si un assistant a ce médecin dans ses medecin_ids
+    return planningTableau.planning[date].some(p => 
+      p.employe_role === 'Assistant' && 
+      p.creneau === creneau &&
+      p.medecin_ids && 
+      p.medecin_ids.includes(medecinId)
+    );
+  };
+
   // Calculer le total de demi-journées pour un employé sur la semaine
   const getTotalDemiJournees = (employeId) => {
     if (!planningTableau.planning) return 0;
