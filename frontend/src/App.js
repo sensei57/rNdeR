@@ -7362,8 +7362,8 @@ const PlanningManager = () => {
                             <React.Fragment key={`${assistant.id}-${date}`}>
                               <td 
                                 className={`border p-1 text-center cursor-pointer hover:bg-green-200 transition-colors ${creneauMatin ? 'bg-green-200' : ''}`}
-                                onClick={() => openQuickCreneauModal(assistant, date, 'MATIN', creneauMatin)}
-                                title={creneauMatin ? `📝 ${displayMatin} - Cliquer pour modifier` : 'Cliquer pour ajouter'}
+                                onClick={() => creneauMatin ? openQuickCreneauModal(assistant, date, 'MATIN', creneauMatin) : openJourneeModal(assistant, date)}
+                                title={creneauMatin ? `📝 ${displayMatin} - Cliquer pour modifier` : '📅 Cliquer pour ajouter la journée'}
                               >
                                 {creneauMatin ? (
                                   <span className="text-xs font-semibold text-green-700">{displayMatin}</span>
@@ -7371,8 +7371,8 @@ const PlanningManager = () => {
                               </td>
                               <td 
                                 className={`border p-1 text-center cursor-pointer hover:bg-green-200 transition-colors ${creneauAM ? 'bg-green-200' : ''}`}
-                                onClick={() => openQuickCreneauModal(assistant, date, 'APRES_MIDI', creneauAM)}
-                                title={creneauAM ? `📝 ${displayAM} - Cliquer pour modifier` : 'Cliquer pour ajouter'}
+                                onClick={() => creneauAM ? openQuickCreneauModal(assistant, date, 'APRES_MIDI', creneauAM) : openJourneeModal(assistant, date)}
+                                title={creneauAM ? `📝 ${displayAM} - Cliquer pour modifier` : '📅 Cliquer pour ajouter la journée'}
                               >
                                 {creneauAM ? (
                                   <span className="text-xs font-semibold text-green-700">{displayAM}</span>
