@@ -7287,7 +7287,13 @@ const PlanningManager = () => {
                   <tr className="bg-gray-100">
                     <th className="border p-2 text-left min-w-[150px]">Employé</th>
                     {planningTableau.dates.map(date => (
-                      <th key={date} className="border p-1 text-center min-w-[80px]" colSpan={2}>
+                      <th 
+                        key={date} 
+                        className="border p-1 text-center min-w-[80px] cursor-pointer hover:bg-teal-100 transition-colors" 
+                        colSpan={2}
+                        onClick={() => openDetailJourModal(date)}
+                        title="📋 Cliquer pour voir le détail de cette journée"
+                      >
                         <div className="font-semibold">
                           {new Date(date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'short' })}
                         </div>
@@ -7302,8 +7308,16 @@ const PlanningManager = () => {
                     <th className="border p-1"></th>
                     {planningTableau.dates.map(date => (
                       <React.Fragment key={`header-${date}`}>
-                        <th className="border p-1 text-center text-xs bg-orange-50">M</th>
-                        <th className="border p-1 text-center text-xs bg-purple-50">AM</th>
+                        <th 
+                          className="border p-1 text-center text-xs bg-orange-50 cursor-pointer hover:bg-orange-200 transition-colors"
+                          onClick={() => openDetailJourModal(date)}
+                          title="📋 Voir détail journée"
+                        >M</th>
+                        <th 
+                          className="border p-1 text-center text-xs bg-purple-50 cursor-pointer hover:bg-purple-200 transition-colors"
+                          onClick={() => openDetailJourModal(date)}
+                          title="📋 Voir détail journée"
+                        >AM</th>
                       </React.Fragment>
                     ))}
                     <th className="border p-1 text-center text-xs bg-gray-200">1/2j</th>
