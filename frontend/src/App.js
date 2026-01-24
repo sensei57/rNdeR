@@ -7918,6 +7918,303 @@ const PlanningManager = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Modal Journée Complète (Matin + Après-midi) */}
+      <Dialog open={showJourneeModal} onOpenChange={setShowJourneeModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              📅 {journeeData.employe?.role === 'Médecin' ? 'Dr. ' : ''}{journeeData.employe?.prenom} {journeeData.employe?.nom} - Journée complète
+            </DialogTitle>
+            <DialogDescription>
+              {new Date(journeeData.date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleJourneeSubmit} className="space-y-6">
+            <div className="grid grid-cols-2 gap-6">
+              {/* MATIN */}
+              <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h3 className="font-bold text-blue-800 flex items-center">
+                  <CalendarDays className="h-4 w-4 mr-2" /> Matin
+                  {journeeData.matin.exists && <span className="ml-2 text-xs text-green-600">(existant)</span>}
+                </h3>
+                
+                {journeeData.employe?.role === 'Secrétaire' && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs">Début</Label>
+                      <Input
+                        type="time"
+                        value={journeeData.matin.horaire_debut}
+                        onChange={(e) => setJourneeData(prev => ({
+                          ...prev,
+                          matin: { ...prev.matin, horaire_debut: e.target.value }
+                        }))}
+                        className="h-8"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Fin</Label>
+                      <Input
+                        type="time"
+                        value={journeeData.matin.horaire_fin}
+                        onChange={(e) => setJourneeData(prev => ({
+                          ...prev,
+                          matin: { ...prev.matin, horaire_fin: e.target.value }
+                        }))}
+                        className="h-8"
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                {journeeData.employe?.role === 'Médecin' && (
+                  <>
+                    <div>
+                      <Label className="text-xs">Box</Label>
+                      <select
+                        className="w-full p-2 border rounded text-sm"
+                        value={journeeData.matin.salle_attribuee}
+                        onChange={(e) => setJourneeData(prev => ({
+                          ...prev,
+                          matin: { ...prev.matin, salle_attribuee: e.target.value }
+                        }))}
+                      >
+                        <option value="">-- Box --</option>
+                        {salles.filter(s => s.type_salle === 'MEDECIN').map(s => (
+                          <option key={s.id} value={s.nom}>{s.nom}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Salle d'attente</Label>
+                      <select
+                        className="w-full p-2 border rounded text-sm"
+                        value={journeeData.matin.salle_attente}
+                        onChange={(e) => setJourneeData(prev => ({
+                          ...prev,
+                          matin: { ...prev.matin, salle_attente: e.target.value }
+                        }))}
+                      >
+                        <option value="">-- Salle d'attente --</option>
+                        {salles.filter(s => s.type_salle === 'ATTENTE').map(s => (
+                          <option key={s.id} value={s.nom}>{s.nom}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                )}
+                
+                {journeeData.employe?.role === 'Assistant' && (
+                  <>
+                    <div>
+                      <Label className="text-xs">Médecins</Label>
+                      <div className="space-y-1 max-h-32 overflow-y-auto">
+                        {getMedecinsPresentsPourCreneau(journeeData.date, 'MATIN').map(med => (
+                          <label key={med.id} className="flex items-center space-x-2 text-xs">
+                            <input
+                              type="checkbox"
+                              checked={journeeData.matin.medecin_ids?.includes(med.id)}
+                              onChange={(e) => {
+                                const newIds = e.target.checked
+                                  ? [...(journeeData.matin.medecin_ids || []), med.id]
+                                  : (journeeData.matin.medecin_ids || []).filter(id => id !== med.id);
+                                setJourneeData(prev => ({
+                                  ...prev,
+                                  matin: { ...prev.matin, medecin_ids: newIds }
+                                }));
+                              }}
+                              className="w-3 h-3"
+                            />
+                            <span>{med.initiales} - Dr. {med.prenom}</span>
+                          </label>
+                        ))}
+                        {getMedecinsPresentsPourCreneau(journeeData.date, 'MATIN').length === 0 && (
+                          <span className="text-gray-400 text-xs">Aucun médecin présent</span>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Salle</Label>
+                      <select
+                        className="w-full p-2 border rounded text-sm"
+                        value={journeeData.matin.salle_attribuee}
+                        onChange={(e) => setJourneeData(prev => ({
+                          ...prev,
+                          matin: { ...prev.matin, salle_attribuee: e.target.value }
+                        }))}
+                      >
+                        <option value="">-- Salle --</option>
+                        {salles.filter(s => s.type_salle === 'ASSISTANT').map(s => (
+                          <option key={s.id} value={s.nom}>{s.nom}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                )}
+                
+                <div>
+                  <Label className="text-xs">Note</Label>
+                  <Input
+                    placeholder="Note..."
+                    value={journeeData.matin.notes}
+                    onChange={(e) => setJourneeData(prev => ({
+                      ...prev,
+                      matin: { ...prev.matin, notes: e.target.value }
+                    }))}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              </div>
+              
+              {/* APRÈS-MIDI */}
+              <div className="space-y-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                <h3 className="font-bold text-orange-800 flex items-center">
+                  <CalendarDays className="h-4 w-4 mr-2" /> Après-midi
+                  {journeeData.apresMidi.exists && <span className="ml-2 text-xs text-green-600">(existant)</span>}
+                </h3>
+                
+                {journeeData.employe?.role === 'Secrétaire' && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs">Début</Label>
+                      <Input
+                        type="time"
+                        value={journeeData.apresMidi.horaire_debut}
+                        onChange={(e) => setJourneeData(prev => ({
+                          ...prev,
+                          apresMidi: { ...prev.apresMidi, horaire_debut: e.target.value }
+                        }))}
+                        className="h-8"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Fin</Label>
+                      <Input
+                        type="time"
+                        value={journeeData.apresMidi.horaire_fin}
+                        onChange={(e) => setJourneeData(prev => ({
+                          ...prev,
+                          apresMidi: { ...prev.apresMidi, horaire_fin: e.target.value }
+                        }))}
+                        className="h-8"
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                {journeeData.employe?.role === 'Médecin' && (
+                  <>
+                    <div>
+                      <Label className="text-xs">Box</Label>
+                      <select
+                        className="w-full p-2 border rounded text-sm"
+                        value={journeeData.apresMidi.salle_attribuee}
+                        onChange={(e) => setJourneeData(prev => ({
+                          ...prev,
+                          apresMidi: { ...prev.apresMidi, salle_attribuee: e.target.value }
+                        }))}
+                      >
+                        <option value="">-- Box --</option>
+                        {salles.filter(s => s.type_salle === 'MEDECIN').map(s => (
+                          <option key={s.id} value={s.nom}>{s.nom}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Salle d'attente</Label>
+                      <select
+                        className="w-full p-2 border rounded text-sm"
+                        value={journeeData.apresMidi.salle_attente}
+                        onChange={(e) => setJourneeData(prev => ({
+                          ...prev,
+                          apresMidi: { ...prev.apresMidi, salle_attente: e.target.value }
+                        }))}
+                      >
+                        <option value="">-- Salle d'attente --</option>
+                        {salles.filter(s => s.type_salle === 'ATTENTE').map(s => (
+                          <option key={s.id} value={s.nom}>{s.nom}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                )}
+                
+                {journeeData.employe?.role === 'Assistant' && (
+                  <>
+                    <div>
+                      <Label className="text-xs">Médecins</Label>
+                      <div className="space-y-1 max-h-32 overflow-y-auto">
+                        {getMedecinsPresentsPourCreneau(journeeData.date, 'APRES_MIDI').map(med => (
+                          <label key={med.id} className="flex items-center space-x-2 text-xs">
+                            <input
+                              type="checkbox"
+                              checked={journeeData.apresMidi.medecin_ids?.includes(med.id)}
+                              onChange={(e) => {
+                                const newIds = e.target.checked
+                                  ? [...(journeeData.apresMidi.medecin_ids || []), med.id]
+                                  : (journeeData.apresMidi.medecin_ids || []).filter(id => id !== med.id);
+                                setJourneeData(prev => ({
+                                  ...prev,
+                                  apresMidi: { ...prev.apresMidi, medecin_ids: newIds }
+                                }));
+                              }}
+                              className="w-3 h-3"
+                            />
+                            <span>{med.initiales} - Dr. {med.prenom}</span>
+                          </label>
+                        ))}
+                        {getMedecinsPresentsPourCreneau(journeeData.date, 'APRES_MIDI').length === 0 && (
+                          <span className="text-gray-400 text-xs">Aucun médecin présent</span>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Salle</Label>
+                      <select
+                        className="w-full p-2 border rounded text-sm"
+                        value={journeeData.apresMidi.salle_attribuee}
+                        onChange={(e) => setJourneeData(prev => ({
+                          ...prev,
+                          apresMidi: { ...prev.apresMidi, salle_attribuee: e.target.value }
+                        }))}
+                      >
+                        <option value="">-- Salle --</option>
+                        {salles.filter(s => s.type_salle === 'ASSISTANT').map(s => (
+                          <option key={s.id} value={s.nom}>{s.nom}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                )}
+                
+                <div>
+                  <Label className="text-xs">Note</Label>
+                  <Input
+                    placeholder="Note..."
+                    value={journeeData.apresMidi.notes}
+                    onChange={(e) => setJourneeData(prev => ({
+                      ...prev,
+                      apresMidi: { ...prev.apresMidi, notes: e.target.value }
+                    }))}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button type="button" variant="outline" onClick={() => setShowJourneeModal(false)}>
+                Annuler
+              </Button>
+              <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
+                Enregistrer la journée
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 };
