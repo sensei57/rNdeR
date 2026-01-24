@@ -2799,6 +2799,17 @@ const PlanningManager = () => {
     horaire_pause_debut: '',
     horaire_pause_fin: ''
   });
+  
+  // État pour le modal journée complète (matin + après-midi)
+  const [showJourneeModal, setShowJourneeModal] = useState(false);
+  const [journeeData, setJourneeData] = useState({
+    employe_id: '',
+    employe: null,
+    date: '',
+    matin: { notes: '', salle_attribuee: '', salle_attente: '', medecin_ids: [], horaire_debut: '', horaire_fin: '' },
+    apresMidi: { notes: '', salle_attribuee: '', salle_attente: '', medecin_ids: [], horaire_debut: '', horaire_fin: '' }
+  });
+  
   const [newSemaineType, setNewSemaineType] = useState({
     nom: '',
     description: '',
