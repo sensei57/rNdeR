@@ -4305,37 +4305,40 @@ const PlanningManager = () => {
 
   // Obtenir les classes CSS selon le niveau de remplissage avec transition
   const getCreneauBackgroundClasses = (creneau) => {
-    const completion = getCreneauCompletionLevel(creneau);
     const role = creneau.employe_role;
     
     // Base : transition fluide
     let classes = 'transition-all duration-500 ease-in-out ';
     
     if (role === 'Médecin') {
-      if (completion >= 100) {
-        classes += 'bg-blue-900 text-white border-blue-900';
-      } else if (completion >= 66) {
-        classes += 'bg-blue-700 text-white border-blue-700';
-      } else if (completion >= 33) {
-        classes += 'bg-blue-400 text-white border-blue-400';
+      // Pour les médecins : vérifier s'ils ont un assistant attribué
+      const hasAssistant = getAssistantsForMedecinInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0;
+      
+      if (hasAssistant) {
+        // Avec assistant → bleu foncé (mais pas trop pour que le texte reste lisible)
+        classes += 'bg-blue-600 text-white border-blue-700';
       } else {
-        classes += 'bg-blue-50 text-blue-900 border-blue-300';
+        // Sans assistant → bleu clair
+        classes += 'bg-blue-100 text-blue-900 border-blue-300';
       }
     } else if (role === 'Assistant') {
-      if (completion >= 100) {
-        classes += 'bg-green-900 text-white border-green-900';
-      } else if (completion >= 50) {
-        classes += 'bg-green-600 text-white border-green-600';
+      // Pour les assistants : vérifier s'ils ont des médecins associés
+      const hasMedecin = getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0;
+      
+      if (hasMedecin) {
+        classes += 'bg-green-600 text-white border-green-700';
       } else {
-        classes += 'bg-green-50 text-green-900 border-green-300';
+        classes += 'bg-green-100 text-green-900 border-green-300';
       }
     } else if (role === 'Secrétaire') {
+      // Pour les secrétaires : garder la logique de complétion
+      const completion = getCreneauCompletionLevel(creneau);
       if (completion >= 100) {
-        classes += 'bg-yellow-700 text-white border-yellow-700';
+        classes += 'bg-yellow-600 text-white border-yellow-700';
       } else if (completion >= 50) {
-        classes += 'bg-yellow-500 text-white border-yellow-500';
+        classes += 'bg-yellow-400 text-yellow-900 border-yellow-500';
       } else {
-        classes += 'bg-yellow-50 text-yellow-900 border-yellow-300';
+        classes += 'bg-yellow-100 text-yellow-900 border-yellow-300';
       }
     } else {
       classes += 'bg-gray-100 text-gray-900 border-gray-300';
@@ -4346,15 +4349,17 @@ const PlanningManager = () => {
 
   // Déterminer si le fond est foncé pour adapter la couleur des détails
   const isCreneauDarkBackground = (creneau) => {
-    const completion = getCreneauCompletionLevel(creneau);
     const role = creneau.employe_role;
     
     if (role === 'Médecin') {
-      return completion >= 33; // blue-400 et plus foncé
+      // Fond foncé si médecin a un assistant
+      return getAssistantsForMedecinInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0;
     } else if (role === 'Assistant') {
-      return completion >= 50; // green-600 et plus foncé
+      // Fond foncé si assistant a des médecins associés
+      return getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0;
     } else if (role === 'Secrétaire') {
-      return completion >= 50; // yellow-500 et plus foncé
+      const completion = getCreneauCompletionLevel(creneau);
+      return completion >= 100; // Seulement jaune-600 est foncé
     }
     
     return false;
