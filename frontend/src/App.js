@@ -7971,6 +7971,234 @@ const PlanningManager = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Modal Détail Journée (Tous les employés par créneau) */}
+      <Dialog open={showDetailJourModal} onOpenChange={setShowDetailJourModal}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl">
+              📋 Détail de la journée - {detailJourDate && new Date(detailJourDate + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </DialogTitle>
+            <DialogDescription>
+              Vue complète des présences par période et par rôle
+            </DialogDescription>
+          </DialogHeader>
+          
+          {detailJourDate && (() => {
+            const groupes = getCreneauxJourneeGroupes(detailJourDate);
+            return (
+              <div className="grid grid-cols-2 gap-6 mt-4">
+                {/* MATIN */}
+                <div className="space-y-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                  <h3 className="font-bold text-orange-800 text-lg flex items-center border-b border-orange-300 pb-2">
+                    🌅 MATIN
+                  </h3>
+                  
+                  {/* Médecins Matin */}
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-blue-700 flex items-center">
+                      👨‍⚕️ Médecins ({groupes.matin.medecins.length})
+                    </h4>
+                    {groupes.matin.medecins.length > 0 ? (
+                      <div className="space-y-1">
+                        {groupes.matin.medecins.map(c => {
+                          const employe = users.find(u => u.id === c.employe_id);
+                          const hasAssistant = medecinHasAssistant(c.employe_id, detailJourDate, 'MATIN');
+                          return (
+                            <div 
+                              key={c.id} 
+                              className={`p-2 rounded text-sm cursor-pointer hover:opacity-80 transition-opacity ${hasAssistant ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-900'}`}
+                              onClick={() => { setShowDetailJourModal(false); employe && openQuickCreneauModal(employe, detailJourDate, 'MATIN', c); }}
+                              title="Cliquer pour modifier"
+                            >
+                              <div className="font-medium">Dr. {employe?.prenom} {employe?.nom}</div>
+                              {c.salle_attribuee && <div className="text-xs opacity-80">📍 Box: {c.salle_attribuee}</div>}
+                              {hasAssistant && <div className="text-xs opacity-80">✓ Avec assistant</div>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">Aucun médecin</p>
+                    )}
+                  </div>
+                  
+                  {/* Assistants Matin */}
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-green-700 flex items-center">
+                      👥 Assistants ({groupes.matin.assistants.length})
+                    </h4>
+                    {groupes.matin.assistants.length > 0 ? (
+                      <div className="space-y-1">
+                        {groupes.matin.assistants.map(c => {
+                          const employe = users.find(u => u.id === c.employe_id);
+                          return (
+                            <div 
+                              key={c.id} 
+                              className="p-2 rounded text-sm bg-green-100 text-green-900 cursor-pointer hover:bg-green-200 transition-colors"
+                              onClick={() => { setShowDetailJourModal(false); employe && openQuickCreneauModal(employe, detailJourDate, 'MATIN', c); }}
+                              title="Cliquer pour modifier"
+                            >
+                              <div className="font-medium">{employe?.prenom} {employe?.nom}</div>
+                              {c.medecin_ids && c.medecin_ids.length > 0 && (
+                                <div className="text-xs text-green-700">
+                                  👨‍⚕️ {c.medecin_ids.map(mid => {
+                                    const med = users.find(u => u.id === mid);
+                                    return med ? `Dr. ${med.prenom} ${med.nom}` : '';
+                                  }).filter(Boolean).join(', ')}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">Aucun assistant</p>
+                    )}
+                  </div>
+                  
+                  {/* Secrétaires Matin */}
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-pink-700 flex items-center">
+                      📋 Secrétaires ({groupes.matin.secretaires.length})
+                    </h4>
+                    {groupes.matin.secretaires.length > 0 ? (
+                      <div className="space-y-1">
+                        {groupes.matin.secretaires.map(c => {
+                          const employe = users.find(u => u.id === c.employe_id);
+                          return (
+                            <div 
+                              key={c.id} 
+                              className="p-2 rounded text-sm bg-pink-100 text-pink-900 cursor-pointer hover:bg-pink-200 transition-colors"
+                              onClick={() => { setShowDetailJourModal(false); employe && openQuickCreneauModal(employe, detailJourDate, 'MATIN', c); }}
+                              title="Cliquer pour modifier"
+                            >
+                              <div className="font-medium">{employe?.prenom} {employe?.nom}</div>
+                              {(c.horaire_debut || c.horaire_fin) && (
+                                <div className="text-xs text-pink-700">🕐 {c.horaire_debut || '?'} - {c.horaire_fin || '?'}</div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">Aucune secrétaire</p>
+                    )}
+                  </div>
+                </div>
+                
+                {/* APRÈS-MIDI */}
+                <div className="space-y-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                  <h3 className="font-bold text-purple-800 text-lg flex items-center border-b border-purple-300 pb-2">
+                    🌆 APRÈS-MIDI
+                  </h3>
+                  
+                  {/* Médecins Après-midi */}
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-blue-700 flex items-center">
+                      👨‍⚕️ Médecins ({groupes.apresMidi.medecins.length})
+                    </h4>
+                    {groupes.apresMidi.medecins.length > 0 ? (
+                      <div className="space-y-1">
+                        {groupes.apresMidi.medecins.map(c => {
+                          const employe = users.find(u => u.id === c.employe_id);
+                          const hasAssistant = medecinHasAssistant(c.employe_id, detailJourDate, 'APRES_MIDI');
+                          return (
+                            <div 
+                              key={c.id} 
+                              className={`p-2 rounded text-sm cursor-pointer hover:opacity-80 transition-opacity ${hasAssistant ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-900'}`}
+                              onClick={() => { setShowDetailJourModal(false); employe && openQuickCreneauModal(employe, detailJourDate, 'APRES_MIDI', c); }}
+                              title="Cliquer pour modifier"
+                            >
+                              <div className="font-medium">Dr. {employe?.prenom} {employe?.nom}</div>
+                              {c.salle_attribuee && <div className="text-xs opacity-80">📍 Box: {c.salle_attribuee}</div>}
+                              {hasAssistant && <div className="text-xs opacity-80">✓ Avec assistant</div>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">Aucun médecin</p>
+                    )}
+                  </div>
+                  
+                  {/* Assistants Après-midi */}
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-green-700 flex items-center">
+                      👥 Assistants ({groupes.apresMidi.assistants.length})
+                    </h4>
+                    {groupes.apresMidi.assistants.length > 0 ? (
+                      <div className="space-y-1">
+                        {groupes.apresMidi.assistants.map(c => {
+                          const employe = users.find(u => u.id === c.employe_id);
+                          return (
+                            <div 
+                              key={c.id} 
+                              className="p-2 rounded text-sm bg-green-100 text-green-900 cursor-pointer hover:bg-green-200 transition-colors"
+                              onClick={() => { setShowDetailJourModal(false); employe && openQuickCreneauModal(employe, detailJourDate, 'APRES_MIDI', c); }}
+                              title="Cliquer pour modifier"
+                            >
+                              <div className="font-medium">{employe?.prenom} {employe?.nom}</div>
+                              {c.medecin_ids && c.medecin_ids.length > 0 && (
+                                <div className="text-xs text-green-700">
+                                  👨‍⚕️ {c.medecin_ids.map(mid => {
+                                    const med = users.find(u => u.id === mid);
+                                    return med ? `Dr. ${med.prenom} ${med.nom}` : '';
+                                  }).filter(Boolean).join(', ')}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">Aucun assistant</p>
+                    )}
+                  </div>
+                  
+                  {/* Secrétaires Après-midi */}
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-pink-700 flex items-center">
+                      📋 Secrétaires ({groupes.apresMidi.secretaires.length})
+                    </h4>
+                    {groupes.apresMidi.secretaires.length > 0 ? (
+                      <div className="space-y-1">
+                        {groupes.apresMidi.secretaires.map(c => {
+                          const employe = users.find(u => u.id === c.employe_id);
+                          return (
+                            <div 
+                              key={c.id} 
+                              className="p-2 rounded text-sm bg-pink-100 text-pink-900 cursor-pointer hover:bg-pink-200 transition-colors"
+                              onClick={() => { setShowDetailJourModal(false); employe && openQuickCreneauModal(employe, detailJourDate, 'APRES_MIDI', c); }}
+                              title="Cliquer pour modifier"
+                            >
+                              <div className="font-medium">{employe?.prenom} {employe?.nom}</div>
+                              {(c.horaire_debut || c.horaire_fin) && (
+                                <div className="text-xs text-pink-700">🕐 {c.horaire_debut || '?'} - {c.horaire_fin || '?'}</div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">Aucune secrétaire</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+          
+          <div className="flex justify-between items-center mt-6 pt-4 border-t">
+            <div className="text-sm text-gray-500">
+              💡 Cliquez sur un employé pour modifier son créneau
+            </div>
+            <Button variant="outline" onClick={() => setShowDetailJourModal(false)}>
+              Fermer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Modal Journée Complète (Matin + Après-midi) */}
       <Dialog open={showJourneeModal} onOpenChange={setShowJourneeModal}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
