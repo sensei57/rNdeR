@@ -7606,7 +7606,7 @@ const PlanningManager = () => {
                     <p className="text-xs text-gray-500">Les médecins en <b>gras</b> sont déjà associés à un assistant ce jour</p>
                     <div className="grid grid-cols-2 gap-2">
                       {getMedecinsPresentsPourCreneau(quickCreneauData.date, quickCreneauData.creneau).map(medecin => {
-                        const isDejaAssocie = isMedecinDejaAssocieJour(medecin.id, quickCreneauData.date);
+                        const isDejaAssocie = isMedecinDejaAssocieJour(medecin.id, quickCreneauData.date, quickCreneauData.creneau);
                         const isChecked = quickCreneauData.medecin_ids?.includes(medecin.id);
                         return (
                           <label 
