@@ -3741,10 +3741,11 @@ const PlanningManager = () => {
   };
   
   // Vérifier si un médecin est déjà associé à un assistant pour la journée (matin OU après-midi)
-  const isMedecinDejaAssocieJour = (medecinId, date) => {
+  const isMedecinDejaAssocieJour = (medecinId, date, creneau = null) => {
     if (!planningTableau.planning || !planningTableau.planning[date]) return false;
     return planningTableau.planning[date].some(p => 
       p.employe_role === 'Assistant' && 
+      (creneau ? p.creneau === creneau : true) &&
       p.medecin_ids && 
       p.medecin_ids.includes(medecinId)
     );
