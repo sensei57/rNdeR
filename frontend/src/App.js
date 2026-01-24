@@ -7281,7 +7281,28 @@ const PlanningManager = () => {
                     const total = getTotalDemiJournees(secretaire.id);
                     return (
                       <tr key={secretaire.id} className="hover:bg-pink-50">
-                        <td className="border p-2 font-medium">{secretaire.prenom} {secretaire.nom}</td>
+                        <td className="border p-2 font-medium">
+                          <div className="flex items-center justify-between">
+                            <span>{secretaire.prenom} {secretaire.nom}</span>
+                            {planningTableau.dates.map(date => {
+                              const hasMatin = getCreneauForEmploye(secretaire.id, date, 'MATIN');
+                              const hasAM = getCreneauForEmploye(secretaire.id, date, 'APRES_MIDI');
+                              if (!hasMatin && !hasAM) {
+                                return (
+                                  <button
+                                    key={`btn-${secretaire.id}-${date}`}
+                                    onClick={() => openJourneeModal(secretaire, date)}
+                                    className="text-xs px-1 py-0.5 bg-pink-200 hover:bg-pink-300 rounded text-pink-700 ml-1"
+                                    title={`Ajouter journée ${new Date(date).toLocaleDateString('fr-FR', {weekday: 'short', day: 'numeric'})}`}
+                                  >
+                                    +{new Date(date).toLocaleDateString('fr-FR', {weekday: 'short'}).charAt(0).toUpperCase()}
+                                  </button>
+                                );
+                              }
+                              return null;
+                            }).filter(Boolean).slice(0, 3)}
+                          </div>
+                        </td>
                         {planningTableau.dates.map(date => {
                           const creneauMatin = getCreneauForEmploye(secretaire.id, date, 'MATIN');
                           const creneauAM = getCreneauForEmploye(secretaire.id, date, 'APRES_MIDI');
@@ -7289,8 +7310,8 @@ const PlanningManager = () => {
                             <React.Fragment key={`${secretaire.id}-${date}`}>
                               <td 
                                 className={`border p-1 text-center cursor-pointer hover:bg-pink-200 transition-colors ${creneauMatin ? 'bg-pink-200' : ''}`}
-                                onClick={() => openQuickCreneauModal(secretaire, date, 'MATIN', creneauMatin)}
-                                title={creneauMatin ? `📝 Cliquer pour modifier - ${creneauMatin.horaire_debut || ''} - ${creneauMatin.horaire_fin || ''}` : 'Cliquer pour ajouter'}
+                                onClick={() => creneauMatin ? openQuickCreneauModal(secretaire, date, 'MATIN', creneauMatin) : openJourneeModal(secretaire, date)}
+                                title={creneauMatin ? `📝 Cliquer pour modifier - ${creneauMatin.horaire_debut || ''} - ${creneauMatin.horaire_fin || ''}` : '📅 Cliquer pour ajouter la journée'}
                               >
                                 {creneauMatin ? (
                                   <div className="text-xs">
@@ -7302,8 +7323,8 @@ const PlanningManager = () => {
                               </td>
                               <td 
                                 className={`border p-1 text-center cursor-pointer hover:bg-pink-200 transition-colors ${creneauAM ? 'bg-pink-200' : ''}`}
-                                onClick={() => openQuickCreneauModal(secretaire, date, 'APRES_MIDI', creneauAM)}
-                                title={creneauAM ? `📝 Cliquer pour modifier - ${creneauAM.horaire_debut || ''} - ${creneauAM.horaire_fin || ''}` : 'Cliquer pour ajouter'}
+                                onClick={() => creneauAM ? openQuickCreneauModal(secretaire, date, 'APRES_MIDI', creneauAM) : openJourneeModal(secretaire, date)}
+                                title={creneauAM ? `📝 Cliquer pour modifier - ${creneauAM.horaire_debut || ''} - ${creneauAM.horaire_fin || ''}` : '📅 Cliquer pour ajouter la journée'}
                               >
                                 {creneauAM ? (
                                   <div className="text-xs">
