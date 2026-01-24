@@ -7,7 +7,7 @@ import requests
 import json
 
 def reset_marie_password():
-    base_url = "https://smart-calendar-83.preview.emergentagent.com"
+    base_url = "https://quick-check-17.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     # Login as directeur first

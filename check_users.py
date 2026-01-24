@@ -7,7 +7,7 @@ import requests
 import json
 
 def check_users():
-    base_url = "https://smart-calendar-83.preview.emergentagent.com"
+    base_url = "https://quick-check-17.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     # Login as directeur first
