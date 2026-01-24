@@ -2825,6 +2825,11 @@ const PlanningManager = () => {
     horaire_pause_debut: '12:00',
     horaire_pause_fin: '14:00'
   });
+  
+  // État pour le modal vue détaillée d'une journée (tous les employés par créneau)
+  const [showDetailJourModal, setShowDetailJourModal] = useState(false);
+  const [detailJourDate, setDetailJourDate] = useState('');
+  
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [editingCreneau, setEditingCreneau] = useState(null);
   const [newCreneau, setNewCreneau] = useState({
