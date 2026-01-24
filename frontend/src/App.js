@@ -3697,6 +3697,35 @@ const PlanningManager = () => {
     setShowQuickCreneauModal(true);
   };
   
+  // Ouvrir le modal de vue détaillée d'une journée (tous les employés)
+  const openDetailJourModal = (date) => {
+    setDetailJourDate(date);
+    setShowDetailJourModal(true);
+  };
+  
+  // Récupérer tous les créneaux d'une journée groupés par période et rôle
+  const getCreneauxJourneeGroupes = (date) => {
+    if (!planningTableau.planning || !planningTableau.planning[date]) {
+      return { matin: { medecins: [], assistants: [], secretaires: [] }, apresMidi: { medecins: [], assistants: [], secretaires: [] } };
+    }
+    
+    const creneaux = planningTableau.planning[date] || [];
+    
+    const matin = {
+      medecins: creneaux.filter(c => c.creneau === 'MATIN' && c.employe_role === 'Médecin'),
+      assistants: creneaux.filter(c => c.creneau === 'MATIN' && c.employe_role === 'Assistant'),
+      secretaires: creneaux.filter(c => c.creneau === 'MATIN' && c.employe_role === 'Secrétaire')
+    };
+    
+    const apresMidi = {
+      medecins: creneaux.filter(c => c.creneau === 'APRES_MIDI' && c.employe_role === 'Médecin'),
+      assistants: creneaux.filter(c => c.creneau === 'APRES_MIDI' && c.employe_role === 'Assistant'),
+      secretaires: creneaux.filter(c => c.creneau === 'APRES_MIDI' && c.employe_role === 'Secrétaire')
+    };
+    
+    return { matin, apresMidi };
+  };
+  
   // Ouvrir le modal journée complète (matin + après-midi)
   const openJourneeModal = (employe, date) => {
     const creneauMatin = getCreneauForEmploye(employe.id, date, 'MATIN');
