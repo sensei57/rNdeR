@@ -3692,6 +3692,103 @@ const PlanningManager = () => {
     setShowQuickCreneauModal(true);
   };
   
+  // Ouvrir le modal journée complète (matin + après-midi)
+  const openJourneeModal = (employe, date) => {
+    const creneauMatin = getCreneauForEmploye(employe.id, date, 'MATIN');
+    const creneauAM = getCreneauForEmploye(employe.id, date, 'APRES_MIDI');
+    
+    setJourneeData({
+      employe_id: employe.id,
+      employe: employe,
+      date: date,
+      matin: {
+        id: creneauMatin?.id || null,
+        exists: !!creneauMatin,
+        notes: creneauMatin?.notes || '',
+        salle_attribuee: creneauMatin?.salle_attribuee || '',
+        salle_attente: creneauMatin?.salle_attente || '',
+        medecin_ids: creneauMatin?.medecin_ids || [],
+        horaire_debut: creneauMatin?.horaire_debut || (employe.role === 'Secrétaire' ? '08:00' : ''),
+        horaire_fin: creneauMatin?.horaire_fin || (employe.role === 'Secrétaire' ? '12:00' : '')
+      },
+      apresMidi: {
+        id: creneauAM?.id || null,
+        exists: !!creneauAM,
+        notes: creneauAM?.notes || '',
+        salle_attribuee: creneauAM?.salle_attribuee || '',
+        salle_attente: creneauAM?.salle_attente || '',
+        medecin_ids: creneauAM?.medecin_ids || [],
+        horaire_debut: creneauAM?.horaire_debut || (employe.role === 'Secrétaire' ? '14:00' : ''),
+        horaire_fin: creneauAM?.horaire_fin || (employe.role === 'Secrétaire' ? '18:00' : '')
+      }
+    });
+    setShowJourneeModal(true);
+  };
+  
+  // Soumettre le modal journée complète
+  const handleJourneeSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const promises = [];
+      
+      // Traiter le matin
+      if (journeeData.matin.exists || journeeData.matin.notes || journeeData.matin.salle_attribuee || 
+          journeeData.matin.medecin_ids?.length > 0 || journeeData.matin.horaire_debut) {
+        const payloadMatin = {
+          notes: journeeData.matin.notes || 'Présence',
+          salle_attribuee: journeeData.matin.salle_attribuee || null,
+          salle_attente: journeeData.matin.salle_attente || null,
+          medecin_ids: journeeData.matin.medecin_ids || [],
+          horaire_debut: journeeData.matin.horaire_debut || null,
+          horaire_fin: journeeData.matin.horaire_fin || null
+        };
+        
+        if (journeeData.matin.id) {
+          promises.push(axios.put(`${API}/planning/${journeeData.matin.id}`, payloadMatin));
+        } else {
+          promises.push(axios.post(`${API}/planning`, {
+            employe_id: journeeData.employe_id,
+            date: journeeData.date,
+            creneau: 'MATIN',
+            ...payloadMatin
+          }));
+        }
+      }
+      
+      // Traiter l'après-midi
+      if (journeeData.apresMidi.exists || journeeData.apresMidi.notes || journeeData.apresMidi.salle_attribuee || 
+          journeeData.apresMidi.medecin_ids?.length > 0 || journeeData.apresMidi.horaire_debut) {
+        const payloadAM = {
+          notes: journeeData.apresMidi.notes || 'Présence',
+          salle_attribuee: journeeData.apresMidi.salle_attribuee || null,
+          salle_attente: journeeData.apresMidi.salle_attente || null,
+          medecin_ids: journeeData.apresMidi.medecin_ids || [],
+          horaire_debut: journeeData.apresMidi.horaire_debut || null,
+          horaire_fin: journeeData.apresMidi.horaire_fin || null
+        };
+        
+        if (journeeData.apresMidi.id) {
+          promises.push(axios.put(`${API}/planning/${journeeData.apresMidi.id}`, payloadAM));
+        } else {
+          promises.push(axios.post(`${API}/planning`, {
+            employe_id: journeeData.employe_id,
+            date: journeeData.date,
+            creneau: 'APRES_MIDI',
+            ...payloadAM
+          }));
+        }
+      }
+      
+      await Promise.all(promises);
+      toast.success('Journée mise à jour !');
+      setShowJourneeModal(false);
+      fetchPlanningTableau(selectedWeek);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la mise à jour');
+    }
+  };
+  
   // Récupérer les médecins présents pour un jour et créneau donné
   const getMedecinsPresentsPourCreneau = (date, creneau) => {
     if (!planningTableau.planning || !planningTableau.planning[date]) return [];
