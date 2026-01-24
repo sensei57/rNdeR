@@ -7414,8 +7414,8 @@ const PlanningManager = () => {
                                       : 'bg-blue-200 hover:bg-blue-300'
                                     : 'hover:bg-blue-100'
                                 }`}
-                                onClick={() => openQuickCreneauModal(medecin, date, 'MATIN', creneauMatin)}
-                                title={creneauMatin ? `📝 ${displayMatin}${hasAssistantMatin ? ' ✓ Avec assistant' : ' ⚠ Sans assistant'} - Cliquer pour modifier` : 'Cliquer pour ajouter'}
+                                onClick={() => creneauMatin ? openQuickCreneauModal(medecin, date, 'MATIN', creneauMatin) : openJourneeModal(medecin, date)}
+                                title={creneauMatin ? `📝 ${displayMatin}${hasAssistantMatin ? ' ✓ Avec assistant' : ' ⚠ Sans assistant'} - Cliquer pour modifier` : '📅 Cliquer pour ajouter la journée'}
                               >
                                 {creneauMatin ? (
                                   <span className={`text-xs font-semibold ${hasAssistantMatin ? 'text-indigo-900' : 'text-blue-700'}`}>{displayMatin}</span>
@@ -7429,8 +7429,8 @@ const PlanningManager = () => {
                                       : 'bg-blue-200 hover:bg-blue-300'
                                     : 'hover:bg-blue-100'
                                 }`}
-                                onClick={() => openQuickCreneauModal(medecin, date, 'APRES_MIDI', creneauAM)}
-                                title={creneauAM ? `📝 ${displayAM}${hasAssistantAM ? ' ✓ Avec assistant' : ' ⚠ Sans assistant'} - Cliquer pour modifier` : 'Cliquer pour ajouter'}
+                                onClick={() => creneauAM ? openQuickCreneauModal(medecin, date, 'APRES_MIDI', creneauAM) : openJourneeModal(medecin, date)}
+                                title={creneauAM ? `📝 ${displayAM}${hasAssistantAM ? ' ✓ Avec assistant' : ' ⚠ Sans assistant'} - Cliquer pour modifier` : '📅 Cliquer pour ajouter la journée'}
                               >
                                 {creneauAM ? (
                                   <span className={`text-xs font-semibold ${hasAssistantAM ? 'text-indigo-900' : 'text-blue-700'}`}>{displayAM}</span>
