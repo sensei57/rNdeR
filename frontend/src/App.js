@@ -8871,13 +8871,13 @@ const PlanningManager = () => {
                 {journeeData.employe?.role === 'Assistant' && (
                   <>
                     <div>
-                      <Label className="text-xs">Médecins</Label>
-                      <div className="space-y-1 max-h-32 overflow-y-auto">
+                      <Label className="text-sm font-medium">👨‍⚕️ Médecins</Label>
+                      <div className="space-y-2 max-h-40 overflow-y-auto mt-1">
                         {getMedecinsPresentsPourCreneau(journeeData.date, 'APRES_MIDI').map(med => {
                           const autreAssistant = getAssistantPourMedecin(med.id, journeeData.date, 'APRES_MIDI', journeeData.employe_id);
                           const estDejaAssocie = autreAssistant !== null;
                           return (
-                            <label key={med.id} className={`flex items-center space-x-2 text-xs ${estDejaAssocie ? 'text-orange-600' : ''}`}>
+                            <label key={med.id} className={`flex items-center space-x-2 text-sm p-1 rounded cursor-pointer hover:bg-orange-100 ${estDejaAssocie ? 'text-orange-600 bg-orange-50' : 'text-gray-900'}`}>
                               <input
                                 type="checkbox"
                                 checked={journeeData.apresMidi.medecin_ids?.includes(med.id)}
@@ -8890,11 +8890,13 @@ const PlanningManager = () => {
                                     apresMidi: { ...prev.apresMidi, medecin_ids: newIds }
                                   }));
                                 }}
-                                className="w-3 h-3"
+                                className="w-4 h-4"
                               />
-                              <span>
-                                {med.initiales} - Dr. {med.prenom}
-                                {estDejaAssocie && <span className="ml-1 text-orange-500 font-medium">(avec {autreAssistant})</span>}
+                              <span className="font-medium">{med.initiales}</span>
+                              <span>- Dr. {med.prenom}</span>
+                              {estDejaAssocie && showAssistantsDetails && (
+                                <span className="ml-1 text-orange-500 text-xs">(avec {autreAssistant})</span>
+                              )}
                               </span>
                             </label>
                           );
