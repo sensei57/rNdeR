@@ -9182,8 +9182,15 @@ const DemandesTravailManager = () => {
       const jourSemaine = joursNoms[currentDate.getDay()];
       
       let creneau = null; // Par défaut : rien de sélectionné
+      let selectionne = false;
+      
       if (semaineType) {
-        creneau = semaineType[jourSemaine] || null;
+        const creneauType = semaineType[jourSemaine];
+        // REPOS ou null = pas de créneau, sinon c'est sélectionné
+        if (creneauType && creneauType !== 'REPOS') {
+          creneau = creneauType;
+          selectionne = true; // Marquer comme sélectionné si la semaine type définit un créneau
+        }
       }
       // Sinon on laisse null pour permettre la sélection manuelle
       
@@ -9191,7 +9198,7 @@ const DemandesTravailManager = () => {
         date: dateStr,
         jourNom: jourSemaine,
         creneau: creneau,
-        selectionne: false, // Par défaut : tout désactivé
+        selectionne: selectionne, // Sélectionné si un créneau est défini par la semaine type
         estVide: false
       });
     }
