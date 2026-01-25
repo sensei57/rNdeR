@@ -589,9 +589,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Bugs Planning Journalier Persistent - Diagnostic Complet"
-  stuck_tasks:
-    - "Bugs Planning Journalier Persistent - Diagnostic Complet"
+    - "TEST - Affichage des demandes de congés et créneaux dans le Planning Interactif"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
