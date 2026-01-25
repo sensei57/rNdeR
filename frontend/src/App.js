@@ -8855,25 +8855,32 @@ const PlanningManager = () => {
                     <div>
                       <Label className="text-xs">Médecins</Label>
                       <div className="space-y-1 max-h-32 overflow-y-auto">
-                        {getMedecinsPresentsPourCreneau(journeeData.date, 'APRES_MIDI').map(med => (
-                          <label key={med.id} className="flex items-center space-x-2 text-xs">
-                            <input
-                              type="checkbox"
-                              checked={journeeData.apresMidi.medecin_ids?.includes(med.id)}
-                              onChange={(e) => {
-                                const newIds = e.target.checked
-                                  ? [...(journeeData.apresMidi.medecin_ids || []), med.id]
-                                  : (journeeData.apresMidi.medecin_ids || []).filter(id => id !== med.id);
-                                setJourneeData(prev => ({
-                                  ...prev,
-                                  apresMidi: { ...prev.apresMidi, medecin_ids: newIds }
-                                }));
-                              }}
-                              className="w-3 h-3"
-                            />
-                            <span>{med.initiales} - Dr. {med.prenom}</span>
-                          </label>
-                        ))}
+                        {getMedecinsPresentsPourCreneau(journeeData.date, 'APRES_MIDI').map(med => {
+                          const autreAssistant = getAssistantPourMedecin(med.id, journeeData.date, 'APRES_MIDI', journeeData.employe_id);
+                          const estDejaAssocie = autreAssistant !== null;
+                          return (
+                            <label key={med.id} className={`flex items-center space-x-2 text-xs ${estDejaAssocie ? 'text-orange-600' : ''}`}>
+                              <input
+                                type="checkbox"
+                                checked={journeeData.apresMidi.medecin_ids?.includes(med.id)}
+                                onChange={(e) => {
+                                  const newIds = e.target.checked
+                                    ? [...(journeeData.apresMidi.medecin_ids || []), med.id]
+                                    : (journeeData.apresMidi.medecin_ids || []).filter(id => id !== med.id);
+                                  setJourneeData(prev => ({
+                                    ...prev,
+                                    apresMidi: { ...prev.apresMidi, medecin_ids: newIds }
+                                  }));
+                                }}
+                                className="w-3 h-3"
+                              />
+                              <span>
+                                {med.initiales} - Dr. {med.prenom}
+                                {estDejaAssocie && <span className="ml-1 text-orange-500 font-medium">(avec {autreAssistant})</span>}
+                              </span>
+                            </label>
+                          );
+                        })}
                         {getMedecinsPresentsPourCreneau(journeeData.date, 'APRES_MIDI').length === 0 && (
                           <span className="text-gray-400 text-xs">Aucun médecin présent</span>
                         )}
