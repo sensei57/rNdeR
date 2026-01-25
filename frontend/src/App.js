@@ -7600,23 +7600,87 @@ const PlanningManager = () => {
                           const creneauAM = getCreneauForEmploye(assistant.id, date, 'APRES_MIDI');
                           const displayMatin = getAssistantDisplay(creneauMatin);
                           const displayAM = getAssistantDisplay(creneauAM);
+                          const congesApprouvesDate = getCongesForEmployeDate(assistant.id, date);
+                          const congesEnAttenteDate = getCongesEnAttenteForEmployeDate(assistant.id, date);
+                          const hasCongeApprouve = congesApprouvesDate.length > 0;
+                          const hasCongeEnAttente = congesEnAttenteDate.length > 0;
+                          const congeApprouve = congesApprouvesDate[0];
+                          const congeEnAttente = congesEnAttenteDate[0];
+                          
                           return (
                             <React.Fragment key={`${assistant.id}-${date}`}>
+                              {/* Cellule MATIN - Congé ou créneau */}
                               <td 
-                                className={`border p-1 text-center cursor-pointer hover:bg-green-200 transition-colors ${creneauMatin ? 'bg-green-200' : ''}`}
-                                onClick={() => creneauMatin ? openQuickCreneauModal(assistant, date, 'MATIN', creneauMatin) : openJourneeModal(assistant, date)}
-                                title={creneauMatin ? `📝 ${displayMatin} - Cliquer pour modifier` : '📅 Cliquer pour ajouter la journée'}
+                                className={`border p-1 text-center cursor-pointer transition-colors ${
+                                  hasCongeEnAttente ? 'bg-yellow-200 hover:bg-yellow-300' :
+                                  hasCongeApprouve ? 'bg-orange-200 hover:bg-orange-300' :
+                                  creneauMatin ? 'bg-green-200 hover:bg-green-300' : 'hover:bg-green-100'
+                                }`}
+                                onClick={() => {
+                                  if (hasCongeEnAttente || hasCongeApprouve) return;
+                                  creneauMatin ? openQuickCreneauModal(assistant, date, 'MATIN', creneauMatin) : openJourneeModal(assistant, date);
+                                }}
+                                title={
+                                  hasCongeEnAttente ? `⏳ Demande de congé en attente - ${congeEnAttente.motif || ''}` :
+                                  hasCongeApprouve ? `🏖️ ${getTypeCongeShortLabel(congeApprouve.type_conge)} - Cliquer pour changer le type` :
+                                  creneauMatin ? `📝 ${displayMatin}` : '📅 Ajouter'
+                                }
                               >
-                                {creneauMatin ? (
+                                {hasCongeEnAttente ? (
+                                  <div className="flex flex-col items-center space-y-1">
+                                    <span className="text-xs font-bold text-yellow-800">⏳ {getTypeCongeShortLabel(congeEnAttente.type_conge)}</span>
+                                    <div className="flex space-x-1">
+                                      <button 
+                                        onClick={(e) => { e.stopPropagation(); handleApprouverCongeRapide(congeEnAttente); }}
+                                        className="text-xs px-1 bg-green-500 text-white rounded hover:bg-green-600"
+                                        title="Approuver"
+                                      >✓</button>
+                                      <button 
+                                        onClick={(e) => { e.stopPropagation(); handleRefuserCongeRapide(congeEnAttente); }}
+                                        className="text-xs px-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                        title="Refuser"
+                                      >✗</button>
+                                    </div>
+                                  </div>
+                                ) : hasCongeApprouve ? (
+                                  <div 
+                                    className="text-xs font-bold text-orange-800 cursor-pointer"
+                                    onClick={(e) => { e.stopPropagation(); handleChangerTypeCongeRapide(congeApprouve); }}
+                                    title="Cliquer pour changer le type"
+                                  >
+                                    {getTypeCongeShortLabel(congeApprouve.type_conge)}
+                                  </div>
+                                ) : creneauMatin ? (
                                   <span className="text-xs font-semibold text-green-700">{displayMatin}</span>
                                 ) : <span className="text-gray-300">+</span>}
                               </td>
+                              {/* Cellule APRES-MIDI */}
                               <td 
-                                className={`border p-1 text-center cursor-pointer hover:bg-green-200 transition-colors ${creneauAM ? 'bg-green-200' : ''}`}
-                                onClick={() => creneauAM ? openQuickCreneauModal(assistant, date, 'APRES_MIDI', creneauAM) : openJourneeModal(assistant, date)}
-                                title={creneauAM ? `📝 ${displayAM} - Cliquer pour modifier` : '📅 Cliquer pour ajouter la journée'}
+                                className={`border p-1 text-center cursor-pointer transition-colors ${
+                                  hasCongeEnAttente ? 'bg-yellow-200 hover:bg-yellow-300' :
+                                  hasCongeApprouve ? 'bg-orange-200 hover:bg-orange-300' :
+                                  creneauAM ? 'bg-green-200 hover:bg-green-300' : 'hover:bg-green-100'
+                                }`}
+                                onClick={() => {
+                                  if (hasCongeEnAttente || hasCongeApprouve) return;
+                                  creneauAM ? openQuickCreneauModal(assistant, date, 'APRES_MIDI', creneauAM) : openJourneeModal(assistant, date);
+                                }}
+                                title={
+                                  hasCongeEnAttente ? `⏳ Demande en attente` :
+                                  hasCongeApprouve ? `🏖️ ${getTypeCongeShortLabel(congeApprouve.type_conge)}` :
+                                  creneauAM ? `📝 ${displayAM}` : '📅 Ajouter'
+                                }
                               >
-                                {creneauAM ? (
+                                {hasCongeEnAttente ? (
+                                  <span className="text-xs font-bold text-yellow-800">⏳</span>
+                                ) : hasCongeApprouve ? (
+                                  <div 
+                                    className="text-xs font-bold text-orange-800 cursor-pointer"
+                                    onClick={(e) => { e.stopPropagation(); handleChangerTypeCongeRapide(congeApprouve); }}
+                                  >
+                                    {getTypeCongeShortLabel(congeApprouve.type_conge)}
+                                  </div>
+                                ) : creneauAM ? (
                                   <span className="text-xs font-semibold text-green-700">{displayAM}</span>
                                 ) : <span className="text-gray-300">+</span>}
                               </td>
