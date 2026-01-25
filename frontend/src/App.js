@@ -3813,6 +3813,7 @@ const PlanningManager = () => {
         if (!journeeData.matin.conge && journeeData.apresMidi.conge) duree = 'APRES_MIDI';
         
         const congePayload = {
+          utilisateur_id: journeeData.employe_id, // ID de la secrétaire
           date_debut: journeeData.date,
           date_fin: journeeData.date,
           type_conge: typeConge,
