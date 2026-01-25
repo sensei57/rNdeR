@@ -8626,7 +8626,7 @@ const PlanningManager = () => {
       <Dialog open={showJourneeModal} onOpenChange={setShowJourneeModal}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-lg">
               📅 {journeeData.employe?.role === 'Médecin' ? 'Dr. ' : ''}{journeeData.employe?.prenom} {journeeData.employe?.nom} - Journée complète
             </DialogTitle>
             <DialogDescription>
@@ -8635,18 +8635,33 @@ const PlanningManager = () => {
           </DialogHeader>
           
           <form onSubmit={handleJourneeSubmit} className="space-y-6">
+            {/* Bouton pour afficher/masquer les assistants associés */}
+            {journeeData.employe?.role === 'Assistant' && (
+              <div className="flex items-center justify-end">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowAssistantsDetails(!showAssistantsDetails)}
+                  className="text-sm"
+                >
+                  {showAssistantsDetails ? '🙈 Masquer les assistants' : '👁️ Voir assistants déjà associés'}
+                </Button>
+              </div>
+            )}
+            
             <div className="grid grid-cols-2 gap-6">
               {/* MATIN */}
               <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h3 className="font-bold text-blue-800 flex items-center">
-                  <CalendarDays className="h-4 w-4 mr-2" /> Matin
+                <h3 className="font-bold text-blue-800 flex items-center text-base">
+                  <CalendarDays className="h-5 w-5 mr-2" /> Matin
                   {journeeData.matin.exists && <span className="ml-2 text-xs text-green-600">(existant)</span>}
                 </h3>
                 
                 {journeeData.employe?.role === 'Secrétaire' && (
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <Label className="text-xs">Début</Label>
+                      <Label className="text-sm font-medium">Début</Label>
                       <Input
                         type="time"
                         value={journeeData.matin.horaire_debut}
@@ -8654,7 +8669,7 @@ const PlanningManager = () => {
                           ...prev,
                           matin: { ...prev.matin, horaire_debut: e.target.value }
                         }))}
-                        className="h-8"
+                        className="h-9"
                       />
                     </div>
                     <div>
