@@ -3042,10 +3042,11 @@ const PlanningManager = () => {
       setAssistants(assistantRes.data);
       setSalles(sallesRes.data);
       setSemainesTypes(semainesTypesRes.data);
-      // Filtrer uniquement les congés approuvés
+      // Filtrer les congés approuvés et en attente séparément
       setCongesApprouves(congesRes.data.filter(c => c.statut === 'APPROUVE'));
+      setCongesEnAttente(congesRes.data.filter(c => c.statut === 'EN_ATTENTE'));
       setAssignations(assignationsRes.data);
-      setDemandesTravail(demandesTravailRes.data);
+      setDemandesTravail(demandesTravailRes.data.filter(d => d.statut === 'EN_ATTENTE'));
       setConfigurationPlanning(configRes.data);
     } catch (error) {
       toast.error('Erreur lors du chargement des données');
