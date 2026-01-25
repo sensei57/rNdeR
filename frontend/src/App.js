@@ -9355,7 +9355,7 @@ const DemandesTravailManager = () => {
     }
   };
 
-  const handleOpenDemandeMensuelle = () => {
+  const handleOpenDemandeMensuelle = async () => {
     const today = new Date();
     // Si on est après le 1er du mois, proposer le mois suivant
     let firstDay;
@@ -9366,14 +9366,25 @@ const DemandesTravailManager = () => {
       // On est le 1er, on peut proposer le mois actuel
       firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
     }
+    const dateDebutStr = firstDay.toISOString().split('T')[0];
+    const medecinId = user?.role === 'Médecin' ? user.id : '';
+    
     setDemandeMensuelle({
-      medecin_id: user?.role === 'Médecin' ? user.id : '',
-      date_debut: firstDay.toISOString().split('T')[0],
+      medecin_id: medecinId,
+      date_debut: dateDebutStr,
       semaine_type_id: '',
       motif: '',
       jours_exclus: []
     });
-    genererJoursMois(firstDay.toISOString().split('T')[0], '');
+    
+    // Charger les créneaux existants du médecin
+    if (medecinId) {
+      await fetchCreneauxExistantsMois(medecinId, dateDebutStr);
+    } else {
+      setCreneauxExistantsMois([]);
+    }
+    
+    genererJoursMois(dateDebutStr, '');
     setShowDemandeMensuelleModal(true);
   };
 
