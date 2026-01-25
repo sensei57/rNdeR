@@ -8728,13 +8728,13 @@ const PlanningManager = () => {
                 {journeeData.employe?.role === 'Assistant' && (
                   <>
                     <div>
-                      <Label className="text-xs">Médecins</Label>
-                      <div className="space-y-1 max-h-32 overflow-y-auto">
+                      <Label className="text-sm font-medium">👨‍⚕️ Médecins</Label>
+                      <div className="space-y-2 max-h-40 overflow-y-auto mt-1">
                         {getMedecinsPresentsPourCreneau(journeeData.date, 'MATIN').map(med => {
                           const autreAssistant = getAssistantPourMedecin(med.id, journeeData.date, 'MATIN', journeeData.employe_id);
                           const estDejaAssocie = autreAssistant !== null;
                           return (
-                            <label key={med.id} className={`flex items-center space-x-2 text-xs ${estDejaAssocie ? 'text-orange-600' : ''}`}>
+                            <label key={med.id} className={`flex items-center space-x-2 text-sm p-1 rounded cursor-pointer hover:bg-blue-100 ${estDejaAssocie ? 'text-orange-600 bg-orange-50' : 'text-gray-900'}`}>
                               <input
                                 type="checkbox"
                                 checked={journeeData.matin.medecin_ids?.includes(med.id)}
@@ -8747,24 +8747,25 @@ const PlanningManager = () => {
                                     matin: { ...prev.matin, medecin_ids: newIds }
                                   }));
                                 }}
-                                className="w-3 h-3"
+                                className="w-4 h-4"
                               />
-                              <span>
-                                {med.initiales} - Dr. {med.prenom}
-                                {estDejaAssocie && <span className="ml-1 text-orange-500 font-medium">(avec {autreAssistant})</span>}
-                              </span>
+                              <span className="font-medium">{med.initiales}</span>
+                              <span>- Dr. {med.prenom}</span>
+                              {estDejaAssocie && showAssistantsDetails && (
+                                <span className="ml-1 text-orange-500 text-xs">(avec {autreAssistant})</span>
+                              )}
                             </label>
                           );
                         })}
                         {getMedecinsPresentsPourCreneau(journeeData.date, 'MATIN').length === 0 && (
-                          <span className="text-gray-400 text-xs">Aucun médecin présent</span>
+                          <span className="text-gray-400 text-sm">Aucun médecin présent</span>
                         )}
                       </div>
                     </div>
                     <div>
-                      <Label className="text-xs">Salle</Label>
+                      <Label className="text-sm font-medium">Salle</Label>
                       <select
-                        className="w-full p-2 border rounded text-sm"
+                        className="w-full p-2 border rounded text-sm mt-1"
                         value={journeeData.matin.salle_attribuee}
                         onChange={(e) => setJourneeData(prev => ({
                           ...prev,
@@ -8781,7 +8782,7 @@ const PlanningManager = () => {
                 )}
                 
                 <div>
-                  <Label className="text-xs">Note</Label>
+                  <Label className="text-sm font-medium">Note</Label>
                   <Input
                     placeholder="Note..."
                     value={journeeData.matin.notes}
@@ -8789,15 +8790,15 @@ const PlanningManager = () => {
                       ...prev,
                       matin: { ...prev.matin, notes: e.target.value }
                     }))}
-                    className="h-8 text-sm"
+                    className="h-9 text-sm mt-1"
                   />
                 </div>
               </div>
               
               {/* APRÈS-MIDI */}
               <div className="space-y-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
-                <h3 className="font-bold text-orange-800 flex items-center">
-                  <CalendarDays className="h-4 w-4 mr-2" /> Après-midi
+                <h3 className="font-bold text-orange-800 flex items-center text-base">
+                  <CalendarDays className="h-5 w-5 mr-2" /> Après-midi
                   {journeeData.apresMidi.exists && <span className="ml-2 text-xs text-green-600">(existant)</span>}
                 </h3>
                 
