@@ -3966,6 +3966,71 @@ const PlanningManager = () => {
     );
   };
 
+  // Récupérer les demandes de congés pour un employé à une date donnée
+  const getCongesForEmployeDate = (employeId, date) => {
+    if (!congesApprouves) return [];
+    return congesApprouves.filter(conge => 
+      conge.utilisateur_id === employeId &&
+      new Date(conge.date_debut) <= new Date(date) &&
+      new Date(conge.date_fin) >= new Date(date)
+    );
+  };
+
+  // Récupérer les demandes de congés EN ATTENTE pour un employé à une date donnée  
+  const getCongesEnAttenteForEmployeDate = (employeId, date) => {
+    if (!demandesTravail) return []; // On utilise les données chargées
+    // Chercher dans les congés (pas dans demandesTravail qui est pour les médecins)
+    return [];
+  };
+
+  // Récupérer toutes les demandes de travail en attente pour un médecin à une date donnée
+  const getDemandesCreneauxEnAttenteForDate = (medecinId, date) => {
+    if (!demandesTravail) return [];
+    return demandesTravail.filter(d => 
+      d.medecin_id === medecinId &&
+      d.date_demandee === date &&
+      d.statut === 'EN_ATTENTE'
+    );
+  };
+
+  // Approuver une demande de travail rapidement depuis le planning
+  const handleApprouverDemandeTravailRapide = async (demande) => {
+    try {
+      const body = {
+        commentaire: 'Approuvé depuis le planning'
+      };
+      
+      await axios.put(`${API}/demandes-travail/${demande.id}/approuver`, body);
+      toast.success('Demande approuvée avec succès');
+      
+      // Rafraîchir les données
+      fetchPlanningTableau(selectedWeek);
+      setDemandesTravail(prev => prev.filter(d => d.id !== demande.id));
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error('Erreur lors de l\'approbation');
+    }
+  };
+
+  // Refuser une demande de travail rapidement depuis le planning
+  const handleRefuserDemandeTravailRapide = async (demande) => {
+    const raison = window.prompt('Raison du refus (optionnel):');
+    if (raison === null) return; // Annulé
+    
+    try {
+      await axios.put(`${API}/demandes-travail/${demande.id}/rejeter`, {
+        commentaire: raison || 'Refusé depuis le planning'
+      });
+      toast.success('Demande refusée');
+      
+      // Rafraîchir les données
+      fetchPlanningTableau(selectedWeek);
+      setDemandesTravail(prev => prev.filter(d => d.id !== demande.id));
+    } catch (error) {
+      toast.error('Erreur lors du refus');
+    }
+  };
+
   // Calculer le total de demi-journées pour un employé sur la semaine
   const getTotalDemiJournees = (employeId) => {
     if (!planningTableau.planning) return 0;
