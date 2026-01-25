@@ -2773,6 +2773,7 @@ const PlanningManager = () => {
   const [medecins, setMedecins] = useState([]);
   const [assistants, setAssistants] = useState([]);
   const [congesApprouves, setCongesApprouves] = useState([]);
+  const [congesEnAttente, setCongesEnAttente] = useState([]); // Congés en attente pour validation
   const [assignations, setAssignations] = useState([]);
   const [demandesTravail, setDemandesTravail] = useState([]);
   const [planningSemaine, setPlanningSemaine] = useState(null);
