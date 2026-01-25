@@ -2729,9 +2729,9 @@ const PlanningManager = () => {
   
   // Fonctions pour gérer les permissions de vue planning
   // hasDirectorView: peut voir le planning comme un directeur (Directeur OU vue_planning_complete)
-  // canModifyPlanning: peut modifier le planning (Directeur seulement)
+  // canModifyPlanning: peut modifier le planning (Directeur OU peut_modifier_planning)
   const hasDirectorView = () => user?.role === 'Directeur' || user?.vue_planning_complete === true;
-  const canModifyPlanning = () => user?.role === 'Directeur';
+  const canModifyPlanning = () => user?.role === 'Directeur' || user?.peut_modifier_planning === true;
   
   // Synchroniser avec le contexte global
   const setSelectedDate = (date) => {
