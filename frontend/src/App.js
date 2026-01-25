@@ -1500,7 +1500,7 @@ const CongeManager = () => {
     return types[type] || type;
   };
 
-  // Types de congés pour le sélecteur (avec ABSENT et REPOS)
+  // Types de congés pour le sélecteur (ABSENT et REPOS fusionnés)
   const typesConge = [
     { value: 'CONGE_PAYE', label: 'Congé payé' },
     { value: 'RTT', label: 'RTT' },
@@ -1509,8 +1509,7 @@ const CongeManager = () => {
     { value: 'MATERNITE', label: 'Congé maternité' },
     { value: 'PATERNITE', label: 'Congé paternité' },
     { value: 'SANS_SOLDE', label: 'Congé sans solde' },
-    { value: 'ABSENT', label: 'Absent (non comptabilisé)' },
-    { value: 'REPOS', label: 'Repos (non comptabilisé)' }
+    { value: 'REPOS', label: 'Repos/Absent (non comptabilisé)' }
   ];
 
   const getCreneauLabel = (creneau) => {
