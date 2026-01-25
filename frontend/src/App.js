@@ -10801,6 +10801,16 @@ const AdminManager = () => {
     }
   };
 
+  const handleToggleModifierPlanning = async (userId) => {
+    try {
+      const response = await axios.put(`${API}/admin/users/${userId}/toggle-modifier-planning`);
+      toast.success(response.data.message);
+      fetchAllUsers(); // Recharger la liste
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors du changement de permission de modification');
+    }
+  };
+
   const handleDeleteUser = async () => {
     const expectedText = `SUPPRIMER ${selectedUser?.prenom} ${selectedUser?.nom}`;
     
