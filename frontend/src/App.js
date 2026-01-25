@@ -7335,26 +7335,7 @@ const PlanningManager = () => {
                     return (
                       <tr key={secretaire.id} className="hover:bg-pink-50">
                         <td className="border p-2 font-medium">
-                          <div className="flex items-center justify-between">
-                            <span>{secretaire.prenom} {secretaire.nom}</span>
-                            {planningTableau.dates.map(date => {
-                              const hasMatin = getCreneauForEmploye(secretaire.id, date, 'MATIN');
-                              const hasAM = getCreneauForEmploye(secretaire.id, date, 'APRES_MIDI');
-                              if (!hasMatin && !hasAM) {
-                                return (
-                                  <button
-                                    key={`btn-${secretaire.id}-${date}`}
-                                    onClick={() => openJourneeModal(secretaire, date)}
-                                    className="text-xs px-1 py-0.5 bg-pink-200 hover:bg-pink-300 rounded text-pink-700 ml-1"
-                                    title={`Ajouter journée ${new Date(date).toLocaleDateString('fr-FR', {weekday: 'short', day: 'numeric'})}`}
-                                  >
-                                    +{new Date(date).toLocaleDateString('fr-FR', {weekday: 'short'}).charAt(0).toUpperCase()}
-                                  </button>
-                                );
-                              }
-                              return null;
-                            }).filter(Boolean).slice(0, 3)}
-                          </div>
+                          <span>{secretaire.prenom} {secretaire.nom}</span>
                         </td>
                         {planningTableau.dates.map(date => {
                           const creneauMatin = getCreneauForEmploye(secretaire.id, date, 'MATIN');
