@@ -8207,15 +8207,16 @@ const PlanningManager = () => {
                 {getMedecinsPresentsPourCreneau(quickCreneauData.date, quickCreneauData.creneau).length > 0 && (
                   <div className="space-y-2">
                     <Label>👨‍⚕️ Médecins associés (présents ce créneau)</Label>
-                    <p className="text-xs text-gray-500">Les médecins en <b>gras</b> sont déjà associés à un assistant ce jour</p>
+                    <p className="text-xs text-gray-500">Les médecins en <b>orange</b> sont déjà associés à un autre assistant</p>
                     <div className="grid grid-cols-2 gap-2">
                       {getMedecinsPresentsPourCreneau(quickCreneauData.date, quickCreneauData.creneau).map(medecin => {
-                        const isDejaAssocie = isMedecinDejaAssocieJour(medecin.id, quickCreneauData.date, quickCreneauData.creneau);
+                        const autreAssistant = getAssistantPourMedecin(medecin.id, quickCreneauData.date, quickCreneauData.creneau, quickCreneauData.employe?.id);
+                        const isDejaAssocie = autreAssistant !== null;
                         const isChecked = quickCreneauData.medecin_ids?.includes(medecin.id);
                         return (
                           <label 
                             key={medecin.id} 
-                            className={`flex items-center space-x-2 cursor-pointer p-2 rounded border hover:bg-blue-50 ${isDejaAssocie && !isChecked ? 'bg-yellow-50 border-yellow-300' : ''} ${isChecked ? 'bg-blue-100 border-blue-400' : ''}`}
+                            className={`flex items-center space-x-2 cursor-pointer p-2 rounded border hover:bg-blue-50 ${isDejaAssocie && !isChecked ? 'bg-orange-50 border-orange-300' : ''} ${isChecked ? 'bg-blue-100 border-blue-400' : ''}`}
                           >
                             <input
                               type="checkbox"
@@ -8235,9 +8236,9 @@ const PlanningManager = () => {
                               }}
                               className="w-4 h-4 text-blue-600 rounded"
                             />
-                            <span className={`text-sm ${isDejaAssocie ? 'font-bold' : ''}`}>
+                            <span className={`text-sm ${isDejaAssocie ? 'text-orange-700' : ''}`}>
                               <span className="font-semibold text-blue-600">{medecin.initiales}</span> - Dr. {medecin.prenom} {medecin.nom}
-                              {isDejaAssocie && !isChecked && <span className="text-xs text-yellow-600 ml-1">(déjà attribué)</span>}
+                              {isDejaAssocie && !isChecked && <span className="text-xs text-orange-600 ml-1 block">(avec {autreAssistant})</span>}
                             </span>
                           </label>
                         );
