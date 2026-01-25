@@ -2948,11 +2948,29 @@ const PlanningManager = () => {
       const monday = getMondayOfWeek(date);
       const weekDates = getWeekDates(monday);
       
+      // Charger le planning, les utilisateurs, ET les congés en parallèle
+      const [usersRes, congesRes, demandesTravailRes, ...planningResponses] = await Promise.all([
+        axios.get(`${API}/users`),
+        axios.get(`${API}/conges`),
+        axios.get(`${API}/demandes-travail`),
+        ...weekDates.map(d => axios.get(`${API}/planning/${d}`))
+      ]);
+      
+      // Mettre à jour les utilisateurs
+      setUsers(usersRes.data.filter(u => u.actif));
+      
+      // Mettre à jour les congés (approuvés et en attente)
+      setCongesApprouves(congesRes.data.filter(c => c.statut === 'APPROUVE'));
+      setCongesEnAttente(congesRes.data.filter(c => c.statut === 'EN_ATTENTE'));
+      
+      // Mettre à jour les demandes de travail en attente
+      setDemandesTravail(demandesTravailRes.data.filter(d => d.statut === 'EN_ATTENTE'));
+      
+      // Construire les données du planning
       const planningData = {};
-      for (const d of weekDates) {
-        const res = await axios.get(`${API}/planning/${d}`);
-        planningData[d] = res.data;
-      }
+      weekDates.forEach((d, index) => {
+        planningData[d] = planningResponses[index].data;
+      });
       
       setPlanningTableau({
         dates: weekDates,
