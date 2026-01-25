@@ -7854,12 +7854,24 @@ const PlanningManager = () => {
                 <div className="w-4 h-4 bg-red-100 rounded border"></div>
                 <span>&gt; limite</span>
               </div>
-              <span className="text-gray-500 ml-4">
-                💡 Médecins: {configurationPlanning?.limite_demi_journees_medecin || 6} demi-journées | 
-                Assistants: {configurationPlanning?.limite_demi_journees_assistant || 8} demi-journées | 
-                Secrétaires: {configurationPlanning?.limite_demi_journees_secretaire || 10} demi-journées | 
-                Box: {salles.filter(s => s.type_salle === 'MEDECIN').length || 6}
-              </span>
+              <div className="flex items-center space-x-2 ml-4 border-l pl-4">
+                <div className="w-4 h-4 bg-yellow-200 rounded border border-yellow-400"></div>
+                <span>⏳ Demande en attente</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-orange-200 rounded border border-orange-400"></div>
+                <span>🏖️ Congé approuvé</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-indigo-300 rounded border border-indigo-400"></div>
+                <span>✓ Médecin avec assistant</span>
+              </div>
+            </div>
+            <div className="mt-2 text-sm text-gray-500">
+              💡 Médecins: {configurationPlanning?.limite_demi_journees_medecin || 6} demi-journées | 
+              Assistants: {configurationPlanning?.limite_demi_journees_assistant || 8} demi-journées | 
+              Secrétaires: {configurationPlanning?.limite_demi_journees_secretaire || 10} demi-journées | 
+              Box: {salles.filter(s => s.type_salle === 'MEDECIN').length || 6}
             </div>
 
             {/* Horaires prédéfinis pour les secrétaires */}
