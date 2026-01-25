@@ -7918,8 +7918,12 @@ const PlanningManager = () => {
                 <span>⏳ Demande en attente</span>
               </div>
               <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-red-200 rounded border border-red-400"></div>
+                <span>🏖️ Congé (CP, RTT, Maladie...)</span>
+              </div>
+              <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 bg-orange-200 rounded border border-orange-400"></div>
-                <span>🏖️ Congé approuvé</span>
+                <span>😴 Repos/Absent (non comptabilisé)</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 bg-indigo-300 rounded border border-indigo-400"></div>
