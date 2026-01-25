@@ -4013,6 +4013,11 @@ const PlanningManager = () => {
 
   // Approuver une demande de travail rapidement depuis le planning
   const handleApprouverDemandeTravailRapide = async (demande) => {
+    if (!canModifyPlanning()) {
+      toast.error('Vous n\'avez pas la permission de modifier le planning');
+      return;
+    }
+    
     try {
       const body = {
         commentaire: 'Approuvé depuis le planning'
@@ -4032,6 +4037,11 @@ const PlanningManager = () => {
 
   // Refuser une demande de travail rapidement depuis le planning
   const handleRefuserDemandeTravailRapide = async (demande) => {
+    if (!canModifyPlanning()) {
+      toast.error('Vous n\'avez pas la permission de modifier le planning');
+      return;
+    }
+    
     const raison = window.prompt('Raison du refus (optionnel):');
     if (raison === null) return; // Annulé
     
@@ -4051,6 +4061,11 @@ const PlanningManager = () => {
 
   // Approuver un congé rapidement depuis le planning
   const handleApprouverCongeRapide = async (conge) => {
+    if (!canModifyPlanning()) {
+      toast.error('Vous n\'avez pas la permission de modifier le planning');
+      return;
+    }
+    
     try {
       await axios.put(`${API}/conges/${conge.id}/approuver`, {
         approuve: true,
@@ -4068,6 +4083,11 @@ const PlanningManager = () => {
 
   // Refuser un congé rapidement depuis le planning
   const handleRefuserCongeRapide = async (conge) => {
+    if (!canModifyPlanning()) {
+      toast.error('Vous n\'avez pas la permission de modifier le planning');
+      return;
+    }
+    
     const raison = window.prompt('Raison du refus (optionnel):');
     if (raison === null) return;
     
@@ -4088,6 +4108,10 @@ const PlanningManager = () => {
 
   // Changer le type d'un congé (congé payé <-> absent non comptabilisé)
   const handleChangerTypeCongeRapide = async (conge) => {
+    if (!canModifyPlanning()) {
+      toast.error('Vous n\'avez pas la permission de modifier le planning');
+      return;
+    }
     const nouveauType = conge.type_conge === 'ABSENT' ? 'CONGE_PAYE' : 'ABSENT';
     const label = nouveauType === 'ABSENT' ? 'Absent (non comptabilisé)' : 'Congé payé';
     
