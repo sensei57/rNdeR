@@ -1319,6 +1319,34 @@ async def create_demande_conge(
     
     return demande
 
+@api_router.post("/conges/direct")
+async def create_conge_direct(
+    demande_data: dict,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    """Créer un congé directement (déjà approuvé) - Directeur uniquement"""
+    # Récupérer l'utilisateur cible
+    utilisateur_id = demande_data.get('utilisateur_id')
+    if not utilisateur_id:
+        # Si pas d'utilisateur_id fourni, chercher dans le planning pour la date
+        # Pour l'instant, utiliser l'ID du directeur
+        utilisateur_id = current_user.id
+    
+    # Créer le congé avec statut APPROUVE directement
+    demande = DemandeConge(
+        utilisateur_id=utilisateur_id,
+        date_debut=demande_data['date_debut'],
+        date_fin=demande_data['date_fin'],
+        type_conge=demande_data.get('type_conge', 'CONGE_PAYE'),
+        creneau=demande_data.get('duree', 'JOURNEE_COMPLETE'),
+        motif=demande_data.get('motif', 'Créé depuis le planning'),
+        statut='APPROUVE'  # Directement approuvé
+    )
+    
+    await db.demandes_conges.insert_one(demande.dict())
+    
+    return {"message": "Congé créé et approuvé", "id": demande.id}
+
 @api_router.get("/conges", response_model=List[Dict[str, Any]])
 async def get_demandes_conges(current_user: User = Depends(get_current_user)):
     if current_user.role == ROLES["DIRECTEUR"]:
