@@ -58,6 +58,7 @@ class UserBase(BaseModel):
     telephone: Optional[str] = None
     actif: bool = True
     vue_planning_complete: bool = False  # Vue planning comme directeur (lecture seule)
+    peut_modifier_planning: bool = False  # Peut modifier le planning (créer/modifier/supprimer créneaux)
 
 class UserCreate(UserBase):
     password: str
@@ -68,6 +69,7 @@ class UserUpdate(BaseModel):
     telephone: Optional[str] = None
     actif: Optional[bool] = None
     vue_planning_complete: Optional[bool] = None
+    peut_modifier_planning: Optional[bool] = None
 
 class User(UserBase):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
