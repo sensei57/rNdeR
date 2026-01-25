@@ -2727,6 +2727,11 @@ const PlanningManager = () => {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewModeLocal] = useState('jour');
   
+  // Fonction utilitaire pour formater une date en YYYY-MM-DD sans problèmes de fuseau horaire
+  const formatDateISO = (year, month, day) => {
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  };
+  
   // Fonctions pour gérer les permissions de vue planning
   // hasDirectorView: peut voir le planning comme un directeur (Directeur OU vue_planning_complete)
   // canModifyPlanning: peut modifier le planning (Directeur OU peut_modifier_planning)
