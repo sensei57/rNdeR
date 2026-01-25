@@ -3926,6 +3926,21 @@ const PlanningManager = () => {
       p.medecin_ids.includes(medecinId)
     );
   };
+  
+  // Obtenir l'assistant qui a ce médecin associé (pour afficher son nom)
+  const getAssistantPourMedecin = (medecinId, date, creneau, excludeAssistantId = null) => {
+    if (!planningTableau.planning || !planningTableau.planning[date]) return null;
+    const assistantCreneau = planningTableau.planning[date].find(p => 
+      p.employe_role === 'Assistant' && 
+      p.creneau === creneau &&
+      p.medecin_ids && 
+      p.medecin_ids.includes(medecinId) &&
+      (excludeAssistantId ? p.employe_id !== excludeAssistantId : true)
+    );
+    if (!assistantCreneau) return null;
+    const assistant = users.find(u => u.id === assistantCreneau.employe_id);
+    return assistant ? `${assistant.prenom} ${assistant.nom}` : 'Un autre assistant';
+  };
 
   // Supprimer un créneau depuis la Vue Planning
   const handleDeleteCreneauTableau = async (creneauId) => {
