@@ -10952,6 +10952,25 @@ const AdminManager = () => {
                       )}
                     </td>
                     <td className="p-3">
+                      {userItem.role !== 'Directeur' && userItem.id !== user?.id ? (
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={userItem.peut_modifier_planning || false}
+                            onChange={() => handleToggleModifierPlanning(userItem.id)}
+                            className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 cursor-pointer"
+                          />
+                          <span className="text-xs text-gray-600">
+                            {userItem.peut_modifier_planning ? 'Activée' : 'Désactivée'}
+                          </span>
+                        </label>
+                      ) : (
+                        <span className="text-xs text-gray-400 italic">
+                          {userItem.role === 'Directeur' ? 'Modif. par défaut' : '-'}
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-3">
                       <div className="flex space-x-2">
                         {userItem.id !== user?.id && (
                           <>
