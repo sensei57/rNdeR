@@ -6992,8 +6992,7 @@ const PlanningManager = () => {
                         const daysInMonth = new Date(year, month + 1, 0).getDate();
                         const datesMonth = [];
                         for (let i = 1; i <= daysInMonth; i++) {
-                          const d = new Date(year, month, i);
-                          datesMonth.push(d.toISOString().split('T')[0]);
+                          datesMonth.push(formatDateISO(year, month + 1, i));
                         }
                         const demiJournees = calculateDemiJournees(medecin.id, datesMonth);
                         const conges = calculateConges(medecin.id, datesMonth);
