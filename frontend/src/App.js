@@ -3097,15 +3097,15 @@ const PlanningManager = () => {
     try {
       setLoading(true);
       const [year, month] = mois.split('-').map(Number);
-      const firstDay = new Date(year, month - 1, 1);
-      const lastDay = new Date(year, month, 0);
+      const lastDay = new Date(year, month, 0).getDate(); // Nombre de jours dans le mois
       
       // Récupérer tous les jours du mois
       const allPlanning = [];
       const promises = [];
       
-      for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
-        const dateStr = d.toISOString().split('T')[0];
+      // Utiliser une boucle simple pour éviter les problèmes de fuseau horaire
+      for (let day = 1; day <= lastDay; day++) {
+        const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         promises.push(axios.get(`${API}/planning/${dateStr}`));
       }
       
@@ -3120,11 +3120,11 @@ const PlanningManager = () => {
       });
       
       // Mettre à jour les demandes de travail
-      setDemandesTravail(demandesRes.data);
+      setDemandesTravail(demandesRes.data.filter(d => d.statut === 'EN_ATTENTE'));
       
       // Filtrer selon les permissions
       let planningData = allPlanning;
-      if (user?.role !== 'Directeur') {
+      if (user?.role !== 'Directeur' && !user?.vue_planning_complete) {
         planningData = allPlanning.filter(p => p.employe_id === user.id);
       }
       
