@@ -4143,11 +4143,32 @@ const PlanningManager = () => {
       'MATERNITE': 'MAT',
       'PATERNITE': 'PAT',
       'SANS_SOLDE': 'SS',
-      'ABSENT': 'ABS',
-      'REPOS': 'REP',
+      'ABSENT': 'REP', // Fusionné avec REPOS -> affiche REP
+      'REPOS': 'REP',  // Repos/Absent non comptabilisé
       'AUTRE': 'AUT'
     };
     return types[type] || type?.substring(0, 3) || '?';
+  };
+
+  // Déterminer si un congé est "comptabilisé" (congé payé, RTT, etc.) ou "non comptabilisé" (repos/absent)
+  const isCongeComptabilise = (typeConge) => {
+    const nonComptabilises = ['ABSENT', 'REPOS'];
+    return !nonComptabilises.includes(typeConge);
+  };
+
+  // Obtenir les classes CSS pour un congé selon son type
+  const getCongeColorClasses = (typeConge, isBackground = false) => {
+    if (isCongeComptabilise(typeConge)) {
+      // Congés comptabilisés (CP, RTT, Maladie, etc.) -> ROUGE
+      return isBackground 
+        ? 'bg-red-200 hover:bg-red-300' 
+        : 'text-red-800';
+    } else {
+      // Repos/Absent non comptabilisé -> ORANGE
+      return isBackground 
+        ? 'bg-orange-200 hover:bg-orange-300' 
+        : 'text-orange-800';
+    }
   };
 
   // Calculer le total de demi-journées pour un employé sur la semaine
