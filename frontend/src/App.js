@@ -3981,9 +3981,12 @@ const PlanningManager = () => {
 
   // Récupérer les demandes de congés EN ATTENTE pour un employé à une date donnée  
   const getCongesEnAttenteForEmployeDate = (employeId, date) => {
-    if (!demandesTravail) return []; // On utilise les données chargées
-    // Chercher dans les congés (pas dans demandesTravail qui est pour les médecins)
-    return [];
+    if (!congesEnAttente) return [];
+    return congesEnAttente.filter(conge => 
+      conge.utilisateur_id === employeId &&
+      new Date(conge.date_debut) <= new Date(date) &&
+      new Date(conge.date_fin) >= new Date(date)
+    );
   };
 
   // Récupérer toutes les demandes de travail en attente pour un médecin à une date donnée
@@ -4032,6 +4035,78 @@ const PlanningManager = () => {
     } catch (error) {
       toast.error('Erreur lors du refus');
     }
+  };
+
+  // Approuver un congé rapidement depuis le planning
+  const handleApprouverCongeRapide = async (conge) => {
+    try {
+      await axios.put(`${API}/conges/${conge.id}/approuver`, {
+        approuve: true,
+        commentaire: 'Approuvé depuis le planning'
+      });
+      toast.success('Congé approuvé');
+      
+      // Rafraîchir les données
+      fetchPlanningTableau(selectedWeek);
+      setCongesEnAttente(prev => prev.filter(c => c.id !== conge.id));
+    } catch (error) {
+      toast.error('Erreur lors de l\'approbation');
+    }
+  };
+
+  // Refuser un congé rapidement depuis le planning
+  const handleRefuserCongeRapide = async (conge) => {
+    const raison = window.prompt('Raison du refus (optionnel):');
+    if (raison === null) return;
+    
+    try {
+      await axios.put(`${API}/conges/${conge.id}/approuver`, {
+        approuve: false,
+        commentaire: raison || 'Refusé depuis le planning'
+      });
+      toast.success('Congé refusé');
+      
+      // Rafraîchir les données
+      fetchPlanningTableau(selectedWeek);
+      setCongesEnAttente(prev => prev.filter(c => c.id !== conge.id));
+    } catch (error) {
+      toast.error('Erreur lors du refus');
+    }
+  };
+
+  // Changer le type d'un congé (congé payé <-> absent non comptabilisé)
+  const handleChangerTypeCongeRapide = async (conge) => {
+    const nouveauType = conge.type_conge === 'ABSENT' ? 'CONGE_PAYE' : 'ABSENT';
+    const label = nouveauType === 'ABSENT' ? 'Absent (non comptabilisé)' : 'Congé payé';
+    
+    if (!window.confirm(`Changer en "${label}" ?`)) return;
+    
+    try {
+      await axios.put(`${API}/conges/${conge.id}/modifier-type?nouveau_type=${nouveauType}`);
+      toast.success(`Type modifié en "${label}"`);
+      
+      // Rafraîchir les données
+      fetchPlanningTableau(selectedWeek);
+    } catch (error) {
+      toast.error('Erreur lors de la modification');
+    }
+  };
+
+  // Obtenir le label court du type de congé
+  const getTypeCongeShortLabel = (type) => {
+    const types = {
+      'CONGE_PAYE': 'CP',
+      'RTT': 'RTT',
+      'MALADIE': 'MAL',
+      'FORMATION': 'FORM',
+      'MATERNITE': 'MAT',
+      'PATERNITE': 'PAT',
+      'SANS_SOLDE': 'SS',
+      'ABSENT': 'ABS',
+      'REPOS': 'REP',
+      'AUTRE': 'AUT'
+    };
+    return types[type] || type?.substring(0, 3) || '?';
   };
 
   // Calculer le total de demi-journées pour un employé sur la semaine
