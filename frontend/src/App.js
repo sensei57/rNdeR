@@ -9112,6 +9112,7 @@ const DemandesTravailManager = () => {
     jours_exclus: []
   });
   const [joursDisponibles, setJoursDisponibles] = useState([]);
+  const [creneauxExistantsMois, setCreneauxExistantsMois] = useState([]); // Créneaux déjà validés du médecin
   
   // États pour la demande hebdomadaire (assistants/secrétaires)
   const [showDemandeHebdoModal, setShowDemandeHebdoModal] = useState(false);
