@@ -4113,8 +4113,10 @@ const PlanningManager = () => {
       toast.error('Vous n\'avez pas la permission de modifier le planning');
       return;
     }
-    const nouveauType = conge.type_conge === 'ABSENT' ? 'CONGE_PAYE' : 'ABSENT';
-    const label = nouveauType === 'ABSENT' ? 'Absent (non comptabilisé)' : 'Congé payé';
+    // Si c'est ABSENT ou REPOS -> passer en CONGE_PAYE, sinon passer en REPOS
+    const estReposOuAbsent = conge.type_conge === 'ABSENT' || conge.type_conge === 'REPOS';
+    const nouveauType = estReposOuAbsent ? 'CONGE_PAYE' : 'REPOS';
+    const label = nouveauType === 'REPOS' ? 'Repos/Absent (non comptabilisé)' : 'Congé payé';
     
     if (!window.confirm(`Changer en "${label}" ?`)) return;
     
