@@ -1493,8 +1493,8 @@ const CongeManager = () => {
       'MATERNITE': 'Congé maternité',
       'PATERNITE': 'Congé paternité',
       'SANS_SOLDE': 'Congé sans solde',
-      'ABSENT': 'Absent (non comptabilisé)',
-      'REPOS': 'Repos (non comptabilisé)',
+      'ABSENT': 'Repos/Absent (non comptabilisé)',
+      'REPOS': 'Repos/Absent (non comptabilisé)',
       'AUTRE': 'Autre'
     };
     return types[type] || type;
