@@ -3682,6 +3682,12 @@ const PlanningManager = () => {
 
   // Ouvrir le modal de création/modification rapide pour la Vue Planning
   const openQuickCreneauModal = (employe, date, creneau, existingCreneau = null) => {
+    // Vérifier si l'utilisateur peut modifier le planning
+    if (!canModifyPlanning()) {
+      toast.error('Vous n\'avez pas la permission de modifier le planning');
+      return;
+    }
+    
     setQuickCreneauData({
       id: existingCreneau?.id || null, // ID pour la modification
       employe_id: employe.id,
@@ -3731,6 +3737,12 @@ const PlanningManager = () => {
   
   // Ouvrir le modal journée complète (matin + après-midi)
   const openJourneeModal = (employe, date) => {
+    // Vérifier si l'utilisateur peut modifier le planning
+    if (!canModifyPlanning()) {
+      toast.error('Vous n\'avez pas la permission de modifier le planning');
+      return;
+    }
+    
     const creneauMatin = getCreneauForEmploye(employe.id, date, 'MATIN');
     const creneauAM = getCreneauForEmploye(employe.id, date, 'APRES_MIDI');
     
