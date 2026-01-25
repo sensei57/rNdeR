@@ -3788,9 +3788,12 @@ const PlanningManager = () => {
         salle_attente: creneauAM?.salle_attente || '',
         medecin_ids: creneauAM?.medecin_ids || [],
         horaire_debut: creneauAM?.horaire_debut || (employe.role === 'Secrétaire' ? '14:00' : ''),
-        horaire_fin: creneauAM?.horaire_fin || (employe.role === 'Secrétaire' ? '18:00' : '')
+        horaire_fin: creneauAM?.horaire_fin || (employe.role === 'Secrétaire' ? '18:00' : ''),
+        conge: false,
+        type_conge: ''
       }
     });
+    setShowAssistantsDetails(false); // Réinitialiser l'affichage des assistants
     setShowJourneeModal(true);
   };
   
@@ -3800,6 +3803,29 @@ const PlanningManager = () => {
     
     try {
       const promises = [];
+      
+      // Créer un congé si demandé pour les secrétaires
+      if (journeeData.employe?.role === 'Secrétaire' && (journeeData.matin.conge || journeeData.apresMidi.conge)) {
+        // Déterminer le type de congé et la durée
+        const typeConge = journeeData.matin.type_conge || journeeData.apresMidi.type_conge || 'CONGE_PAYE';
+        let duree = 'JOURNEE_COMPLETE';
+        if (journeeData.matin.conge && !journeeData.apresMidi.conge) duree = 'MATIN';
+        if (!journeeData.matin.conge && journeeData.apresMidi.conge) duree = 'APRES_MIDI';
+        
+        const congePayload = {
+          date_debut: journeeData.date,
+          date_fin: journeeData.date,
+          type_conge: typeConge,
+          duree: duree,
+          motif: `Congé ajouté depuis le planning`
+        };
+        
+        await axios.post(`${API}/conges/direct`, congePayload);
+        toast.success('Congé/Repos créé avec succès !');
+        setShowJourneeModal(false);
+        fetchPlanningTableau(selectedWeek);
+        return;
+      }
       
       // Traiter le matin
       if (journeeData.matin.exists || journeeData.matin.notes || journeeData.matin.salle_attribuee || 
