@@ -8897,19 +8897,18 @@ const PlanningManager = () => {
                               {estDejaAssocie && showAssistantsDetails && (
                                 <span className="ml-1 text-orange-500 text-xs">(avec {autreAssistant})</span>
                               )}
-                              </span>
                             </label>
                           );
                         })}
                         {getMedecinsPresentsPourCreneau(journeeData.date, 'APRES_MIDI').length === 0 && (
-                          <span className="text-gray-400 text-xs">Aucun médecin présent</span>
+                          <span className="text-gray-400 text-sm">Aucun médecin présent</span>
                         )}
                       </div>
                     </div>
                     <div>
-                      <Label className="text-xs">Salle</Label>
+                      <Label className="text-sm font-medium">Salle</Label>
                       <select
-                        className="w-full p-2 border rounded text-sm"
+                        className="w-full p-2 border rounded text-sm mt-1"
                         value={journeeData.apresMidi.salle_attribuee}
                         onChange={(e) => setJourneeData(prev => ({
                           ...prev,
@@ -8926,7 +8925,7 @@ const PlanningManager = () => {
                 )}
                 
                 <div>
-                  <Label className="text-xs">Note</Label>
+                  <Label className="text-sm font-medium">Note</Label>
                   <Input
                     placeholder="Note..."
                     value={journeeData.apresMidi.notes}
@@ -8934,11 +8933,78 @@ const PlanningManager = () => {
                       ...prev,
                       apresMidi: { ...prev.apresMidi, notes: e.target.value }
                     }))}
-                    className="h-8 text-sm"
+                    className="h-9 text-sm mt-1"
                   />
                 </div>
               </div>
             </div>
+            
+            {/* Option Congé/Repos pour Secrétaires */}
+            {journeeData.employe?.role === 'Secrétaire' && (
+              <div className="bg-gray-50 border rounded-lg p-4 mt-4">
+                <h4 className="font-semibold text-gray-700 mb-3">🏖️ Ajouter un congé ou repos pour cette journée</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={journeeData.matin.conge || false}
+                        onChange={(e) => setJourneeData(prev => ({
+                          ...prev,
+                          matin: { ...prev.matin, conge: e.target.checked, type_conge: e.target.checked ? 'CONGE_PAYE' : '' }
+                        }))}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">Congé/Repos <b>Matin</b></span>
+                    </label>
+                    {journeeData.matin.conge && (
+                      <select
+                        className="w-full p-2 border rounded text-sm mt-2"
+                        value={journeeData.matin.type_conge || 'CONGE_PAYE'}
+                        onChange={(e) => setJourneeData(prev => ({
+                          ...prev,
+                          matin: { ...prev.matin, type_conge: e.target.value }
+                        }))}
+                      >
+                        <option value="CONGE_PAYE">Congé payé (CP)</option>
+                        <option value="RTT">RTT</option>
+                        <option value="MALADIE">Maladie</option>
+                        <option value="REPOS">Repos/Absent (non comptabilisé)</option>
+                      </select>
+                    )}
+                  </div>
+                  <div>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={journeeData.apresMidi.conge || false}
+                        onChange={(e) => setJourneeData(prev => ({
+                          ...prev,
+                          apresMidi: { ...prev.apresMidi, conge: e.target.checked, type_conge: e.target.checked ? 'CONGE_PAYE' : '' }
+                        }))}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">Congé/Repos <b>Après-midi</b></span>
+                    </label>
+                    {journeeData.apresMidi.conge && (
+                      <select
+                        className="w-full p-2 border rounded text-sm mt-2"
+                        value={journeeData.apresMidi.type_conge || 'CONGE_PAYE'}
+                        onChange={(e) => setJourneeData(prev => ({
+                          ...prev,
+                          apresMidi: { ...prev.apresMidi, type_conge: e.target.value }
+                        }))}
+                      >
+                        <option value="CONGE_PAYE">Congé payé (CP)</option>
+                        <option value="RTT">RTT</option>
+                        <option value="MALADIE">Maladie</option>
+                        <option value="REPOS">Repos/Absent (non comptabilisé)</option>
+                      </select>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
             
             <div className="flex justify-end space-x-2 pt-4 border-t">
               <Button type="button" variant="outline" onClick={() => setShowJourneeModal(false)}>
