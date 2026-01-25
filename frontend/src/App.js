@@ -7710,35 +7710,98 @@ const PlanningManager = () => {
                           const displayAM = getMedecinDisplay(creneauAM, 'AM');
                           const hasAssistantMatin = medecinHasAssistant(medecin.id, date, 'MATIN');
                           const hasAssistantAM = medecinHasAssistant(medecin.id, date, 'APRES_MIDI');
+                          
+                          // Demandes de créneaux en attente pour ce médecin
+                          const demandesEnAttente = getDemandesCreneauxEnAttenteForDate(medecin.id, date);
+                          const demandeMatinEnAttente = demandesEnAttente.find(d => d.creneau === 'MATIN' || d.creneau === 'JOURNEE_COMPLETE');
+                          const demandeAMEnAttente = demandesEnAttente.find(d => d.creneau === 'APRES_MIDI' || d.creneau === 'JOURNEE_COMPLETE');
+                          
                           return (
                             <React.Fragment key={`${medecin.id}-${date}`}>
+                              {/* Cellule MATIN - Demande en attente ou créneau */}
                               <td 
                                 className={`border p-1 text-center cursor-pointer transition-colors ${
+                                  demandeMatinEnAttente ? 'bg-yellow-200 hover:bg-yellow-300' :
                                   creneauMatin 
                                     ? hasAssistantMatin 
                                       ? 'bg-indigo-300 hover:bg-indigo-400' 
                                       : 'bg-blue-200 hover:bg-blue-300'
                                     : 'hover:bg-blue-100'
                                 }`}
-                                onClick={() => creneauMatin ? openQuickCreneauModal(medecin, date, 'MATIN', creneauMatin) : openJourneeModal(medecin, date)}
-                                title={creneauMatin ? `📝 ${displayMatin}${hasAssistantMatin ? ' ✓ Avec assistant' : ' ⚠ Sans assistant'} - Cliquer pour modifier` : '📅 Cliquer pour ajouter la journée'}
+                                onClick={() => {
+                                  if (demandeMatinEnAttente) return; // Les boutons gèrent
+                                  creneauMatin ? openQuickCreneauModal(medecin, date, 'MATIN', creneauMatin) : openJourneeModal(medecin, date);
+                                }}
+                                title={
+                                  demandeMatinEnAttente 
+                                    ? `⏳ Demande de créneau en attente - ${demandeMatinEnAttente.motif || 'Pas de motif'}` 
+                                    : creneauMatin 
+                                      ? `📝 ${displayMatin}${hasAssistantMatin ? ' ✓ Avec assistant' : ' ⚠ Sans assistant'}` 
+                                      : '📅 Ajouter'
+                                }
                               >
-                                {creneauMatin ? (
+                                {demandeMatinEnAttente ? (
+                                  <div className="flex flex-col items-center space-y-1">
+                                    <span className="text-xs font-bold text-yellow-800">⏳ {demandeMatinEnAttente.creneau === 'JOURNEE_COMPLETE' ? 'JC' : 'M'}</span>
+                                    <div className="flex space-x-1">
+                                      <button 
+                                        onClick={(e) => { e.stopPropagation(); handleApprouverDemandeTravailRapide(demandeMatinEnAttente); }}
+                                        className="text-xs px-1 bg-green-500 text-white rounded hover:bg-green-600"
+                                        title="Approuver"
+                                      >✓</button>
+                                      <button 
+                                        onClick={(e) => { e.stopPropagation(); handleRefuserDemandeTravailRapide(demandeMatinEnAttente); }}
+                                        className="text-xs px-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                        title="Refuser"
+                                      >✗</button>
+                                    </div>
+                                  </div>
+                                ) : creneauMatin ? (
                                   <span className={`text-xs font-semibold ${hasAssistantMatin ? 'text-indigo-900' : 'text-blue-700'}`}>{displayMatin}</span>
                                 ) : <span className="text-gray-300">+</span>}
                               </td>
+                              {/* Cellule APRES-MIDI */}
                               <td 
                                 className={`border p-1 text-center cursor-pointer transition-colors ${
+                                  demandeAMEnAttente && !demandeMatinEnAttente ? 'bg-yellow-200 hover:bg-yellow-300' :
+                                  demandeAMEnAttente && demandeMatinEnAttente && demandeAMEnAttente.id === demandeMatinEnAttente.id ? 'bg-yellow-200 hover:bg-yellow-300' :
                                   creneauAM 
                                     ? hasAssistantAM 
                                       ? 'bg-indigo-300 hover:bg-indigo-400' 
                                       : 'bg-blue-200 hover:bg-blue-300'
                                     : 'hover:bg-blue-100'
                                 }`}
-                                onClick={() => creneauAM ? openQuickCreneauModal(medecin, date, 'APRES_MIDI', creneauAM) : openJourneeModal(medecin, date)}
-                                title={creneauAM ? `📝 ${displayAM}${hasAssistantAM ? ' ✓ Avec assistant' : ' ⚠ Sans assistant'} - Cliquer pour modifier` : '📅 Cliquer pour ajouter la journée'}
+                                onClick={() => {
+                                  if (demandeAMEnAttente) return;
+                                  creneauAM ? openQuickCreneauModal(medecin, date, 'APRES_MIDI', creneauAM) : openJourneeModal(medecin, date);
+                                }}
+                                title={
+                                  demandeAMEnAttente 
+                                    ? `⏳ Demande en attente` 
+                                    : creneauAM 
+                                      ? `📝 ${displayAM}${hasAssistantAM ? ' ✓ Avec assistant' : ' ⚠ Sans assistant'}` 
+                                      : '📅 Ajouter'
+                                }
                               >
-                                {creneauAM ? (
+                                {demandeAMEnAttente && (!demandeMatinEnAttente || demandeAMEnAttente.id !== demandeMatinEnAttente.id) ? (
+                                  <div className="flex flex-col items-center space-y-1">
+                                    <span className="text-xs font-bold text-yellow-800">⏳ AM</span>
+                                    <div className="flex space-x-1">
+                                      <button 
+                                        onClick={(e) => { e.stopPropagation(); handleApprouverDemandeTravailRapide(demandeAMEnAttente); }}
+                                        className="text-xs px-1 bg-green-500 text-white rounded hover:bg-green-600"
+                                        title="Approuver"
+                                      >✓</button>
+                                      <button 
+                                        onClick={(e) => { e.stopPropagation(); handleRefuserDemandeTravailRapide(demandeAMEnAttente); }}
+                                        className="text-xs px-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                        title="Refuser"
+                                      >✗</button>
+                                    </div>
+                                  </div>
+                                ) : demandeAMEnAttente && demandeMatinEnAttente && demandeAMEnAttente.id === demandeMatinEnAttente.id ? (
+                                  <span className="text-xs font-bold text-yellow-800">⏳</span>
+                                ) : creneauAM ? (
                                   <span className={`text-xs font-semibold ${hasAssistantAM ? 'text-indigo-900' : 'text-blue-700'}`}>{displayAM}</span>
                                 ) : <span className="text-gray-300">+</span>}
                               </td>
