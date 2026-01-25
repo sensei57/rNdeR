@@ -1324,13 +1324,26 @@ async def create_conge_direct(
     demande_data: dict,
     current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
 ):
-    """Créer un congé directement (déjà approuvé) - Directeur uniquement"""
-    # Récupérer l'utilisateur cible
+    """Créer un congé directement (déjà approuvé) - Directeur uniquement
+    
+    Body attendu:
+    {
+        "utilisateur_id": "uuid de l'utilisateur" (obligatoire),
+        "date_debut": "2026-01-20",
+        "date_fin": "2026-01-20",
+        "type_conge": "CONGE_PAYE" | "RTT" | "MALADIE" | "REPOS",
+        "duree": "JOURNEE_COMPLETE" | "MATIN" | "APRES_MIDI",
+        "motif": "optionnel"
+    }
+    """
     utilisateur_id = demande_data.get('utilisateur_id')
     if not utilisateur_id:
-        # Si pas d'utilisateur_id fourni, chercher dans le planning pour la date
-        # Pour l'instant, utiliser l'ID du directeur
-        utilisateur_id = current_user.id
+        raise HTTPException(status_code=400, detail="utilisateur_id est requis")
+    
+    # Vérifier que l'utilisateur existe
+    user = await db.users.find_one({"id": utilisateur_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     
     # Créer le congé avec statut APPROUVE directement
     demande = DemandeConge(
