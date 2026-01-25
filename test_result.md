@@ -482,6 +482,21 @@ backend:
           comment: "🔍 TEST URGENT JOURNEE_COMPLETE RÉALISÉ AVEC SUCCÈS! ✅ TESTS DÉTAILLÉS SELON PROTOCOLE UTILISATEUR (7/7 - 100%): 1) ✅ ÉTAPE 1 - Connexion Directeur: directeur@cabinet.fr/admin123 connecté avec succès (Pierre Martin), 2) ✅ ÉTAPE 2 - ID Assistant: Assistant Julie Moreau trouvé (ID: user-assistant-001), 3) ✅ ÉTAPE 3 - Création demande: POST /api/demandes-travail JOURNEE_COMPLETE créée avec succès (ID: d192fa7e-2f24-47d2-a5af-b88fedc86d09, date: 2026-01-31), 4) ✅ ÉTAPE 4 - Approbation: PUT /api/demandes-travail/{id}/approuver réussie (Status 200, message: 'Demande approuvee avec succès et créneau(x) créé(s) dans le planning'), 5) ✅ ÉTAPE 5 - Vérification créneaux: GET /api/planning/2026-01-31 retourne 2 créneaux pour l'assistant (MATIN + APRES_MIDI), 6) ✅ ÉTAPE 6 - Statut demande: Demande trouvée avec statut APPROUVE, 7) ✅ ÉTAPE 7 - Logs backend: Aucune erreur critique, seulement warnings bcrypt normaux. 🎯 RÉSULTAT CRITIQUE: Le système FONCTIONNE PARFAITEMENT! Les demandes JOURNEE_COMPLETE pour assistants créent bien les 2 créneaux (MATIN + APRES_MIDI) dans le planning. Le bug signalé par l'utilisateur N'EST PAS REPRODUCTIBLE avec les identifiants fournis. Le système divise correctement JOURNEE_COMPLETE en 2 créneaux séparés comme spécifié."
 
 frontend:
+  - task: "TEST - Affichage des demandes de congés et créneaux dans le Planning Interactif"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "TEST - Affichage des demandes de congés et créneaux dans le Planning Interactif. CONTEXTE: L'utilisateur demande de vérifier que les nouvelles fonctionnalités d'affichage des demandes sont visibles dans le tableau planning. OBJECTIF: Vérifier que les nouvelles fonctionnalités d'affichage des demandes sont visibles dans le tableau planning. TESTS À EFFECTUER: 1) Se connecter comme Directeur (directeur@cabinet.fr / admin123), 2) Aller dans la section 'Planning' (vue tableau interactif), 3) Vérifier la présence de la nouvelle légende en bas du tableau, 4) Vérifier le tableau peut afficher les demandes en attente avec boutons d'action, 5) Vérifier interface s'affiche correctement sans erreurs. RÉSULTAT ATTENDU: Le tableau s'affiche correctement avec la légende mise à jour et la capacité d'afficher les demandes en attente."
+        - working: true
+          agent: "testing"
+          comment: "🎉 TEST PLANNING INTERACTIF COMPLÈTEMENT RÉUSSI! ✅ VALIDATION COMPLÈTE (5/5 - 100%): 1) ✅ CONNEXION DIRECTEUR: directeur@cabinet.fr/admin123 connecté avec succès (Francis LEBLOND), 2) ✅ NAVIGATION PLANNING: Accès à la section Planning réussi, Vue Semaine (tableau interactif) activée correctement, 3) ✅ STRUCTURE INTERFACE: Tableau hebdomadaire fonctionnel (7/7 jours visibles), 14 créneaux horaires (Matin/Après-midi) détectés, Structure planning complète avec employés visibles, 4) ✅ FONCTIONNALITÉ DEMANDES EN ATTENTE: Demande en attente visible avec symbole ⏳ (fond jaune), Boutons d'approbation (✓) fonctionnels et cliquables, Interface réactive aux interactions utilisateur, 5) ✅ LÉGENDE CONDITIONNELLE: Légende '⏳ Demande en attente' trouvée et visible, Légende s'affiche de manière conditionnelle selon les données présentes, Système de couleurs cohérent (jaune pour demandes en attente). 🎯 DONNÉES TEST CRÉÉES: Demande de congé en attente (27/01/2026), Demande de travail médecin en attente (28/01/2026), Congé approuvé pour validation complète. ✅ RÉSULTAT FINAL: Le Planning Interactif fonctionne parfaitement selon les spécifications. L'interface s'affiche correctement, les demandes en attente sont visibles avec les bons symboles et couleurs, les boutons d'action sont fonctionnels, et la légende s'affiche de manière conditionnelle. Aucune erreur JavaScript critique détectée. Le système répond exactement aux attentes de l'utilisateur."
+
   - task: "Bouton Demande Mensuelle + Semaines Types Privées - Interface Utilisateur"
     implemented: true
     working: true
