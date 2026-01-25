@@ -9146,6 +9146,50 @@ const DemandesTravailManager = () => {
     }
   };
 
+  // Charger les créneaux existants du médecin pour un mois donné
+  const fetchCreneauxExistantsMois = async (medecinId, dateDebut) => {
+    if (!medecinId || !dateDebut) {
+      setCreneauxExistantsMois([]);
+      return [];
+    }
+    
+    try {
+      const [year, month] = dateDebut.split('-').map(Number);
+      const lastDay = new Date(year, month, 0).getDate();
+      
+      // Récupérer le planning de tout le mois
+      const promises = [];
+      for (let day = 1; day <= lastDay; day++) {
+        const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        promises.push(axios.get(`${API}/planning/${dateStr}`));
+      }
+      
+      const responses = await Promise.all(promises);
+      const allCreneaux = [];
+      
+      responses.forEach((res, index) => {
+        const day = index + 1;
+        const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        // Filtrer les créneaux du médecin concerné
+        const creneauxMedecin = res.data.filter(c => c.employe_id === medecinId);
+        creneauxMedecin.forEach(c => {
+          allCreneaux.push({
+            date: dateStr,
+            creneau: c.creneau,
+            notes: c.notes,
+            salle: c.salle_attribuee
+          });
+        });
+      });
+      
+      setCreneauxExistantsMois(allCreneaux);
+      return allCreneaux;
+    } catch (error) {
+      console.error('Erreur lors du chargement des créneaux existants:', error);
+      return [];
+    }
+  };
+
   const fetchMedecins = async () => {
     try {
       const response = await axios.get(`${API}/users/by-role/Médecin`);
