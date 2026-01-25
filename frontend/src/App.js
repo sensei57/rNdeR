@@ -2804,12 +2804,13 @@ const PlanningManager = () => {
   
   // État pour le modal journée complète (matin + après-midi)
   const [showJourneeModal, setShowJourneeModal] = useState(false);
+  const [showAssistantsDetails, setShowAssistantsDetails] = useState(false); // Afficher les assistants déjà associés
   const [journeeData, setJourneeData] = useState({
     employe_id: '',
     employe: null,
     date: '',
-    matin: { notes: '', salle_attribuee: '', salle_attente: '', medecin_ids: [], horaire_debut: '', horaire_fin: '' },
-    apresMidi: { notes: '', salle_attribuee: '', salle_attente: '', medecin_ids: [], horaire_debut: '', horaire_fin: '' }
+    matin: { notes: '', salle_attribuee: '', salle_attente: '', medecin_ids: [], horaire_debut: '', horaire_fin: '', conge: false, type_conge: '' },
+    apresMidi: { notes: '', salle_attribuee: '', salle_attente: '', medecin_ids: [], horaire_debut: '', horaire_fin: '', conge: false, type_conge: '' }
   });
   
   const [newSemaineType, setNewSemaineType] = useState({
