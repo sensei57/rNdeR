@@ -9446,33 +9446,95 @@ const DemandesTravailManager = () => {
     genererJoursMois(demandeMensuelle.date_debut, semaineTypeId);
   };
 
-  const handleMedecinChangeMensuelle = (medecinId) => {
+  const handleMedecinChangeMensuelle = async (medecinId) => {
     setDemandeMensuelle(prev => ({ 
       ...prev, 
       medecin_id: medecinId,
       semaine_type_id: '' // Réinitialiser la semaine type quand on change de médecin
     }));
+    // Charger les créneaux existants du médecin
+    if (demandeMensuelle.date_debut) {
+      await fetchCreneauxExistantsMois(medecinId, demandeMensuelle.date_debut);
+    }
     // Regénérer les jours sans semaine type
     genererJoursMois(demandeMensuelle.date_debut, '');
   };
 
+  // Vérifier si un créneau existe déjà pour une date et période
+  const hasCreneauExistant = (date, creneau) => {
+    if (!creneauxExistantsMois || creneauxExistantsMois.length === 0) return false;
+    
+    // Vérifier le créneau exact
+    const existeExact = creneauxExistantsMois.some(c => c.date === date && c.creneau === creneau);
+    if (existeExact) return true;
+    
+    // Si journée complète, vérifier aussi matin et après-midi
+    if (creneau === 'JOURNEE_COMPLETE') {
+      const existeMatin = creneauxExistantsMois.some(c => c.date === date && c.creneau === 'MATIN');
+      const existeAM = creneauxExistantsMois.some(c => c.date === date && c.creneau === 'APRES_MIDI');
+      return existeMatin && existeAM;
+    }
+    
+    // Si on vérifie matin/après-midi, vérifier aussi si journée complète existe
+    const existeJournee = creneauxExistantsMois.some(c => c.date === date && c.creneau === 'JOURNEE_COMPLETE');
+    return existeJournee;
+  };
+
+  // Obtenir l'info des créneaux existants pour une date
+  const getCreneauxExistantsForDate = (date) => {
+    if (!creneauxExistantsMois) return [];
+    return creneauxExistantsMois.filter(c => c.date === date);
+  };
+
   const toggleJourSelection = (dateStr) => {
+    // Vérifier les créneaux existants pour cette date
+    const creneauxExistants = getCreneauxExistantsForDate(dateStr);
+    const existeMatin = creneauxExistants.some(c => c.creneau === 'MATIN' || c.creneau === 'JOURNEE_COMPLETE');
+    const existeAM = creneauxExistants.some(c => c.creneau === 'APRES_MIDI' || c.creneau === 'JOURNEE_COMPLETE');
+    
     setJoursDisponibles(prev => prev.map(j => {
       if (j.date !== dateStr) return j;
       
-      // Système cyclique : null → MATIN → APRES_MIDI → JOURNEE_COMPLETE → null
+      // Système cyclique adapté selon ce qui existe déjà
       let nouveauCreneau = null;
       let nouveauSelectionne = false;
       
       if (j.creneau === null) {
-        nouveauCreneau = 'MATIN';
-        nouveauSelectionne = true;
+        // Si rien n'existe, proposer MATIN
+        // Si matin existe mais pas AM, sauter à AM
+        // Si tout existe, ne rien proposer
+        if (!existeMatin) {
+          nouveauCreneau = 'MATIN';
+          nouveauSelectionne = true;
+        } else if (!existeAM) {
+          nouveauCreneau = 'APRES_MIDI';
+          nouveauSelectionne = true;
+        }
+        // Si tout existe, on reste à null
       } else if (j.creneau === 'MATIN') {
-        nouveauCreneau = 'APRES_MIDI';
-        nouveauSelectionne = true;
+        // Si AM n'existe pas, passer à AM
+        // Sinon, si rien n'existe, passer à journée complète
+        // Sinon, retour à null
+        if (!existeAM) {
+          nouveauCreneau = 'APRES_MIDI';
+          nouveauSelectionne = true;
+        } else if (!existeMatin && !existeAM) {
+          nouveauCreneau = 'JOURNEE_COMPLETE';
+          nouveauSelectionne = true;
+        } else {
+          nouveauCreneau = null;
+          nouveauSelectionne = false;
+        }
       } else if (j.creneau === 'APRES_MIDI') {
-        nouveauCreneau = 'JOURNEE_COMPLETE';
-        nouveauSelectionne = true;
+        // Si rien n'existe, proposer journée complète
+        // Sinon retour à null
+        if (!existeMatin && !existeAM) {
+          nouveauCreneau = 'JOURNEE_COMPLETE';
+          nouveauSelectionne = true;
+        } else {
+          nouveauCreneau = null;
+          nouveauSelectionne = false;
+        }
       } else {
         // JOURNEE_COMPLETE → retour à null
         nouveauCreneau = null;
