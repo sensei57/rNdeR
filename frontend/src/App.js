@@ -7672,7 +7672,7 @@ const PlanningManager = () => {
                               <td 
                                 className={`border p-1 text-center cursor-pointer transition-colors ${
                                   hasCongeEnAttente ? 'bg-yellow-200 hover:bg-yellow-300' :
-                                  hasCongeApprouve ? 'bg-orange-200 hover:bg-orange-300' :
+                                  hasCongeApprouve ? getCongeColorClasses(congeApprouve.type_conge, true) :
                                   creneauMatin ? 'bg-green-200 hover:bg-green-300' : 'hover:bg-green-100'
                                 }`}
                                 onClick={() => {
@@ -7703,7 +7703,7 @@ const PlanningManager = () => {
                                   </div>
                                 ) : hasCongeApprouve ? (
                                   <div 
-                                    className="text-xs font-bold text-orange-800 cursor-pointer"
+                                    className={`text-xs font-bold cursor-pointer ${getCongeColorClasses(congeApprouve.type_conge, false)}`}
                                     onClick={(e) => { e.stopPropagation(); handleChangerTypeCongeRapide(congeApprouve); }}
                                     title="Cliquer pour changer le type"
                                   >
@@ -7717,7 +7717,7 @@ const PlanningManager = () => {
                               <td 
                                 className={`border p-1 text-center cursor-pointer transition-colors ${
                                   hasCongeEnAttente ? 'bg-yellow-200 hover:bg-yellow-300' :
-                                  hasCongeApprouve ? 'bg-orange-200 hover:bg-orange-300' :
+                                  hasCongeApprouve ? getCongeColorClasses(congeApprouve.type_conge, true) :
                                   creneauAM ? 'bg-green-200 hover:bg-green-300' : 'hover:bg-green-100'
                                 }`}
                                 onClick={() => {
@@ -7734,7 +7734,7 @@ const PlanningManager = () => {
                                   <span className="text-xs font-bold text-yellow-800">⏳</span>
                                 ) : hasCongeApprouve ? (
                                   <div 
-                                    className="text-xs font-bold text-orange-800 cursor-pointer"
+                                    className={`text-xs font-bold cursor-pointer ${getCongeColorClasses(congeApprouve.type_conge, false)}`}
                                     onClick={(e) => { e.stopPropagation(); handleChangerTypeCongeRapide(congeApprouve); }}
                                   >
                                     {getTypeCongeShortLabel(congeApprouve.type_conge)}
