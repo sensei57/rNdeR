@@ -2981,10 +2981,11 @@ const PlanningManager = () => {
         
         setUsers(usersRes.data.filter(u => u.actif));
         setSalles(sallesRes.data);
-        // Filtrer uniquement les congés approuvés
+        // Filtrer les congés approuvés et en attente séparément
         setCongesApprouves(congesRes.data.filter(c => c.statut === 'APPROUVE'));
+        setCongesEnAttente(congesRes.data.filter(c => c.statut === 'EN_ATTENTE'));
         // Charger les demandes de travail pour afficher les demandes en attente
-        setDemandesTravail(demandesTravailRes.data);
+        setDemandesTravail(demandesTravailRes.data.filter(d => d.statut === 'EN_ATTENTE'));
         
         // Vérifier que la structure est correcte
         if (planningRes.data && planningRes.data.dates && planningRes.data.planning) {
