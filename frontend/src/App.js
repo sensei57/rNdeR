@@ -8346,7 +8346,8 @@ const PlanningManager = () => {
                     💡 Laissez les champs vides si l'horaire ne couvre pas le matin ou l'après-midi
                   </p>
                 </div>
-              )}
+              )
+            }
             </div>
           </CardContent>
         </Card>
