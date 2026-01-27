@@ -4603,21 +4603,26 @@ const PlanningManager = () => {
 
   // Obtenir les classes CSS selon le niveau de remplissage avec transition
   const getCreneauBackgroundClasses = (creneau) => {
+    const completion = getCreneauCompletionLevel(creneau);
     const role = creneau.employe_role;
     
     // Base : transition fluide
     let classes = 'transition-all duration-500 ease-in-out ';
     
     if (role === 'Médecin') {
-      // Pour les médecins : vérifier s'ils ont un assistant attribué
-      const hasAssistant = getAssistantsForMedecinInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0;
-      
-      if (hasAssistant) {
-        // Avec assistant → bleu foncé (mais pas trop pour que le texte reste lisible)
-        classes += 'bg-blue-600 text-white border-blue-700';
+      // Pour les médecins : 3 niveaux basés sur box, salle d'attente, assistant
+      // 100% = tout rempli (box + salle attente + assistant)
+      // 66% = 2 sur 3 remplis
+      // 33% = 1 sur 3 rempli
+      // 0% = rien
+      if (completion >= 100) {
+        classes += 'bg-blue-900 text-white border-blue-900';
+      } else if (completion >= 66) {
+        classes += 'bg-blue-700 text-white border-blue-700';
+      } else if (completion >= 33) {
+        classes += 'bg-blue-400 text-white border-blue-400';
       } else {
-        // Sans assistant → bleu clair
-        classes += 'bg-blue-100 text-blue-900 border-blue-300';
+        classes += 'bg-blue-50 text-blue-900 border-blue-300';
       }
     } else if (role === 'Assistant') {
       // Pour les assistants : vérifier s'ils ont des médecins associés
@@ -4647,16 +4652,16 @@ const PlanningManager = () => {
 
   // Déterminer si le fond est foncé pour adapter la couleur des détails
   const isCreneauDarkBackground = (creneau) => {
+    const completion = getCreneauCompletionLevel(creneau);
     const role = creneau.employe_role;
     
     if (role === 'Médecin') {
-      // Fond foncé si médecin a un assistant
-      return getAssistantsForMedecinInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0;
+      // Fond foncé si 33% ou plus (blue-400 et plus foncé)
+      return completion >= 33;
     } else if (role === 'Assistant') {
       // Fond foncé si assistant a des médecins associés
       return getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0;
     } else if (role === 'Secrétaire') {
-      const completion = getCreneauCompletionLevel(creneau);
       return completion >= 100; // Seulement jaune-600 est foncé
     }
     
