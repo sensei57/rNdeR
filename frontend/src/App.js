@@ -3828,6 +3828,30 @@ const PlanningManager = () => {
         return;
       }
       
+      // Créer un congé si demandé pour les assistants
+      if (journeeData.employe?.role === 'Assistant' && (journeeData.matin.conge || journeeData.apresMidi.conge)) {
+        // Déterminer le type de congé et la durée
+        const typeConge = journeeData.matin.type_conge || journeeData.apresMidi.type_conge || 'CONGE_PAYE';
+        let duree = 'JOURNEE_COMPLETE';
+        if (journeeData.matin.conge && !journeeData.apresMidi.conge) duree = 'MATIN';
+        if (!journeeData.matin.conge && journeeData.apresMidi.conge) duree = 'APRES_MIDI';
+        
+        const congePayload = {
+          utilisateur_id: journeeData.employe_id,
+          date_debut: journeeData.date,
+          date_fin: journeeData.date,
+          type_conge: typeConge,
+          duree: duree,
+          motif: `Congé ajouté depuis le planning`
+        };
+        
+        await axios.post(`${API}/conges/direct`, congePayload);
+        toast.success('Congé/Repos créé avec succès !');
+        setShowJourneeModal(false);
+        fetchPlanningTableau(selectedWeek);
+        return;
+      }
+      
       // Traiter le matin
       if (journeeData.matin.exists || journeeData.matin.notes || journeeData.matin.salle_attribuee || 
           journeeData.matin.medecin_ids?.length > 0 || journeeData.matin.horaire_debut) {
