@@ -3890,6 +3890,122 @@ async def toggle_modifier_planning(
         "user_nom": f"{user.get('prenom', '')} {user.get('nom', '')}"
     }
 
+# ============================================================
+# ENDPOINTS D'EXPORT DE DONNÉES
+# ============================================================
+
+@api_router.get("/export/all")
+async def export_all_data(
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    """Exporter toutes les données de la base (Directeur uniquement)"""
+    from bson import json_util
+    import json
+    
+    export_data = {
+        "export_date": datetime.now(timezone.utc).isoformat(),
+        "exported_by": f"{current_user.prenom} {current_user.nom}",
+        "collections": {}
+    }
+    
+    # Exporter toutes les collections
+    collections_to_export = ['users', 'planning', 'demandes_conges', 'demandes_travail', 
+                             'salles', 'semaines_types', 'configuration', 'notifications',
+                             'assignations_medecin_assistant']
+    
+    for col_name in collections_to_export:
+        try:
+            documents = await db[col_name].find({}).to_list(length=None)
+            # Convertir les ObjectId en strings et nettoyer les données
+            cleaned_docs = []
+            for doc in documents:
+                # Supprimer _id MongoDB et convertir les dates
+                if '_id' in doc:
+                    del doc['_id']
+                cleaned_docs.append(doc)
+            export_data["collections"][col_name] = cleaned_docs
+        except Exception as e:
+            export_data["collections"][col_name] = {"error": str(e)}
+    
+    return export_data
+
+@api_router.get("/export/users")
+async def export_users(
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    """Exporter tous les utilisateurs (sans les mots de passe)"""
+    users = await db.users.find({}).to_list(length=None)
+    
+    # Nettoyer les données (supprimer les mots de passe et _id)
+    cleaned_users = []
+    for user in users:
+        user_data = {k: v for k, v in user.items() if k not in ['_id', 'password_hash']}
+        cleaned_users.append(user_data)
+    
+    return {
+        "export_date": datetime.now(timezone.utc).isoformat(),
+        "count": len(cleaned_users),
+        "users": cleaned_users
+    }
+
+@api_router.get("/export/planning")
+async def export_planning(
+    date_debut: Optional[str] = None,
+    date_fin: Optional[str] = None,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    """Exporter le planning (optionnellement filtré par dates)"""
+    query = {}
+    if date_debut:
+        query["date"] = {"$gte": date_debut}
+    if date_fin:
+        if "date" in query:
+            query["date"]["$lte"] = date_fin
+        else:
+            query["date"] = {"$lte": date_fin}
+    
+    planning = await db.planning.find(query).to_list(length=None)
+    
+    # Enrichir avec les noms des employés
+    enriched_planning = []
+    for p in planning:
+        if '_id' in p:
+            del p['_id']
+        # Ajouter le nom de l'employé
+        user = await db.users.find_one({"id": p.get("employe_id")})
+        if user:
+            p["employe_nom"] = f"{user.get('prenom', '')} {user.get('nom', '')}"
+            p["employe_email"] = user.get('email', '')
+        enriched_planning.append(p)
+    
+    return {
+        "export_date": datetime.now(timezone.utc).isoformat(),
+        "count": len(enriched_planning),
+        "planning": enriched_planning
+    }
+
+@api_router.get("/export/conges")
+async def export_conges(
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    """Exporter tous les congés"""
+    conges = await db.demandes_conges.find({}).to_list(length=None)
+    
+    enriched_conges = []
+    for c in conges:
+        if '_id' in c:
+            del c['_id']
+        user = await db.users.find_one({"id": c.get("utilisateur_id")})
+        if user:
+            c["utilisateur_nom"] = f"{user.get('prenom', '')} {user.get('nom', '')}"
+        enriched_conges.append(c)
+    
+    return {
+        "export_date": datetime.now(timezone.utc).isoformat(),
+        "count": len(enriched_conges),
+        "conges": enriched_conges
+    }
+
 @api_router.put("/admin/users/{user_id}/email")
 async def update_user_email(
     user_id: str,
