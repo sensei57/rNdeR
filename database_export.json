@@ -1,0 +1,235 @@
+{
+  "configuration": [
+    {
+      "_id": {
+        "$oid": "6974e8b3a889b4b883d50df4"
+      },
+      "id": "3f8c4e3b-5942-4ee3-9efc-3ce938015297",
+      "max_medecins_par_jour": 4,
+      "max_assistants_par_jour": 6,
+      "limite_demi_journees_medecin": 6,
+      "limite_demi_journees_assistant": 8,
+      "limite_demi_journees_secretaire": 10,
+      "heures_ouverture_matin_debut": "08:00",
+      "heures_ouverture_matin_fin": "12:00",
+      "heures_ouverture_apres_midi_debut": "14:00",
+      "heures_ouverture_apres_midi_fin": "18:00",
+      "date_modification": {
+        "$date": "2026-01-24T15:43:47.524Z"
+      }
+    }
+  ],
+  "notifications": [
+    {
+      "_id": {
+        "$oid": "6975f2cc90532e6432ba02c7"
+      },
+      "id": "be852415-95d8-412b-93d6-a9e834840f23",
+      "user_id": "12f224df-5645-4ace-a3b9-394570f58530",
+      "title": "✅ Demande de congé approuvée",
+      "body": "Votre demande de congé du 2026-01-29 au 2026-01-29 a été approuvée",
+      "data": {
+        "type": "status_change",
+        "status": "APPROUVE",
+        "request_type": "Demande de congé"
+      },
+      "sent_at": {
+        "$date": "2026-01-25T10:39:08.538Z"
+      },
+      "read": false
+    }
+  ],
+  "demandes_travail": [
+    {
+      "_id": {
+        "$oid": "6975f2c290532e6432ba02c5"
+      },
+      "id": "d2400743-28df-46b9-9f80-cbe002bd3475",
+      "medecin_id": "1a41e417-5206-487b-b1a8-290329f6d614",
+      "date_demandee": "2026-01-28",
+      "creneau": "APRES_MIDI",
+      "motif": "Test demande créneau en attente",
+      "statut": "EN_ATTENTE",
+      "date_demande": {
+        "$date": "2026-01-25T10:38:58.254Z"
+      },
+      "approuve_par": null,
+      "date_approbation": null,
+      "commentaire_approbation": null,
+      "demande_annulation": false,
+      "raison_demande_annulation": null,
+      "date_demande_annulation": null,
+      "annule_par": null,
+      "raison_annulation": null,
+      "date_annulation": null
+    }
+  ],
+  "users": [
+    {
+      "_id": {
+        "$oid": "6974e8a8d8522aad2f37048e"
+      },
+      "id": "12f224df-5645-4ace-a3b9-394570f58530",
+      "email": "directeur@cabinet.fr",
+      "password_hash": "$2b$12$MlBtpiNA0IILvN.7RXdbDub43JlXTXxg.gU3c.MiEo/dX6MdleMMS",
+      "nom": "LEBLOND",
+      "prenom": "Francis",
+      "role": "Directeur",
+      "actif": true,
+      "date_creation": {
+        "$date": "2026-01-24T15:43:36.418Z"
+      },
+      "derniere_connexion": {
+        "$date": "2026-01-25T13:31:40.117Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "6974ece6a889b4b883d50df5"
+      },
+      "email": "dr.bernard@cabinet.fr",
+      "nom": "Bernard",
+      "prenom": "Jean",
+      "role": "Médecin",
+      "telephone": null,
+      "actif": true,
+      "vue_planning_complete": false,
+      "id": "1a41e417-5206-487b-b1a8-290329f6d614",
+      "date_creation": {
+        "$date": "2026-01-24T16:01:42.895Z"
+      },
+      "derniere_connexion": null,
+      "password_hash": "$2b$12$nJrEyBPi4/88aLvNGAvTH.tNsMmxf.uTmfjK9RyNQQiUBhnFvuxrW"
+    },
+    {
+      "_id": {
+        "$oid": "6974ece7a889b4b883d50df6"
+      },
+      "email": "sophie.moreau@cabinet.fr",
+      "nom": "Moreau",
+      "prenom": "Sophie",
+      "role": "Assistant",
+      "telephone": null,
+      "actif": true,
+      "vue_planning_complete": false,
+      "id": "30a8d0c6-b447-4a4a-b096-40e37de0bdc8",
+      "date_creation": {
+        "$date": "2026-01-24T16:01:43.164Z"
+      },
+      "derniere_connexion": null,
+      "password_hash": "$2b$12$yAkhwzLk8IATkFWj2BLlQuywZeop4UeXMWodQ8zM0jUSnteCPYgq."
+    }
+  ],
+  "planning": [
+    {
+      "_id": {
+        "$oid": "6974ecf5a889b4b883d50df7"
+      },
+      "id": "87254290-afed-47de-8c44-8fc9f2250416",
+      "date": "2026-01-24",
+      "creneau": "MATIN",
+      "employe_id": "1a41e417-5206-487b-b1a8-290329f6d614",
+      "employe_role": "Médecin",
+      "medecin_attribue_id": null,
+      "medecin_ids": [],
+      "salle_attribuee": null,
+      "salle_attente": null,
+      "horaire_debut": null,
+      "horaire_fin": null,
+      "horaire_pause_debut": null,
+      "horaire_pause_fin": null,
+      "notes": null,
+      "date_creation": {
+        "$date": "2026-01-24T16:01:57.066Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "6974ecf5a889b4b883d50df8"
+      },
+      "id": "831d6cc3-2264-4bbc-b6ae-f7063a7c9a8e",
+      "date": "2026-01-24",
+      "creneau": "APRES_MIDI",
+      "employe_id": "30a8d0c6-b447-4a4a-b096-40e37de0bdc8",
+      "employe_role": "Assistant",
+      "medecin_attribue_id": null,
+      "medecin_ids": [
+        "1a41e417-5206-487b-b1a8-290329f6d614"
+      ],
+      "salle_attribuee": null,
+      "salle_attente": null,
+      "horaire_debut": null,
+      "horaire_fin": null,
+      "horaire_pause_debut": null,
+      "horaire_pause_fin": null,
+      "notes": null,
+      "date_creation": {
+        "$date": "2026-01-24T16:01:57.123Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "6974ecf5a889b4b883d50df9"
+      },
+      "id": "edf716a9-696f-41dd-9a01-730e9b6f9c9c",
+      "date": "2026-01-24",
+      "creneau": "APRES_MIDI",
+      "employe_id": "1a41e417-5206-487b-b1a8-290329f6d614",
+      "employe_role": "Médecin",
+      "medecin_attribue_id": null,
+      "medecin_ids": [],
+      "salle_attribuee": null,
+      "salle_attente": null,
+      "horaire_debut": null,
+      "horaire_fin": null,
+      "horaire_pause_debut": null,
+      "horaire_pause_fin": null,
+      "notes": null,
+      "date_creation": {
+        "$date": "2026-01-24T16:01:57.173Z"
+      }
+    }
+  ],
+  "demandes_conges": [
+    {
+      "_id": {
+        "$oid": "6975f2b490532e6432ba02c4"
+      },
+      "id": "cbb7d64d-cfde-42b5-8998-de799ab57c08",
+      "utilisateur_id": "12f224df-5645-4ace-a3b9-394570f58530",
+      "date_debut": "2026-01-27",
+      "date_fin": "2026-01-27",
+      "type_conge": "CONGE_PAYE",
+      "creneau": "MATIN",
+      "motif": "Test demande en attente",
+      "statut": "EN_ATTENTE",
+      "date_demande": {
+        "$date": "2026-01-25T10:38:44.783Z"
+      },
+      "approuve_par": null,
+      "date_approbation": null,
+      "commentaire_approbation": null
+    },
+    {
+      "_id": {
+        "$oid": "6975f2cc90532e6432ba02c6"
+      },
+      "id": "d9e2cf02-09c3-44ee-b89c-9c1274529b71",
+      "utilisateur_id": "12f224df-5645-4ace-a3b9-394570f58530",
+      "date_debut": "2026-01-29",
+      "date_fin": "2026-01-29",
+      "type_conge": "RTT",
+      "creneau": "APRES_MIDI",
+      "motif": "Test congé approuvé",
+      "statut": "APPROUVE",
+      "date_demande": {
+        "$date": "2026-01-25T10:39:08.467Z"
+      },
+      "approuve_par": "12f224df-5645-4ace-a3b9-394570f58530",
+      "date_approbation": {
+        "$date": "2026-01-25T10:39:08.537Z"
+      },
+      "commentaire_approbation": "Approuvé pour test"
+    }
+  ]
+}
