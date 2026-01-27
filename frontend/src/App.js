@@ -10716,15 +10716,25 @@ const DemandesTravailManager = () => {
                 </div>
                 {/* Grille des jours */}
                 <div className="grid grid-cols-7 gap-2">
-                  {joursDisponibles.map((jour, index) => (
-                    jour.estVide ? (
-                      <div key={`vide-${index}`} className="p-2 rounded text-center text-sm"></div>
-                    ) : (
+                  {joursDisponibles.map((jour, index) => {
+                    if (jour.estVide) {
+                      return <div key={`vide-${index}`} className="p-2 rounded text-center text-sm"></div>;
+                    }
+                    
+                    // Vérifier les créneaux existants
+                    const creneauxExistants = getCreneauxExistantsForDate(jour.date);
+                    const existeMatin = creneauxExistants.some(c => c.creneau === 'MATIN' || c.creneau === 'JOURNEE_COMPLETE');
+                    const existeAM = creneauxExistants.some(c => c.creneau === 'APRES_MIDI' || c.creneau === 'JOURNEE_COMPLETE');
+                    const toutExiste = existeMatin && existeAM;
+                    
+                    return (
                       <div 
                         key={jour.date}
                         className={`
-                          p-2 rounded border cursor-pointer text-center text-sm transition-colors
-                          ${jour.creneau === 'MATIN' 
+                          p-2 rounded border cursor-pointer text-center text-sm transition-colors relative
+                          ${toutExiste 
+                            ? 'bg-gray-300 border-gray-500 text-gray-600 cursor-not-allowed'
+                            : jour.creneau === 'MATIN' 
                             ? 'bg-orange-100 border-orange-500 text-orange-800' 
                             : jour.creneau === 'APRES_MIDI'
                             ? 'bg-purple-100 border-purple-500 text-purple-800'
@@ -10733,22 +10743,31 @@ const DemandesTravailManager = () => {
                             : 'bg-gray-100 border-gray-300 text-gray-500'
                           }
                         `}
-                        onClick={() => toggleJourSelection(jour.date)}
+                        onClick={() => !toutExiste && toggleJourSelection(jour.date)}
+                        title={toutExiste ? 'Journée déjà complète' : existeMatin ? 'Matin déjà validé' : existeAM ? 'Après-midi déjà validé' : ''}
                       >
                         <div className="font-bold">{new Date(jour.date + 'T12:00:00').getDate()}</div>
+                        {/* Indicateur créneaux existants */}
+                        {(existeMatin || existeAM) && (
+                          <div className="text-xs text-blue-600 font-bold">
+                            {toutExiste ? '✅ Complet' : existeMatin ? '✓M' : existeAM ? '✓AM' : ''}
+                          </div>
+                        )}
                         <div className="text-xs mt-1 font-semibold">
                           {jour.creneau === 'JOURNEE_COMPLETE' ? '🌞 Journée' :
                            jour.creneau === 'MATIN' ? '🌅 Matin' :
                            jour.creneau === 'APRES_MIDI' ? '🌆 AM' :
-                           '⭕'}
+                           toutExiste ? '' : '⭕'}
                         </div>
                       </div>
-                    )
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
               <p className="text-xs text-gray-500 mt-2">
                 💡 Système de clics : 1 clic = 🌅 Matin | 2 clics = 🌆 Après-midi | 3 clics = 🌞 Journée | 4 clics = ⭕ Désactivé
+                <br/>
+                <span className="text-blue-600">✓M = Matin déjà validé | ✓AM = Après-midi déjà validé | ✅ = Journée complète déjà validée</span>
               </p>
             </div>
 
