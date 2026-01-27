@@ -2755,6 +2755,9 @@ const PlanningManager = () => {
   const [showMoisDetailsModal, setShowMoisDetailsModal] = useState(false); // Modal détails vue mois
   const [moisDetailsData, setMoisDetailsData] = useState({ date: '', creneau: '', employes: [] }); // Données pour le modal
   
+  // Référence pour le tableau planning (pour export PDF)
+  const planningTableRef = useRef(null);
+  
   // Horaires prédéfinis pour les secrétaires (stockés localement)
   const [horairesSecretaires, setHorairesSecretaires] = useState(() => {
     const saved = localStorage.getItem('horairesSecretaires');
@@ -2765,6 +2768,190 @@ const PlanningManager = () => {
     ];
   });
   const [showHorairesConfig, setShowHorairesConfig] = useState(false);
+  
+  // ============================================================
+  // FONCTIONS D'EXPORT DE DONNÉES
+  // ============================================================
+  
+  // Exporter toutes les données en JSON
+  const handleExportAllJSON = async () => {
+    try {
+      toast.info('Export en cours...');
+      const response = await axios.get(`${API}/export/all`);
+      const dataStr = JSON.stringify(response.data, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `export_cabinet_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success('Export JSON téléchargé !');
+    } catch (error) {
+      console.error('Erreur export:', error);
+      toast.error('Erreur lors de l\'export');
+    }
+  };
+  
+  // Exporter les utilisateurs en CSV
+  const handleExportUsersCSV = async () => {
+    try {
+      toast.info('Export en cours...');
+      const response = await axios.get(`${API}/export/users`);
+      const users = response.data.users;
+      
+      // Créer le CSV
+      const headers = ['ID', 'Email', 'Prénom', 'Nom', 'Rôle', 'Téléphone', 'Actif', 'Vue Planning', 'Modif Planning'];
+      const csvContent = [
+        headers.join(';'),
+        ...users.map(u => [
+          u.id,
+          u.email,
+          u.prenom,
+          u.nom,
+          u.role,
+          u.telephone || '',
+          u.actif ? 'Oui' : 'Non',
+          u.vue_planning_complete ? 'Oui' : 'Non',
+          u.peut_modifier_planning ? 'Oui' : 'Non'
+        ].join(';'))
+      ].join('\n');
+      
+      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `utilisateurs_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success('Export CSV téléchargé !');
+    } catch (error) {
+      toast.error('Erreur lors de l\'export');
+    }
+  };
+  
+  // Exporter le planning en PDF
+  const handleExportPlanningPDF = async () => {
+    try {
+      toast.info('Génération du PDF en cours...');
+      
+      // Créer un nouveau document PDF
+      const pdf = new jsPDF('landscape', 'mm', 'a4');
+      
+      // Titre
+      const weekStart = planningTableau.dates?.[0] || selectedWeek;
+      const weekEnd = planningTableau.dates?.[planningTableau.dates.length - 1] || selectedWeek;
+      pdf.setFontSize(16);
+      pdf.text(`Planning du ${new Date(weekStart + 'T12:00:00').toLocaleDateString('fr-FR')} au ${new Date(weekEnd + 'T12:00:00').toLocaleDateString('fr-FR')}`, 14, 15);
+      pdf.setFontSize(10);
+      pdf.text(`Exporté le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}`, 14, 22);
+      
+      // Préparer les données pour le tableau
+      const tableHead = [['Employé', ...planningTableau.dates.flatMap(d => {
+        const date = new Date(d + 'T12:00:00');
+        return [`${date.toLocaleDateString('fr-FR', { weekday: 'short' })} M`, `${date.toLocaleDateString('fr-FR', { weekday: 'short' })} AM`];
+      }), 'Total']];
+      
+      const tableBody = [];
+      
+      // Ajouter les secrétaires
+      tableBody.push([{ content: '📋 SECRÉTAIRES', colSpan: tableHead[0].length, styles: { fillColor: [255, 192, 203] } }]);
+      users.filter(u => u.actif && u.role === 'Secrétaire').forEach(sec => {
+        const row = [`${sec.prenom} ${sec.nom}`];
+        let total = 0;
+        planningTableau.dates.forEach(date => {
+          const creneauM = planningTableau.planning?.[date]?.find(p => p.employe_id === sec.id && p.creneau === 'MATIN');
+          const creneauAM = planningTableau.planning?.[date]?.find(p => p.employe_id === sec.id && p.creneau === 'APRES_MIDI');
+          row.push(creneauM ? '✓' : '');
+          row.push(creneauAM ? '✓' : '');
+          if (creneauM) total++;
+          if (creneauAM) total++;
+        });
+        row.push(total.toString());
+        tableBody.push(row);
+      });
+      
+      // Ajouter les assistants
+      tableBody.push([{ content: '👥 ASSISTANTS', colSpan: tableHead[0].length, styles: { fillColor: [144, 238, 144] } }]);
+      users.filter(u => u.actif && u.role === 'Assistant').forEach(ass => {
+        const row = [`${ass.prenom} ${ass.nom}`];
+        let total = 0;
+        planningTableau.dates.forEach(date => {
+          const creneauM = planningTableau.planning?.[date]?.find(p => p.employe_id === ass.id && p.creneau === 'MATIN');
+          const creneauAM = planningTableau.planning?.[date]?.find(p => p.employe_id === ass.id && p.creneau === 'APRES_MIDI');
+          row.push(creneauM ? '✓' : '');
+          row.push(creneauAM ? '✓' : '');
+          if (creneauM) total++;
+          if (creneauAM) total++;
+        });
+        row.push(total.toString());
+        tableBody.push(row);
+      });
+      
+      // Ajouter les médecins
+      tableBody.push([{ content: '👨‍⚕️ MÉDECINS', colSpan: tableHead[0].length, styles: { fillColor: [173, 216, 230] } }]);
+      users.filter(u => u.actif && u.role === 'Médecin').forEach(med => {
+        const row = [`Dr. ${med.prenom} ${med.nom}`];
+        let total = 0;
+        planningTableau.dates.forEach(date => {
+          const creneauM = planningTableau.planning?.[date]?.find(p => p.employe_id === med.id && p.creneau === 'MATIN');
+          const creneauAM = planningTableau.planning?.[date]?.find(p => p.employe_id === med.id && p.creneau === 'APRES_MIDI');
+          row.push(creneauM ? creneauM.salle_attribuee || '✓' : '');
+          row.push(creneauAM ? creneauAM.salle_attribuee || '✓' : '');
+          if (creneauM) total++;
+          if (creneauAM) total++;
+        });
+        row.push(total.toString());
+        tableBody.push(row);
+      });
+      
+      // Générer le tableau
+      pdf.autoTable({
+        head: tableHead,
+        body: tableBody,
+        startY: 28,
+        styles: { fontSize: 8, cellPadding: 2 },
+        headStyles: { fillColor: [59, 130, 246] },
+        alternateRowStyles: { fillColor: [245, 245, 245] }
+      });
+      
+      // Sauvegarder
+      pdf.save(`planning_${weekStart}_${weekEnd}.pdf`);
+      toast.success('PDF téléchargé !');
+    } catch (error) {
+      console.error('Erreur PDF:', error);
+      toast.error('Erreur lors de la génération du PDF');
+    }
+  };
+  
+  // Exporter le planning en image (capture d'écran)
+  const handleExportPlanningImage = async () => {
+    if (!planningTableRef.current) {
+      toast.error('Tableau non disponible');
+      return;
+    }
+    
+    try {
+      toast.info('Capture en cours...');
+      const canvas = await html2canvas(planningTableRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false
+      });
+      
+      const link = document.createElement('a');
+      link.download = `planning_${selectedWeek}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      toast.success('Image téléchargée !');
+    } catch (error) {
+      toast.error('Erreur lors de la capture');
+    }
+  };
   
   // Sauvegarder les horaires prédéfinis dans localStorage
   const saveHorairesSecretaires = (newHoraires) => {
