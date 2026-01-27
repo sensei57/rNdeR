@@ -7754,6 +7754,28 @@ const PlanningManager = () => {
                 <Calendar className="h-5 w-5" />
                 <span>📊 Planning Interactif - Semaine du {new Date(planningTableau.dates[0] + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</span>
               </span>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleExportPlanningPDF}
+                  className="text-xs"
+                  title="Télécharger en PDF"
+                >
+                  <FileDown className="h-4 w-4 mr-1" />
+                  PDF
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleExportPlanningImage}
+                  className="text-xs"
+                  title="Télécharger en image"
+                >
+                  <Download className="h-4 w-4 mr-1" />
+                  Image
+                </Button>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 overflow-x-auto">
@@ -7762,6 +7784,7 @@ const PlanningManager = () => {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
               </div>
             ) : (
+              <div ref={planningTableRef}>
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="bg-gray-100">
