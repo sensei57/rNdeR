@@ -8198,6 +8198,7 @@ const PlanningManager = () => {
                   </tr>
                 </tbody>
               </table>
+              </div>
             )}
 
             {/* Légende */}
