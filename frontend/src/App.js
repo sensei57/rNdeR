@@ -8971,8 +8971,8 @@ const PlanningManager = () => {
               </div>
             </div>
             
-            {/* Option Congé/Repos pour Secrétaires */}
-            {journeeData.employe?.role === 'Secrétaire' && (
+            {/* Option Congé/Repos pour Secrétaires et Assistants */}
+            {(journeeData.employe?.role === 'Secrétaire' || journeeData.employe?.role === 'Assistant') && (
               <div className="bg-gray-50 border rounded-lg p-4 mt-4">
                 <h4 className="font-semibold text-gray-700 mb-3">🏖️ Ajouter un congé ou repos pour cette journée</h4>
                 <div className="grid grid-cols-2 gap-4">
