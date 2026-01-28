@@ -27,7 +27,7 @@ SECRET_KEY = os.environ['SECRET_KEY']  # Fail fast si non défini
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 security = HTTPBearer()
 
 # Create the main app without a prefix
