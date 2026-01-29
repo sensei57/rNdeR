@@ -8011,7 +8011,7 @@ const PlanningManager = () => {
                                     {getTypeCongeShortLabel(congeApprouve.type_conge)}
                                   </div>
                                 ) : creneauMatin ? (
-                                  <span className="text-xs font-semibold text-green-700">{displayMatin}</span>
+                                  <span className="text-xs font-semibold text-green-700">{displayMatin || 'Présent'}</span>
                                 ) : <span className="text-gray-300">+</span>}
                               </td>
                               {/* Cellule APRES-MIDI */}
@@ -8028,7 +8028,7 @@ const PlanningManager = () => {
                                 title={
                                   hasCongeEnAttente ? `⏳ Demande en attente` :
                                   hasCongeApprouve ? `🏖️ ${getTypeCongeShortLabel(congeApprouve.type_conge)}` :
-                                  creneauAM ? `📝 ${displayAM}` : '📅 Ajouter'
+                                  creneauAM ? `📝 ${displayAM || 'Présent'}` : '📅 Ajouter'
                                 }
                               >
                                 {hasCongeEnAttente ? (
@@ -8041,7 +8041,7 @@ const PlanningManager = () => {
                                     {getTypeCongeShortLabel(congeApprouve.type_conge)}
                                   </div>
                                 ) : creneauAM ? (
-                                  <span className="text-xs font-semibold text-green-700">{displayAM}</span>
+                                  <span className="text-xs font-semibold text-green-700">{displayAM || 'Présent'}</span>
                                 ) : <span className="text-gray-300">+</span>}
                               </td>
                             </React.Fragment>
