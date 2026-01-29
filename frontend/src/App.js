@@ -8930,32 +8930,59 @@ const PlanningManager = () => {
                 </h3>
                 
                 {journeeData.employe?.role === 'Secrétaire' && (
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-sm font-medium">Début</Label>
-                      <Input
-                        type="time"
-                        value={journeeData.matin.horaire_debut}
-                        onChange={(e) => setJourneeData(prev => ({
-                          ...prev,
-                          matin: { ...prev.matin, horaire_debut: e.target.value }
-                        }))}
-                        className="h-9"
-                      />
+                  <>
+                    {/* Sélection rapide des horaires prédéfinis pour le MATIN */}
+                    <div className="space-y-2">
+                      <Label className="text-xs font-medium text-pink-700">⚡ Horaires prédéfinis (matin)</Label>
+                      <div className="flex flex-wrap gap-1">
+                        {horairesSecretaires.filter(h => h.debut_matin && h.fin_matin).map(horaire => (
+                          <Button
+                            key={horaire.id}
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="text-xs h-auto py-1 px-2 hover:bg-pink-50 hover:border-pink-300"
+                            onClick={() => setJourneeData(prev => ({
+                              ...prev,
+                              matin: { 
+                                ...prev.matin, 
+                                horaire_debut: horaire.debut_matin, 
+                                horaire_fin: horaire.fin_matin 
+                              }
+                            }))}
+                          >
+                            {horaire.nom}: {horaire.debut_matin}-{horaire.fin_matin}
+                          </Button>
+                        ))}
+                      </div>
                     </div>
-                    <div>
-                      <Label className="text-xs">Fin</Label>
-                      <Input
-                        type="time"
-                        value={journeeData.matin.horaire_fin}
-                        onChange={(e) => setJourneeData(prev => ({
-                          ...prev,
-                          matin: { ...prev.matin, horaire_fin: e.target.value }
-                        }))}
-                        className="h-8"
-                      />
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-sm font-medium">Début</Label>
+                        <Input
+                          type="time"
+                          value={journeeData.matin.horaire_debut}
+                          onChange={(e) => setJourneeData(prev => ({
+                            ...prev,
+                            matin: { ...prev.matin, horaire_debut: e.target.value }
+                          }))}
+                          className="h-9"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Fin</Label>
+                        <Input
+                          type="time"
+                          value={journeeData.matin.horaire_fin}
+                          onChange={(e) => setJourneeData(prev => ({
+                            ...prev,
+                            matin: { ...prev.matin, horaire_fin: e.target.value }
+                          }))}
+                          className="h-8"
+                        />
+                      </div>
                     </div>
-                  </div>
+                  </>
                 )}
                 
                 {journeeData.employe?.role === 'Médecin' && (
