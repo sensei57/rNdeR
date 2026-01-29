@@ -7983,7 +7983,7 @@ const PlanningManager = () => {
                                 title={
                                   hasCongeEnAttente ? `⏳ Demande de congé en attente - ${congeEnAttente.motif || ''}` :
                                   hasCongeApprouve ? `🏖️ ${getTypeCongeShortLabel(congeApprouve.type_conge)} - Cliquer pour changer le type` :
-                                  creneauMatin ? `📝 ${displayMatin}` : '📅 Ajouter'
+                                  creneauMatin ? `📝 ${displayMatin || 'Présent'}` : '📅 Ajouter'
                                 }
                               >
                                 {hasCongeEnAttente ? (
