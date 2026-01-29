@@ -8921,6 +8921,44 @@ const PlanningManager = () => {
               </div>
             )}
             
+            {/* Boutons rapides pour les secrétaires - Appliquer journée complète */}
+            {journeeData.employe?.role === 'Secrétaire' && (
+              <div className="bg-pink-50 rounded-lg p-3 border border-pink-200">
+                <Label className="text-sm font-bold text-pink-700 mb-2 block">⚡ Appliquer un horaire complet (Matin + Après-midi)</Label>
+                <div className="flex flex-wrap gap-2">
+                  {horairesSecretaires.filter(h => h.debut_matin && h.fin_matin && h.debut_aprem && h.fin_aprem).map(horaire => (
+                    <Button
+                      key={horaire.id}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="text-xs hover:bg-pink-100 hover:border-pink-400"
+                      onClick={() => setJourneeData(prev => ({
+                        ...prev,
+                        matin: { 
+                          ...prev.matin, 
+                          horaire_debut: horaire.debut_matin, 
+                          horaire_fin: horaire.fin_matin 
+                        },
+                        apresMidi: { 
+                          ...prev.apresMidi, 
+                          horaire_debut: horaire.debut_aprem, 
+                          horaire_fin: horaire.fin_aprem 
+                        }
+                      }))}
+                    >
+                      <div className="text-center">
+                        <div className="font-semibold">{horaire.nom}</div>
+                        <div className="text-[10px] text-gray-500">
+                          {horaire.debut_matin}-{horaire.fin_matin} / {horaire.debut_aprem}-{horaire.fin_aprem}
+                        </div>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             <div className="grid grid-cols-2 gap-6">
               {/* MATIN */}
               <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
