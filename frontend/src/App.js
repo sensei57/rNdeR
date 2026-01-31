@@ -7798,10 +7798,10 @@ const PlanningManager = () => {
                 <thead>
                   <tr className="bg-gray-100">
                     <th className="border p-2 text-left min-w-[150px]">Employé</th>
-                    {planningTableau.dates.map(date => (
+                    {planningTableau.dates.map((date, dateIndex) => (
                       <th 
                         key={date} 
-                        className="border p-1 text-center min-w-[80px] cursor-pointer hover:bg-teal-100 transition-colors" 
+                        className={`border p-1 text-center min-w-[80px] cursor-pointer hover:bg-teal-100 transition-colors ${dateIndex % 2 === 0 ? 'bg-gray-100' : 'bg-gray-200'}`}
                         colSpan={2}
                         onClick={() => openDetailJourModal(date)}
                         title="📋 Cliquer pour voir le détail de cette journée"
@@ -7814,25 +7814,25 @@ const PlanningManager = () => {
                         </div>
                       </th>
                     ))}
-                    <th className="border p-2 text-center bg-gray-200">Total</th>
+                    <th className="border p-2 text-center bg-gray-300">Total</th>
                   </tr>
                   <tr className="bg-gray-50">
                     <th className="border p-1"></th>
-                    {planningTableau.dates.map(date => (
+                    {planningTableau.dates.map((date, dateIndex) => (
                       <React.Fragment key={`header-${date}`}>
                         <th 
-                          className="border p-1 text-center text-xs bg-orange-50 cursor-pointer hover:bg-orange-200 transition-colors"
+                          className={`border p-1 text-center text-xs cursor-pointer hover:bg-orange-200 transition-colors ${dateIndex % 2 === 0 ? 'bg-orange-50' : 'bg-orange-100'}`}
                           onClick={() => openDetailJourModal(date)}
                           title="📋 Voir détail journée"
                         >M</th>
                         <th 
-                          className="border p-1 text-center text-xs bg-purple-50 cursor-pointer hover:bg-purple-200 transition-colors"
+                          className={`border p-1 text-center text-xs cursor-pointer hover:bg-purple-200 transition-colors ${dateIndex % 2 === 0 ? 'bg-purple-50' : 'bg-purple-100'}`}
                           onClick={() => openDetailJourModal(date)}
                           title="📋 Voir détail journée"
                         >AM</th>
                       </React.Fragment>
                     ))}
-                    <th className="border p-1 text-center text-xs bg-gray-200">1/2j</th>
+                    <th className="border p-1 text-center text-xs bg-gray-300">1/2j</th>
                   </tr>
                 </thead>
                 <tbody>
