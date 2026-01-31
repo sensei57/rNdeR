@@ -8389,12 +8389,7 @@ const PlanningManager = () => {
                           onClick={() => openSemaineABCModal({ type: 'employe', employe: medecin })}
                           title="Cliquer pour appliquer Semaine A, B ou Congés"
                         >
-                          <div>Dr. {medecin.prenom} {medecin.nom}</div>
-                          <div className="flex gap-1 mt-1">
-                            <span className="text-xs bg-blue-100 px-1 rounded cursor-pointer hover:bg-blue-300" title="Semaine A">A</span>
-                            <span className="text-xs bg-blue-100 px-1 rounded cursor-pointer hover:bg-blue-300" title="Semaine B">B</span>
-                            <span className="text-xs bg-gray-100 px-1 rounded cursor-pointer hover:bg-gray-300" title="Congés semaine">Co</span>
-                          </div>
+                          Dr. {medecin.prenom} {medecin.nom}
                         </td>
                         {planningTableau.dates.map((date, dateIndex) => {
                           const creneauMatin = getCreneauForEmploye(medecin.id, date, 'MATIN');
