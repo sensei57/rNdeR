@@ -7982,27 +7982,343 @@ const PlanningManager = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
-            {/* Calendrier mensuel */}
+            {/* Calendrier mensuel style grille avec Matin/Après-midi */}
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
+              {(() => {
+                // Calculer les données du mois
+                const year = new Date(selectedMonth + '-01').getFullYear();
+                const month = new Date(selectedMonth + '-01').getMonth();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const firstDayOfMonth = new Date(year, month, 1).getDay();
+                // Ajuster pour que lundi soit 0
+                const startDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+                
+                // Créer les semaines
+                const weeks = [];
+                let currentWeek = Array(startDay).fill(null);
+                
+                for (let day = 1; day <= daysInMonth; day++) {
+                  currentWeek.push(day);
+                  if (currentWeek.length === 7) {
+                    weeks.push(currentWeek);
+                    currentWeek = [];
+                  }
+                }
+                if (currentWeek.length > 0) {
+                  while (currentWeek.length < 7) currentWeek.push(null);
+                  weeks.push(currentWeek);
+                }
+                
+                return (
+                  <div>
+                    {/* En-têtes des jours */}
+                    <div className="grid grid-cols-7 gap-1 mb-2">
+                      {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(jour => (
+                        <div key={jour} className="text-center font-semibold text-gray-600 py-2 bg-indigo-100 rounded">
+                          {jour}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Grille des jours */}
+                    {weeks.map((week, weekIndex) => (
+                      <div key={weekIndex} className="grid grid-cols-7 gap-1 mb-1">
+                        {week.map((day, dayIndex) => {
+                          if (day === null) {
+                            return <div key={dayIndex} className="min-h-[80px]"></div>;
+                          }
+                          
+                          const dateStr = formatDateISO(year, month + 1, day);
+                          const isWeekend = dayIndex === 5 || dayIndex === 6;
+                          
+                          // Compter les médecins présents
+                          const medecinsMatin = planningMois.filter(p => 
+                            p.date === dateStr && 
+                            p.creneau === 'MATIN' && 
+                            users.find(u => u.id === p.employe_id)?.role === 'Médecin'
+                          ).length;
+                          const medecinsAM = planningMois.filter(p => 
+                            p.date === dateStr && 
+                            p.creneau === 'APRES_MIDI' && 
+                            users.find(u => u.id === p.employe_id)?.role === 'Médecin'
+                          ).length;
+                          
+                          // Compter les demandes en attente
+                          const demandesMatinAttente = demandesTravail.filter(d => 
+                            d.date_demandee === dateStr && 
+                            d.statut === 'EN_ATTENTE' && 
+                            (d.creneau === 'MATIN' || d.creneau === 'JOURNEE_COMPLETE')
+                          ).length;
+                          const demandesAMAttente = demandesTravail.filter(d => 
+                            d.date_demandee === dateStr && 
+                            d.statut === 'EN_ATTENTE' && 
+                            (d.creneau === 'APRES_MIDI' || d.creneau === 'JOURNEE_COMPLETE')
+                          ).length;
+                          
+                          return (
+                            <div 
+                              key={dayIndex} 
+                              className={`border rounded-lg overflow-hidden min-h-[80px] ${isWeekend ? 'bg-gray-50' : 'bg-white'}`}
+                            >
+                              {/* Numéro du jour */}
+                              <div className={`text-right px-2 py-1 text-sm font-semibold ${isWeekend ? 'text-gray-400' : 'text-gray-700'}`}>
+                                {day}
+                              </div>
+                              
+                              {/* Matin */}
+                              <div 
+                                className="bg-orange-100 mx-1 mb-1 rounded p-1 cursor-pointer hover:bg-orange-200 transition-colors"
+                                onClick={() => {
+                                  setMoisDetailsData({
+                                    date: dateStr,
+                                    creneau: 'MATIN',
+                                    employes: planningMois.filter(p => p.date === dateStr && p.creneau === 'MATIN')
+                                  });
+                                  setShowMoisDetailsModal(true);
+                                }}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs text-orange-700">🌅 Matin</span>
+                                  {demandesMatinAttente > 0 && (
+                                    <span className="text-xs bg-yellow-400 text-yellow-900 px-1 rounded font-bold">+{demandesMatinAttente}</span>
+                                  )}
+                                </div>
+                                <div className="text-center font-bold text-orange-800">{medecinsMatin}</div>
+                                <div className="text-xs text-center text-orange-600">médecin(s)</div>
+                              </div>
+                              
+                              {/* Après-midi */}
+                              <div 
+                                className="bg-purple-100 mx-1 mb-1 rounded p-1 cursor-pointer hover:bg-purple-200 transition-colors"
+                                onClick={() => {
+                                  setMoisDetailsData({
+                                    date: dateStr,
+                                    creneau: 'APRES_MIDI',
+                                    employes: planningMois.filter(p => p.date === dateStr && p.creneau === 'APRES_MIDI')
+                                  });
+                                  setShowMoisDetailsModal(true);
+                                }}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs text-purple-700">🌆 Après-midi</span>
+                                  {demandesAMAttente > 0 && (
+                                    <span className="text-xs bg-yellow-400 text-yellow-900 px-1 rounded font-bold">+{demandesAMAttente}</span>
+                                  )}
+                                </div>
+                                <div className="text-center font-bold text-purple-800">{medecinsAM}</div>
+                                <div className="text-xs text-center text-purple-600">médecin(s)</div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+            
+            {/* Légende */}
+            <div className="mt-4 flex flex-wrap gap-4 text-xs items-center">
+              <div className="flex items-center gap-1"><span className="w-4 h-4 bg-orange-100 rounded"></span> Matin</div>
+              <div className="flex items-center gap-1"><span className="w-4 h-4 bg-purple-100 rounded"></span> Après-midi</div>
+              <div className="flex items-center gap-1"><span className="px-1 bg-yellow-400 text-yellow-900 rounded text-xs font-bold">+N</span> = demandes en attente</div>
+              <div className="text-gray-500">💡 Cliquez sur un créneau pour voir les détails</div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* VUE MENSUELLE - Planning personnel pour les employés (non-directeurs) */}
+      {viewMode === 'mois' && user?.role !== 'Directeur' && (
+        <Card className="mt-4">
+          <CardHeader className="bg-gradient-to-r from-indigo-50 to-indigo-100">
+            <CardTitle className="flex items-center space-x-2">
+              <Calendar className="h-5 w-5" />
+              <span>
+                📅 Mon Planning - {new Date(selectedMonth + '-01').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {/* Calendrier mensuel personnel */}
+            <div className="overflow-x-auto">
+              {(() => {
+                const year = new Date(selectedMonth + '-01').getFullYear();
+                const month = new Date(selectedMonth + '-01').getMonth();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const firstDayOfMonth = new Date(year, month, 1).getDay();
+                const startDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+                
+                const weeks = [];
+                let currentWeek = Array(startDay).fill(null);
+                
+                for (let day = 1; day <= daysInMonth; day++) {
+                  currentWeek.push(day);
+                  if (currentWeek.length === 7) {
+                    weeks.push(currentWeek);
+                    currentWeek = [];
+                  }
+                }
+                if (currentWeek.length > 0) {
+                  while (currentWeek.length < 7) currentWeek.push(null);
+                  weeks.push(currentWeek);
+                }
+                
+                const userColor = user?.role === 'Médecin' ? 'blue' : user?.role === 'Assistant' ? 'green' : 'pink';
+                
+                return (
+                  <div>
+                    {/* En-têtes des jours */}
+                    <div className="grid grid-cols-7 gap-1 mb-2">
+                      {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(jour => (
+                        <div key={jour} className={`text-center font-semibold text-${userColor}-700 py-2 bg-${userColor}-100 rounded`}>
+                          {jour}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Grille des jours */}
+                    {weeks.map((week, weekIndex) => (
+                      <div key={weekIndex} className="grid grid-cols-7 gap-1 mb-1">
+                        {week.map((day, dayIndex) => {
+                          if (day === null) {
+                            return <div key={dayIndex} className="min-h-[80px]"></div>;
+                          }
+                          
+                          const dateStr = formatDateISO(year, month + 1, day);
+                          const isWeekend = dayIndex === 5 || dayIndex === 6;
+                          
+                          // Vérifier présence de l'employé
+                          const hasMatin = planningMois.some(p => 
+                            p.date === dateStr && 
+                            p.creneau === 'MATIN' && 
+                            p.employe_id === user?.id
+                          );
+                          const hasAM = planningMois.some(p => 
+                            p.date === dateStr && 
+                            p.creneau === 'APRES_MIDI' && 
+                            p.employe_id === user?.id
+                          );
+                          
+                          // Vérifier congés
+                          const congesJour = congesApprouves.filter(c => 
+                            c.utilisateur_id === user?.id && 
+                            c.statut === 'APPROUVE' && 
+                            c.date_debut <= dateStr && 
+                            c.date_fin >= dateStr
+                          );
+                          const hasConge = congesJour.length > 0;
+                          const conge = congesJour[0];
+                          
+                          return (
+                            <div 
+                              key={dayIndex} 
+                              className={`border rounded-lg overflow-hidden min-h-[80px] ${isWeekend ? 'bg-gray-50' : 'bg-white'}`}
+                            >
+                              {/* Numéro du jour */}
+                              <div className={`text-right px-2 py-1 text-sm font-semibold ${isWeekend ? 'text-gray-400' : 'text-gray-700'}`}>
+                                {day}
+                              </div>
+                              
+                              {hasConge ? (
+                                // Afficher le congé
+                                <div className="bg-red-100 mx-1 mb-1 rounded p-2 text-center">
+                                  <div className="text-red-700 font-bold">🏖️ Congé</div>
+                                  <div className="text-xs text-red-600">
+                                    {conge.type_conge === 'CONGE_PAYE' ? 'CP' : 
+                                     conge.type_conge === 'RTT' ? 'RTT' : 
+                                     conge.type_conge === 'REPOS' ? 'Repos' : 'Congé'}
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  {/* Matin */}
+                                  <div className={`mx-1 mb-1 rounded p-1 ${hasMatin ? `bg-${userColor}-200` : 'bg-gray-100'}`}>
+                                    <div className="text-xs text-center">🌅 Matin</div>
+                                    <div className={`text-center font-bold text-sm ${hasMatin ? `text-${userColor}-800` : 'text-gray-400'}`}>
+                                      {hasMatin ? '✓ Présent' : '-'}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Après-midi */}
+                                  <div className={`mx-1 mb-1 rounded p-1 ${hasAM ? `bg-${userColor}-200` : 'bg-gray-100'}`}>
+                                    <div className="text-xs text-center">🌆 Après-midi</div>
+                                    <div className={`text-center font-bold text-sm ${hasAM ? `text-${userColor}-800` : 'text-gray-400'}`}>
+                                      {hasAM ? '✓ Présent' : '-'}
+                                    </div>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+            
+            {/* Légende */}
+            <div className="mt-4 flex flex-wrap gap-4 text-xs items-center">
+              <div className="flex items-center gap-1"><span className={`w-4 h-4 bg-${user?.role === 'Médecin' ? 'blue' : user?.role === 'Assistant' ? 'green' : 'pink'}-200 rounded`}></span> Présent</div>
+              <div className="flex items-center gap-1"><span className="w-4 h-4 bg-gray-100 rounded"></span> Absent</div>
+              <div className="flex items-center gap-1"><span className="w-4 h-4 bg-red-100 rounded"></span> Congé</div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* VUE MENSUELLE - Tableau détaillé des employés (Directeur uniquement) */}
+      {viewMode === 'mois' && user?.role === 'Directeur' && (
+        <Card className="mt-4">
+          <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100">
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center space-x-2">
+                <span>📋 Détail par Employé</span>
+              </span>
+              <div className="flex items-center space-x-2">
+                <Label className="text-sm">Filtrer:</Label>
+                <Select value={filterEmployeMois} onValueChange={setFilterEmployeMois}>
+                  <SelectTrigger className="w-[280px]">
+                    <SelectValue placeholder="Tous les employés" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="tous">👥 Tous les employés</SelectItem>
+                    <SelectItem value="medecins">👨‍⚕️ Médecins uniquement</SelectItem>
+                    {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role !== 'Directeur')).map(emp => (
+                      <SelectItem key={emp.id} value={emp.id}>
+                        {emp.role === 'Médecin' ? '👨‍⚕️' : emp.role === 'Assistant' ? '👥' : '📋'} {emp.prenom} {emp.nom}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {/* Tableau des employés */}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-xs">
                 <thead>
                   <tr>
-                    <th className="border p-2 bg-gray-100 w-32">Employé</th>
+                    <th className="border p-2 bg-gray-100 text-left min-w-[120px]">Employé</th>
                     {Array.from({ length: new Date(new Date(selectedMonth + '-01').getFullYear(), new Date(selectedMonth + '-01').getMonth() + 1, 0).getDate() }, (_, i) => {
                       const date = new Date(selectedMonth + '-01');
                       date.setDate(i + 1);
                       const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                      const dayLetter = date.toLocaleDateString('fr-FR', { weekday: 'short' }).charAt(0).toUpperCase();
                       return (
-                        <th key={i} className={`border p-1 text-xs ${isWeekend ? 'bg-gray-200' : 'bg-gray-50'}`}>
-                          <div>{date.toLocaleDateString('fr-FR', { weekday: 'short' }).charAt(0).toUpperCase()}</div>
-                          <div>{i + 1}</div>
+                        <th key={i} className={`border p-1 text-center ${isWeekend ? 'bg-gray-200' : 'bg-gray-50'}`}>
+                          <div className="text-xs font-semibold">{dayLetter}</div>
+                          <div className="text-xs">{i + 1}</div>
                         </th>
                       );
                     })}
                   </tr>
                 </thead>
                 <tbody>
-                  {/* Affichage des employés filtrés */}
                   {sortEmployeesByRoleThenName(
                     users.filter(u => {
                       if (!u.actif || u.role === 'Directeur') return false;
@@ -8013,8 +8329,8 @@ const PlanningManager = () => {
                   ).map(emp => {
                     const empColor = emp.role === 'Médecin' ? 'blue' : emp.role === 'Assistant' ? 'green' : 'pink';
                     return (
-                      <tr key={emp.id} className={`hover:bg-${empColor}-50`}>
-                        <td className={`border p-1 text-xs font-medium bg-${empColor}-50`}>
+                      <tr key={emp.id}>
+                        <td className={`border p-1 font-medium bg-${empColor}-50 whitespace-nowrap`}>
                           {emp.role === 'Médecin' && 'Dr. '}{emp.prenom} {emp.nom}
                         </td>
                         {Array.from({ length: new Date(new Date(selectedMonth + '-01').getFullYear(), new Date(selectedMonth + '-01').getMonth() + 1, 0).getDate() }, (_, i) => {
@@ -8040,28 +8356,17 @@ const PlanningManager = () => {
                             cellClass = 'bg-red-100 text-red-700';
                           } else if (creneauMatin && creneauAM) {
                             cellContent = 'J';
-                            cellClass = `bg-${empColor}-200`;
+                            cellClass = `bg-${empColor}-200 text-${empColor}-800`;
                           } else if (creneauMatin) {
                             cellContent = 'M';
-                            cellClass = `bg-${empColor}-100`;
+                            cellClass = `bg-${empColor}-100 text-${empColor}-700`;
                           } else if (creneauAM) {
                             cellContent = 'AM';
-                            cellClass = `bg-${empColor}-100`;
+                            cellClass = `bg-${empColor}-100 text-${empColor}-700`;
                           }
                           
                           return (
-                            <td 
-                              key={i} 
-                              className={`border p-1 text-xs text-center cursor-pointer hover:opacity-80 ${cellClass}`}
-                              onClick={() => {
-                                setMoisDetailsData({
-                                  date: dateStr,
-                                  creneau: 'MATIN',
-                                  employes: planningMois.filter(p => p.date === dateStr)
-                                });
-                                setShowMoisDetailsModal(true);
-                              }}
-                            >
+                            <td key={i} className={`border p-1 text-center font-semibold ${cellClass}`}>
                               {cellContent}
                             </td>
                           );
