@@ -9466,9 +9466,50 @@ const PlanningManager = () => {
                 </div>
               </div>
               
+              {/* FLÈCHES DE COPIE AU CENTRE - Seulement pour Assistants */}
+              {journeeData.employe?.role === 'Assistant' && (
+                <div className="flex flex-col items-center justify-center gap-3 py-4">
+                  <button
+                    type="button"
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    title="Copier Matin → Après-midi"
+                    onClick={() => setJourneeData(prev => ({
+                      ...prev,
+                      apresMidi: {
+                        ...prev.apresMidi,
+                        medecin_ids: [...(prev.matin.medecin_ids || [])],
+                        salle_attribuee: prev.matin.salle_attribuee || ''
+                      }
+                    }))}
+                  >
+                    <span className="text-2xl font-bold text-gray-700 hover:text-blue-600">➡️</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    title="Copier Après-midi → Matin"
+                    onClick={() => setJourneeData(prev => ({
+                      ...prev,
+                      matin: {
+                        ...prev.matin,
+                        medecin_ids: [...(prev.apresMidi.medecin_ids || [])],
+                        salle_attribuee: prev.apresMidi.salle_attribuee || ''
+                      }
+                    }))}
+                  >
+                    <span className="text-2xl font-bold text-gray-700 hover:text-orange-600">⬅️</span>
+                  </button>
+                </div>
+              )}
+              
+              {/* Séparateur vide pour les non-assistants */}
+              {journeeData.employe?.role !== 'Assistant' && (
+                <div className="w-4"></div>
+              )}
+              
               {/* APRÈS-MIDI */}
-              <div className="space-y-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
-                <h3 className="font-bold text-orange-800 flex items-center text-base">
+              <div className="space-y-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <h3 className="font-bold text-yellow-700 flex items-center text-base">
                   <CalendarDays className="h-5 w-5 mr-2" /> Après-midi
                   {journeeData.apresMidi.exists && <span className="ml-2 text-xs text-green-600">(existant)</span>}
                 </h3>
