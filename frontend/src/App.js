@@ -8563,20 +8563,31 @@ const PlanningManager = () => {
                           const heuresContrat = secretaire.heures_semaine_fixe || 35;
                           
                           // Calculer les heures de congés pour cette semaine
-                          let heuresCongesSemaine = 0;
+                          let heuresCongesPayesSemaine = 0; // Congés payés = comptent comme travail
+                          let heuresReposSemaine = 0; // Repos = ne comptent pas
                           let nbConges = 0;
                           planningTableau.dates.forEach(date => {
                             const congesJour = getCongesForEmployeDate(secretaire.id, date);
-                            if (congesJour.length > 0) {
+                            congesJour.forEach(conge => {
                               nbConges++;
-                              heuresCongesSemaine += (secretaire.heures_demi_journee_conge || 4);
-                            }
+                              const heuresConge = secretaire.heures_demi_journee_conge || 4;
+                              // Les congés payés comptent comme heures travaillées, pas les repos
+                              if (conge.type_conge === 'REPOS' || conge.type_conge === 'REPOS_COMPENSATEUR') {
+                                heuresReposSemaine += heuresConge;
+                              } else {
+                                heuresCongesPayesSemaine += heuresConge;
+                              }
+                            });
                           });
                           
-                          // Calcul différence heures effectuées vs contrat
-                          const diffHeures = heures - heuresContrat;
-                          // Heures à récup ou sup = différence de la semaine + cumul existant
-                          const heuresSupRecup = diffHeures + (secretaire.heures_supplementaires || 0);
+                          // Heures effectives + congés payés (les congés payés comptent comme du travail)
+                          const heuresAvecConges = heures + heuresCongesPayesSemaine;
+                          
+                          // Calcul différence heures (avec congés payés) vs contrat
+                          const diffHeures = heuresAvecConges - heuresContrat;
+                          
+                          // Cumul stocké (solde depuis début d'année, ajustable manuellement)
+                          const cumulHeuresSupRecup = secretaire.heures_supplementaires || 0;
                           
                           // Couleur colonne Contrat: Jaune=égal, Vert=moins(récup), Rouge=plus(sup)
                           const getCouleurContrat = (effectuees, contrat) => {
@@ -8591,17 +8602,14 @@ const PlanningManager = () => {
                           return (
                             <>
                               <td className={`border p-1 text-center text-xs font-bold ${getCouleur(total, 10)}`}>{total}</td>
-                              <td className={`border p-1 text-center text-xs font-bold ${getCouleur(heures, heuresContrat)}`}>{heures}h</td>
-                              <td className={`border p-1 text-center text-xs font-bold ${getCouleurContrat(heures, heuresContrat)}`}>
+                              <td className={`border p-1 text-center text-xs font-bold ${getCouleur(heuresAvecConges, heuresContrat)}`}>{heures}h{heuresCongesPayesSemaine > 0 ? <span className="text-green-600">+{heuresCongesPayesSemaine}</span> : ''}</td>
+                              <td className={`border p-1 text-center text-xs font-bold ${getCouleurContrat(heuresAvecConges, heuresContrat)}`}>
                                 {heuresContrat}h
-                                <div className="text-xs font-normal">
-                                  ({diffHeures >= 0 ? '+' : ''}{diffHeures.toFixed(0)}h)
-                                </div>
                               </td>
-                              <td className={`border p-1 text-center text-xs font-bold ${heuresSupRecup >= 0 ? 'text-orange-600 bg-orange-50' : 'text-blue-600 bg-blue-50'}`}>
-                                {heuresSupRecup >= 0 ? '+' : ''}{heuresSupRecup.toFixed(1)}h
+                              <td className={`border p-1 text-center text-xs font-bold ${cumulHeuresSupRecup >= 0 ? 'text-orange-600 bg-orange-50' : 'text-blue-600 bg-blue-50'}`}>
+                                {cumulHeuresSupRecup >= 0 ? '+' : ''}{cumulHeuresSupRecup.toFixed(1)}h
                               </td>
-                              <td className={`border p-1 text-center text-xs font-bold ${heuresCongesSemaine > 0 ? 'bg-green-200 text-green-800' : 'bg-green-50'}`}>{heuresCongesSemaine}h</td>
+                              <td className={`border p-1 text-center text-xs font-bold ${(heuresCongesPayesSemaine + heuresReposSemaine) > 0 ? 'bg-green-200 text-green-800' : 'bg-green-50'}`}>{heuresCongesPayesSemaine + heuresReposSemaine}h</td>
                             </>
                           );
                         })()}
