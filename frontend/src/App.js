@@ -8530,6 +8530,7 @@ const PlanningManager = () => {
                         sum + countMedecinsForCreneau(date, 'MATIN') + countMedecinsForCreneau(date, 'APRES_MIDI'), 0
                       )}
                     </td>
+                    <td className="border p-2 text-center bg-gray-300"></td>
                   </tr>
                 </tbody>
               </table>
