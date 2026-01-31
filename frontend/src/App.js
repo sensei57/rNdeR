@@ -10377,13 +10377,13 @@ const PlanningManager = () => {
               <p className="text-xs text-gray-500 mb-3">Définir les horaires de travail par jour et les heures à effectuer par semaine</p>
               <div className="space-y-2">
                 {users.filter(u => u.actif && u.role === 'Secrétaire').map(emp => (
-                  <div key={emp.id} className="grid grid-cols-[1fr_auto_auto_auto] gap-3 items-center bg-pink-50 p-3 rounded-lg">
+                  <div key={emp.id} className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-2 items-center bg-pink-50 p-3 rounded-lg">
                     <span className="font-medium">{emp.prenom} {emp.nom}</span>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1">
                       <Button
                         size="sm"
                         variant={emp.semaine_a_config ? "default" : "outline"}
-                        className={emp.semaine_a_config ? "bg-pink-600 hover:bg-pink-700" : "hover:bg-pink-100"}
+                        className={`h-7 px-2 text-xs ${emp.semaine_a_config ? "bg-pink-600 hover:bg-pink-700" : "hover:bg-pink-100"}`}
                         onClick={() => openConfigSemaine(emp, 'A')}
                       >
                         A {emp.semaine_a_config ? '✓' : ''}
@@ -10391,7 +10391,7 @@ const PlanningManager = () => {
                       <Button
                         size="sm"
                         variant={emp.semaine_b_config ? "default" : "outline"}
-                        className={emp.semaine_b_config ? "bg-pink-600 hover:bg-pink-700" : "hover:bg-pink-100"}
+                        className={`h-7 px-2 text-xs ${emp.semaine_b_config ? "bg-pink-600 hover:bg-pink-700" : "hover:bg-pink-100"}`}
                         onClick={() => openConfigSemaine(emp, 'B')}
                       >
                         B {emp.semaine_b_config ? '✓' : ''}
@@ -10401,7 +10401,7 @@ const PlanningManager = () => {
                       <Label className="text-xs whitespace-nowrap">H/sem A:</Label>
                       <Input
                         type="number"
-                        className="h-8 text-xs w-16"
+                        className="h-7 text-xs w-12"
                         value={emp.heures_semaine_a || 35}
                         onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_a', parseFloat(e.target.value) || 35)}
                       />
@@ -10410,7 +10410,7 @@ const PlanningManager = () => {
                       <Label className="text-xs whitespace-nowrap">H/sem B:</Label>
                       <Input
                         type="number"
-                        className="h-8 text-xs w-16"
+                        className="h-7 text-xs w-12"
                         value={emp.heures_semaine_b || 35}
                         onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_b', parseFloat(e.target.value) || 35)}
                       />
@@ -10419,9 +10419,19 @@ const PlanningManager = () => {
                       <Label className="text-xs whitespace-nowrap text-purple-700 font-bold">Contrat:</Label>
                       <Input
                         type="number"
-                        className="h-8 text-xs w-16 border-purple-300"
+                        className="h-7 text-xs w-12 border-purple-300"
                         value={emp.heures_semaine_fixe || 35}
                         onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_fixe', parseFloat(e.target.value) || 35)}
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Label className="text-xs whitespace-nowrap text-orange-700">H/½j congé:</Label>
+                      <Input
+                        type="number"
+                        step="0.5"
+                        className="h-7 text-xs w-12 border-orange-300"
+                        value={emp.heures_demi_journee_conge || 4}
+                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_demi_journee_conge', parseFloat(e.target.value) || 4)}
                       />
                     </div>
                   </div>
