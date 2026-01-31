@@ -8089,6 +8089,7 @@ const PlanningManager = () => {
                       </td>
                     ))}
                     <td className="border p-1 bg-pink-100"></td>
+                    <td className="border p-1 bg-pink-100"></td>
                   </tr>
                   {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role === 'Secrétaire')).map(secretaire => {
                     const total = getTotalDemiJournees(secretaire.id);
