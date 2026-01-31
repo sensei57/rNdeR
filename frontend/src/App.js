@@ -4905,7 +4905,7 @@ const PlanningManager = () => {
       
       // Rafraîchir les données
       fetchPlanningTableau();
-      fetchConges();
+      fetchData();
     } catch (error) {
       console.error('Erreur:', error);
       toast.error('Erreur lors de l\'application');
@@ -4916,7 +4916,7 @@ const PlanningManager = () => {
   const updateEmployeSemaineConfig = async (employeId, field, value) => {
     try {
       await axios.put(`${API}/users/${employeId}`, { [field]: value });
-      fetchUsers();
+      fetchData();
       toast.success('Configuration mise à jour');
     } catch (error) {
       toast.error('Erreur lors de la mise à jour');
