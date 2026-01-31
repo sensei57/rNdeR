@@ -8080,16 +8080,27 @@ const PlanningManager = () => {
 
                   {/* SECTION MÉDECINS */}
                   <tr className="bg-blue-100">
-                    <td colSpan={planningTableau.dates.length * 2 + 2} className="border p-2 font-bold text-blue-800">
+                    <td className="border p-2 font-bold text-blue-800">
                       👨‍⚕️ MÉDECINS
                     </td>
+                    {planningTableau.dates.map((date, dateIndex) => (
+                      <td 
+                        key={`med-header-${date}`}
+                        colSpan={2} 
+                        className={`border p-1 text-center text-xs font-medium ${dateIndex % 2 === 0 ? 'bg-blue-50' : 'bg-blue-100'}`}
+                      >
+                        <div>{new Date(date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'short' })}</div>
+                        <div className="text-gray-500">{new Date(date + 'T12:00:00').getDate()}/{new Date(date + 'T12:00:00').getMonth() + 1}</div>
+                      </td>
+                    ))}
+                    <td className="border p-1 bg-blue-100"></td>
                   </tr>
                   {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role === 'Médecin')).map(medecin => {
                     const total = getTotalDemiJournees(medecin.id);
                     return (
                       <tr key={medecin.id} className="hover:bg-blue-50">
                         <td className="border p-2 font-medium">Dr. {medecin.prenom} {medecin.nom}</td>
-                        {planningTableau.dates.map(date => {
+                        {planningTableau.dates.map((date, dateIndex) => {
                           const creneauMatin = getCreneauForEmploye(medecin.id, date, 'MATIN');
                           const creneauAM = getCreneauForEmploye(medecin.id, date, 'APRES_MIDI');
                           const displayMatin = getMedecinDisplay(creneauMatin, 'M');
