@@ -8054,12 +8054,12 @@ const PlanningManager = () => {
                     {planningTableau.dates.map((date, dateIndex) => (
                       <React.Fragment key={`header-${date}`}>
                         <th 
-                          className={`border p-1 text-center text-xs cursor-pointer hover:bg-orange-200 transition-colors ${dateIndex % 2 === 0 ? 'bg-orange-50' : 'bg-orange-100'}`}
+                          className={`border p-1 text-center text-xs cursor-pointer hover:bg-slate-200 transition-colors ${dateIndex % 2 === 0 ? 'bg-slate-50' : 'bg-slate-100'}`}
                           onClick={() => openDetailJourModal(date)}
                           title="📋 Voir détail journée"
                         >M</th>
                         <th 
-                          className={`border p-1 text-center text-xs cursor-pointer hover:bg-purple-200 transition-colors ${dateIndex % 2 === 0 ? 'bg-purple-50' : 'bg-purple-100'}`}
+                          className={`border p-1 text-center text-xs cursor-pointer hover:bg-slate-200 transition-colors ${dateIndex % 2 === 0 ? 'bg-slate-50' : 'bg-slate-100'}`}
                           onClick={() => openDetailJourModal(date)}
                           title="📋 Voir détail journée"
                         >AM</th>
