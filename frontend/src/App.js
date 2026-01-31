@@ -8278,8 +8278,12 @@ const PlanningManager = () => {
                         >AM</th>
                       </React.Fragment>
                     ))}
-                    <th className="border p-1 text-center text-xs bg-gray-300">1/2j</th>
-                    <th className="border p-1 text-center text-xs bg-blue-200">h</th>
+                    <th className="border p-1 text-center text-xs bg-gray-300">½j</th>
+                    <th className="border p-1 text-center text-xs bg-blue-200">H</th>
+                    <th className="border p-1 text-center text-xs bg-purple-200">H/S</th>
+                    <th className="border p-1 text-center text-xs bg-indigo-200">Ctr</th>
+                    <th className="border p-1 text-center text-xs bg-orange-200">Sup</th>
+                    <th className="border p-1 text-center text-xs bg-green-200">Cg</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -8306,8 +8310,12 @@ const PlanningManager = () => {
                         <div className="text-gray-500">{new Date(date + 'T12:00:00').getDate()}/{new Date(date + 'T12:00:00').getMonth() + 1}</div>
                       </td>
                     ))}
-                    <td className="border p-1 bg-pink-100"></td>
-                    <td className="border p-1 bg-pink-100"></td>
+                    <td className="border p-1 bg-pink-100 text-xs text-center font-bold">½j</td>
+                    <td className="border p-1 bg-pink-100 text-xs text-center font-bold">H</td>
+                    <td className="border p-1 bg-pink-100 text-xs text-center font-bold">H/S</td>
+                    <td className="border p-1 bg-pink-100 text-xs text-center font-bold">Ctr</td>
+                    <td className="border p-1 bg-pink-100 text-xs text-center font-bold">Sup</td>
+                    <td className="border p-1 bg-pink-100 text-xs text-center font-bold">Cg</td>
                   </tr>
                   {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role === 'Secrétaire')).map(secretaire => {
                     const total = getTotalDemiJournees(secretaire.id);
