@@ -10441,6 +10441,14 @@ const DemandesTravailManager = () => {
               <span>Demande Mensuelle</span>
             </Button>
             
+            <Button 
+              onClick={handleOpenDemandeAnnuelle}
+              className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700"
+            >
+              <Calendar className="h-4 w-4" />
+              <span>Demande Annuelle</span>
+            </Button>
+            
             {user?.role === 'Médecin' && (
               <Button 
                 onClick={() => setShowSemaineTypeModal(true)}
