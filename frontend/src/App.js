@@ -9967,214 +9967,105 @@ const PlanningManager = () => {
 
       {/* Modal Configuration Semaines A/B */}
       <Dialog open={showConfigSemainesModal} onOpenChange={setShowConfigSemainesModal}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <Settings className="h-5 w-5 text-gray-600" />
               <span>⚙️ Configuration des Semaines A/B</span>
             </DialogTitle>
             <DialogDescription>
-              Configurez les horaires prédéfinis pour chaque employé (Semaine A et Semaine B)
+              Cliquez sur A ou B pour définir la semaine type de chaque employé
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-6">
-            {/* Secrétaires */}
-            <div>
-              <h3 className="font-bold text-pink-700 mb-3">📋 SECRÉTAIRES</h3>
+            {/* Secrétaires - Horaires par jour */}
+            <div className="border rounded-lg p-4">
+              <h3 className="font-bold text-pink-700 mb-3 text-lg">📋 SECRÉTAIRES</h3>
+              <p className="text-xs text-gray-500 mb-3">Définir les horaires de travail par jour (ou absent)</p>
               <div className="space-y-2">
                 {users.filter(u => u.actif && u.role === 'Secrétaire').map(emp => (
-                  <div key={emp.id} className="grid grid-cols-5 gap-2 items-center bg-pink-50 p-2 rounded">
-                    <span className="font-medium">{emp.prenom} {emp.nom}</span>
-                    <div>
-                      <Label className="text-xs">Semaine A</Label>
-                      <Select
-                        value={emp.semaine_a_id || 'none'}
-                        onValueChange={(v) => updateEmployeSemaineConfig(emp.id, 'semaine_a_id', v === 'none' ? null : v)}
+                  <div key={emp.id} className="flex items-center justify-between bg-pink-50 p-3 rounded-lg">
+                    <span className="font-medium w-48">{emp.prenom} {emp.nom}</span>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant={emp.semaine_a_config ? "default" : "outline"}
+                        className={emp.semaine_a_config ? "bg-pink-600 hover:bg-pink-700" : "hover:bg-pink-100"}
+                        onClick={() => openConfigSemaine(emp, 'A')}
                       >
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Choisir" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Non défini</SelectItem>
-                          {horairesSecretaires.map(h => (
-                            <SelectItem key={h.id} value={String(h.id)}>{h.nom}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-xs">Semaine B</Label>
-                      <Select
-                        value={emp.semaine_b_id || 'none'}
-                        onValueChange={(v) => updateEmployeSemaineConfig(emp.id, 'semaine_b_id', v === 'none' ? null : v)}
+                        A {emp.semaine_a_config ? '✓' : ''}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={emp.semaine_b_config ? "default" : "outline"}
+                        className={emp.semaine_b_config ? "bg-pink-600 hover:bg-pink-700" : "hover:bg-pink-100"}
+                        onClick={() => openConfigSemaine(emp, 'B')}
                       >
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Choisir" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Non défini</SelectItem>
-                          {horairesSecretaires.map(h => (
-                            <SelectItem key={h.id} value={String(h.id)}>{h.nom}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-xs">Limite 1/2j</Label>
-                      <Input
-                        type="number"
-                        className="h-8 text-xs"
-                        value={emp.limite_demi_journees || 10}
-                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees', parseInt(e.target.value))}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">H/sem A | B</Label>
-                      <div className="flex gap-1">
-                        <Input
-                          type="number"
-                          className="h-8 text-xs w-16"
-                          value={emp.heures_semaine_a || 35}
-                          onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_a', parseFloat(e.target.value))}
-                        />
-                        <Input
-                          type="number"
-                          className="h-8 text-xs w-16"
-                          value={emp.heures_semaine_b || 35}
-                          onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_b', parseFloat(e.target.value))}
-                        />
-                      </div>
+                        B {emp.semaine_b_config ? '✓' : ''}
+                      </Button>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Assistants */}
-            <div>
-              <h3 className="font-bold text-green-700 mb-3">👥 ASSISTANTS</h3>
+            {/* Assistants - Demi-journées */}
+            <div className="border rounded-lg p-4">
+              <h3 className="font-bold text-green-700 mb-3 text-lg">👥 ASSISTANTS</h3>
+              <p className="text-xs text-gray-500 mb-3">Définir les demi-journées de présence (Matin / Après-midi)</p>
               <div className="space-y-2">
                 {users.filter(u => u.actif && u.role === 'Assistant').map(emp => (
-                  <div key={emp.id} className="grid grid-cols-5 gap-2 items-center bg-green-50 p-2 rounded">
-                    <span className="font-medium">{emp.prenom} {emp.nom}</span>
-                    <div>
-                      <Label className="text-xs">Semaine A</Label>
-                      <Select
-                        value={emp.semaine_a_id || 'none'}
-                        onValueChange={(v) => updateEmployeSemaineConfig(emp.id, 'semaine_a_id', v === 'none' ? null : v)}
+                  <div key={emp.id} className="flex items-center justify-between bg-green-50 p-3 rounded-lg">
+                    <span className="font-medium w-48">{emp.prenom} {emp.nom}</span>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant={emp.semaine_a_config ? "default" : "outline"}
+                        className={emp.semaine_a_config ? "bg-green-600 hover:bg-green-700" : "hover:bg-green-100"}
+                        onClick={() => openConfigSemaine(emp, 'A')}
                       >
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Choisir" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Non défini</SelectItem>
-                          {horairesSecretaires.map(h => (
-                            <SelectItem key={h.id} value={String(h.id)}>{h.nom}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-xs">Semaine B</Label>
-                      <Select
-                        value={emp.semaine_b_id || 'none'}
-                        onValueChange={(v) => updateEmployeSemaineConfig(emp.id, 'semaine_b_id', v === 'none' ? null : v)}
+                        A {emp.semaine_a_config ? '✓' : ''}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={emp.semaine_b_config ? "default" : "outline"}
+                        className={emp.semaine_b_config ? "bg-green-600 hover:bg-green-700" : "hover:bg-green-100"}
+                        onClick={() => openConfigSemaine(emp, 'B')}
                       >
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Choisir" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Non défini</SelectItem>
-                          {horairesSecretaires.map(h => (
-                            <SelectItem key={h.id} value={String(h.id)}>{h.nom}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-xs">H/jour</Label>
-                      <Input
-                        type="number"
-                        step="0.5"
-                        className="h-8 text-xs"
-                        value={emp.heures_par_jour || 7}
-                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_par_jour', parseFloat(e.target.value))}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">Limite 1/2j</Label>
-                      <Input
-                        type="number"
-                        className="h-8 text-xs"
-                        value={emp.limite_demi_journees || 10}
-                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees', parseInt(e.target.value))}
-                      />
+                        B {emp.semaine_b_config ? '✓' : ''}
+                      </Button>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Médecins */}
-            <div>
-              <h3 className="font-bold text-blue-700 mb-3">👨‍⚕️ MÉDECINS</h3>
+            {/* Médecins - Demi-journées */}
+            <div className="border rounded-lg p-4">
+              <h3 className="font-bold text-blue-700 mb-3 text-lg">👨‍⚕️ MÉDECINS</h3>
+              <p className="text-xs text-gray-500 mb-3">Définir les demi-journées de présence (Matin / Après-midi)</p>
               <div className="space-y-2">
                 {users.filter(u => u.actif && u.role === 'Médecin').map(emp => (
-                  <div key={emp.id} className="grid grid-cols-5 gap-2 items-center bg-blue-50 p-2 rounded">
-                    <span className="font-medium">Dr. {emp.prenom} {emp.nom}</span>
-                    <div>
-                      <Label className="text-xs">Semaine A</Label>
-                      <Select
-                        value={emp.semaine_a_id || 'none'}
-                        onValueChange={(v) => updateEmployeSemaineConfig(emp.id, 'semaine_a_id', v === 'none' ? null : v)}
+                  <div key={emp.id} className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
+                    <span className="font-medium w-48">Dr. {emp.prenom} {emp.nom}</span>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant={emp.semaine_a_config ? "default" : "outline"}
+                        className={emp.semaine_a_config ? "bg-blue-600 hover:bg-blue-700" : "hover:bg-blue-100"}
+                        onClick={() => openConfigSemaine(emp, 'A')}
                       >
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Choisir" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Non défini</SelectItem>
-                          {horairesSecretaires.map(h => (
-                            <SelectItem key={h.id} value={String(h.id)}>{h.nom}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-xs">Semaine B</Label>
-                      <Select
-                        value={emp.semaine_b_id || 'none'}
-                        onValueChange={(v) => updateEmployeSemaineConfig(emp.id, 'semaine_b_id', v === 'none' ? null : v)}
+                        A {emp.semaine_a_config ? '✓' : ''}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={emp.semaine_b_config ? "default" : "outline"}
+                        className={emp.semaine_b_config ? "bg-blue-600 hover:bg-blue-700" : "hover:bg-blue-100"}
+                        onClick={() => openConfigSemaine(emp, 'B')}
                       >
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Choisir" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Non défini</SelectItem>
-                          {horairesSecretaires.map(h => (
-                            <SelectItem key={h.id} value={String(h.id)}>{h.nom}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-xs">H/jour</Label>
-                      <Input
-                        type="number"
-                        step="0.5"
-                        className="h-8 text-xs"
-                        value={emp.heures_par_jour || 7}
-                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_par_jour', parseFloat(e.target.value))}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">Limite 1/2j</Label>
-                      <Input
-                        type="number"
-                        className="h-8 text-xs"
-                        value={emp.limite_demi_journees || 10}
-                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees', parseInt(e.target.value))}
-                      />
+                        B {emp.semaine_b_config ? '✓' : ''}
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -10185,6 +10076,163 @@ const PlanningManager = () => {
           <div className="flex justify-end pt-4 border-t">
             <Button onClick={() => setShowConfigSemainesModal(false)}>
               Fermer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Détail Configuration Semaine (pour un employé) */}
+      <Dialog open={configSemaineEmploye !== null} onOpenChange={(open) => !open && setConfigSemaineEmploye(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Calendar className="h-5 w-5 text-teal-600" />
+              <span>
+                Semaine {configSemaineType} - {configSemaineEmploye?.prenom} {configSemaineEmploye?.nom}
+              </span>
+            </DialogTitle>
+            <DialogDescription>
+              {configSemaineEmploye?.role === 'Secrétaire' 
+                ? 'Définissez les horaires de travail pour chaque jour'
+                : 'Cochez les demi-journées de présence'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {configSemaineEmploye && (
+            <div className="space-y-3">
+              {/* Interface pour Secrétaires - Horaires */}
+              {configSemaineEmploye.role === 'Secrétaire' && configSemaineEmploye.tempConfig && (
+                <div className="space-y-2">
+                  {configSemaineEmploye.tempConfig.map((jour, idx) => (
+                    <div key={jour.jour} className={`grid grid-cols-6 gap-2 items-center p-2 rounded ${jour.actif ? 'bg-pink-50' : 'bg-gray-100'}`}>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={jour.actif}
+                          onChange={(e) => {
+                            const newConfig = [...configSemaineEmploye.tempConfig];
+                            newConfig[idx].actif = e.target.checked;
+                            setConfigSemaineEmploye({...configSemaineEmploye, tempConfig: newConfig});
+                          }}
+                          className="w-4 h-4"
+                        />
+                        <span className="font-medium text-sm">{jour.jour}</span>
+                      </div>
+                      {jour.actif ? (
+                        <>
+                          <div>
+                            <Label className="text-xs">Début M</Label>
+                            <Input
+                              type="time"
+                              className="h-8 text-xs"
+                              value={jour.debut_matin}
+                              onChange={(e) => {
+                                const newConfig = [...configSemaineEmploye.tempConfig];
+                                newConfig[idx].debut_matin = e.target.value;
+                                setConfigSemaineEmploye({...configSemaineEmploye, tempConfig: newConfig});
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Fin M</Label>
+                            <Input
+                              type="time"
+                              className="h-8 text-xs"
+                              value={jour.fin_matin}
+                              onChange={(e) => {
+                                const newConfig = [...configSemaineEmploye.tempConfig];
+                                newConfig[idx].fin_matin = e.target.value;
+                                setConfigSemaineEmploye({...configSemaineEmploye, tempConfig: newConfig});
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Début AM</Label>
+                            <Input
+                              type="time"
+                              className="h-8 text-xs"
+                              value={jour.debut_aprem}
+                              onChange={(e) => {
+                                const newConfig = [...configSemaineEmploye.tempConfig];
+                                newConfig[idx].debut_aprem = e.target.value;
+                                setConfigSemaineEmploye({...configSemaineEmploye, tempConfig: newConfig});
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Fin AM</Label>
+                            <Input
+                              type="time"
+                              className="h-8 text-xs"
+                              value={jour.fin_aprem}
+                              onChange={(e) => {
+                                const newConfig = [...configSemaineEmploye.tempConfig];
+                                newConfig[idx].fin_aprem = e.target.value;
+                                setConfigSemaineEmploye({...configSemaineEmploye, tempConfig: newConfig});
+                              }}
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <div className="col-span-5 text-center text-gray-500 text-sm italic">
+                          Absent
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Interface pour Médecins/Assistants - Demi-journées */}
+              {(configSemaineEmploye.role === 'Médecin' || configSemaineEmploye.role === 'Assistant') && configSemaineEmploye.tempConfig && (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-3 gap-2 text-center text-xs font-bold text-gray-600 pb-2 border-b">
+                    <span>Jour</span>
+                    <span>🌅 Matin</span>
+                    <span>🌆 Après-midi</span>
+                  </div>
+                  {configSemaineEmploye.tempConfig.map((jour, idx) => (
+                    <div key={jour.jour} className={`grid grid-cols-3 gap-2 items-center p-2 rounded ${
+                      configSemaineEmploye.role === 'Médecin' ? 'bg-blue-50' : 'bg-green-50'
+                    }`}>
+                      <span className="font-medium text-sm">{jour.jour}</span>
+                      <div className="flex justify-center">
+                        <input
+                          type="checkbox"
+                          checked={jour.matin}
+                          onChange={(e) => {
+                            const newConfig = [...configSemaineEmploye.tempConfig];
+                            newConfig[idx].matin = e.target.checked;
+                            setConfigSemaineEmploye({...configSemaineEmploye, tempConfig: newConfig});
+                          }}
+                          className="w-5 h-5 cursor-pointer"
+                        />
+                      </div>
+                      <div className="flex justify-center">
+                        <input
+                          type="checkbox"
+                          checked={jour.apres_midi}
+                          onChange={(e) => {
+                            const newConfig = [...configSemaineEmploye.tempConfig];
+                            newConfig[idx].apres_midi = e.target.checked;
+                            setConfigSemaineEmploye({...configSemaineEmploye, tempConfig: newConfig});
+                          }}
+                          className="w-5 h-5 cursor-pointer"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          
+          <div className="flex justify-end gap-2 pt-4 border-t">
+            <Button variant="outline" onClick={() => setConfigSemaineEmploye(null)}>
+              Annuler
+            </Button>
+            <Button onClick={saveConfigSemaine} className="bg-teal-600 hover:bg-teal-700">
+              💾 Enregistrer
             </Button>
           </div>
         </DialogContent>
