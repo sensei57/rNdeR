@@ -4309,6 +4309,14 @@ const PlanningManager = () => {
       }
       
       await Promise.all(promises);
+      
+      // Mettre à jour les heures supplémentaires si renseignées
+      if (journeeData.heures_supp_jour > 0 || journeeData.heures_rattraper_jour > 0) {
+        const currentSupp = journeeData.employe?.heures_supplementaires || 0;
+        const newSupp = currentSupp + (journeeData.heures_supp_jour || 0) - (journeeData.heures_rattraper_jour || 0);
+        await updateEmployeSemaineConfig(journeeData.employe_id, 'heures_supplementaires', newSupp);
+      }
+      
       toast.success('Journée mise à jour !');
       setShowJourneeModal(false);
       fetchPlanningTableau(selectedWeek);
