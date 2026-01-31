@@ -8130,8 +8130,9 @@ const PlanningManager = () => {
                                 className={`border p-1 text-center cursor-pointer transition-colors ${
                                   hasCongeEnAttente ? 'bg-yellow-200 hover:bg-yellow-300' :
                                   hasCongeApprouve ? getCongeColorClasses(congeApprouve.type_conge, true) :
-                                  creneauMatin ? 'bg-pink-200 hover:bg-pink-300' : 'hover:bg-pink-100'
-                                } ${dateIndex % 2 === 1 ? 'bg-opacity-80' : ''}`}
+                                  creneauMatin ? 'bg-pink-200 hover:bg-pink-300' : 
+                                  dateIndex % 2 === 0 ? 'bg-white hover:bg-pink-100' : 'bg-gray-50 hover:bg-pink-100'
+                                }`}
                                 onClick={() => {
                                   if (hasCongeEnAttente) return; // Les boutons gèrent les actions
                                   if (hasCongeApprouve) return; // Clic sur le type pour changer
