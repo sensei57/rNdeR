@@ -8042,6 +8042,7 @@ const PlanningManager = () => {
                       </th>
                     ))}
                     <th className="border p-2 text-center bg-gray-300">Total</th>
+                    <th className="border p-2 text-center bg-blue-200">Heures</th>
                   </tr>
                   <tr className="bg-gray-50">
                     <th className="border p-1"></th>
@@ -8060,13 +8061,22 @@ const PlanningManager = () => {
                       </React.Fragment>
                     ))}
                     <th className="border p-1 text-center text-xs bg-gray-300">1/2j</th>
+                    <th className="border p-1 text-center text-xs bg-blue-200">h</th>
                   </tr>
                 </thead>
                 <tbody>
                   {/* SECTION SECRÉTAIRES */}
                   <tr className="bg-pink-100">
-                    <td className="border p-2 font-bold text-pink-800">
+                    <td 
+                      className="border p-2 font-bold text-pink-800 cursor-pointer hover:bg-pink-200"
+                      onClick={() => openSemaineABCModal({ type: 'section', section: 'Secrétaire' })}
+                      title="Cliquer pour appliquer Semaine A, B ou Congés"
+                    >
                       📋 SECRÉTAIRES
+                      <div className="text-xs font-normal text-pink-600 mt-1">
+                        <span className="bg-pink-200 px-1 rounded">A</span>
+                        <span className="bg-pink-200 px-1 rounded ml-1">B</span>
+                      </div>
                     </td>
                     {planningTableau.dates.map((date, dateIndex) => (
                       <td 
