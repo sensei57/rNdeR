@@ -9950,6 +9950,223 @@ const DemandesTravailManager = () => {
     }
   };
 
+  // ===== DEMANDE ANNUELLE (Médecins) =====
+  const handleOpenDemandeAnnuelle = async () => {
+    const today = new Date();
+    const annee = today.getMonth() >= 10 ? today.getFullYear() + 1 : today.getFullYear(); // Si novembre/décembre, proposer l'année suivante
+    const medecinId = user?.role === 'Médecin' ? user.id : '';
+    
+    setDemandeAnnuelle({
+      medecin_id: medecinId,
+      annee: annee,
+      semaine_type_id: '',
+      motif: ''
+    });
+    
+    setMoisSelectionne(0); // Commencer par janvier
+    genererJoursAnnee(annee, '');
+    setShowDemandeAnnuelleModal(true);
+  };
+
+  const genererJoursAnnee = (annee, semaineTypeId) => {
+    const moisNoms = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+    const joursNoms = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+    const semaineType = semainesTypes.find(s => s.id === semaineTypeId);
+    
+    const tousLesMois = [];
+    
+    for (let month = 0; month < 12; month++) {
+      const lastDay = new Date(annee, month + 1, 0).getDate();
+      const jours = [];
+      
+      // Calculer les cases vides pour aligner sur lundi
+      const premierJourDate = new Date(annee, month, 1);
+      const premierJourSemaine = premierJourDate.getDay();
+      const casesVides = premierJourSemaine === 0 ? 6 : premierJourSemaine - 1;
+      
+      for (let i = 0; i < casesVides; i++) {
+        jours.push({ date: null, jourNom: null, creneau: null, selectionne: false, estVide: true });
+      }
+      
+      for (let day = 1; day <= lastDay; day++) {
+        const dateStr = `${annee}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const currentDate = new Date(dateStr + 'T12:00:00');
+        const jourSemaine = joursNoms[currentDate.getDay()];
+        
+        let creneau = null;
+        let selectionne = false;
+        
+        if (semaineType) {
+          const creneauType = semaineType[jourSemaine];
+          if (creneauType && creneauType !== 'REPOS') {
+            creneau = creneauType;
+            selectionne = true;
+          }
+        }
+        
+        jours.push({
+          date: dateStr,
+          jourNom: jourSemaine,
+          creneau: creneau,
+          selectionne: selectionne,
+          estVide: false
+        });
+      }
+      
+      tousLesMois.push({
+        nom: moisNoms[month],
+        index: month,
+        jours: jours
+      });
+    }
+    
+    setMoisAnnee(tousLesMois);
+  };
+
+  const handleAnneeChange = (nouvelleAnnee) => {
+    setDemandeAnnuelle(prev => ({ ...prev, annee: nouvelleAnnee }));
+    genererJoursAnnee(nouvelleAnnee, demandeAnnuelle.semaine_type_id);
+  };
+
+  const handleSemaineTypeChangeAnnuelle = (semaineTypeId) => {
+    setDemandeAnnuelle(prev => ({ ...prev, semaine_type_id: semaineTypeId }));
+    genererJoursAnnee(demandeAnnuelle.annee, semaineTypeId);
+  };
+
+  const handleMedecinChangeAnnuelle = (medecinId) => {
+    setDemandeAnnuelle(prev => ({ 
+      ...prev, 
+      medecin_id: medecinId,
+      semaine_type_id: ''
+    }));
+    genererJoursAnnee(demandeAnnuelle.annee, '');
+  };
+
+  const toggleJourAnnee = (moisIndex, jourIndex) => {
+    setMoisAnnee(prev => {
+      const newMois = [...prev];
+      const jour = newMois[moisIndex].jours[jourIndex];
+      if (jour.estVide) return prev;
+      
+      if (jour.selectionne) {
+        // Désélectionner
+        jour.selectionne = false;
+        jour.creneau = null;
+      } else {
+        // Sélectionner avec JOURNEE_COMPLETE par défaut
+        jour.selectionne = true;
+        jour.creneau = 'JOURNEE_COMPLETE';
+      }
+      return newMois;
+    });
+  };
+
+  const cycleCreneauAnnee = (moisIndex, jourIndex, e) => {
+    e.stopPropagation();
+    setMoisAnnee(prev => {
+      const newMois = [...prev];
+      const jour = newMois[moisIndex].jours[jourIndex];
+      if (!jour.selectionne) return prev;
+      
+      // Cycle: JOURNEE_COMPLETE -> MATIN -> APRES_MIDI -> JOURNEE_COMPLETE
+      if (jour.creneau === 'JOURNEE_COMPLETE') jour.creneau = 'MATIN';
+      else if (jour.creneau === 'MATIN') jour.creneau = 'APRES_MIDI';
+      else jour.creneau = 'JOURNEE_COMPLETE';
+      
+      return newMois;
+    });
+  };
+
+  const selectAllMois = (moisIndex, creneau = 'JOURNEE_COMPLETE') => {
+    setMoisAnnee(prev => {
+      const newMois = [...prev];
+      newMois[moisIndex].jours.forEach(jour => {
+        if (!jour.estVide && jour.jourNom !== 'samedi' && jour.jourNom !== 'dimanche') {
+          jour.selectionne = true;
+          jour.creneau = creneau;
+        }
+      });
+      return newMois;
+    });
+  };
+
+  const deselectAllMois = (moisIndex) => {
+    setMoisAnnee(prev => {
+      const newMois = [...prev];
+      newMois[moisIndex].jours.forEach(jour => {
+        if (!jour.estVide) {
+          jour.selectionne = false;
+          jour.creneau = null;
+        }
+      });
+      return newMois;
+    });
+  };
+
+  const getTotalJoursSelectionnesAnnee = () => {
+    let total = 0;
+    moisAnnee.forEach(mois => {
+      mois.jours.forEach(jour => {
+        if (jour.selectionne && jour.creneau) total++;
+      });
+    });
+    return total;
+  };
+
+  const handleSubmitDemandeAnnuelle = async (e) => {
+    e.preventDefault();
+    
+    if (user?.role === 'Directeur' && !demandeAnnuelle.medecin_id) {
+      toast.error('Veuillez sélectionner un médecin');
+      return;
+    }
+    
+    // Collecter tous les jours sélectionnés de tous les mois
+    const joursAvecCreneaux = [];
+    moisAnnee.forEach(mois => {
+      mois.jours.forEach(jour => {
+        if (jour.selectionne && jour.creneau && !jour.estVide) {
+          joursAvecCreneaux.push({
+            date: jour.date,
+            creneau: jour.creneau
+          });
+        }
+      });
+    });
+    
+    if (joursAvecCreneaux.length === 0) {
+      toast.error('Veuillez sélectionner au moins un jour');
+      return;
+    }
+    
+    try {
+      // Envoyer par lots de 31 jours (un mois) pour éviter les timeouts
+      const batchSize = 31;
+      let totalCreated = 0;
+      
+      for (let i = 0; i < joursAvecCreneaux.length; i += batchSize) {
+        const batch = joursAvecCreneaux.slice(i, i + batchSize);
+        const dateDebut = batch[0].date;
+        
+        const response = await axios.post(`${API}/demandes-travail/mensuelle`, {
+          medecin_id: demandeAnnuelle.medecin_id || null,
+          date_debut: dateDebut,
+          semaine_type_id: (demandeAnnuelle.semaine_type_id && demandeAnnuelle.semaine_type_id !== 'none') ? demandeAnnuelle.semaine_type_id : null,
+          jours_avec_creneaux: batch,
+          motif: demandeAnnuelle.motif || `Demande annuelle ${demandeAnnuelle.annee}`
+        });
+        
+        totalCreated += batch.length;
+      }
+      
+      toast.success(`${totalCreated} demandes créées avec succès pour l'année ${demandeAnnuelle.annee}`);
+      setShowDemandeAnnuelleModal(false);
+      fetchDemandes();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la création des demandes');
+    }
+  };
+
   // ===== DEMANDE HEBDOMADAIRE (Assistants/Secrétaires) =====
   const handleOpenDemandeHebdo = () => {
     const today = new Date();
@@ -9967,6 +10184,7 @@ const DemandesTravailManager = () => {
     genererJoursSemaine(nextMonday.toISOString().split('T')[0]);
     setShowDemandeHebdoModal(true);
   };
+
 
   const genererJoursSemaine = async (dateDebut) => {
     const startDate = new Date(dateDebut + 'T12:00:00');
