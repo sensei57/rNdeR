@@ -10613,21 +10613,21 @@ const PlanningManager = () => {
                       </Button>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Label className="text-xs whitespace-nowrap">1/2j sem A:</Label>
-                      <Input
+                      <Label className="text-xs whitespace-nowrap">½j sem A:</Label>
+                      <input
                         type="number"
-                        className="h-8 text-xs w-16"
-                        value={emp.limite_demi_journees_a || 10}
-                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_a', parseInt(e.target.value) || 10)}
+                        className="h-7 text-xs w-12 px-1 border rounded"
+                        defaultValue={emp.limite_demi_journees_a || 10}
+                        onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_a', parseInt(e.target.value) || 10)}
                       />
                     </div>
                     <div className="flex items-center gap-1">
-                      <Label className="text-xs whitespace-nowrap">1/2j sem B:</Label>
-                      <Input
+                      <Label className="text-xs whitespace-nowrap">½j sem B:</Label>
+                      <input
                         type="number"
-                        className="h-8 text-xs w-16"
-                        value={emp.limite_demi_journees_b || 10}
-                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_b', parseInt(e.target.value) || 10)}
+                        className="h-7 text-xs w-12 px-1 border rounded"
+                        defaultValue={emp.limite_demi_journees_b || 10}
+                        onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_b', parseInt(e.target.value) || 10)}
                       />
                     </div>
                   </div>
