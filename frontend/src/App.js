@@ -7920,14 +7920,25 @@ const PlanningManager = () => {
         </>
       )}
 
-      {/* VUE MENSUELLE */}
+      {/* VUE MENSUELLE - Planning d'abord */}
       {viewMode === 'mois' && (
-        <>
-          {/* Récapitulatif Mensuel */}
-          <Card className="mt-6">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100">
-              <CardTitle className="flex items-center space-x-2">
-                <span>📅 Récapitulatif du Mois</span>
+        <Card className="mt-4">
+          <CardHeader className="bg-gradient-to-r from-indigo-50 to-indigo-100">
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center space-x-2">
+                <Calendar className="h-5 w-5" />
+                <span>
+                  📅 Planning Mensuel - {new Date(selectedMonth + '-01').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                </span>
+              </span>
+              {/* Filtre employé pour le directeur ou vue planning complète */}
+              {hasDirectorView() && (
+                <div className="flex items-center space-x-2">
+                  <Label className="text-sm">Filtrer par employé:</Label>
+                  <Select value={filterEmployeMois} onValueChange={setFilterEmployeMois}>
+                    <SelectTrigger className="w-[300px]">
+                      <SelectValue placeholder="Tous les employés" />
+                    </SelectTrigger>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4">
