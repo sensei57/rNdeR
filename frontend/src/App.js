@@ -10432,16 +10432,16 @@ const PlanningManager = () => {
             {/* Assistants - Demi-journées */}
             <div className="border rounded-lg p-4">
               <h3 className="font-bold text-green-700 mb-3 text-lg">👥 ASSISTANTS</h3>
-              <p className="text-xs text-gray-500 mb-3">Définir les demi-journées de présence et le nombre de 1/2 journées à effectuer par semaine</p>
+              <p className="text-xs text-gray-500 mb-3">Définir les demi-journées de présence, heures de travail et congés</p>
               <div className="space-y-2">
                 {users.filter(u => u.actif && u.role === 'Assistant').map(emp => (
-                  <div key={emp.id} className="grid grid-cols-[1fr_auto_auto_auto] gap-3 items-center bg-green-50 p-3 rounded-lg">
+                  <div key={emp.id} className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-2 items-center bg-green-50 p-3 rounded-lg">
                     <span className="font-medium">{emp.prenom} {emp.nom}</span>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1">
                       <Button
                         size="sm"
                         variant={emp.semaine_a_config ? "default" : "outline"}
-                        className={emp.semaine_a_config ? "bg-green-600 hover:bg-green-700" : "hover:bg-green-100"}
+                        className={`h-7 px-2 text-xs ${emp.semaine_a_config ? "bg-green-600 hover:bg-green-700" : "hover:bg-green-100"}`}
                         onClick={() => openConfigSemaine(emp, 'A')}
                       >
                         A {emp.semaine_a_config ? '✓' : ''}
@@ -10449,28 +10449,48 @@ const PlanningManager = () => {
                       <Button
                         size="sm"
                         variant={emp.semaine_b_config ? "default" : "outline"}
-                        className={emp.semaine_b_config ? "bg-green-600 hover:bg-green-700" : "hover:bg-green-100"}
+                        className={`h-7 px-2 text-xs ${emp.semaine_b_config ? "bg-green-600 hover:bg-green-700" : "hover:bg-green-100"}`}
                         onClick={() => openConfigSemaine(emp, 'B')}
                       >
                         B {emp.semaine_b_config ? '✓' : ''}
                       </Button>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Label className="text-xs whitespace-nowrap">1/2j sem A:</Label>
+                      <Label className="text-xs whitespace-nowrap">½j/sem A:</Label>
                       <Input
                         type="number"
-                        className="h-8 text-xs w-16"
+                        className="h-7 text-xs w-12"
                         value={emp.limite_demi_journees_a || 10}
                         onChange={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_a', parseInt(e.target.value) || 10)}
                       />
                     </div>
                     <div className="flex items-center gap-1">
-                      <Label className="text-xs whitespace-nowrap">1/2j sem B:</Label>
+                      <Label className="text-xs whitespace-nowrap">½j/sem B:</Label>
                       <Input
                         type="number"
-                        className="h-8 text-xs w-16"
+                        className="h-7 text-xs w-12"
                         value={emp.limite_demi_journees_b || 10}
                         onChange={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_b', parseInt(e.target.value) || 10)}
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Label className="text-xs whitespace-nowrap text-blue-700">H/½j trav:</Label>
+                      <Input
+                        type="number"
+                        step="0.5"
+                        className="h-7 text-xs w-12 border-blue-300"
+                        value={emp.heures_par_jour || 4}
+                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_par_jour', parseFloat(e.target.value) || 4)}
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Label className="text-xs whitespace-nowrap text-orange-700">H/½j congé:</Label>
+                      <Input
+                        type="number"
+                        step="0.5"
+                        className="h-7 text-xs w-12 border-orange-300"
+                        value={emp.heures_demi_journee_conge || 4}
+                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_demi_journee_conge', parseFloat(e.target.value) || 4)}
                       />
                     </div>
                   </div>
