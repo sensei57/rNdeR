@@ -8676,11 +8676,35 @@ const PlanningManager = () => {
                     return (
                       <tr key={assistant.id} className="hover:bg-green-50">
                         <td 
-                          className="border p-2 font-medium cursor-pointer hover:bg-green-200"
-                          onClick={() => openSemaineABCModal({ type: 'employe', employe: assistant })}
-                          title="Cliquer pour appliquer Semaine A, B ou Congés"
+                          className="border p-2 font-medium"
                         >
-                          {assistant.prenom} {assistant.nom}
+                          <div className="flex items-center justify-between">
+                            <span 
+                              className="cursor-pointer hover:bg-green-200 px-1 rounded"
+                              onClick={() => openSemaineABCModal({ type: 'employe', employe: assistant })}
+                              title="Cliquer pour appliquer Semaine A, B ou Congés"
+                            >
+                              {assistant.prenom} {assistant.nom}
+                            </span>
+                            <button
+                              className={`text-xs px-1 py-0.5 rounded hover:bg-yellow-200 ${assistant.note_planning ? 'bg-yellow-100 text-yellow-700' : 'text-gray-400 hover:text-gray-600'}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const note = prompt(`Note pour ${assistant.prenom} ${assistant.nom}:`, assistant.note_planning || '');
+                                if (note !== null) {
+                                  updateEmployeSemaineConfig(assistant.id, 'note_planning', note);
+                                }
+                              }}
+                              title={assistant.note_planning || "Ajouter une note"}
+                            >
+                              {assistant.note_planning ? '📝' : '📝'}
+                            </button>
+                          </div>
+                          {assistant.note_planning && (
+                            <div className="text-xs text-yellow-700 bg-yellow-50 px-1 rounded mt-1 italic truncate max-w-[150px]" title={assistant.note_planning}>
+                              {assistant.note_planning}
+                            </div>
+                          )}
                         </td>
                         {planningTableau.dates.map((date, dateIndex) => {
                           const creneauMatin = getCreneauForEmploye(assistant.id, date, 'MATIN');
