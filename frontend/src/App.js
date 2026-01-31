@@ -8092,10 +8092,20 @@ const PlanningManager = () => {
                   </tr>
                   {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role === 'Secrétaire')).map(secretaire => {
                     const total = getTotalDemiJournees(secretaire.id);
+                    const heures = getTotalHeures(secretaire.id);
                     return (
                       <tr key={secretaire.id} className="hover:bg-pink-50">
-                        <td className="border p-2 font-medium">
-                          <span>{secretaire.prenom} {secretaire.nom}</span>
+                        <td 
+                          className="border p-2 font-medium cursor-pointer hover:bg-pink-200"
+                          onClick={() => openSemaineABCModal({ type: 'employe', employe: secretaire })}
+                          title="Cliquer pour appliquer Semaine A, B ou Congés"
+                        >
+                          <div>{secretaire.prenom} {secretaire.nom}</div>
+                          <div className="flex gap-1 mt-1">
+                            <span className="text-xs bg-pink-100 px-1 rounded cursor-pointer hover:bg-pink-300" title="Semaine A">A</span>
+                            <span className="text-xs bg-pink-100 px-1 rounded cursor-pointer hover:bg-pink-300" title="Semaine B">B</span>
+                            <span className="text-xs bg-gray-100 px-1 rounded cursor-pointer hover:bg-gray-300" title="Congés semaine">Co</span>
+                          </div>
                         </td>
                         {planningTableau.dates.map((date, dateIndex) => {
                           const creneauMatin = getCreneauForEmploye(secretaire.id, date, 'MATIN');
@@ -8115,7 +8125,7 @@ const PlanningManager = () => {
                                   hasCongeEnAttente ? 'bg-yellow-200 hover:bg-yellow-300' :
                                   hasCongeApprouve ? getCongeColorClasses(congeApprouve.type_conge, true) :
                                   creneauMatin ? 'bg-pink-200 hover:bg-pink-300' : 'hover:bg-pink-100'
-                                }`}
+                                } ${dateIndex % 2 === 1 ? 'bg-opacity-80' : ''}`}
                                 onClick={() => {
                                   if (hasCongeEnAttente) return; // Les boutons gèrent les actions
                                   if (hasCongeApprouve) return; // Clic sur le type pour changer
