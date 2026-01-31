@@ -8529,7 +8529,18 @@ const PlanningManager = () => {
                           const semaineAffichee = localStorage.getItem('semaineAffichee') || 'A';
                           const heuresSemaine = semaineAffichee === 'A' ? (secretaire.heures_semaine_a || 35) : (secretaire.heures_semaine_b || 35);
                           const heuresContrat = secretaire.heures_semaine_fixe || 35;
-                          const heuresConges = congesApprouves?.filter(c => c.employe_id === secretaire.id && planningTableau.dates.some(d => d >= c.date_debut && d <= c.date_fin)).length * (secretaire.heures_demi_journee_conge || 4) || 0;
+                          
+                          // Calculer les heures de congés pour cette semaine
+                          let heuresCongesSemaine = 0;
+                          let nbConges = 0;
+                          planningTableau.dates.forEach(date => {
+                            const congesJour = getCongesForEmployeDate(secretaire.id, date);
+                            if (congesJour.length > 0) {
+                              nbConges++;
+                              heuresCongesSemaine += (secretaire.heures_demi_journee_conge || 4);
+                            }
+                          });
+                          
                           const getCouleur = (val, cible) => {
                             if (Math.abs(val - cible) < 0.5) return 'bg-yellow-100';
                             return val < cible ? 'bg-green-100' : 'bg-red-100';
@@ -8539,11 +8550,11 @@ const PlanningManager = () => {
                               <td className={`border p-1 text-center text-xs font-bold ${getCouleur(total, 10)}`}>{total}</td>
                               <td className={`border p-1 text-center text-xs font-bold ${getCouleur(heures, heuresSemaine)}`}>{heures}h</td>
                               <td className="border p-1 text-center text-xs bg-purple-50">{heuresSemaine}h</td>
-                              <td className="border p-1 text-center text-xs font-bold text-purple-700 bg-indigo-50">{heuresContrat}h</td>
+                              <td className={`border p-1 text-center text-xs font-bold ${getCouleur(heures, heuresContrat)} text-purple-700`}>{heuresContrat}h</td>
                               <td className={`border p-1 text-center text-xs font-bold ${(secretaire.heures_supplementaires || 0) >= 0 ? 'text-orange-600 bg-orange-50' : 'text-blue-600 bg-blue-50'}`}>
                                 {(secretaire.heures_supplementaires || 0) >= 0 ? '+' : ''}{(secretaire.heures_supplementaires || 0).toFixed(1)}h
                               </td>
-                              <td className="border p-1 text-center text-xs bg-green-50">{heuresConges}h</td>
+                              <td className={`border p-1 text-center text-xs font-bold ${heuresCongesSemaine > 0 ? 'bg-green-200 text-green-800' : 'bg-green-50'}`}>{heuresCongesSemaine}h</td>
                             </>
                           );
                         })()}
