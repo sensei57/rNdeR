@@ -2775,6 +2775,59 @@ const PlanningManager = () => {
   
   // Configuration des semaines A/B pour chaque employé
   const [showConfigSemainesModal, setShowConfigSemainesModal] = useState(false);
+  const [configSemaineEmploye, setConfigSemaineEmploye] = useState(null); // employé en cours de config
+  const [configSemaineType, setConfigSemaineType] = useState('A'); // 'A' ou 'B'
+  
+  // Structure de la semaine type pour un employé
+  const getDefaultSemaineConfig = (role) => {
+    const jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    if (role === 'Secrétaire') {
+      return jours.map(jour => ({
+        jour,
+        actif: jour !== 'Samedi',
+        debut_matin: '08:00',
+        fin_matin: '12:00',
+        debut_aprem: '14:00',
+        fin_aprem: '18:00'
+      }));
+    } else {
+      // Médecins et Assistants - demi-journées
+      return jours.map(jour => ({
+        jour,
+        matin: jour !== 'Samedi',
+        apres_midi: jour !== 'Samedi'
+      }));
+    }
+  };
+  
+  // Ouvrir la configuration de semaine pour un employé
+  const openConfigSemaine = (employe, type) => {
+    setConfigSemaineEmploye(employe);
+    setConfigSemaineType(type);
+    // Charger la config existante ou créer une nouvelle
+    const existingConfig = employe[`semaine_${type.toLowerCase()}_config`];
+    if (existingConfig) {
+      setConfigSemaineEmploye({...employe, tempConfig: existingConfig});
+    } else {
+      setConfigSemaineEmploye({...employe, tempConfig: getDefaultSemaineConfig(employe.role)});
+    }
+  };
+  
+  // Sauvegarder la configuration de semaine
+  const saveConfigSemaine = async () => {
+    if (!configSemaineEmploye) return;
+    try {
+      const fieldName = `semaine_${configSemaineType.toLowerCase()}_config`;
+      await axios.patch(`${API}/users/${configSemaineEmploye.id}`, {
+        [fieldName]: configSemaineEmploye.tempConfig
+      });
+      toast.success(`Semaine ${configSemaineType} configurée pour ${configSemaineEmploye.prenom}`);
+      fetchUsers();
+      setConfigSemaineEmploye(null);
+    } catch (error) {
+      toast.error('Erreur lors de la sauvegarde');
+    }
+  };
   
   // ============================================================
   // FONCTIONS D'EXPORT DE DONNÉES
