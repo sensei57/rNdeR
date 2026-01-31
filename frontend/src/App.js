@@ -8328,7 +8328,8 @@ const PlanningManager = () => {
                                 className={`border p-1 text-center cursor-pointer transition-colors ${
                                   hasCongeEnAttente ? 'bg-yellow-200 hover:bg-yellow-300' :
                                   hasCongeApprouve ? getCongeColorClasses(congeApprouve.type_conge, true) :
-                                  creneauAM ? 'bg-green-200 hover:bg-green-300' : 'hover:bg-green-100'
+                                  creneauAM ? 'bg-green-200 hover:bg-green-300' : 
+                                  dateIndex % 2 === 0 ? 'bg-white hover:bg-green-100' : 'bg-gray-50 hover:bg-green-100'
                                 }`}
                                 onClick={() => {
                                   if (hasCongeEnAttente || hasCongeApprouve) return;
