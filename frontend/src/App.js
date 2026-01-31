@@ -8914,7 +8914,8 @@ const PlanningManager = () => {
                       <tr className="bg-pink-50">
                         <th className="border p-1 text-left">Employé</th>
                         <th className="border p-1 text-center" title="Demi-journées travaillées">½j</th>
-                        <th className="border p-1 text-center" title="Heures prévues semaine">H/Sem</th>
+                        <th className="border p-1 text-center" title="Heures semaine A ou B">H/Sem A|B</th>
+                        <th className="border p-1 text-center" title="Heures contrat par semaine">H Contrat</th>
                         <th className="border p-1 text-center" title="Heures effectuées">H Eff.</th>
                         <th className="border p-1 text-center" title="Heures supplémentaires ou à rattraper">H Supp/Rattr</th>
                         <th className="border p-1 text-center" title="Heures de congés">H Congés</th>
@@ -8928,6 +8929,7 @@ const PlanningManager = () => {
                         const decompte = getDecompteMensuel(emp, moisActuel, anneeActuelle);
                         const semaineAffichee = localStorage.getItem('semaineAffichee') || 'A';
                         const heuresSemaine = semaineAffichee === 'A' ? (emp.heures_semaine_a || 35) : (emp.heures_semaine_b || 35);
+                        const heuresContrat = emp.heures_semaine_fixe || 35;
                         const diff = decompte.effectuees - decompte.prevues;
                         const getCouleur = (val, cible) => {
                           if (Math.abs(val - cible) < 0.5) return 'bg-yellow-100';
@@ -8940,6 +8942,7 @@ const PlanningManager = () => {
                               {Math.round(decompte.effectuees / 4)}
                             </td>
                             <td className="border p-1 text-center">{heuresSemaine}h</td>
+                            <td className="border p-1 text-center font-bold text-purple-700">{heuresContrat}h</td>
                             <td className={`border p-1 text-center ${getCouleur(decompte.effectuees, decompte.prevues)}`}>
                               {decompte.effectuees.toFixed(1)}h
                             </td>
