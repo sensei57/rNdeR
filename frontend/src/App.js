@@ -8635,6 +8635,10 @@ const PlanningManager = () => {
                         <div className="text-gray-500">{new Date(date + 'T12:00:00').getDate()}/{new Date(date + 'T12:00:00').getMonth() + 1}</div>
                       </td>
                     ))}
+                    <td className="border p-1 bg-blue-100 text-xs text-center font-bold">½j</td>
+                    <td className="border p-1 bg-blue-100 text-xs text-center font-bold">H</td>
+                    <td className="border p-1 bg-blue-100 text-xs text-center font-bold">½j/S</td>
+                    <td className="border p-1 bg-blue-100"></td>
                     <td className="border p-1 bg-blue-100"></td>
                     <td className="border p-1 bg-blue-100"></td>
                   </tr>
