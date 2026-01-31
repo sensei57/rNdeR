@@ -8028,7 +8028,7 @@ const PlanningManager = () => {
                           
                           const creneauMatin = planningMois.find(p => p.employe_id === emp.id && p.date === dateStr && p.creneau === 'MATIN');
                           const creneauAM = planningMois.find(p => p.employe_id === emp.id && p.date === dateStr && p.creneau === 'APRES_MIDI');
-                          const congesJour = conges.filter(c => c.utilisateur_id === emp.id && c.statut === 'APPROUVE' && c.date_debut <= dateStr && c.date_fin >= dateStr);
+                          const congesJour = congesApprouves.filter(c => c.utilisateur_id === emp.id && c.statut === 'APPROUVE' && c.date_debut <= dateStr && c.date_fin >= dateStr);
                           const hasConge = congesJour.length > 0;
                           
                           let cellContent = '';
