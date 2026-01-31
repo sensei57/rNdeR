@@ -10466,14 +10466,18 @@ const DemandesTravailManager = () => {
       const jour = newMois[moisIndex].jours[jourIndex];
       if (jour.estVide) return prev;
       
-      if (jour.selectionne) {
+      // Cycle: null -> MATIN -> APRES_MIDI -> JOURNEE_COMPLETE -> null
+      if (!jour.selectionne || jour.creneau === null) {
+        jour.selectionne = true;
+        jour.creneau = 'MATIN';
+      } else if (jour.creneau === 'MATIN') {
+        jour.creneau = 'APRES_MIDI';
+      } else if (jour.creneau === 'APRES_MIDI') {
+        jour.creneau = 'JOURNEE_COMPLETE';
+      } else {
         // Désélectionner
         jour.selectionne = false;
         jour.creneau = null;
-      } else {
-        // Sélectionner avec JOURNEE_COMPLETE par défaut
-        jour.selectionne = true;
-        jour.creneau = 'JOURNEE_COMPLETE';
       }
       return newMois;
     });
