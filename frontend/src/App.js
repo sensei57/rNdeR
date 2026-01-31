@@ -4758,15 +4758,20 @@ const PlanningManager = () => {
   const applySemaineToEmploye = async (employe, semaine) => {
     if (!employe) return;
     
-    const horaireId = semaine === 'A' ? employe.semaine_a_id : employe.semaine_b_id;
-    const horaire = horairesSecretaires.find(h => String(h.id) === String(horaireId));
+    // Utiliser la nouvelle configuration semaine_a_config ou semaine_b_config
+    const config = semaine === 'A' ? employe.semaine_a_config : employe.semaine_b_config;
     
-    if (!horaire && employe.role === 'Secrétaire') {
-      toast.error(`Semaine ${semaine} non configurée pour ${employe.prenom}`);
-      return;
+    // Si pas de config, utiliser l'ancien système pour compatibilité
+    const horaireId = semaine === 'A' ? employe.semaine_a_id : employe.semaine_b_id;
+    const horaireOld = horairesSecretaires.find(h => String(h.id) === String(horaireId));
+    
+    if (!config && !horaireOld && employe.role === 'Secrétaire') {
+      toast.error(`Semaine ${semaine} non configurée pour ${employe.prenom}. Cliquez sur ⚙️ Configurer pour définir les horaires.`);
+      return 0;
     }
     
     let created = 0;
+    const joursNoms = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
     
     for (const date of planningTableau.dates) {
       // Vérifier si l'employé a déjà un congé ce jour
@@ -4778,48 +4783,136 @@ const PlanningManager = () => {
       const creneauMatin = getCreneauForEmploye(employe.id, date, 'MATIN');
       const creneauAM = getCreneauForEmploye(employe.id, date, 'APRES_MIDI');
       
-      // Créer le créneau MATIN si il n'existe pas et si l'horaire le prévoit
-      if (!creneauMatin) {
-        const shouldCreateMatin = employe.role === 'Secrétaire' 
-          ? (horaire?.debut_matin && horaire?.fin_matin)
-          : true; // Pour assistants/médecins, toujours créer
-        
-        if (shouldCreateMatin) {
-          try {
-            await axios.post(`${API}/planning`, {
-              employe_id: employe.id,
-              date: date,
-              creneau: 'MATIN',
-              horaire_debut: horaire?.debut_matin || null,
-              horaire_fin: horaire?.fin_matin || null,
-              notes: employe.role === 'Assistant' ? 'Présence' : null
-            });
-            created++;
-          } catch (err) {
-            console.error('Erreur création matin:', err);
+      // Obtenir la configuration pour ce jour
+      const jourSemaine = new Date(date + 'T12:00:00').getDay(); // 0=Dim, 1=Lun, ..., 6=Sam
+      const jourConfig = config ? config[jourSemaine === 0 ? 6 : jourSemaine - 1] : null; // Ajuster index (config[0]=Lundi)
+      
+      if (employe.role === 'Secrétaire') {
+        // Pour les secrétaires : utiliser les horaires de la config
+        if (jourConfig && jourConfig.actif) {
+          // Créer le créneau MATIN si il n'existe pas
+          if (!creneauMatin && jourConfig.debut_matin && jourConfig.fin_matin) {
+            try {
+              await axios.post(`${API}/planning`, {
+                employe_id: employe.id,
+                date: date,
+                creneau: 'MATIN',
+                horaire_debut: jourConfig.debut_matin,
+                horaire_fin: jourConfig.fin_matin
+              });
+              created++;
+            } catch (err) {
+              console.error('Erreur création matin:', err);
+            }
+          }
+          
+          // Créer le créneau APRES_MIDI si il n'existe pas
+          if (!creneauAM && jourConfig.debut_aprem && jourConfig.fin_aprem) {
+            try {
+              await axios.post(`${API}/planning`, {
+                employe_id: employe.id,
+                date: date,
+                creneau: 'APRES_MIDI',
+                horaire_debut: jourConfig.debut_aprem,
+                horaire_fin: jourConfig.fin_aprem
+              });
+              created++;
+            } catch (err) {
+              console.error('Erreur création AM:', err);
+            }
+          }
+        } else if (!config && horaireOld) {
+          // Fallback sur l'ancien système
+          if (!creneauMatin && horaireOld.debut_matin && horaireOld.fin_matin) {
+            try {
+              await axios.post(`${API}/planning`, {
+                employe_id: employe.id,
+                date: date,
+                creneau: 'MATIN',
+                horaire_debut: horaireOld.debut_matin,
+                horaire_fin: horaireOld.fin_matin
+              });
+              created++;
+            } catch (err) {
+              console.error('Erreur création matin:', err);
+            }
+          }
+          if (!creneauAM && horaireOld.debut_aprem && horaireOld.fin_aprem) {
+            try {
+              await axios.post(`${API}/planning`, {
+                employe_id: employe.id,
+                date: date,
+                creneau: 'APRES_MIDI',
+                horaire_debut: horaireOld.debut_aprem,
+                horaire_fin: horaireOld.fin_aprem
+              });
+              created++;
+            } catch (err) {
+              console.error('Erreur création AM:', err);
+            }
           }
         }
-      }
-      
-      // Créer le créneau APRES_MIDI si il n'existe pas et si l'horaire le prévoit
-      if (!creneauAM) {
-        const shouldCreateAM = employe.role === 'Secrétaire' 
-          ? (horaire?.debut_aprem && horaire?.fin_aprem)
-          : true;
-        
-        if (shouldCreateAM) {
-          try {
-            await axios.post(`${API}/planning`, {
-              employe_id: employe.id,
-              date: date,
-              creneau: 'APRES_MIDI',
-              horaire_debut: horaire?.debut_aprem || null,
-              horaire_fin: horaire?.fin_aprem || null,
-              notes: employe.role === 'Assistant' ? 'Présence' : null
-            });
-            created++;
-          } catch (err) {
-            console.error('Erreur création AM:', err);
+      } else {
+        // Pour assistants/médecins : utiliser les demi-journées de la config
+        if (jourConfig) {
+          // Créer le créneau MATIN si prévu et n'existe pas
+          if (!creneauMatin && jourConfig.matin) {
+            try {
+              await axios.post(`${API}/planning`, {
+                employe_id: employe.id,
+                date: date,
+                creneau: 'MATIN',
+                notes: 'Présence'
+              });
+              created++;
+            } catch (err) {
+              console.error('Erreur création matin:', err);
+            }
+          }
+          
+          // Créer le créneau APRES_MIDI si prévu et n'existe pas
+          if (!creneauAM && jourConfig.apres_midi) {
+            try {
+              await axios.post(`${API}/planning`, {
+                employe_id: employe.id,
+                date: date,
+                creneau: 'APRES_MIDI',
+                notes: 'Présence'
+              });
+              created++;
+            } catch (err) {
+              console.error('Erreur création AM:', err);
+            }
+          }
+        } else if (!config) {
+          // Pas de config, créer les deux demi-journées par défaut (sauf dimanche et samedi)
+          if (jourSemaine >= 1 && jourSemaine <= 5) {
+            if (!creneauMatin) {
+              try {
+                await axios.post(`${API}/planning`, {
+                  employe_id: employe.id,
+                  date: date,
+                  creneau: 'MATIN',
+                  notes: 'Présence'
+                });
+                created++;
+              } catch (err) {
+                console.error('Erreur création matin:', err);
+              }
+            }
+            if (!creneauAM) {
+              try {
+                await axios.post(`${API}/planning`, {
+                  employe_id: employe.id,
+                  date: date,
+                  creneau: 'APRES_MIDI',
+                  notes: 'Présence'
+                });
+                created++;
+              } catch (err) {
+                console.error('Erreur création AM:', err);
+              }
+            }
           }
         }
       }
