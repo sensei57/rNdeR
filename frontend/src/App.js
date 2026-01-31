@@ -2725,6 +2725,7 @@ const PlanningManager = () => {
   const [planningMois, setPlanningMois] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewModeLocal] = useState('jour');
+  const [semaineAffichee, setSemaineAffichee] = useState('A'); // Semaine A ou B pour le calcul des heures
   
   // Fonction utilitaire pour formater une date en YYYY-MM-DD sans problèmes de fuseau horaire
   const formatDateISO = (year, month, day) => {
