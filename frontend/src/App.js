@@ -9786,10 +9786,26 @@ const PlanningManager = () => {
             <div className="grid grid-cols-[1fr_auto_1fr] gap-2">
               {/* MATIN */}
               <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h3 className="font-bold text-blue-800 flex items-center text-base">
-                  <CalendarDays className="h-5 w-5 mr-2" /> Matin
-                  {journeeData.matin.exists && <span className="ml-2 text-xs text-green-600">(existant)</span>}
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-blue-800 flex items-center text-base">
+                    <CalendarDays className="h-5 w-5 mr-2" /> Matin
+                    {journeeData.matin.exists && <span className="ml-2 text-xs text-green-600">(existant)</span>}
+                  </h3>
+                  {journeeData.matin.exists && (
+                    <label className="flex items-center gap-2 text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200 cursor-pointer hover:bg-red-100">
+                      <input
+                        type="checkbox"
+                        checked={journeeData.matin.supprimer}
+                        onChange={(e) => setJourneeData(prev => ({
+                          ...prev,
+                          matin: { ...prev.matin, supprimer: e.target.checked }
+                        }))}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-xs font-bold">🗑️ Supprimer</span>
+                    </label>
+                  )}
+                </div>
                 
                 {journeeData.employe?.role === 'Secrétaire' && (
                   <>
