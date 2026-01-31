@@ -8237,12 +8237,25 @@ const PlanningManager = () => {
                       </td>
                     ))}
                     <td className="border p-1 bg-green-100"></td>
+                    <td className="border p-1 bg-green-100"></td>
                   </tr>
                   {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role === 'Assistant')).map(assistant => {
                     const total = getTotalDemiJournees(assistant.id);
+                    const heures = getTotalHeures(assistant.id);
                     return (
                       <tr key={assistant.id} className="hover:bg-green-50">
-                        <td className="border p-2 font-medium">{assistant.prenom} {assistant.nom}</td>
+                        <td 
+                          className="border p-2 font-medium cursor-pointer hover:bg-green-200"
+                          onClick={() => openSemaineABCModal({ type: 'employe', employe: assistant })}
+                          title="Cliquer pour appliquer Semaine A, B ou Congés"
+                        >
+                          <div>{assistant.prenom} {assistant.nom}</div>
+                          <div className="flex gap-1 mt-1">
+                            <span className="text-xs bg-green-100 px-1 rounded cursor-pointer hover:bg-green-300" title="Semaine A">A</span>
+                            <span className="text-xs bg-green-100 px-1 rounded cursor-pointer hover:bg-green-300" title="Semaine B">B</span>
+                            <span className="text-xs bg-gray-100 px-1 rounded cursor-pointer hover:bg-gray-300" title="Congés semaine">Co</span>
+                          </div>
+                        </td>
                         {planningTableau.dates.map((date, dateIndex) => {
                           const creneauMatin = getCreneauForEmploye(assistant.id, date, 'MATIN');
                           const creneauAM = getCreneauForEmploye(assistant.id, date, 'APRES_MIDI');
