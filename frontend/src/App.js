@@ -2822,7 +2822,7 @@ const PlanningManager = () => {
         [fieldName]: configSemaineEmploye.tempConfig
       });
       toast.success(`Semaine ${configSemaineType} configurée pour ${configSemaineEmploye.prenom}`);
-      fetchUsers();
+      fetchData();
       setConfigSemaineEmploye(null);
     } catch (error) {
       toast.error('Erreur lors de la sauvegarde');
