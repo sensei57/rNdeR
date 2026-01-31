@@ -10135,46 +10135,6 @@ const PlanningManager = () => {
         </DialogContent>
       </Dialog>
 
-            {/* Médecins - Demi-journées */}
-            <div className="border rounded-lg p-4">
-              <h3 className="font-bold text-blue-700 mb-3 text-lg">👨‍⚕️ MÉDECINS</h3>
-              <p className="text-xs text-gray-500 mb-3">Définir les demi-journées de présence (Matin / Après-midi)</p>
-              <div className="space-y-2">
-                {users.filter(u => u.actif && u.role === 'Médecin').map(emp => (
-                  <div key={emp.id} className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
-                    <span className="font-medium w-48">Dr. {emp.prenom} {emp.nom}</span>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant={emp.semaine_a_config ? "default" : "outline"}
-                        className={emp.semaine_a_config ? "bg-blue-600 hover:bg-blue-700" : "hover:bg-blue-100"}
-                        onClick={() => openConfigSemaine(emp, 'A')}
-                      >
-                        A {emp.semaine_a_config ? '✓' : ''}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={emp.semaine_b_config ? "default" : "outline"}
-                        className={emp.semaine_b_config ? "bg-blue-600 hover:bg-blue-700" : "hover:bg-blue-100"}
-                        onClick={() => openConfigSemaine(emp, 'B')}
-                      >
-                        B {emp.semaine_b_config ? '✓' : ''}
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex justify-end pt-4 border-t">
-            <Button onClick={() => setShowConfigSemainesModal(false)}>
-              Fermer
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       {/* Modal Détail Configuration Semaine (pour un employé) */}
       <Dialog open={configSemaineEmploye !== null} onOpenChange={(open) => !open && setConfigSemaineEmploye(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
