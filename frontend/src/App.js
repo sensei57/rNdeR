@@ -10426,13 +10426,46 @@ const PlanningManager = () => {
               </p>
             </div>
             
-            <div className="flex justify-end space-x-2 pt-4 border-t">
-              <Button type="button" variant="outline" onClick={() => setShowJourneeModal(false)}>
-                Annuler
-              </Button>
-              <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
-                Enregistrer la journée
-              </Button>
+            <div className="flex justify-between pt-4 border-t">
+              {/* Bouton de suppression - uniquement si au moins un créneau existe et est coché pour suppression */}
+              <div>
+                {(journeeData.matin.exists || journeeData.apresMidi.exists) && (
+                  <Button 
+                    type="button" 
+                    variant="destructive"
+                    className="bg-red-600 hover:bg-red-700"
+                    disabled={!journeeData.matin.supprimer && !journeeData.apresMidi.supprimer}
+                    onClick={async () => {
+                      try {
+                        if (journeeData.matin.supprimer && journeeData.matin.id) {
+                          await axios.delete(`${API}/planning/${journeeData.matin.id}`);
+                          toast.success('Créneau matin supprimé');
+                        }
+                        if (journeeData.apresMidi.supprimer && journeeData.apresMidi.id) {
+                          await axios.delete(`${API}/planning/${journeeData.apresMidi.id}`);
+                          toast.success('Créneau après-midi supprimé');
+                        }
+                        setShowJourneeModal(false);
+                        fetchPlanningTableau(selectedWeek);
+                      } catch (error) {
+                        console.error('Erreur suppression:', error);
+                        toast.error('Erreur lors de la suppression');
+                      }
+                    }}
+                  >
+                    🗑️ Supprimer les créneaux cochés
+                  </Button>
+                )}
+              </div>
+              
+              <div className="flex space-x-2">
+                <Button type="button" variant="outline" onClick={() => setShowJourneeModal(false)}>
+                  Annuler
+                </Button>
+                <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
+                  Enregistrer la journée
+                </Button>
+              </div>
             </div>
           </form>
         </DialogContent>
