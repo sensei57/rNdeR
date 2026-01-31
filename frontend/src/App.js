@@ -8206,15 +8206,24 @@ const PlanningManager = () => {
                             </React.Fragment>
                           );
                         })}
-                        <td className={`border p-2 text-center font-bold ${getTotalColor(total)}`}>{total}</td>
+                        <td className={`border p-2 text-center font-bold ${getTotalColor(total, 'employe', secretaire)}`}>{total}</td>
+                        <td className="border p-2 text-center font-bold bg-blue-50">{heures}h</td>
                       </tr>
                     );
                   })}
 
                   {/* SECTION ASSISTANTS */}
                   <tr className="bg-green-100">
-                    <td className="border p-2 font-bold text-green-800">
+                    <td 
+                      className="border p-2 font-bold text-green-800 cursor-pointer hover:bg-green-200"
+                      onClick={() => openSemaineABCModal({ type: 'section', section: 'Assistant' })}
+                      title="Cliquer pour appliquer Semaine A, B ou Congés"
+                    >
                       👥 ASSISTANTS
+                      <div className="text-xs font-normal text-green-600 mt-1">
+                        <span className="bg-green-200 px-1 rounded">A</span>
+                        <span className="bg-green-200 px-1 rounded ml-1">B</span>
+                      </div>
                     </td>
                     {planningTableau.dates.map((date, dateIndex) => (
                       <td 
