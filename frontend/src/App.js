@@ -7961,16 +7961,27 @@ const PlanningManager = () => {
 
                   {/* SECTION ASSISTANTS */}
                   <tr className="bg-green-100">
-                    <td colSpan={planningTableau.dates.length * 2 + 2} className="border p-2 font-bold text-green-800">
+                    <td className="border p-2 font-bold text-green-800">
                       👥 ASSISTANTS
                     </td>
+                    {planningTableau.dates.map((date, dateIndex) => (
+                      <td 
+                        key={`ass-header-${date}`}
+                        colSpan={2} 
+                        className={`border p-1 text-center text-xs font-medium ${dateIndex % 2 === 0 ? 'bg-green-50' : 'bg-green-100'}`}
+                      >
+                        <div>{new Date(date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'short' })}</div>
+                        <div className="text-gray-500">{new Date(date + 'T12:00:00').getDate()}/{new Date(date + 'T12:00:00').getMonth() + 1}</div>
+                      </td>
+                    ))}
+                    <td className="border p-1 bg-green-100"></td>
                   </tr>
                   {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role === 'Assistant')).map(assistant => {
                     const total = getTotalDemiJournees(assistant.id);
                     return (
                       <tr key={assistant.id} className="hover:bg-green-50">
                         <td className="border p-2 font-medium">{assistant.prenom} {assistant.nom}</td>
-                        {planningTableau.dates.map(date => {
+                        {planningTableau.dates.map((date, dateIndex) => {
                           const creneauMatin = getCreneauForEmploye(assistant.id, date, 'MATIN');
                           const creneauAM = getCreneauForEmploye(assistant.id, date, 'APRES_MIDI');
                           const displayMatin = getAssistantDisplay(creneauMatin);
