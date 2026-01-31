@@ -7894,20 +7894,159 @@ const PlanningManager = () => {
 
           {/* Séparation */}
           <div className="mt-6 border-t-4 border-gray-300"></div>
+        </>
+      )}
 
+      {/* VUE MENSUELLE */}
+      {viewMode === 'mois' && (
+        <>
           {/* Récapitulatif Mensuel */}
           <Card className="mt-6">
             <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100">
               <CardTitle className="flex items-center space-x-2">
-                <span>📅 Récapitulatif Mensuel (Mois en cours)</span>
+                <span>📅 Récapitulatif du Mois</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4">
               <div className="space-y-4">
-                {/* Médecins - Demi-journées au mois */}
-                {medecins.filter(m => m.actif).length > 0 && (
+                {/* Secrétaires */}
+                {users.filter(u => u.role === 'Secrétaire' && u.actif).length > 0 && (
                   <div>
-                    <h3 className="text-sm font-bold text-gray-700 mb-2">Médecins (Demi-journées/mois)</h3>
+                    <h3 className="text-sm font-bold text-pink-700 mb-2 bg-pink-100 p-2 rounded">📋 Secrétaires</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {users.filter(u => u.role === 'Secrétaire' && u.actif).map(secretaire => {
+                        const firstDate = new Date(planningMois[0]?.date || selectedMonth + '-01');
+                        const year = firstDate.getFullYear();
+                        const month = firstDate.getMonth();
+                        const daysInMonth = new Date(year, month + 1, 0).getDate();
+                        const datesMonth = [];
+                        for (let i = 1; i <= daysInMonth; i++) {
+                          datesMonth.push(formatDateISO(year, month + 1, i));
+                        }
+                        const heuresFaites = calculateHeures(secretaire.id, datesMonth);
+                        const heuresContrat = (secretaire.heures_semaine_fixe || 35) * 4; // ~4 semaines/mois
+                        const heuresSup = secretaire.heures_supplementaires || 0;
+                        const congesDemiJ = calculateConges(secretaire.id, datesMonth);
+                        const congesHeures = congesDemiJ * (secretaire.heures_demi_journee_conge || 4);
+                        
+                        return (
+                          <div key={secretaire.id} className="bg-pink-50 border border-pink-200 rounded-lg p-3">
+                            <div className="font-medium text-gray-800 mb-2">{secretaire.prenom} {secretaire.nom}</div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <span className="text-gray-500">Heures:</span>
+                                <span className="font-bold text-pink-700 ml-1">{heuresFaites}h / {heuresContrat}h</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-500">H sup:</span>
+                                <span className={`font-bold ml-1 ${heuresSup >= 0 ? 'text-orange-600' : 'text-blue-600'}`}>
+                                  {heuresSup >= 0 ? '+' : ''}{heuresSup.toFixed(1)}h
+                                </span>
+                              </div>
+                              <div className="col-span-2">
+                                <span className="text-gray-500">Congés:</span>
+                                <span className="font-bold text-green-600 ml-1">{congesDemiJ} ½j ({congesHeures}h)</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Assistants */}
+                {users.filter(u => u.role === 'Assistant' && u.actif).length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-green-700 mb-2 bg-green-100 p-2 rounded">👥 Assistants</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {users.filter(u => u.role === 'Assistant' && u.actif).map(assistant => {
+                        const firstDate = new Date(planningMois[0]?.date || selectedMonth + '-01');
+                        const year = firstDate.getFullYear();
+                        const month = firstDate.getMonth();
+                        const daysInMonth = new Date(year, month + 1, 0).getDate();
+                        const datesMonth = [];
+                        for (let i = 1; i <= daysInMonth; i++) {
+                          datesMonth.push(formatDateISO(year, month + 1, i));
+                        }
+                        const demiJFaites = calculateDemiJournees(assistant.id, datesMonth);
+                        const demiJPrevues = ((assistant.limite_demi_journees_a || 10) + (assistant.limite_demi_journees_b || 10)) / 2 * 4; // Moyenne * 4 semaines
+                        const heuresFaites = demiJFaites * (assistant.heures_par_jour || 4);
+                        const heuresSup = assistant.heures_supplementaires || 0;
+                        const congesDemiJ = calculateConges(assistant.id, datesMonth);
+                        const congesHeures = congesDemiJ * (assistant.heures_demi_journee_conge || 4);
+                        
+                        return (
+                          <div key={assistant.id} className="bg-green-50 border border-green-200 rounded-lg p-3">
+                            <div className="font-medium text-gray-800 mb-2">{assistant.prenom} {assistant.nom}</div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <span className="text-gray-500">½j:</span>
+                                <span className="font-bold text-green-700 ml-1">{demiJFaites} / {Math.round(demiJPrevues)}</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-500">Heures:</span>
+                                <span className="font-bold text-green-700 ml-1">{heuresFaites}h</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-500">H sup:</span>
+                                <span className={`font-bold ml-1 ${heuresSup >= 0 ? 'text-orange-600' : 'text-blue-600'}`}>
+                                  {heuresSup >= 0 ? '+' : ''}{heuresSup.toFixed(1)}h
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-gray-500">Congés:</span>
+                                <span className="font-bold text-green-600 ml-1">{congesDemiJ} ½j ({congesHeures}h)</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Médecins */}
+                {users.filter(u => u.role === 'Médecin' && u.actif).length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-blue-700 mb-2 bg-blue-100 p-2 rounded">👨‍⚕️ Médecins</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {users.filter(u => u.role === 'Médecin' && u.actif).map(medecin => {
+                        const firstDate = new Date(planningMois[0]?.date || selectedMonth + '-01');
+                        const year = firstDate.getFullYear();
+                        const month = firstDate.getMonth();
+                        const daysInMonth = new Date(year, month + 1, 0).getDate();
+                        const datesMonth = [];
+                        for (let i = 1; i <= daysInMonth; i++) {
+                          datesMonth.push(formatDateISO(year, month + 1, i));
+                        }
+                        const demiJFaites = calculateDemiJournees(medecin.id, datesMonth);
+                        const heuresSup = medecin.heures_supplementaires || 0;
+                        
+                        return (
+                          <div key={medecin.id} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                            <div className="font-medium text-gray-800 mb-2">Dr. {medecin.prenom} {medecin.nom}</div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <span className="text-gray-500">½j:</span>
+                                <span className="font-bold text-blue-700 ml-1">{demiJFaites}</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-500">H sup:</span>
+                                <span className={`font-bold ml-1 ${heuresSup >= 0 ? 'text-orange-600' : 'text-blue-600'}`}>
+                                  {heuresSup >= 0 ? '+' : ''}{heuresSup.toFixed(1)}h
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                       {medecins.filter(m => m.actif).map(medecin => {
                         // Calculer toutes les dates du mois en cours
