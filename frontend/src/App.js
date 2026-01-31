@@ -2928,10 +2928,9 @@ const PlanningManager = () => {
         demiJourneesEffectuees += creneauxJour.length;
       }
       
-      // Comptabiliser les congés
-      const congesJour = conges?.filter(c => 
+      // Comptabiliser les congés (approuvés uniquement)
+      const congesJour = congesApprouves?.filter(c => 
         c.employe_id === employe.id && 
-        c.statut === 'approuve' &&
         dateStr >= c.date_debut && dateStr <= c.date_fin
       ) || [];
       
