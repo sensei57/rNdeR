@@ -8472,8 +8472,12 @@ const PlanningManager = () => {
                         <div className="text-gray-500">{new Date(date + 'T12:00:00').getDate()}/{new Date(date + 'T12:00:00').getMonth() + 1}</div>
                       </td>
                     ))}
-                    <td className="border p-1 bg-green-100"></td>
-                    <td className="border p-1 bg-green-100"></td>
+                    <td className="border p-1 bg-green-100 text-xs text-center font-bold">½j</td>
+                    <td className="border p-1 bg-green-100 text-xs text-center font-bold">H</td>
+                    <td className="border p-1 bg-green-100 text-xs text-center font-bold">½j/S</td>
+                    <td className="border p-1 bg-green-100 text-xs text-center font-bold">Ctr</td>
+                    <td className="border p-1 bg-green-100 text-xs text-center font-bold">Supp</td>
+                    <td className="border p-1 bg-green-100 text-xs text-center font-bold">Cg</td>
                   </tr>
                   {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role === 'Assistant')).map(assistant => {
                     const total = getTotalDemiJournees(assistant.id);
