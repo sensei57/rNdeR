@@ -9990,7 +9990,7 @@ const PlanningManager = () => {
                   </>
                 )}
                 
-                {journeeData.matin.actif && journeeData.employe?.role === 'Médecin' && (
+                {journeeData.employe?.role === 'Médecin' && (
                   <>
                     <div>
                       <Label className="text-xs">Box</Label>
