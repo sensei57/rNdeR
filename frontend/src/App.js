@@ -2830,6 +2830,125 @@ const PlanningManager = () => {
   };
   
   // ============================================================
+  // DÉCOMPTE MENSUEL PAR EMPLOYÉ
+  // ============================================================
+  
+  // Déterminer si une semaine est A ou B (basé sur le numéro de semaine)
+  const getTypeSemaine = (date) => {
+    const d = new Date(date);
+    const startOfYear = new Date(d.getFullYear(), 0, 1);
+    const weekNumber = Math.ceil(((d - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+    return weekNumber % 2 === 0 ? 'B' : 'A';
+  };
+  
+  // Calculer le décompte mensuel pour un employé
+  const getDecompteMensuel = (employe, mois, annee) => {
+    // Obtenir toutes les dates du mois
+    const premierJour = new Date(annee, mois, 1);
+    const dernierJour = new Date(annee, mois + 1, 0);
+    
+    let heuresEffectuees = 0;
+    let demiJourneesEffectuees = 0;
+    let heuresPrevues = 0;
+    let demiJourneesPrevues = 0;
+    
+    // Parcourir chaque jour du mois
+    for (let jour = new Date(premierJour); jour <= dernierJour; jour.setDate(jour.getDate() + 1)) {
+      const dateStr = jour.toISOString().split('T')[0];
+      const jourSemaine = jour.getDay(); // 0=Dim, 1=Lun, ..., 6=Sam
+      
+      // Ignorer dimanche
+      if (jourSemaine === 0) continue;
+      
+      const typeSemaine = getTypeSemaine(dateStr);
+      const config = typeSemaine === 'A' ? employe.semaine_a_config : employe.semaine_b_config;
+      
+      // Vérifier les créneaux effectués
+      const creneauxJour = planningTableau.planning?.[dateStr]?.filter(c => c.employe_id === employe.id) || [];
+      
+      if (employe.role === 'Secrétaire') {
+        // Pour les secrétaires : compter les heures
+        const heuresSemaine = typeSemaine === 'A' ? (employe.heures_semaine_a || 35) : (employe.heures_semaine_b || 35);
+        const heuresParJour = heuresSemaine / 5; // 5 jours ouvrés
+        
+        // Heures prévues (si pas dimanche et jour ouvré dans la config)
+        if (config) {
+          const jourConfig = config[jourSemaine - 1]; // index 0 = Lundi
+          if (jourConfig?.actif) {
+            // Calculer heures de ce jour
+            let heuresJour = 0;
+            if (jourConfig.debut_matin && jourConfig.fin_matin) {
+              const [h1, m1] = jourConfig.debut_matin.split(':').map(Number);
+              const [h2, m2] = jourConfig.fin_matin.split(':').map(Number);
+              heuresJour += (h2 + m2/60) - (h1 + m1/60);
+            }
+            if (jourConfig.debut_aprem && jourConfig.fin_aprem) {
+              const [h1, m1] = jourConfig.debut_aprem.split(':').map(Number);
+              const [h2, m2] = jourConfig.fin_aprem.split(':').map(Number);
+              heuresJour += (h2 + m2/60) - (h1 + m1/60);
+            }
+            heuresPrevues += heuresJour;
+          }
+        } else if (jourSemaine >= 1 && jourSemaine <= 5) {
+          // Pas de config, utiliser heures par défaut (jours ouvrés)
+          heuresPrevues += heuresParJour;
+        }
+        
+        // Heures effectuées
+        creneauxJour.forEach(creneau => {
+          if (creneau.horaire_debut && creneau.horaire_fin) {
+            const [h1, m1] = creneau.horaire_debut.split(':').map(Number);
+            const [h2, m2] = creneau.horaire_fin.split(':').map(Number);
+            heuresEffectuees += (h2 + m2/60) - (h1 + m1/60);
+          } else {
+            // Par défaut 4h par demi-journée
+            heuresEffectuees += 4;
+          }
+        });
+        
+      } else {
+        // Pour médecins/assistants : compter les demi-journées
+        const limiteSemaine = typeSemaine === 'A' ? (employe.limite_demi_journees_a || 10) : (employe.limite_demi_journees_b || 10);
+        
+        // Demi-journées prévues
+        if (config) {
+          const jourConfig = config[jourSemaine - 1]; // index 0 = Lundi
+          if (jourConfig) {
+            if (jourConfig.matin) demiJourneesPrevues++;
+            if (jourConfig.apres_midi) demiJourneesPrevues++;
+          }
+        } else if (jourSemaine >= 1 && jourSemaine <= 5) {
+          // Pas de config, utiliser 2 demi-journées par défaut (jours ouvrés)
+          demiJourneesPrevues += 2;
+        }
+        
+        // Demi-journées effectuées
+        demiJourneesEffectuees += creneauxJour.length;
+      }
+    }
+    
+    if (employe.role === 'Secrétaire') {
+      const diff = heuresEffectuees - heuresPrevues;
+      return {
+        effectuees: heuresEffectuees,
+        prevues: heuresPrevues,
+        diff,
+        unite: 'h',
+        status: diff === 0 ? 'ok' : diff > 0 ? 'trop' : 'manque'
+      };
+    } else {
+      const diff = demiJourneesEffectuees - demiJourneesPrevues;
+      return {
+        effectuees: demiJourneesEffectuees,
+        prevues: demiJourneesPrevues,
+        diff,
+        unite: '½j',
+        status: diff === 0 ? 'ok' : diff > 0 ? 'trop' : 'manque'
+      };
+    }
+  };
+  
+  // ============================================================
   // FONCTIONS D'EXPORT DE DONNÉES
   // ============================================================
   
