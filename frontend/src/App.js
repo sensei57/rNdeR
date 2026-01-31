@@ -9962,16 +9962,7 @@ const PlanningManager = () => {
                   </>
                 )}
                 
-                {journeeData.employe?.role === 'Assistant' && (
-                  <>
-                    <div>
-                      <Label className="text-sm font-medium">👨‍⚕️ Médecins</Label>
-                      <div className="space-y-2 max-h-40 overflow-y-auto mt-1">
-                        {getMedecinsPresentsPourCreneau(journeeData.date, 'MATIN').map(med => {
-                          const autreAssistant = getAssistantPourMedecin(med.id, journeeData.date, 'MATIN', journeeData.employe_id);
-                          const estDejaAssocie = autreAssistant !== null;
-                          return (
-                            <label key={med.id} className={`flex items-center space-x-2 text-sm p-1 rounded cursor-pointer hover:bg-blue-100 ${estDejaAssocie ? 'text-orange-600 bg-orange-50' : 'text-gray-900'}`}>
+                {journeeData.matin.actif && journeeData.employe?.role === 'Assistant' && (
                               <input
                                 type="checkbox"
                                 checked={journeeData.matin.medecin_ids?.includes(med.id)}
