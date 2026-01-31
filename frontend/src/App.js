@@ -8703,7 +8703,17 @@ const PlanningManager = () => {
                           const semaineAffichee = localStorage.getItem('semaineAffichee') || 'A';
                           const demiJourneesSemaine = semaineAffichee === 'A' ? (assistant.limite_demi_journees_a || 10) : (assistant.limite_demi_journees_b || 10);
                           const heuresParDemiJournee = assistant.heures_par_jour || 4;
-                          const heuresConges = congesApprouves?.filter(c => c.employe_id === assistant.id && planningTableau.dates.some(d => d >= c.date_debut && d <= c.date_fin)).length * (assistant.heures_demi_journee_conge || 4) || 0;
+                          
+                          // Calculer les demi-journées de congés pour cette semaine
+                          let nbCongesSemaine = 0;
+                          planningTableau.dates.forEach(date => {
+                            const congesJour = getCongesForEmployeDate(assistant.id, date);
+                            if (congesJour.length > 0) {
+                              nbCongesSemaine++;
+                            }
+                          });
+                          const heuresCongesSemaine = nbCongesSemaine * (assistant.heures_demi_journee_conge || 4);
+                          
                           const getCouleur = (val, cible) => {
                             if (val === cible) return 'bg-yellow-100';
                             return val < cible ? 'bg-green-100' : 'bg-red-100';
@@ -8712,12 +8722,12 @@ const PlanningManager = () => {
                             <>
                               <td className={`border p-1 text-center text-xs font-bold ${getCouleur(total, demiJourneesSemaine)}`}>{total}</td>
                               <td className="border p-1 text-center text-xs bg-blue-50">{heures}h</td>
-                              <td className="border p-1 text-center text-xs bg-purple-50">{demiJourneesSemaine}</td>
-                              <td className="border p-1 text-center text-xs font-bold text-purple-700 bg-indigo-50">{heuresParDemiJournee}h</td>
+                              <td className={`border p-1 text-center text-xs ${getCouleur(total, demiJourneesSemaine)}`}>{demiJourneesSemaine}</td>
+                              <td className={`border p-1 text-center text-xs font-bold text-purple-700 ${getCouleur(heures, demiJourneesSemaine * heuresParDemiJournee)}`}>{heuresParDemiJournee}h</td>
                               <td className={`border p-1 text-center text-xs font-bold ${(assistant.heures_supplementaires || 0) >= 0 ? 'text-orange-600 bg-orange-50' : 'text-blue-600 bg-blue-50'}`}>
                                 {(assistant.heures_supplementaires || 0) >= 0 ? '+' : ''}{(assistant.heures_supplementaires || 0).toFixed(1)}h
                               </td>
-                              <td className="border p-1 text-center text-xs bg-green-50">{heuresConges}h</td>
+                              <td className={`border p-1 text-center text-xs font-bold ${nbCongesSemaine > 0 ? 'bg-green-200 text-green-800' : 'bg-green-50'}`}>{nbCongesSemaine > 0 ? `${nbCongesSemaine}½j` : '0'}</td>
                             </>
                           );
                         })()}
