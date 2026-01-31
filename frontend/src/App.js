@@ -9974,7 +9974,7 @@ const PlanningManager = () => {
               <span>⚙️ Configuration des Semaines A/B</span>
             </DialogTitle>
             <DialogDescription>
-              Cliquez sur A ou B pour définir la semaine type de chaque employé
+              Cliquez sur A ou B pour définir la semaine type. Définissez les heures/demi-journées à effectuer.
             </DialogDescription>
           </DialogHeader>
           
@@ -9982,11 +9982,11 @@ const PlanningManager = () => {
             {/* Secrétaires - Horaires par jour */}
             <div className="border rounded-lg p-4">
               <h3 className="font-bold text-pink-700 mb-3 text-lg">📋 SECRÉTAIRES</h3>
-              <p className="text-xs text-gray-500 mb-3">Définir les horaires de travail par jour (ou absent)</p>
+              <p className="text-xs text-gray-500 mb-3">Définir les horaires de travail par jour et les heures à effectuer par semaine</p>
               <div className="space-y-2">
                 {users.filter(u => u.actif && u.role === 'Secrétaire').map(emp => (
-                  <div key={emp.id} className="flex items-center justify-between bg-pink-50 p-3 rounded-lg">
-                    <span className="font-medium w-48">{emp.prenom} {emp.nom}</span>
+                  <div key={emp.id} className="grid grid-cols-[1fr_auto_auto_auto] gap-3 items-center bg-pink-50 p-3 rounded-lg">
+                    <span className="font-medium">{emp.prenom} {emp.nom}</span>
                     <div className="flex gap-2">
                       <Button
                         size="sm"
@@ -10005,6 +10005,24 @@ const PlanningManager = () => {
                         B {emp.semaine_b_config ? '✓' : ''}
                       </Button>
                     </div>
+                    <div className="flex items-center gap-1">
+                      <Label className="text-xs whitespace-nowrap">H/sem A:</Label>
+                      <Input
+                        type="number"
+                        className="h-8 text-xs w-16"
+                        value={emp.heures_semaine_a || 35}
+                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_a', parseFloat(e.target.value) || 35)}
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Label className="text-xs whitespace-nowrap">H/sem B:</Label>
+                      <Input
+                        type="number"
+                        className="h-8 text-xs w-16"
+                        value={emp.heures_semaine_b || 35}
+                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_b', parseFloat(e.target.value) || 35)}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -10013,11 +10031,11 @@ const PlanningManager = () => {
             {/* Assistants - Demi-journées */}
             <div className="border rounded-lg p-4">
               <h3 className="font-bold text-green-700 mb-3 text-lg">👥 ASSISTANTS</h3>
-              <p className="text-xs text-gray-500 mb-3">Définir les demi-journées de présence (Matin / Après-midi)</p>
+              <p className="text-xs text-gray-500 mb-3">Définir les demi-journées de présence et le nombre de 1/2 journées à effectuer par semaine</p>
               <div className="space-y-2">
                 {users.filter(u => u.actif && u.role === 'Assistant').map(emp => (
-                  <div key={emp.id} className="flex items-center justify-between bg-green-50 p-3 rounded-lg">
-                    <span className="font-medium w-48">{emp.prenom} {emp.nom}</span>
+                  <div key={emp.id} className="grid grid-cols-[1fr_auto_auto_auto] gap-3 items-center bg-green-50 p-3 rounded-lg">
+                    <span className="font-medium">{emp.prenom} {emp.nom}</span>
                     <div className="flex gap-2">
                       <Button
                         size="sm"
@@ -10036,10 +10054,86 @@ const PlanningManager = () => {
                         B {emp.semaine_b_config ? '✓' : ''}
                       </Button>
                     </div>
+                    <div className="flex items-center gap-1">
+                      <Label className="text-xs whitespace-nowrap">1/2j sem A:</Label>
+                      <Input
+                        type="number"
+                        className="h-8 text-xs w-16"
+                        value={emp.limite_demi_journees_a || 10}
+                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_a', parseInt(e.target.value) || 10)}
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Label className="text-xs whitespace-nowrap">1/2j sem B:</Label>
+                      <Input
+                        type="number"
+                        className="h-8 text-xs w-16"
+                        value={emp.limite_demi_journees_b || 10}
+                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_b', parseInt(e.target.value) || 10)}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
+
+            {/* Médecins - Demi-journées */}
+            <div className="border rounded-lg p-4">
+              <h3 className="font-bold text-blue-700 mb-3 text-lg">👨‍⚕️ MÉDECINS</h3>
+              <p className="text-xs text-gray-500 mb-3">Définir les demi-journées de présence</p>
+              <div className="space-y-2">
+                {users.filter(u => u.actif && u.role === 'Médecin').map(emp => (
+                  <div key={emp.id} className="grid grid-cols-[1fr_auto_auto_auto] gap-3 items-center bg-blue-50 p-3 rounded-lg">
+                    <span className="font-medium">Dr. {emp.prenom} {emp.nom}</span>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant={emp.semaine_a_config ? "default" : "outline"}
+                        className={emp.semaine_a_config ? "bg-blue-600 hover:bg-blue-700" : "hover:bg-blue-100"}
+                        onClick={() => openConfigSemaine(emp, 'A')}
+                      >
+                        A {emp.semaine_a_config ? '✓' : ''}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={emp.semaine_b_config ? "default" : "outline"}
+                        className={emp.semaine_b_config ? "bg-blue-600 hover:bg-blue-700" : "hover:bg-blue-100"}
+                        onClick={() => openConfigSemaine(emp, 'B')}
+                      >
+                        B {emp.semaine_b_config ? '✓' : ''}
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Label className="text-xs whitespace-nowrap">1/2j sem A:</Label>
+                      <Input
+                        type="number"
+                        className="h-8 text-xs w-16"
+                        value={emp.limite_demi_journees_a || 10}
+                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_a', parseInt(e.target.value) || 10)}
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Label className="text-xs whitespace-nowrap">1/2j sem B:</Label>
+                      <Input
+                        type="number"
+                        className="h-8 text-xs w-16"
+                        value={emp.limite_demi_journees_b || 10}
+                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_b', parseInt(e.target.value) || 10)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex justify-end pt-4 border-t">
+            <Button onClick={() => setShowConfigSemainesModal(false)}>
+              Fermer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
             {/* Médecins - Demi-journées */}
             <div className="border rounded-lg p-4">
