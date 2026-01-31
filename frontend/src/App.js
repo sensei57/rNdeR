@@ -8009,16 +8009,33 @@ const PlanningManager = () => {
                   weeks.push(currentWeek);
                 }
                 
+                // Vérifier si un employé spécifique est sélectionné
+                const selectedEmployee = filterEmployeMois && filterEmployeMois !== 'tous' && filterEmployeMois !== 'medecins' 
+                  ? users.find(u => u.id === filterEmployeMois) 
+                  : null;
+                const empColor = selectedEmployee 
+                  ? (selectedEmployee.role === 'Médecin' ? 'blue' : selectedEmployee.role === 'Assistant' ? 'green' : 'pink')
+                  : 'indigo';
+                
                 return (
                   <div>
                     {/* En-têtes des jours */}
                     <div className="grid grid-cols-7 gap-1 mb-2">
                       {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(jour => (
-                        <div key={jour} className="text-center font-semibold text-gray-600 py-2 bg-indigo-100 rounded">
+                        <div key={jour} className={`text-center font-semibold py-2 rounded ${selectedEmployee ? `bg-${empColor}-100 text-${empColor}-700` : 'bg-indigo-100 text-gray-600'}`}>
                           {jour}
                         </div>
                       ))}
                     </div>
+                    
+                    {/* Titre si employé sélectionné */}
+                    {selectedEmployee && (
+                      <div className={`mb-3 p-2 rounded-lg bg-${empColor}-50 border border-${empColor}-200`}>
+                        <span className="font-semibold text-${empColor}-800">
+                          📅 Planning de {selectedEmployee.role === 'Médecin' ? 'Dr. ' : ''}{selectedEmployee.prenom} {selectedEmployee.nom}
+                        </span>
+                      </div>
+                    )}
                     
                     {/* Grille des jours */}
                     {weeks.map((week, weekIndex) => (
@@ -8031,7 +8048,68 @@ const PlanningManager = () => {
                           const dateStr = formatDateISO(year, month + 1, day);
                           const isWeekend = dayIndex === 5 || dayIndex === 6;
                           
-                          // Compter les médecins présents
+                          // Si un employé est sélectionné, afficher sa présence personnelle
+                          if (selectedEmployee) {
+                            const hasMatin = planningMois.some(p => 
+                              p.date === dateStr && 
+                              p.creneau === 'MATIN' && 
+                              p.employe_id === selectedEmployee.id
+                            );
+                            const hasAM = planningMois.some(p => 
+                              p.date === dateStr && 
+                              p.creneau === 'APRES_MIDI' && 
+                              p.employe_id === selectedEmployee.id
+                            );
+                            
+                            // Vérifier congés
+                            const congesJour = congesApprouves.filter(c => 
+                              c.utilisateur_id === selectedEmployee.id && 
+                              c.statut === 'APPROUVE' && 
+                              c.date_debut <= dateStr && 
+                              c.date_fin >= dateStr
+                            );
+                            const hasConge = congesJour.length > 0;
+                            const conge = congesJour[0];
+                            
+                            return (
+                              <div 
+                                key={dayIndex} 
+                                className={`border rounded-lg overflow-hidden min-h-[80px] ${isWeekend ? 'bg-gray-50' : 'bg-white'}`}
+                              >
+                                <div className={`text-right px-2 py-1 text-sm font-semibold ${isWeekend ? 'text-gray-400' : 'text-gray-700'}`}>
+                                  {day}
+                                </div>
+                                
+                                {hasConge ? (
+                                  <div className="bg-red-100 mx-1 mb-1 rounded p-2 text-center">
+                                    <div className="text-red-700 font-bold">🏖️ Congé</div>
+                                    <div className="text-xs text-red-600">
+                                      {conge.type_conge === 'CONGE_PAYE' ? 'CP' : 
+                                       conge.type_conge === 'RTT' ? 'RTT' : 
+                                       conge.type_conge === 'REPOS' ? 'Repos' : 'Congé'}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div className={`mx-1 mb-1 rounded p-1 ${hasMatin ? `bg-${empColor}-200` : 'bg-gray-100'}`}>
+                                      <div className="text-xs text-center">🌅 Matin</div>
+                                      <div className={`text-center font-bold text-sm ${hasMatin ? `text-${empColor}-800` : 'text-gray-400'}`}>
+                                        {hasMatin ? '✓ Présent' : '-'}
+                                      </div>
+                                    </div>
+                                    <div className={`mx-1 mb-1 rounded p-1 ${hasAM ? `bg-${empColor}-200` : 'bg-gray-100'}`}>
+                                      <div className="text-xs text-center">🌆 Après-midi</div>
+                                      <div className={`text-center font-bold text-sm ${hasAM ? `text-${empColor}-800` : 'text-gray-400'}`}>
+                                        {hasAM ? '✓ Présent' : '-'}
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            );
+                          }
+                          
+                          // Vue par défaut : compter les médecins
                           const medecinsMatin = planningMois.filter(p => 
                             p.date === dateStr && 
                             p.creneau === 'MATIN' && 
@@ -8060,12 +8138,10 @@ const PlanningManager = () => {
                               key={dayIndex} 
                               className={`border rounded-lg overflow-hidden min-h-[80px] ${isWeekend ? 'bg-gray-50' : 'bg-white'}`}
                             >
-                              {/* Numéro du jour */}
                               <div className={`text-right px-2 py-1 text-sm font-semibold ${isWeekend ? 'text-gray-400' : 'text-gray-700'}`}>
                                 {day}
                               </div>
                               
-                              {/* Matin */}
                               <div 
                                 className="bg-orange-100 mx-1 mb-1 rounded p-1 cursor-pointer hover:bg-orange-200 transition-colors"
                                 onClick={() => {
@@ -8087,7 +8163,6 @@ const PlanningManager = () => {
                                 <div className="text-xs text-center text-orange-600">médecin(s)</div>
                               </div>
                               
-                              {/* Après-midi */}
                               <div 
                                 className="bg-purple-100 mx-1 mb-1 rounded p-1 cursor-pointer hover:bg-purple-200 transition-colors"
                                 onClick={() => {
