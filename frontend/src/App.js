@@ -10172,68 +10172,6 @@ const PlanningManager = () => {
           </DialogHeader>
           
           <form onSubmit={handleJourneeSubmit} className="space-y-6">
-            {/* Affichage du congé existant si présent */}
-            {journeeData.congeExistant && (
-              <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-bold text-red-700 text-lg flex items-center">
-                    🏖️ Congé existant
-                  </h4>
-                  <span className="text-xs bg-red-200 text-red-800 px-2 py-1 rounded-full">
-                    {journeeData.congeExistant.date_debut === journeeData.congeExistant.date_fin 
-                      ? 'Journée' 
-                      : `${new Date(journeeData.congeExistant.date_debut).toLocaleDateString('fr-FR')} → ${new Date(journeeData.congeExistant.date_fin).toLocaleDateString('fr-FR')}`
-                    }
-                  </span>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Type de congé</Label>
-                    <select
-                      className="w-full p-2 border border-red-200 rounded text-sm mt-1 bg-white"
-                      value={journeeData.congeExistant.type_conge}
-                      onChange={(e) => {
-                        handleModifierTypeConge(journeeData.congeExistant.id, e.target.value);
-                        setJourneeData(prev => ({
-                          ...prev,
-                          congeExistant: { ...prev.congeExistant, type_conge: e.target.value }
-                        }));
-                      }}
-                    >
-                      <option value="CONGE_PAYE">🏖️ Congé payé (CP)</option>
-                      <option value="RTT">⏰ RTT</option>
-                      <option value="MALADIE">🏥 Maladie</option>
-                      <option value="REPOS">😴 Repos/Absent</option>
-                      <option value="FORMATION">📚 Formation</option>
-                      <option value="AUTRE">📋 Autre</option>
-                    </select>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Motif</Label>
-                    <p className="text-sm text-gray-600 mt-1 p-2 bg-white rounded border">
-                      {journeeData.congeExistant.motif || 'Aucun motif'}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-2">
-                  <Button 
-                    type="button" 
-                    variant="destructive"
-                    className="flex-1"
-                    onClick={() => handleSupprimerCongeExistant(journeeData.congeExistant.id)}
-                  >
-                    🗑️ Supprimer ce congé
-                  </Button>
-                </div>
-                
-                <p className="text-xs text-red-600 mt-3 italic">
-                  💡 Supprimez le congé ci-dessus pour ajouter des créneaux de travail à cette journée.
-                </p>
-              </div>
-            )}
-            
             {/* Bouton pour afficher/masquer les assistants associés */}
             {journeeData.employe?.role === 'Assistant' && (
               <div className="flex items-center justify-end">
