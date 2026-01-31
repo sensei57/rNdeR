@@ -9153,70 +9153,11 @@ const PlanningManager = () => {
                 ⚙️ Paramétrage des heures contrat
               </Button>
             </div>
-              
-              {/* Légende couleurs */}
-              <div className="flex gap-4 mb-3 text-xs">
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-yellow-200"></span> OK</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-200"></span> En dessous</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-200"></span> Au dessus</span>
-              </div>
-              
-              {/* Tableau Secrétaires */}
-              <div className="mb-4">
-                <h4 className="text-xs font-bold text-pink-700 mb-2 bg-pink-100 p-1 rounded">📋 SECRÉTAIRES</h4>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs border-collapse">
-                    <thead>
-                      <tr className="bg-pink-50">
-                        <th className="border p-1 text-left">Employé</th>
-                        <th className="border p-1 text-center" title="Demi-journées travaillées">½j</th>
-                        <th className="border p-1 text-center" title="Heures semaine A ou B">H/Sem A|B</th>
-                        <th className="border p-1 text-center" title="Heures contrat par semaine">H Contrat</th>
-                        <th className="border p-1 text-center" title="Heures effectuées">H Eff.</th>
-                        <th className="border p-1 text-center" title="Heures supplémentaires ou à rattraper">H Supp/Rattr</th>
-                        <th className="border p-1 text-center" title="Heures de congés">H Congés</th>
-                        <th className="border p-1 text-center">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {users.filter(u => u.actif && u.role === 'Secrétaire').map(emp => {
-                        const moisActuel = planningTableau.dates?.[0] ? new Date(planningTableau.dates[0]).getMonth() : new Date().getMonth();
-                        const anneeActuelle = planningTableau.dates?.[0] ? new Date(planningTableau.dates[0]).getFullYear() : new Date().getFullYear();
-                        const decompte = getDecompteMensuel(emp, moisActuel, anneeActuelle);
-                        const semaineAffichee = localStorage.getItem('semaineAffichee') || 'A';
-                        const heuresSemaine = semaineAffichee === 'A' ? (emp.heures_semaine_a || 35) : (emp.heures_semaine_b || 35);
-                        const heuresContrat = emp.heures_semaine_fixe || 35;
-                        const diff = decompte.effectuees - decompte.prevues;
-                        const getCouleur = (val, cible) => {
-                          if (Math.abs(val - cible) < 0.5) return 'bg-yellow-100';
-                          return val < cible ? 'bg-green-100' : 'bg-red-100';
-                        };
-                        return (
-                          <tr key={emp.id} className="hover:bg-pink-50">
-                            <td className="border p-1 font-medium">{emp.prenom} {emp.nom}</td>
-                            <td className={`border p-1 text-center ${getCouleur(decompte.effectuees / 4, decompte.prevues / 4)}`}>
-                              {Math.round(decompte.effectuees / 4)}
-                            </td>
-                            <td className="border p-1 text-center">{heuresSemaine}h</td>
-                            <td className="border p-1 text-center font-bold text-purple-700">{heuresContrat}h</td>
-                            <td className={`border p-1 text-center ${getCouleur(decompte.effectuees, decompte.prevues)}`}>
-                              {decompte.effectuees.toFixed(1)}h
-                            </td>
-                            <td className={`border p-1 text-center font-bold ${(emp.heures_supplementaires || 0) >= 0 ? 'text-orange-600' : 'text-blue-600'}`}>
-                              {(emp.heures_supplementaires || 0) >= 0 ? '+' : ''}{(emp.heures_supplementaires || 0).toFixed(1)}h
-                            </td>
-                            <td className="border p-1 text-center">
-                              {(decompte.heuresConges || 0).toFixed(1)}h
-                            </td>
-                            <td className="border p-1 text-center">
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
-                                className="h-6 px-2 text-xs"
-                                onClick={() => {
-                                  const heures = prompt(`Heures supp (+) ou à rattraper (-) pour ${emp.prenom}:`, emp.heures_supplementaires || 0);
-                                  if (heures !== null) {
-                                    updateEmployeSemaineConfig(emp.id, 'heures_supplementaires', parseFloat(heures) || 0);
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Modal de création/modification rapide pour Vue Planning */}
                                   }
                                 }}
                               >
