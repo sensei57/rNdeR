@@ -59,6 +59,13 @@ class UserBase(BaseModel):
     actif: bool = True
     vue_planning_complete: bool = False  # Vue planning comme directeur (lecture seule)
     peut_modifier_planning: bool = False  # Peut modifier le planning (créer/modifier/supprimer créneaux)
+    # Nouveaux champs pour la gestion des heures et semaines A/B
+    heures_par_jour: Optional[float] = 7.0  # Heures par jour par défaut (pour assistants)
+    limite_demi_journees: Optional[int] = 10  # Limite de demi-journées par semaine
+    semaine_a_id: Optional[str] = None  # ID de l'horaire prédéfini pour semaine A
+    semaine_b_id: Optional[str] = None  # ID de l'horaire prédéfini pour semaine B
+    heures_semaine_a: Optional[float] = 35.0  # Heures à faire en semaine A
+    heures_semaine_b: Optional[float] = 35.0  # Heures à faire en semaine B
 
 class UserCreate(UserBase):
     password: str
@@ -70,6 +77,12 @@ class UserUpdate(BaseModel):
     actif: Optional[bool] = None
     vue_planning_complete: Optional[bool] = None
     peut_modifier_planning: Optional[bool] = None
+    heures_par_jour: Optional[float] = None
+    limite_demi_journees: Optional[int] = None
+    semaine_a_id: Optional[str] = None
+    semaine_b_id: Optional[str] = None
+    heures_semaine_a: Optional[float] = None
+    heures_semaine_b: Optional[float] = None
 
 class User(UserBase):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
