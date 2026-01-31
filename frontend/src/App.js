@@ -8581,7 +8581,6 @@ const PlanningManager = () => {
                         })}
                         {/* Colonnes récapitulatives de fin de ligne */}
                         {(() => {
-                          const semaineAffichee = localStorage.getItem('semaineAffichee') || 'A';
                           const heuresContrat = secretaire.heures_semaine_fixe || 35;
                           
                           // Calculer les heures de congés pour cette semaine
