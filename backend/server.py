@@ -61,6 +61,7 @@ class UserBase(BaseModel):
     peut_modifier_planning: bool = False  # Peut modifier le planning (créer/modifier/supprimer créneaux)
     # Nouveaux champs pour la gestion des heures et semaines A/B
     heures_par_jour: Optional[float] = 7.0  # Heures par jour par défaut (pour assistants)
+    heures_demi_journee_conge: Optional[float] = 4.0  # Heures par demi-journée de congé
     limite_demi_journees: Optional[int] = 10  # Limite de demi-journées par semaine (legacy)
     limite_demi_journees_a: Optional[int] = 10  # Limite de demi-journées semaine A
     limite_demi_journees_b: Optional[int] = 10  # Limite de demi-journées semaine B
@@ -68,6 +69,8 @@ class UserBase(BaseModel):
     semaine_b_id: Optional[str] = None  # ID de l'horaire prédéfini pour semaine B
     heures_semaine_a: Optional[float] = 35.0  # Heures à faire en semaine A
     heures_semaine_b: Optional[float] = 35.0  # Heures à faire en semaine B
+    heures_semaine_fixe: Optional[float] = 35.0  # Heures à faire par semaine (sans A/B)
+    heures_supplementaires: Optional[float] = 0.0  # Heures supp accumulées (positif) ou à rattraper (négatif)
     # Configuration détaillée des semaines A/B (horaires par jour pour secrétaires, demi-journées pour médecins/assistants)
     semaine_a_config: Optional[list] = None  # Liste de jours avec horaires ou demi-journées
     semaine_b_config: Optional[list] = None  # Liste de jours avec horaires ou demi-journées
@@ -83,6 +86,7 @@ class UserUpdate(BaseModel):
     vue_planning_complete: Optional[bool] = None
     peut_modifier_planning: Optional[bool] = None
     heures_par_jour: Optional[float] = None
+    heures_demi_journee_conge: Optional[float] = None
     limite_demi_journees: Optional[int] = None
     limite_demi_journees_a: Optional[int] = None
     limite_demi_journees_b: Optional[int] = None
@@ -90,6 +94,8 @@ class UserUpdate(BaseModel):
     semaine_b_id: Optional[str] = None
     heures_semaine_a: Optional[float] = None
     heures_semaine_b: Optional[float] = None
+    heures_semaine_fixe: Optional[float] = None
+    heures_supplementaires: Optional[float] = None
     semaine_a_config: Optional[list] = None
     semaine_b_config: Optional[list] = None
 
