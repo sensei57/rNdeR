@@ -2925,6 +2925,24 @@ const PlanningManager = () => {
         // Demi-journées effectuées
         demiJourneesEffectuees += creneauxJour.length;
       }
+      
+      // Comptabiliser les congés
+      const congesJour = conges?.filter(c => 
+        c.employe_id === employe.id && 
+        c.statut === 'approuve' &&
+        dateStr >= c.date_debut && dateStr <= c.date_fin
+      ) || [];
+      
+      congesJour.forEach(conge => {
+        const heuresConge = employe.heures_demi_journee_conge || 4;
+        if (conge.demi_journee) {
+          heuresConges += heuresConge;
+          congesCount += 1;
+        } else {
+          heuresConges += heuresConge * 2;
+          congesCount += 2;
+        }
+      });
     }
     
     if (employe.role === 'Secrétaire') {
@@ -2934,7 +2952,9 @@ const PlanningManager = () => {
         prevues: heuresPrevues,
         diff,
         unite: 'h',
-        status: diff === 0 ? 'ok' : diff > 0 ? 'trop' : 'manque'
+        status: diff === 0 ? 'ok' : diff > 0 ? 'trop' : 'manque',
+        heuresConges,
+        conges: congesCount
       };
     } else {
       const diff = demiJourneesEffectuees - demiJourneesPrevues;
@@ -2943,7 +2963,9 @@ const PlanningManager = () => {
         prevues: demiJourneesPrevues,
         diff,
         unite: '½j',
-        status: diff === 0 ? 'ok' : diff > 0 ? 'trop' : 'manque'
+        status: diff === 0 ? 'ok' : diff > 0 ? 'trop' : 'manque',
+        heuresConges,
+        conges: congesCount
       };
     }
   };
