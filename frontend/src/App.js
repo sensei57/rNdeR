@@ -4474,11 +4474,12 @@ const PlanningManager = () => {
   };
 
   // Obtenir la couleur du total selon les règles
-  const getTotalColor = (total, type = 'employe') => {
+  const getTotalColor = (total, type = 'employe', employe = null) => {
     if (type === 'employe') {
-      // Pour un employé : < 8 vert, = 8 orange, > 8 rouge
-      if (total < 8) return 'bg-green-100 text-green-800';
-      if (total === 8) return 'bg-orange-100 text-orange-800';
+      // Utiliser la limite personnalisée de l'employé si disponible
+      const limite = employe?.limite_demi_journees || 10;
+      if (total < limite) return 'bg-green-100 text-green-800';
+      if (total === limite) return 'bg-orange-100 text-orange-800';
       return 'bg-red-100 text-red-800';
     } else {
       // Pour le total médecins : basé sur le nombre de salles médecin
@@ -4486,6 +4487,230 @@ const PlanningManager = () => {
       if (total < nbSallesMedecin) return 'bg-green-100 text-green-800';
       if (total === nbSallesMedecin) return 'bg-orange-100 text-orange-800';
       return 'bg-red-100 text-red-800';
+    }
+  };
+
+  // Calculer les heures travaillées pour un employé sur la période affichée
+  const getTotalHeures = (employeId) => {
+    if (!planningTableau.planning) return 0;
+    const employe = users.find(u => u.id === employeId);
+    if (!employe) return 0;
+    
+    let totalMinutes = 0;
+    
+    planningTableau.dates?.forEach(date => {
+      const dayPlanning = planningTableau.planning[date] || [];
+      dayPlanning.forEach(c => {
+        if (c.employe_id === employeId) {
+          if (employe.role === 'Secrétaire') {
+            // Pour les secrétaires : calculer selon les horaires
+            if (c.horaire_debut && c.horaire_fin) {
+              const [hDeb, mDeb] = c.horaire_debut.split(':').map(Number);
+              const [hFin, mFin] = c.horaire_fin.split(':').map(Number);
+              let minutes = (hFin * 60 + mFin) - (hDeb * 60 + mDeb);
+              
+              // Si c'est le matin et il y a une pause
+              if (c.creneau === 'MATIN' && c.horaire_pause_debut) {
+                const [hPause, mPause] = c.horaire_pause_debut.split(':').map(Number);
+                minutes = (hPause * 60 + mPause) - (hDeb * 60 + mDeb);
+              }
+              // Si c'est l'après-midi et il y a une reprise après pause
+              if (c.creneau === 'APRES_MIDI' && c.horaire_pause_fin) {
+                const [hReprise, mReprise] = c.horaire_pause_fin.split(':').map(Number);
+                minutes = (hFin * 60 + mFin) - (hReprise * 60 + mReprise);
+              }
+              
+              totalMinutes += Math.max(0, minutes);
+            }
+          } else {
+            // Pour assistants/médecins : utiliser heures par jour / 2 (demi-journée)
+            const heuresParDemiJournee = (employe.heures_par_jour || 7) / 2;
+            totalMinutes += heuresParDemiJournee * 60;
+          }
+          
+          // Ajouter les heures supplémentaires si présentes
+          if (c.heures_supplementaires) {
+            totalMinutes += (c.heures_supplementaires || 0) * 60;
+          }
+        }
+      });
+    });
+    
+    return Math.round(totalMinutes / 60 * 10) / 10; // Arrondir à 0.1h
+  };
+
+  // Ouvrir le modal A/B/Co pour un employé ou une section
+  const openSemaineABCModal = (target) => {
+    setSemaineABCTarget(target);
+    setShowSemaineABCModal(true);
+  };
+
+  // Appliquer la semaine A ou B à un employé
+  const applySemaineToEmploye = async (employe, semaine) => {
+    if (!employe) return;
+    
+    const horaireId = semaine === 'A' ? employe.semaine_a_id : employe.semaine_b_id;
+    const horaire = horairesSecretaires.find(h => String(h.id) === String(horaireId));
+    
+    if (!horaire && employe.role === 'Secrétaire') {
+      toast.error(`Semaine ${semaine} non configurée pour ${employe.prenom}`);
+      return;
+    }
+    
+    let created = 0;
+    
+    for (const date of planningTableau.dates) {
+      // Vérifier si l'employé a déjà un congé ce jour
+      const conges = getCongesForEmployeDate(employe.id, date);
+      const congesEnAttente = getCongesEnAttenteForEmployeDate(employe.id, date);
+      if (conges.length > 0 || congesEnAttente.length > 0) continue;
+      
+      // Vérifier les créneaux existants
+      const creneauMatin = getCreneauForEmploye(employe.id, date, 'MATIN');
+      const creneauAM = getCreneauForEmploye(employe.id, date, 'APRES_MIDI');
+      
+      // Créer le créneau MATIN si il n'existe pas et si l'horaire le prévoit
+      if (!creneauMatin) {
+        const shouldCreateMatin = employe.role === 'Secrétaire' 
+          ? (horaire?.debut_matin && horaire?.fin_matin)
+          : true; // Pour assistants/médecins, toujours créer
+        
+        if (shouldCreateMatin) {
+          try {
+            await axios.post(`${API}/planning`, {
+              employe_id: employe.id,
+              date: date,
+              creneau: 'MATIN',
+              horaire_debut: horaire?.debut_matin || null,
+              horaire_fin: horaire?.fin_matin || null,
+              notes: employe.role === 'Assistant' ? 'Présence' : null
+            });
+            created++;
+          } catch (err) {
+            console.error('Erreur création matin:', err);
+          }
+        }
+      }
+      
+      // Créer le créneau APRES_MIDI si il n'existe pas et si l'horaire le prévoit
+      if (!creneauAM) {
+        const shouldCreateAM = employe.role === 'Secrétaire' 
+          ? (horaire?.debut_aprem && horaire?.fin_aprem)
+          : true;
+        
+        if (shouldCreateAM) {
+          try {
+            await axios.post(`${API}/planning`, {
+              employe_id: employe.id,
+              date: date,
+              creneau: 'APRES_MIDI',
+              horaire_debut: horaire?.debut_aprem || null,
+              horaire_fin: horaire?.fin_aprem || null,
+              notes: employe.role === 'Assistant' ? 'Présence' : null
+            });
+            created++;
+          } catch (err) {
+            console.error('Erreur création AM:', err);
+          }
+        }
+      }
+    }
+    
+    return created;
+  };
+
+  // Appliquer la semaine A ou B à toute une section
+  const applySemaineToSection = async (section, semaine) => {
+    const employesDuRole = users.filter(u => u.actif && u.role === section);
+    let totalCreated = 0;
+    
+    for (const employe of employesDuRole) {
+      const created = await applySemaineToEmploye(employe, semaine);
+      totalCreated += created || 0;
+    }
+    
+    return totalCreated;
+  };
+
+  // Appliquer une semaine de congés
+  const applyCongesSemaine = async (employe) => {
+    if (!employe) return;
+    
+    let created = 0;
+    
+    for (const date of planningTableau.dates) {
+      // Vérifier si l'employé a déjà un congé ce jour
+      const conges = getCongesForEmployeDate(employe.id, date);
+      const congesEnAttente = getCongesEnAttenteForEmployeDate(employe.id, date);
+      if (conges.length > 0 || congesEnAttente.length > 0) continue;
+      
+      // Vérifier les créneaux existants - ne pas écraser
+      const creneauMatin = getCreneauForEmploye(employe.id, date, 'MATIN');
+      const creneauAM = getCreneauForEmploye(employe.id, date, 'APRES_MIDI');
+      if (creneauMatin || creneauAM) continue;
+      
+      // Créer le congé
+      try {
+        await axios.post(`${API}/conges`, {
+          employe_id: employe.id,
+          date_debut: date,
+          date_fin: date,
+          type_conge: 'CP',
+          motif: 'Congés semaine complète',
+          statut: 'APPROUVE'
+        });
+        created++;
+      } catch (err) {
+        console.error('Erreur création congé:', err);
+      }
+    }
+    
+    return created;
+  };
+
+  // Handler pour le modal A/B/Co
+  const handleSemaineABCAction = async (action) => {
+    if (!semaineABCTarget) return;
+    
+    setShowSemaineABCModal(false);
+    toast.info('Application en cours...');
+    
+    try {
+      let result = 0;
+      
+      if (action === 'A' || action === 'B') {
+        if (semaineABCTarget.type === 'employe') {
+          result = await applySemaineToEmploye(semaineABCTarget.employe, action);
+        } else if (semaineABCTarget.type === 'section') {
+          result = await applySemaineToSection(semaineABCTarget.section, action);
+        }
+        toast.success(`Semaine ${action} appliquée ! ${result} créneaux créés`);
+      } else if (action === 'Co') {
+        if (semaineABCTarget.type === 'employe') {
+          result = await applyCongesSemaine(semaineABCTarget.employe);
+          toast.success(`Congés appliqués ! ${result} jours de congés créés`);
+        } else {
+          toast.error('Les congés ne peuvent être appliqués qu\'à un employé individuel');
+        }
+      }
+      
+      // Rafraîchir les données
+      fetchPlanningTableau();
+      fetchConges();
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error('Erreur lors de l\'application');
+    }
+  };
+
+  // Mettre à jour la configuration semaine A/B d'un employé
+  const updateEmployeSemaineConfig = async (employeId, field, value) => {
+    try {
+      await axios.put(`${API}/users/${employeId}`, { [field]: value });
+      fetchUsers();
+      toast.success('Configuration mise à jour');
+    } catch (error) {
+      toast.error('Erreur lors de la mise à jour');
     }
   };
 
