@@ -8429,7 +8429,7 @@ const PlanningManager = () => {
                                     ? hasAssistantMatin 
                                       ? 'bg-indigo-300 hover:bg-indigo-400' 
                                       : 'bg-blue-200 hover:bg-blue-300'
-                                    : 'hover:bg-blue-100'
+                                    : dateIndex % 2 === 0 ? 'bg-white hover:bg-blue-100' : 'bg-gray-50 hover:bg-blue-100'
                                 }`}
                                 onClick={() => {
                                   if (demandeMatinEnAttente) return; // Les boutons gèrent
