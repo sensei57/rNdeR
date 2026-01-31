@@ -9616,7 +9616,7 @@ const PlanningManager = () => {
                           const autreAssistant = getAssistantPourMedecin(med.id, journeeData.date, 'APRES_MIDI', journeeData.employe_id);
                           const estDejaAssocie = autreAssistant !== null;
                           return (
-                            <label key={med.id} className={`flex items-center space-x-2 text-sm p-1 rounded cursor-pointer hover:bg-orange-100 ${estDejaAssocie ? 'text-orange-600 bg-orange-50' : 'text-gray-900'}`}>
+                            <label key={med.id} className={`flex items-center space-x-2 text-sm p-1 rounded cursor-pointer hover:bg-yellow-100 ${estDejaAssocie ? 'text-orange-600 bg-orange-50' : 'text-gray-900'}`}>
                               <input
                                 type="checkbox"
                                 checked={journeeData.apresMidi.medecin_ids?.includes(med.id)}
