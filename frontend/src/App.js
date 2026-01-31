@@ -8654,7 +8654,7 @@ const PlanningManager = () => {
                                 }`}
                                 onClick={() => {
                                   if (hasCongeEnAttente || hasCongeApprouve) return;
-                                  creneauMatin ? openQuickCreneauModal(assistant, date, 'MATIN', creneauMatin) : openJourneeModal(assistant, date);
+                                  openJourneeModal(assistant, date);
                                 }}
                                 title={
                                   hasCongeEnAttente ? `⏳ Demande de congé en attente - ${congeEnAttente.motif || ''}` :
@@ -8700,7 +8700,7 @@ const PlanningManager = () => {
                                 }`}
                                 onClick={() => {
                                   if (hasCongeEnAttente || hasCongeApprouve) return;
-                                  creneauAM ? openQuickCreneauModal(assistant, date, 'APRES_MIDI', creneauAM) : openJourneeModal(assistant, date);
+                                  openJourneeModal(assistant, date);
                                 }}
                                 title={
                                   hasCongeEnAttente ? `⏳ Demande en attente` :
