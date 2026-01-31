@@ -2769,6 +2769,13 @@ const PlanningManager = () => {
   });
   const [showHorairesConfig, setShowHorairesConfig] = useState(false);
   
+  // Modal pour les boutons A, B, Co (semaines prédéfinies)
+  const [showSemaineABCModal, setShowSemaineABCModal] = useState(false);
+  const [semaineABCTarget, setSemaineABCTarget] = useState(null); // { type: 'employe' | 'section', employe?: user, section?: 'Secrétaire' | 'Assistant' | 'Médecin' }
+  
+  // Configuration des semaines A/B pour chaque employé
+  const [showConfigSemainesModal, setShowConfigSemainesModal] = useState(false);
+  
   // ============================================================
   // FONCTIONS D'EXPORT DE DONNÉES
   // ============================================================
