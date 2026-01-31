@@ -7801,17 +7801,12 @@ const PlanningManager = () => {
                     {planningTableau.dates.map((date, dateIndex) => (
                       <th 
                         key={date} 
-                        className={`border p-1 text-center min-w-[80px] cursor-pointer hover:bg-teal-100 transition-colors ${dateIndex % 2 === 0 ? 'bg-gray-100' : 'bg-gray-200'}`}
+                        className={`border p-1 text-center min-w-[80px] cursor-pointer hover:bg-teal-100 transition-colors ${dateIndex % 2 === 0 ? 'bg-slate-100' : 'bg-slate-200'}`}
                         colSpan={2}
                         onClick={() => openDetailJourModal(date)}
                         title="📋 Cliquer pour voir le détail de cette journée"
                       >
-                        <div className="font-semibold">
-                          {new Date(date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'short' })}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {new Date(date + 'T12:00:00').getDate()}/{new Date(date + 'T12:00:00').getMonth() + 1}
-                        </div>
+                        <div className="font-semibold text-slate-600">NOTE</div>
                       </th>
                     ))}
                     <th className="border p-2 text-center bg-gray-300">Total</th>
@@ -7838,9 +7833,20 @@ const PlanningManager = () => {
                 <tbody>
                   {/* SECTION SECRÉTAIRES */}
                   <tr className="bg-pink-100">
-                    <td colSpan={planningTableau.dates.length * 2 + 2} className="border p-2 font-bold text-pink-800">
+                    <td className="border p-2 font-bold text-pink-800">
                       📋 SECRÉTAIRES
                     </td>
+                    {planningTableau.dates.map((date, dateIndex) => (
+                      <td 
+                        key={`sec-header-${date}`}
+                        colSpan={2} 
+                        className={`border p-1 text-center text-xs font-medium ${dateIndex % 2 === 0 ? 'bg-pink-50' : 'bg-pink-100'}`}
+                      >
+                        <div>{new Date(date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'short' })}</div>
+                        <div className="text-gray-500">{new Date(date + 'T12:00:00').getDate()}/{new Date(date + 'T12:00:00').getMonth() + 1}</div>
+                      </td>
+                    ))}
+                    <td className="border p-1 bg-pink-100"></td>
                   </tr>
                   {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role === 'Secrétaire')).map(secretaire => {
                     const total = getTotalDemiJournees(secretaire.id);
