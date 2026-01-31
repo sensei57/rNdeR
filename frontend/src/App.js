@@ -11053,6 +11053,220 @@ const DemandesTravailManager = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Modal Demande Annuelle (Médecins) */}
+      <Dialog open={showDemandeAnnuelleModal} onOpenChange={setShowDemandeAnnuelleModal}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Calendar className="h-5 w-5 text-indigo-600" />
+              <span>📅 Demande Annuelle de Créneaux</span>
+            </DialogTitle>
+            <DialogDescription>
+              Planifiez vos créneaux de travail pour une année entière. Sélectionnez les jours et choisissez le type de créneau.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleSubmitDemandeAnnuelle} className="space-y-4">
+            {/* Sélection du médecin (pour Directeur) */}
+            {user?.role === 'Directeur' && (
+              <div className="space-y-2">
+                <Label>Médecin *</Label>
+                <Select
+                  value={demandeAnnuelle.medecin_id}
+                  onValueChange={handleMedecinChangeAnnuelle}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionnez un médecin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {medecins.map(m => (
+                      <SelectItem key={m.id} value={m.id}>
+                        Dr. {m.prenom} {m.nom}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            
+            {/* Sélection de l'année et semaine type */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Année *</Label>
+                <Select
+                  value={String(demandeAnnuelle.annee)}
+                  onValueChange={(v) => handleAnneeChange(parseInt(v))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[0, 1, 2].map(offset => {
+                      const year = new Date().getFullYear() + offset;
+                      return (
+                        <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Semaine Type (optionnel)</Label>
+                <Select
+                  value={demandeAnnuelle.semaine_type_id || 'none'}
+                  onValueChange={(v) => handleSemaineTypeChangeAnnuelle(v === 'none' ? '' : v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Aucune" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Aucune (sélection manuelle)</SelectItem>
+                    {semainesTypes.map(s => (
+                      <SelectItem key={s.id} value={s.id}>{s.nom}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Motif (optionnel)</Label>
+                <Input
+                  placeholder="Motif de la demande..."
+                  value={demandeAnnuelle.motif}
+                  onChange={(e) => setDemandeAnnuelle(prev => ({ ...prev, motif: e.target.value }))}
+                />
+              </div>
+            </div>
+            
+            {/* Navigation entre les mois */}
+            <div className="flex items-center justify-between bg-indigo-50 p-3 rounded-lg">
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm"
+                onClick={() => setMoisSelectionne(prev => Math.max(0, prev - 1))}
+                disabled={moisSelectionne === 0}
+              >
+                ← Mois précédent
+              </Button>
+              
+              <div className="flex items-center space-x-2">
+                <span className="font-bold text-indigo-800 text-lg">
+                  {moisAnnee[moisSelectionne]?.nom} {demandeAnnuelle.annee}
+                </span>
+                <span className="text-sm text-gray-500">
+                  ({moisSelectionne + 1}/12)
+                </span>
+              </div>
+              
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm"
+                onClick={() => setMoisSelectionne(prev => Math.min(11, prev + 1))}
+                disabled={moisSelectionne === 11}
+              >
+                Mois suivant →
+              </Button>
+            </div>
+            
+            {/* Actions rapides pour le mois */}
+            <div className="flex space-x-2 justify-center">
+              <Button type="button" variant="outline" size="sm" onClick={() => selectAllMois(moisSelectionne, 'JOURNEE_COMPLETE')}>
+                ✓ Tout sélectionner (Journée)
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => selectAllMois(moisSelectionne, 'MATIN')}>
+                ✓ Tout sélectionner (Matin)
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => selectAllMois(moisSelectionne, 'APRES_MIDI')}>
+                ✓ Tout sélectionner (AM)
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => deselectAllMois(moisSelectionne)}>
+                ✗ Tout désélectionner
+              </Button>
+            </div>
+            
+            {/* Calendrier du mois sélectionné */}
+            {moisAnnee[moisSelectionne] && (
+              <div className="border rounded-lg p-4">
+                <div className="grid grid-cols-7 gap-1 text-center mb-2">
+                  {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(j => (
+                    <div key={j} className="font-bold text-sm text-gray-600 py-1">{j}</div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-7 gap-1">
+                  {moisAnnee[moisSelectionne].jours.map((jour, idx) => (
+                    <div
+                      key={idx}
+                      className={`
+                        p-2 rounded text-center cursor-pointer transition-all min-h-[60px] flex flex-col items-center justify-center
+                        ${jour.estVide ? 'bg-transparent' : 
+                          jour.selectionne 
+                            ? jour.creneau === 'MATIN' ? 'bg-orange-200 hover:bg-orange-300 border-2 border-orange-500' 
+                              : jour.creneau === 'APRES_MIDI' ? 'bg-purple-200 hover:bg-purple-300 border-2 border-purple-500'
+                              : 'bg-indigo-200 hover:bg-indigo-300 border-2 border-indigo-500'
+                            : jour.jourNom === 'samedi' || jour.jourNom === 'dimanche'
+                              ? 'bg-gray-100 hover:bg-gray-200 text-gray-400'
+                              : 'bg-gray-50 hover:bg-indigo-100'
+                        }
+                      `}
+                      onClick={() => !jour.estVide && toggleJourAnnee(moisSelectionne, idx)}
+                    >
+                      {!jour.estVide && (
+                        <>
+                          <span className="text-sm font-medium">{new Date(jour.date + 'T12:00:00').getDate()}</span>
+                          {jour.selectionne && (
+                            <span 
+                              className="text-xs font-bold mt-1 cursor-pointer hover:underline"
+                              onClick={(e) => cycleCreneauAnnee(moisSelectionne, idx, e)}
+                              title="Cliquer pour changer le créneau"
+                            >
+                              {jour.creneau === 'MATIN' ? 'M' : jour.creneau === 'APRES_MIDI' ? 'AM' : 'JC'}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Résumé et légende */}
+            <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+              <div className="flex space-x-4 text-sm">
+                <div className="flex items-center space-x-1">
+                  <div className="w-4 h-4 bg-indigo-200 border-2 border-indigo-500 rounded"></div>
+                  <span>Journée (JC)</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <div className="w-4 h-4 bg-orange-200 border-2 border-orange-500 rounded"></div>
+                  <span>Matin (M)</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <div className="w-4 h-4 bg-purple-200 border-2 border-purple-500 rounded"></div>
+                  <span>Après-midi (AM)</span>
+                </div>
+              </div>
+              <div className="font-bold text-indigo-700">
+                📊 Total: {getTotalJoursSelectionnesAnnee()} jours sélectionnés
+              </div>
+            </div>
+            
+            {/* Boutons d'action */}
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button type="button" variant="outline" onClick={() => setShowDemandeAnnuelleModal(false)}>
+                Annuler
+              </Button>
+              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700">
+                📅 Créer les demandes ({getTotalJoursSelectionnesAnnee()} jours)
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* Modal Demande Hebdomadaire (Assistants/Secrétaires) */}
       <Dialog open={showDemandeHebdoModal} onOpenChange={setShowDemandeHebdoModal}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
