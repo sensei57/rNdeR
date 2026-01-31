@@ -10160,28 +10160,17 @@ const PlanningManager = () => {
               )}
               
               {/* APRÈS-MIDI */}
-              <div className={`space-y-4 p-4 rounded-lg border ${journeeData.apresMidi.actif ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-100 border-gray-300'}`}>
+              <div className="space-y-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={journeeData.apresMidi.actif}
-                      onChange={(e) => setJourneeData(prev => ({
-                        ...prev,
-                        apresMidi: { ...prev.apresMidi, actif: e.target.checked }
-                      }))}
-                      className="w-5 h-5 accent-yellow-600"
-                    />
-                    <h3 className={`font-bold flex items-center text-base ${journeeData.apresMidi.actif ? 'text-yellow-700' : 'text-gray-500'}`}>
-                      <CalendarDays className="h-5 w-5 mr-2" /> Après-midi
-                    </h3>
-                  </label>
+                  <h3 className="font-bold text-yellow-700 flex items-center text-base">
+                    <CalendarDays className="h-5 w-5 mr-2" /> Après-midi
+                  </h3>
                   {journeeData.apresMidi.exists && (
                     <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Existant</span>
                   )}
                 </div>
                 
-                {journeeData.apresMidi.actif && journeeData.employe?.role === 'Secrétaire' && (
+                {journeeData.employe?.role === 'Secrétaire' && (
                   <>
                     {/* Sélection rapide des horaires prédéfinis pour l'APRÈS-MIDI */}
                     <div className="space-y-2">
