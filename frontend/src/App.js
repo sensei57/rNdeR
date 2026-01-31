@@ -9926,6 +9926,12 @@ const PlanningManager = () => {
                 )}
                 
                 {journeeData.matin.actif && journeeData.employe?.role === 'Médecin' && (
+                  <>
+                    <div>
+                      <Label className="text-xs">Box</Label>
+                      <select
+                        className="w-full p-2 border rounded text-sm"
+                        value={journeeData.matin.salle_attribuee}
                         onChange={(e) => setJourneeData(prev => ({
                           ...prev,
                           matin: { ...prev.matin, salle_attribuee: e.target.value }
