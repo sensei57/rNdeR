@@ -7920,7 +7920,7 @@ const PlanningManager = () => {
         </>
       )}
 
-      {/* VUE MENSUELLE - Planning d'abord */}
+      {/* VUE MENSUELLE - Planning Calendrier en premier */}
       {viewMode === 'mois' && (
         <Card className="mt-4">
           <CardHeader className="bg-gradient-to-r from-indigo-50 to-indigo-100">
@@ -7939,16 +7939,31 @@ const PlanningManager = () => {
                     <SelectTrigger className="w-[300px]">
                       <SelectValue placeholder="Tous les employés" />
                     </SelectTrigger>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-              <div className="space-y-4">
-                {/* Secrétaires */}
-                {users.filter(u => u.role === 'Secrétaire' && u.actif).length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-bold text-pink-700 mb-2 bg-pink-100 p-2 rounded">📋 Secrétaires</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {users.filter(u => u.role === 'Secrétaire' && u.actif).map(secretaire => {
+                    <SelectContent>
+                      <div className="p-2 border-b">
+                        <Input
+                          placeholder="🔍 Rechercher..."
+                          className="h-8"
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => {
+                            const term = e.target.value.toLowerCase();
+                            const items = e.target.closest('.select-content')?.querySelectorAll('[data-employee-name]');
+                            items?.forEach(item => {
+                              const name = item.getAttribute('data-employee-name');
+                              item.style.display = name?.includes(term) ? '' : 'none';
+                            });
+                          }}
+                        />
+                      </div>
+                      <SelectItem value="tous">👥 Tous les employés</SelectItem>
+                      <SelectItem value="medecins">👨‍⚕️ Médecins uniquement</SelectItem>
+                      {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role !== 'Directeur')).map(emp => {
+                        let demiJournees = 0;
+                        planningMois.filter(p => p.employe_id === emp.id).forEach(p => {
+                          demiJournees += 1;
+                        });
+                        const jours = demiJournees / 2;
+                        const joursStr = jours % 1 === 0 ? jours.toString() : jours.toFixed(1).replace('.', ',');
                         const firstDate = new Date(planningMois[0]?.date || selectedMonth + '-01');
                         const year = firstDate.getFullYear();
                         const month = firstDate.getMonth();
