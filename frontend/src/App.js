@@ -8085,8 +8085,8 @@ const PlanningManager = () => {
         </Card>
       )}
 
-      {/* VUE MENSUELLE - Récapitulatif en dessous */}
-      {viewMode === 'mois' && (
+      {/* VUE MENSUELLE - Récapitulatif en dessous (Directeur uniquement) */}
+      {viewMode === 'mois' && user?.role === 'Directeur' && (
         <Card className="mt-4">
           <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100">
             <CardTitle className="flex items-center space-x-2">
