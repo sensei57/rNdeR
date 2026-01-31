@@ -8511,12 +8511,11 @@ const PlanningManager = () => {
                                 }`}
                                 onClick={() => {
                                   if (hasCongeEnAttente) return; // Les boutons gèrent les actions
-                                  if (hasCongeApprouve) return; // Clic sur le type pour changer
                                   openJourneeModal(secretaire, date);
                                 }}
                                 title={
                                   hasCongeEnAttente ? `⏳ Demande de congé en attente - ${congeEnAttente.motif || 'Pas de motif'}` :
-                                  hasCongeApprouve ? `🏖️ ${getTypeCongeShortLabel(congeApprouve.type_conge)} - Cliquer pour changer le type` :
+                                  hasCongeApprouve ? `🏖️ ${getTypeCongeShortLabel(congeApprouve.type_conge)} - Cliquer pour modifier` :
                                   creneauMatin ? `📝 ${creneauMatin.horaire_debut || ''} - ${creneauMatin.horaire_fin || ''}` : '📅 Ajouter'
                                 }
                               >
@@ -8537,13 +8536,9 @@ const PlanningManager = () => {
                                     </div>
                                   </div>
                                 ) : hasCongeApprouve ? (
-                                  <div 
-                                    className={`text-xs font-bold cursor-pointer ${getCongeColorClasses(congeApprouve.type_conge, false)}`}
-                                    onClick={(e) => { e.stopPropagation(); handleChangerTypeCongeRapide(congeApprouve); }}
-                                    title="Cliquer pour changer le type"
-                                  >
+                                  <span className={`text-xs font-bold ${getCongeColorClasses(congeApprouve.type_conge, false)}`}>
                                     {getTypeCongeShortLabel(congeApprouve.type_conge)}
-                                  </div>
+                                  </span>
                                 ) : creneauMatin ? (
                                   <div className="text-xs">
                                     <span className="font-semibold">{creneauMatin.horaire_debut?.substring(0,5)}</span>
@@ -8561,24 +8556,21 @@ const PlanningManager = () => {
                                   dateIndex % 2 === 0 ? 'bg-white hover:bg-pink-100' : 'bg-gray-50 hover:bg-pink-100'
                                 }`}
                                 onClick={() => {
-                                  if (hasCongeEnAttente || hasCongeApprouve) return;
+                                  if (hasCongeEnAttente) return;
                                   openJourneeModal(secretaire, date);
                                 }}
                                 title={
                                   hasCongeEnAttente ? `⏳ Demande en attente` :
-                                  hasCongeApprouve ? `🏖️ ${getTypeCongeShortLabel(congeApprouve.type_conge)}` :
+                                  hasCongeApprouve ? `🏖️ ${getTypeCongeShortLabel(congeApprouve.type_conge)} - Cliquer pour modifier` :
                                   creneauAM ? `📝 ${creneauAM.horaire_debut || ''} - ${creneauAM.horaire_fin || ''}` : '📅 Ajouter'
                                 }
                               >
                                 {hasCongeEnAttente ? (
                                   <span className="text-xs font-bold text-yellow-800">⏳</span>
                                 ) : hasCongeApprouve ? (
-                                  <div 
-                                    className={`text-xs font-bold cursor-pointer ${getCongeColorClasses(congeApprouve.type_conge, false)}`}
-                                    onClick={(e) => { e.stopPropagation(); handleChangerTypeCongeRapide(congeApprouve); }}
-                                  >
+                                  <span className={`text-xs font-bold ${getCongeColorClasses(congeApprouve.type_conge, false)}`}>
                                     {getTypeCongeShortLabel(congeApprouve.type_conge)}
-                                  </div>
+                                  </span>
                                 ) : creneauAM ? (
                                   <div className="text-xs">
                                     <span className="font-semibold">{creneauAM.horaire_pause_fin?.substring(0,5) || creneauAM.horaire_debut?.substring(0,5)}</span>
