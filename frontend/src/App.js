@@ -9458,6 +9458,17 @@ const DemandesTravailManager = () => {
   const [joursDisponibles, setJoursDisponibles] = useState([]);
   const [creneauxExistantsMois, setCreneauxExistantsMois] = useState([]); // Créneaux déjà validés du médecin
   
+  // États pour la demande annuelle (médecins)
+  const [showDemandeAnnuelleModal, setShowDemandeAnnuelleModal] = useState(false);
+  const [demandeAnnuelle, setDemandeAnnuelle] = useState({
+    medecin_id: '',
+    annee: new Date().getFullYear(),
+    semaine_type_id: '',
+    motif: ''
+  });
+  const [moisAnnee, setMoisAnnee] = useState([]); // 12 mois avec leurs jours
+  const [moisSelectionne, setMoisSelectionne] = useState(0); // Index du mois affiché (0-11)
+  
   // États pour la demande hebdomadaire (assistants/secrétaires)
   const [showDemandeHebdoModal, setShowDemandeHebdoModal] = useState(false);
   const [demandeHebdo, setDemandeHebdo] = useState({
