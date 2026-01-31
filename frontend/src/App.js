@@ -2818,13 +2818,14 @@ const PlanningManager = () => {
     if (!configSemaineEmploye) return;
     try {
       const fieldName = `semaine_${configSemaineType.toLowerCase()}_config`;
-      await axios.patch(`${API}/users/${configSemaineEmploye.id}`, {
+      await axios.put(`${API}/users/${configSemaineEmploye.id}`, {
         [fieldName]: configSemaineEmploye.tempConfig
       });
       toast.success(`Semaine ${configSemaineType} configurée pour ${configSemaineEmploye.prenom}`);
       fetchData();
       setConfigSemaineEmploye(null);
     } catch (error) {
+      console.error('Erreur sauvegarde:', error);
       toast.error('Erreur lors de la sauvegarde');
     }
   };
