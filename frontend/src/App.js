@@ -8374,7 +8374,17 @@ const PlanningManager = () => {
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="bg-gray-100">
-                    <th className="border p-2 text-left min-w-[150px]">Employé</th>
+                    <th className="border p-2 text-left min-w-[150px]">
+                      <div className="flex items-center space-x-2">
+                        <span>Employé</span>
+                        <input
+                          type="text"
+                          placeholder="Note générale..."
+                          className="flex-1 text-xs bg-gray-50 border border-gray-200 rounded px-2 py-1 font-normal focus:outline-none focus:ring-1 focus:ring-teal-300 placeholder-gray-400"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    </th>
                     {planningTableau.dates.map((date, dateIndex) => (
                       <th 
                         key={date} 
