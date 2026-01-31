@@ -8540,7 +8540,6 @@ const PlanningManager = () => {
                         {/* Colonnes récapitulatives de fin de ligne */}
                         {(() => {
                           const semaineAffichee = localStorage.getItem('semaineAffichee') || 'A';
-                          const heuresSemaine = semaineAffichee === 'A' ? (secretaire.heures_semaine_a || 35) : (secretaire.heures_semaine_b || 35);
                           const heuresContrat = secretaire.heures_semaine_fixe || 35;
                           
                           // Calculer les heures de congés pour cette semaine
@@ -8554,6 +8553,17 @@ const PlanningManager = () => {
                             }
                           });
                           
+                          // Calcul différence heures effectuées vs contrat
+                          const diffHeures = heures - heuresContrat;
+                          // Heures à récup ou sup = différence de la semaine + cumul existant
+                          const heuresSupRecup = diffHeures + (secretaire.heures_supplementaires || 0);
+                          
+                          // Couleur colonne Contrat: Jaune=égal, Vert=moins(récup), Rouge=plus(sup)
+                          const getCouleurContrat = (effectuees, contrat) => {
+                            if (Math.abs(effectuees - contrat) < 0.5) return 'bg-yellow-200 text-yellow-800';
+                            return effectuees < contrat ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800';
+                          };
+                          
                           const getCouleur = (val, cible) => {
                             if (Math.abs(val - cible) < 0.5) return 'bg-yellow-100';
                             return val < cible ? 'bg-green-100' : 'bg-red-100';
@@ -8561,11 +8571,15 @@ const PlanningManager = () => {
                           return (
                             <>
                               <td className={`border p-1 text-center text-xs font-bold ${getCouleur(total, 10)}`}>{total}</td>
-                              <td className={`border p-1 text-center text-xs font-bold ${getCouleur(heures, heuresSemaine)}`}>{heures}h</td>
-                              <td className="border p-1 text-center text-xs bg-purple-50">{heuresSemaine}h</td>
-                              <td className={`border p-1 text-center text-xs font-bold ${getCouleur(heures, heuresContrat)} text-purple-700`}>{heuresContrat}h</td>
-                              <td className={`border p-1 text-center text-xs font-bold ${(secretaire.heures_supplementaires || 0) >= 0 ? 'text-orange-600 bg-orange-50' : 'text-blue-600 bg-blue-50'}`}>
-                                {(secretaire.heures_supplementaires || 0) >= 0 ? '+' : ''}{(secretaire.heures_supplementaires || 0).toFixed(1)}h
+                              <td className={`border p-1 text-center text-xs font-bold ${getCouleur(heures, heuresContrat)}`}>{heures}h</td>
+                              <td className={`border p-1 text-center text-xs font-bold ${getCouleurContrat(heures, heuresContrat)}`}>
+                                {heuresContrat}h
+                                <div className="text-xs font-normal">
+                                  ({diffHeures >= 0 ? '+' : ''}{diffHeures.toFixed(0)}h)
+                                </div>
+                              </td>
+                              <td className={`border p-1 text-center text-xs font-bold ${heuresSupRecup >= 0 ? 'text-orange-600 bg-orange-50' : 'text-blue-600 bg-blue-50'}`}>
+                                {heuresSupRecup >= 0 ? '+' : ''}{heuresSupRecup.toFixed(1)}h
                               </td>
                               <td className={`border p-1 text-center text-xs font-bold ${heuresCongesSemaine > 0 ? 'bg-green-200 text-green-800' : 'bg-green-50'}`}>{heuresCongesSemaine}h</td>
                             </>
