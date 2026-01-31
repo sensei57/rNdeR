@@ -10662,18 +10662,33 @@ const PlanningManager = () => {
             
             {/* Option Congé/Repos pour Secrétaires et Assistants */}
             {(journeeData.employe?.role === 'Secrétaire' || journeeData.employe?.role === 'Assistant') && (
-              <div className="bg-gray-50 border rounded-lg p-4 mt-4">
-                <h4 className="font-semibold text-gray-700 mb-3">🏖️ Ajouter un congé ou repos pour cette journée</h4>
+              <div className={`border rounded-lg p-4 mt-4 ${journeeData.congeExistant ? 'bg-red-50 border-red-300' : 'bg-gray-50'}`}>
+                <h4 className="font-semibold text-gray-700 mb-3">
+                  🏖️ {journeeData.congeExistant ? 'Congé existant - Décocher pour annuler' : 'Ajouter un congé ou repos pour cette journée'}
+                </h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="flex items-center space-x-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={journeeData.matin.conge || false}
-                        onChange={(e) => setJourneeData(prev => ({
-                          ...prev,
-                          matin: { ...prev.matin, conge: e.target.checked, type_conge: e.target.checked ? 'CONGE_PAYE' : '' }
-                        }))}
+                        onChange={async (e) => {
+                          if (!e.target.checked && journeeData.congeExistant) {
+                            // Décocher = supprimer le congé existant
+                            await handleSupprimerCongeExistant(journeeData.congeExistant.id);
+                            setJourneeData(prev => ({
+                              ...prev,
+                              congeExistant: null,
+                              matin: { ...prev.matin, conge: false, type_conge: '' },
+                              apresMidi: { ...prev.apresMidi, conge: false, type_conge: '' }
+                            }));
+                          } else {
+                            setJourneeData(prev => ({
+                              ...prev,
+                              matin: { ...prev.matin, conge: e.target.checked, type_conge: e.target.checked ? (prev.matin.type_conge || 'CONGE_PAYE') : '' }
+                            }));
+                          }
+                        }}
                         className="w-4 h-4"
                       />
                       <span className="text-sm">Congé/Repos <b>Matin</b></span>
@@ -10682,10 +10697,16 @@ const PlanningManager = () => {
                       <select
                         className="w-full p-2 border rounded text-sm mt-2"
                         value={journeeData.matin.type_conge || 'CONGE_PAYE'}
-                        onChange={(e) => setJourneeData(prev => ({
-                          ...prev,
-                          matin: { ...prev.matin, type_conge: e.target.value }
-                        }))}
+                        onChange={(e) => {
+                          setJourneeData(prev => ({
+                            ...prev,
+                            matin: { ...prev.matin, type_conge: e.target.value }
+                          }));
+                          // Si congé existant, modifier le type
+                          if (journeeData.congeExistant) {
+                            handleModifierTypeConge(journeeData.congeExistant.id, e.target.value);
+                          }
+                        }}
                       >
                         <option value="CONGE_PAYE">Congé payé (CP)</option>
                         <option value="RTT">RTT</option>
@@ -10699,10 +10720,23 @@ const PlanningManager = () => {
                       <input
                         type="checkbox"
                         checked={journeeData.apresMidi.conge || false}
-                        onChange={(e) => setJourneeData(prev => ({
-                          ...prev,
-                          apresMidi: { ...prev.apresMidi, conge: e.target.checked, type_conge: e.target.checked ? 'CONGE_PAYE' : '' }
-                        }))}
+                        onChange={async (e) => {
+                          if (!e.target.checked && journeeData.congeExistant) {
+                            // Décocher = supprimer le congé existant
+                            await handleSupprimerCongeExistant(journeeData.congeExistant.id);
+                            setJourneeData(prev => ({
+                              ...prev,
+                              congeExistant: null,
+                              matin: { ...prev.matin, conge: false, type_conge: '' },
+                              apresMidi: { ...prev.apresMidi, conge: false, type_conge: '' }
+                            }));
+                          } else {
+                            setJourneeData(prev => ({
+                              ...prev,
+                              apresMidi: { ...prev.apresMidi, conge: e.target.checked, type_conge: e.target.checked ? (prev.apresMidi.type_conge || 'CONGE_PAYE') : '' }
+                            }));
+                          }
+                        }}
                         className="w-4 h-4"
                       />
                       <span className="text-sm">Congé/Repos <b>Après-midi</b></span>
@@ -10711,10 +10745,16 @@ const PlanningManager = () => {
                       <select
                         className="w-full p-2 border rounded text-sm mt-2"
                         value={journeeData.apresMidi.type_conge || 'CONGE_PAYE'}
-                        onChange={(e) => setJourneeData(prev => ({
-                          ...prev,
-                          apresMidi: { ...prev.apresMidi, type_conge: e.target.value }
-                        }))}
+                        onChange={(e) => {
+                          setJourneeData(prev => ({
+                            ...prev,
+                            apresMidi: { ...prev.apresMidi, type_conge: e.target.value }
+                          }));
+                          // Si congé existant, modifier le type
+                          if (journeeData.congeExistant) {
+                            handleModifierTypeConge(journeeData.congeExistant.id, e.target.value);
+                          }
+                        }}
                       >
                         <option value="CONGE_PAYE">Congé payé (CP)</option>
                         <option value="RTT">RTT</option>
