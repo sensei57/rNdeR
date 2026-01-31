@@ -8502,7 +8502,8 @@ const PlanningManager = () => {
                             </React.Fragment>
                           );
                         })}
-                        <td className={`border p-2 text-center font-bold ${getTotalColor(total)}`}>{total}</td>
+                        <td className={`border p-2 text-center font-bold ${getTotalColor(total, 'employe', medecin)}`}>{total}</td>
+                        <td className="border p-2 text-center font-bold bg-blue-50">{heures}h</td>
                       </tr>
                     );
                   })}
