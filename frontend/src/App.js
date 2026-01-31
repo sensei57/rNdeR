@@ -9027,7 +9027,6 @@ const PlanningManager = () => {
                         })}
                         {/* Colonnes récapitulatives de fin de ligne - Médecins */}
                         {(() => {
-                          const semaineAffichee = localStorage.getItem('semaineAffichee') || 'A';
                           const demiJourneesSemaine = semaineAffichee === 'A' ? (medecin.limite_demi_journees_a || 10) : (medecin.limite_demi_journees_b || 10);
                           const heuresContrat = medecin.heures_semaine_fixe || (demiJourneesSemaine * 4);
                           
