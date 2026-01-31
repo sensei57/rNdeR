@@ -4206,23 +4206,8 @@ const PlanningManager = () => {
     try {
       const promises = [];
       
-      // SUPPRIMER les créneaux si demandé
-      if (journeeData.matin.supprimer && journeeData.matin.id) {
-        await axios.delete(`${API}/planning/${journeeData.matin.id}`);
-        toast.success('Créneau matin supprimé');
-      }
-      if (journeeData.apresMidi.supprimer && journeeData.apresMidi.id) {
-        await axios.delete(`${API}/planning/${journeeData.apresMidi.id}`);
-        toast.success('Créneau après-midi supprimé');
-      }
-      
-      // Si suppression, recharger et sortir
-      if (journeeData.matin.supprimer || journeeData.apresMidi.supprimer) {
-        setShowJourneeModal(false);
-        fetchPlanningTableau(selectedWeek);
-        // Continuer avec le reste seulement si pas tout supprimé
-        if (journeeData.matin.supprimer && journeeData.apresMidi.supprimer) return;
-      }
+      // Les suppressions sont gérées par le bouton séparé "Supprimer les créneaux cochés"
+      // Ici on ne fait que les créations/modifications
       
       // Créer un congé si demandé pour les secrétaires
       if (journeeData.employe?.role === 'Secrétaire' && (journeeData.matin.conge || journeeData.apresMidi.conge)) {
