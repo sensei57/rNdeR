@@ -8459,7 +8459,7 @@ const PlanningManager = () => {
                                 onClick={() => {
                                   if (hasCongeEnAttente) return; // Les boutons gèrent les actions
                                   if (hasCongeApprouve) return; // Clic sur le type pour changer
-                                  creneauMatin ? openQuickCreneauModal(secretaire, date, 'MATIN', creneauMatin) : openJourneeModal(secretaire, date);
+                                  openJourneeModal(secretaire, date);
                                 }}
                                 title={
                                   hasCongeEnAttente ? `⏳ Demande de congé en attente - ${congeEnAttente.motif || 'Pas de motif'}` :
