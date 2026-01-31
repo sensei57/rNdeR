@@ -121,6 +121,7 @@ class CreneauPlanning(BaseModel):
     horaire_pause_debut: Optional[str] = None  # Pour secrétaires : heure de fin du matin "12:00"
     horaire_pause_fin: Optional[str] = None  # Pour secrétaires : heure de reprise après-midi "14:00"
     notes: Optional[str] = None
+    heures_supplementaires: Optional[float] = 0.0  # Heures supplémentaires pour ce créneau
     date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class CreneauPlanningCreate(BaseModel):
@@ -136,6 +137,7 @@ class CreneauPlanningCreate(BaseModel):
     horaire_pause_debut: Optional[str] = None
     horaire_pause_fin: Optional[str] = None
     notes: Optional[str] = None
+    heures_supplementaires: Optional[float] = 0.0
 
 class CreneauPlanningUpdate(BaseModel):
     medecin_attribue_id: Optional[str] = None
@@ -147,6 +149,7 @@ class CreneauPlanningUpdate(BaseModel):
     horaire_pause_debut: Optional[str] = None
     horaire_pause_fin: Optional[str] = None
     notes: Optional[str] = None
+    heures_supplementaires: Optional[float] = None
 
 # Groupe Chat Models
 class GroupeChat(BaseModel):
