@@ -9089,16 +9089,9 @@ const PlanningManager = () => {
                         {/* Colonnes récapitulatives de fin de ligne - Médecins */}
                         {(() => {
                           const demiJourneesSemaine = semaineAffichee === 'A' ? (medecin.limite_demi_journees_a || 10) : (medecin.limite_demi_journees_b || 10);
-                          const heuresContrat = medecin.heures_semaine_fixe || (demiJourneesSemaine * 4);
                           
                           // Cumul stocké (solde depuis début d'année)
                           const cumulHeuresSupRecup = medecin.heures_supplementaires || 0;
-                          
-                          // Couleur colonne Contrat: Jaune=égal, Vert=moins(récup), Rouge=plus(sup)
-                          const getCouleurContrat = (effectuees, contrat) => {
-                            if (Math.abs(effectuees - contrat) < 0.5) return 'bg-yellow-200 text-yellow-800';
-                            return effectuees < contrat ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800';
-                          };
                           
                           const getCouleur = (val, cible) => {
                             if (Math.abs(val - cible) < 0.5) return 'bg-yellow-100';
@@ -9106,14 +9099,12 @@ const PlanningManager = () => {
                           };
                           return (
                             <>
-                              <td className={`border p-1 text-center text-xs font-bold ${getCouleur(total, demiJourneesSemaine)}`}>{total}</td>
-                              <td className={`border p-1 text-center text-xs font-bold ${getCouleur(heures, heuresContrat)}`}>{heures}h</td>
-                              <td className={`border p-1 text-center text-xs font-bold ${getCouleurContrat(heures, heuresContrat)}`}>
-                                {heuresContrat}h
-                              </td>
+                              <td className={`border p-1 text-center text-xs font-bold ${getCouleur(total, demiJourneesSemaine)}`}>{total}/{demiJourneesSemaine}</td>
+                              <td className="border p-1 text-center text-xs font-bold bg-blue-50">{heures}h</td>
                               <td className={`border p-1 text-center text-xs font-bold ${cumulHeuresSupRecup >= 0 ? 'text-orange-600 bg-orange-50' : 'text-blue-600 bg-blue-50'}`}>
                                 {cumulHeuresSupRecup >= 0 ? '+' : ''}{cumulHeuresSupRecup.toFixed(1)}h
                               </td>
+                              <td className="border p-1 text-center text-xs bg-gray-50">-</td>
                               <td className="border p-1 text-center text-xs bg-gray-50">-</td>
                               <td className="border p-1 text-center text-xs bg-gray-50">-</td>
                             </>
