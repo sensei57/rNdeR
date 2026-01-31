@@ -7855,7 +7855,7 @@ const PlanningManager = () => {
                         <td className="border p-2 font-medium">
                           <span>{secretaire.prenom} {secretaire.nom}</span>
                         </td>
-                        {planningTableau.dates.map(date => {
+                        {planningTableau.dates.map((date, dateIndex) => {
                           const creneauMatin = getCreneauForEmploye(secretaire.id, date, 'MATIN');
                           const creneauAM = getCreneauForEmploye(secretaire.id, date, 'APRES_MIDI');
                           const congesApprouvesDate = getCongesForEmployeDate(secretaire.id, date);
