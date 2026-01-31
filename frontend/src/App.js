@@ -7790,35 +7790,45 @@ const PlanningManager = () => {
           <Card className="mt-4">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100">
               <CardTitle className="flex items-center space-x-2">
-                <span>📊 Récapitulatif Hebdomadaire (Semaine en cours)</span>
+                <span>📊 Récapitulatif de la Semaine</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4">
               <div className="space-y-4">
-                {/* Médecins - Demi-journées à la semaine */}
-                {medecins.filter(m => m.actif).length > 0 && (
+                {/* Secrétaires */}
+                {users.filter(u => u.role === 'Secrétaire' && u.actif).length > 0 && (
                   <div>
-                    <h3 className="text-sm font-bold text-gray-700 mb-2">Médecins (Demi-journées/semaine) - Limite: {configurationPlanning?.limite_demi_journees_medecin || 6}</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                      {medecins.filter(m => m.actif).map(medecin => {
-                        const demiJournees = calculateDemiJournees(medecin.id, planningSemaine.dates);
-                        const conges = calculateConges(medecin.id, planningSemaine.dates);
-                        const limiteMedecin = configurationPlanning?.limite_demi_journees_medecin || 6;
-                        const isOverLimit = demiJournees > limiteMedecin;
+                    <h3 className="text-sm font-bold text-pink-700 mb-2 bg-pink-100 p-2 rounded">📋 Secrétaires</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {users.filter(u => u.role === 'Secrétaire' && u.actif).map(secretaire => {
+                        const heuresFaites = calculateHeures(secretaire.id, planningSemaine.dates);
+                        const heuresContrat = secretaire.heures_semaine_fixe || 35;
+                        const heuresSup = secretaire.heures_supplementaires || 0;
+                        const congesDemiJ = calculateConges(secretaire.id, planningSemaine.dates);
+                        const congesHeures = congesDemiJ * (secretaire.heures_demi_journee_conge || 4);
+                        const diff = heuresFaites - heuresContrat;
+                        
                         return (
-                          <div key={medecin.id} className={`${isOverLimit ? 'bg-red-50 border-red-500' : 'bg-blue-50 border-blue-200'} border rounded p-2`}>
-                            <div className="text-sm font-medium text-gray-800">
-                              Dr. {medecin.prenom} {medecin.nom}
-                            </div>
-                            <div className={`text-lg font-bold ${isOverLimit ? 'text-red-600' : 'text-blue-600'}`}>
-                              {demiJournees} / {limiteMedecin} {demiJournees <= 1 ? 'demi-journée' : 'demi-journées'}
-                              {isOverLimit && ' ⚠️'}
-                            </div>
-                            {conges > 0 && (
-                              <div className="text-xs text-red-600 font-medium mt-1">
-                                🔴 {conges} {conges === 1 ? 'jour' : 'jours'} de congé
+                          <div key={secretaire.id} className="bg-pink-50 border border-pink-200 rounded-lg p-3">
+                            <div className="font-medium text-gray-800 mb-2">{secretaire.prenom} {secretaire.nom}</div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <span className="text-gray-500">Heures:</span>
+                                <span className={`font-bold ml-1 ${Math.abs(diff) < 0.5 ? 'text-yellow-600' : diff < 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                  {heuresFaites}h / {heuresContrat}h
+                                </span>
                               </div>
-                            )}
+                              <div>
+                                <span className="text-gray-500">H sup:</span>
+                                <span className={`font-bold ml-1 ${heuresSup >= 0 ? 'text-orange-600' : 'text-blue-600'}`}>
+                                  {heuresSup >= 0 ? '+' : ''}{heuresSup.toFixed(1)}h
+                                </span>
+                              </div>
+                              <div className="col-span-2">
+                                <span className="text-gray-500">Congés:</span>
+                                <span className="font-bold text-green-600 ml-1">{congesDemiJ} ½j ({congesHeures}h)</span>
+                              </div>
+                            </div>
                           </div>
                         );
                       })}
@@ -7826,8 +7836,81 @@ const PlanningManager = () => {
                   </div>
                 )}
 
-                {/* Assistants - Demi-journées à la semaine */}
-                {assistants.filter(a => a.actif).length > 0 && (
+                {/* Assistants */}
+                {users.filter(u => u.role === 'Assistant' && u.actif).length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-green-700 mb-2 bg-green-100 p-2 rounded">👥 Assistants</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {users.filter(u => u.role === 'Assistant' && u.actif).map(assistant => {
+                        const demiJFaites = calculateDemiJournees(assistant.id, planningSemaine.dates);
+                        const demiJPrevues = semaineAffichee === 'A' ? (assistant.limite_demi_journees_a || 10) : (assistant.limite_demi_journees_b || 10);
+                        const heuresFaites = demiJFaites * (assistant.heures_par_jour || 4);
+                        const heuresSup = assistant.heures_supplementaires || 0;
+                        const congesDemiJ = calculateConges(assistant.id, planningSemaine.dates);
+                        const congesHeures = congesDemiJ * (assistant.heures_demi_journee_conge || 4);
+                        
+                        return (
+                          <div key={assistant.id} className="bg-green-50 border border-green-200 rounded-lg p-3">
+                            <div className="font-medium text-gray-800 mb-2">{assistant.prenom} {assistant.nom}</div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <span className="text-gray-500">½j:</span>
+                                <span className={`font-bold ml-1 ${demiJFaites === demiJPrevues ? 'text-yellow-600' : demiJFaites < demiJPrevues ? 'text-green-600' : 'text-red-600'}`}>
+                                  {demiJFaites} / {demiJPrevues}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-gray-500">Heures:</span>
+                                <span className="font-bold text-green-700 ml-1">{heuresFaites}h</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-500">H sup:</span>
+                                <span className={`font-bold ml-1 ${heuresSup >= 0 ? 'text-orange-600' : 'text-blue-600'}`}>
+                                  {heuresSup >= 0 ? '+' : ''}{heuresSup.toFixed(1)}h
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-gray-500">Congés:</span>
+                                <span className="font-bold text-green-600 ml-1">{congesDemiJ} ½j ({congesHeures}h)</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Médecins */}
+                {users.filter(u => u.role === 'Médecin' && u.actif).length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-blue-700 mb-2 bg-blue-100 p-2 rounded">👨‍⚕️ Médecins</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {users.filter(u => u.role === 'Médecin' && u.actif).map(medecin => {
+                        const demiJFaites = calculateDemiJournees(medecin.id, planningSemaine.dates);
+                        const heuresSup = medecin.heures_supplementaires || 0;
+                        
+                        return (
+                          <div key={medecin.id} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                            <div className="font-medium text-gray-800 mb-2">Dr. {medecin.prenom} {medecin.nom}</div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <span className="text-gray-500">½j:</span>
+                                <span className="font-bold text-blue-700 ml-1">{demiJFaites}</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-500">H sup:</span>
+                                <span className={`font-bold ml-1 ${heuresSup >= 0 ? 'text-orange-600' : 'text-blue-600'}`}>
+                                  {heuresSup >= 0 ? '+' : ''}{heuresSup.toFixed(1)}h
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                   <div>
                     <h3 className="text-sm font-bold text-gray-700 mb-2">Assistants (Demi-journées/semaine) - Limite: {configurationPlanning?.limite_demi_journees_assistant || 8}</h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
