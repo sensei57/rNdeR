@@ -61,7 +61,9 @@ class UserBase(BaseModel):
     peut_modifier_planning: bool = False  # Peut modifier le planning (créer/modifier/supprimer créneaux)
     # Nouveaux champs pour la gestion des heures et semaines A/B
     heures_par_jour: Optional[float] = 7.0  # Heures par jour par défaut (pour assistants)
-    limite_demi_journees: Optional[int] = 10  # Limite de demi-journées par semaine
+    limite_demi_journees: Optional[int] = 10  # Limite de demi-journées par semaine (legacy)
+    limite_demi_journees_a: Optional[int] = 10  # Limite de demi-journées semaine A
+    limite_demi_journees_b: Optional[int] = 10  # Limite de demi-journées semaine B
     semaine_a_id: Optional[str] = None  # ID de l'horaire prédéfini pour semaine A
     semaine_b_id: Optional[str] = None  # ID de l'horaire prédéfini pour semaine B
     heures_semaine_a: Optional[float] = 35.0  # Heures à faire en semaine A
@@ -82,6 +84,8 @@ class UserUpdate(BaseModel):
     peut_modifier_planning: Optional[bool] = None
     heures_par_jour: Optional[float] = None
     limite_demi_journees: Optional[int] = None
+    limite_demi_journees_a: Optional[int] = None
+    limite_demi_journees_b: Optional[int] = None
     semaine_a_id: Optional[str] = None
     semaine_b_id: Optional[str] = None
     heures_semaine_a: Optional[float] = None
