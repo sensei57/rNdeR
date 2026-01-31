@@ -4200,14 +4200,106 @@ const PlanningManager = () => {
   };
   
   // Soumettre le modal journée complète
+  // Enregistrer uniquement le MATIN
+  const handleEnregistrerMatin = async () => {
+    try {
+      const payloadMatin = {
+        notes: journeeData.matin.notes || 'Présence',
+        salle_attribuee: journeeData.matin.salle_attribuee || null,
+        salle_attente: journeeData.matin.salle_attente || null,
+        medecin_ids: journeeData.matin.medecin_ids || [],
+        horaire_debut: journeeData.matin.horaire_debut || null,
+        horaire_fin: journeeData.matin.horaire_fin || null
+      };
+      
+      if (journeeData.matin.id) {
+        await axios.put(`${API}/planning/${journeeData.matin.id}`, payloadMatin);
+        toast.success('Matin modifié !');
+      } else {
+        await axios.post(`${API}/planning`, {
+          employe_id: journeeData.employe_id,
+          date: journeeData.date,
+          creneau: 'MATIN',
+          ...payloadMatin
+        });
+        toast.success('Matin créé !');
+      }
+      
+      setShowJourneeModal(false);
+      fetchPlanningTableau(selectedWeek);
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error('Erreur lors de l\'enregistrement du matin');
+    }
+  };
+
+  // Supprimer uniquement le MATIN
+  const handleSupprimerMatin = async () => {
+    if (!journeeData.matin.id) return;
+    try {
+      await axios.delete(`${API}/planning/${journeeData.matin.id}`);
+      toast.success('Matin supprimé !');
+      setShowJourneeModal(false);
+      fetchPlanningTableau(selectedWeek);
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error('Erreur lors de la suppression');
+    }
+  };
+
+  // Enregistrer uniquement l'APRÈS-MIDI
+  const handleEnregistrerApresMidi = async () => {
+    try {
+      const payloadAM = {
+        notes: journeeData.apresMidi.notes || 'Présence',
+        salle_attribuee: journeeData.apresMidi.salle_attribuee || null,
+        salle_attente: journeeData.apresMidi.salle_attente || null,
+        medecin_ids: journeeData.apresMidi.medecin_ids || [],
+        horaire_debut: journeeData.apresMidi.horaire_debut || null,
+        horaire_fin: journeeData.apresMidi.horaire_fin || null
+      };
+      
+      if (journeeData.apresMidi.id) {
+        await axios.put(`${API}/planning/${journeeData.apresMidi.id}`, payloadAM);
+        toast.success('Après-midi modifié !');
+      } else {
+        await axios.post(`${API}/planning`, {
+          employe_id: journeeData.employe_id,
+          date: journeeData.date,
+          creneau: 'APRES_MIDI',
+          ...payloadAM
+        });
+        toast.success('Après-midi créé !');
+      }
+      
+      setShowJourneeModal(false);
+      fetchPlanningTableau(selectedWeek);
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error('Erreur lors de l\'enregistrement de l\'après-midi');
+    }
+  };
+
+  // Supprimer uniquement l'APRÈS-MIDI
+  const handleSupprimerApresMidi = async () => {
+    if (!journeeData.apresMidi.id) return;
+    try {
+      await axios.delete(`${API}/planning/${journeeData.apresMidi.id}`);
+      toast.success('Après-midi supprimé !');
+      setShowJourneeModal(false);
+      fetchPlanningTableau(selectedWeek);
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error('Erreur lors de la suppression');
+    }
+  };
+
+  // Enregistrer la JOURNÉE COMPLÈTE (matin + après-midi)
   const handleJourneeSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     
     try {
       const promises = [];
-      
-      // Les suppressions sont gérées par le bouton séparé "Supprimer les créneaux cochés"
-      // Ici on ne fait que les créations/modifications
       
       // Créer un congé si demandé pour les secrétaires
       if (journeeData.employe?.role === 'Secrétaire' && (journeeData.matin.conge || journeeData.apresMidi.conge)) {
@@ -4235,7 +4327,6 @@ const PlanningManager = () => {
       
       // Créer un congé si demandé pour les assistants
       if (journeeData.employe?.role === 'Assistant' && (journeeData.matin.conge || journeeData.apresMidi.conge)) {
-        // Déterminer le type de congé et la durée
         const typeConge = journeeData.matin.type_conge || journeeData.apresMidi.type_conge || 'CONGE_PAYE';
         let duree = 'JOURNEE_COMPLETE';
         if (journeeData.matin.conge && !journeeData.apresMidi.conge) duree = 'MATIN';
@@ -4243,6 +4334,63 @@ const PlanningManager = () => {
         
         const congePayload = {
           utilisateur_id: journeeData.employe_id,
+          date_debut: journeeData.date,
+          date_fin: journeeData.date,
+          type_conge: typeConge,
+          duree: duree,
+          motif: `Congé ajouté depuis le planning`
+        };
+        
+        await axios.post(`${API}/conges/direct`, congePayload);
+        toast.success('Congé/Repos créé avec succès !');
+        setShowJourneeModal(false);
+        fetchPlanningTableau(selectedWeek);
+        return;
+      }
+      
+      // MATIN
+      const payloadMatin = {
+        notes: journeeData.matin.notes || 'Présence',
+        salle_attribuee: journeeData.matin.salle_attribuee || null,
+        salle_attente: journeeData.matin.salle_attente || null,
+        medecin_ids: journeeData.matin.medecin_ids || [],
+        horaire_debut: journeeData.matin.horaire_debut || null,
+        horaire_fin: journeeData.matin.horaire_fin || null
+      };
+      
+      if (journeeData.matin.id) {
+        promises.push(axios.put(`${API}/planning/${journeeData.matin.id}`, payloadMatin));
+      } else {
+        promises.push(axios.post(`${API}/planning`, {
+          employe_id: journeeData.employe_id,
+          date: journeeData.date,
+          creneau: 'MATIN',
+          ...payloadMatin
+        }));
+      }
+      
+      // APRÈS-MIDI
+      const payloadAM = {
+        notes: journeeData.apresMidi.notes || 'Présence',
+        salle_attribuee: journeeData.apresMidi.salle_attribuee || null,
+        salle_attente: journeeData.apresMidi.salle_attente || null,
+        medecin_ids: journeeData.apresMidi.medecin_ids || [],
+        horaire_debut: journeeData.apresMidi.horaire_debut || null,
+        horaire_fin: journeeData.apresMidi.horaire_fin || null
+      };
+      
+      if (journeeData.apresMidi.id) {
+        promises.push(axios.put(`${API}/planning/${journeeData.apresMidi.id}`, payloadAM));
+      } else {
+        promises.push(axios.post(`${API}/planning`, {
+          employe_id: journeeData.employe_id,
+          date: journeeData.date,
+          creneau: 'APRES_MIDI',
+          ...payloadAM
+        }));
+      }
+      
+      await Promise.all(promises);
           date_debut: journeeData.date,
           date_fin: journeeData.date,
           type_conge: typeConge,
