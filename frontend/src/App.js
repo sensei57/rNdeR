@@ -4160,10 +4160,19 @@ const PlanningManager = () => {
     const creneauMatin = getCreneauForEmploye(employe.id, date, 'MATIN');
     const creneauAM = getCreneauForEmploye(employe.id, date, 'APRES_MIDI');
     
+    // Vérifier si un congé existe pour cette date
+    const congeExistant = congesApprouves.find(c => 
+      c.utilisateur_id === employe.id && 
+      c.statut === 'APPROUVE' && 
+      c.date_debut <= date && 
+      c.date_fin >= date
+    );
+    
     setJourneeData({
       employe_id: employe.id,
       employe: employe,
       date: date,
+      congeExistant: congeExistant || null,
       matin: {
         id: creneauMatin?.id || null,
         exists: !!creneauMatin,
@@ -4197,6 +4206,34 @@ const PlanningManager = () => {
     });
     setShowAssistantsDetails(false); // Réinitialiser l'affichage des assistants
     setShowJourneeModal(true);
+  };
+  
+  // Supprimer un congé existant
+  const handleSupprimerCongeExistant = async (congeId) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce congé ?')) return;
+    try {
+      await axios.delete(`${API}/conges/${congeId}`);
+      toast.success('Congé supprimé !');
+      setShowJourneeModal(false);
+      fetchConges();
+      fetchPlanningTableau(selectedWeek);
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error('Erreur lors de la suppression du congé');
+    }
+  };
+  
+  // Modifier le type d'un congé existant
+  const handleModifierTypeConge = async (congeId, nouveauType) => {
+    try {
+      await axios.put(`${API}/conges/${congeId}`, { type_conge: nouveauType });
+      toast.success('Type de congé modifié !');
+      fetchConges();
+      fetchPlanningTableau(selectedWeek);
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error('Erreur lors de la modification');
+    }
   };
   
   // Soumettre le modal journée complète
