@@ -9924,28 +9924,17 @@ const PlanningManager = () => {
             
             <div className="grid grid-cols-[1fr_auto_1fr] gap-2">
               {/* MATIN */}
-              <div className={`space-y-4 p-4 rounded-lg border ${journeeData.matin.actif ? 'bg-blue-50 border-blue-200' : 'bg-gray-100 border-gray-300'}`}>
+              <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={journeeData.matin.actif}
-                      onChange={(e) => setJourneeData(prev => ({
-                        ...prev,
-                        matin: { ...prev.matin, actif: e.target.checked }
-                      }))}
-                      className="w-5 h-5 accent-blue-600"
-                    />
-                    <h3 className={`font-bold flex items-center text-base ${journeeData.matin.actif ? 'text-blue-800' : 'text-gray-500'}`}>
-                      <CalendarDays className="h-5 w-5 mr-2" /> Matin
-                    </h3>
-                  </label>
+                  <h3 className="font-bold text-blue-800 flex items-center text-base">
+                    <CalendarDays className="h-5 w-5 mr-2" /> Matin
+                  </h3>
                   {journeeData.matin.exists && (
                     <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Existant</span>
                   )}
                 </div>
                 
-                {journeeData.matin.actif && journeeData.employe?.role === 'Secrétaire' && (
+                {journeeData.employe?.role === 'Secrétaire' && (
                   <>
                     {/* Sélection rapide des horaires prédéfinis pour le MATIN */}
                     <div className="space-y-2">
