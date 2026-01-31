@@ -4174,7 +4174,8 @@ const PlanningManager = () => {
         horaire_fin: creneauMatin?.horaire_fin || (employe.role === 'Secrétaire' ? '12:00' : ''),
         conge: false,
         type_conge: '',
-        heures_conge: employe.heures_demi_journee_conge || 4
+        heures_conge: employe.heures_demi_journee_conge || 4,
+        supprimer: false
       },
       apresMidi: {
         id: creneauAM?.id || null,
@@ -4187,7 +4188,8 @@ const PlanningManager = () => {
         horaire_fin: creneauAM?.horaire_fin || (employe.role === 'Secrétaire' ? '18:00' : ''),
         conge: false,
         type_conge: '',
-        heures_conge: employe.heures_demi_journee_conge || 4
+        heures_conge: employe.heures_demi_journee_conge || 4,
+        supprimer: false
       },
       heures_supp_jour: 0,
       heures_rattraper_jour: 0
