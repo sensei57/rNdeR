@@ -4171,7 +4171,10 @@ const PlanningManager = () => {
         salle_attente: creneauMatin?.salle_attente || '',
         medecin_ids: creneauMatin?.medecin_ids || [],
         horaire_debut: creneauMatin?.horaire_debut || (employe.role === 'Secrétaire' ? '08:00' : ''),
-        horaire_fin: creneauMatin?.horaire_fin || (employe.role === 'Secrétaire' ? '12:00' : '')
+        horaire_fin: creneauMatin?.horaire_fin || (employe.role === 'Secrétaire' ? '12:00' : ''),
+        conge: false,
+        type_conge: '',
+        heures_conge: employe.heures_demi_journee_conge || 4
       },
       apresMidi: {
         id: creneauAM?.id || null,
@@ -4183,8 +4186,11 @@ const PlanningManager = () => {
         horaire_debut: creneauAM?.horaire_debut || (employe.role === 'Secrétaire' ? '14:00' : ''),
         horaire_fin: creneauAM?.horaire_fin || (employe.role === 'Secrétaire' ? '18:00' : ''),
         conge: false,
-        type_conge: ''
-      }
+        type_conge: '',
+        heures_conge: employe.heures_demi_journee_conge || 4
+      },
+      heures_supp_jour: 0,
+      heures_rattraper_jour: 0
     });
     setShowAssistantsDetails(false); // Réinitialiser l'affichage des assistants
     setShowJourneeModal(true);
