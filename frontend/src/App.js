@@ -8033,12 +8033,17 @@ const PlanningManager = () => {
                     {planningTableau.dates.map((date, dateIndex) => (
                       <th 
                         key={date} 
-                        className={`border p-1 text-center min-w-[80px] cursor-pointer hover:bg-teal-100 transition-colors ${dateIndex % 2 === 0 ? 'bg-slate-100' : 'bg-slate-200'}`}
+                        className={`border p-1 text-center min-w-[80px] cursor-pointer hover:bg-teal-100 transition-colors ${dateIndex % 2 === 0 ? 'bg-slate-50' : 'bg-slate-100'}`}
                         colSpan={2}
                         onClick={() => openDetailJourModal(date)}
                         title="📋 Cliquer pour voir le détail de cette journée"
                       >
-                        <div className="font-semibold text-slate-600">NOTE</div>
+                        <input
+                          type="text"
+                          placeholder="Note..."
+                          className="w-full text-xs bg-transparent border-none text-center placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-teal-300 rounded"
+                          onClick={(e) => e.stopPropagation()}
+                        />
                       </th>
                     ))}
                     <th className="border p-2 text-center bg-gray-300">Total</th>
