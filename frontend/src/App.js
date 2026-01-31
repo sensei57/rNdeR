@@ -9142,27 +9142,17 @@ const PlanningManager = () => {
               )}
             </div>
 
-            {/* TABLEAU RÉCAPITULATIF UNIFIÉ - Gestion des Heures */}
-            <div className="mt-6 border-t pt-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-bold text-gray-700">📊 Récapitulatif Heures & Demi-journées</h3>
-                <div className="flex gap-2">
-                  <select 
-                    className="text-xs border rounded px-2 py-1"
-                    value={localStorage.getItem('semaineAffichee') || 'A'}
-                    onChange={(e) => {
-                      localStorage.setItem('semaineAffichee', e.target.value);
-                      window.dispatchEvent(new Event('storage'));
-                    }}
-                  >
-                    <option value="A">Afficher Sem A</option>
-                    <option value="B">Afficher Sem B</option>
-                  </select>
-                  <Button size="sm" variant="outline" onClick={() => setShowConfigSemainesModal(true)}>
-                    ⚙️ Configurer
-                  </Button>
-                </div>
-              </div>
+            {/* Bouton configuration des heures */}
+            <div className="mt-4 flex justify-center">
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2 border-gray-300 hover:bg-gray-100"
+                onClick={() => setShowConfigSemainesModal(true)}
+              >
+                <Settings className="h-4 w-4" />
+                ⚙️ Paramétrage des heures contrat
+              </Button>
+            </div>
               
               {/* Légende couleurs */}
               <div className="flex gap-4 mb-3 text-xs">
