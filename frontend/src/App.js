@@ -4260,12 +4260,9 @@ const PlanningManager = () => {
       // Pour les assistants : créer le créneau même si rien n'est rempli (marquer "Présent")
       const isAssistant = journeeData.employe?.role === 'Assistant';
       
-      // Traiter le matin - NE PAS traiter si supprimer est coché
-      const shouldCreateMatin = !journeeData.matin.supprimer && (journeeData.matin.exists || journeeData.matin.notes || journeeData.matin.salle_attribuee || 
-          journeeData.matin.medecin_ids?.length > 0 || journeeData.matin.horaire_debut || 
-          (isAssistant && !journeeData.matin.conge));
-          
-      if (shouldCreateMatin) {
+      // MATIN : Créer/Modifier si actif, Supprimer si existe mais plus actif
+      if (journeeData.matin.actif) {
+        // Créer ou mettre à jour le créneau matin
         const payloadMatin = {
           notes: journeeData.matin.notes || 'Présence',
           salle_attribuee: journeeData.matin.salle_attribuee || null,
@@ -4285,14 +4282,14 @@ const PlanningManager = () => {
             ...payloadMatin
           }));
         }
+      } else if (journeeData.matin.exists && journeeData.matin.id) {
+        // Supprimer le créneau matin car décoché mais existait
+        promises.push(axios.delete(`${API}/planning/${journeeData.matin.id}`));
       }
       
-      // Traiter l'après-midi - NE PAS traiter si supprimer est coché
-      const shouldCreateAM = !journeeData.apresMidi.supprimer && (journeeData.apresMidi.exists || journeeData.apresMidi.notes || journeeData.apresMidi.salle_attribuee || 
-          journeeData.apresMidi.medecin_ids?.length > 0 || journeeData.apresMidi.horaire_debut ||
-          (isAssistant && !journeeData.apresMidi.conge));
-          
-      if (shouldCreateAM) {
+      // APRÈS-MIDI : Créer/Modifier si actif, Supprimer si existe mais plus actif
+      if (journeeData.apresMidi.actif) {
+        // Créer ou mettre à jour le créneau après-midi
         const payloadAM = {
           notes: journeeData.apresMidi.notes || 'Présence',
           salle_attribuee: journeeData.apresMidi.salle_attribuee || null,
@@ -4312,6 +4309,9 @@ const PlanningManager = () => {
             ...payloadAM
           }));
         }
+      } else if (journeeData.apresMidi.exists && journeeData.apresMidi.id) {
+        // Supprimer le créneau après-midi car décoché mais existait
+        promises.push(axios.delete(`${API}/planning/${journeeData.apresMidi.id}`));
       }
       
       await Promise.all(promises);
