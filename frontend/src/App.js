@@ -4167,6 +4167,7 @@ const PlanningManager = () => {
       matin: {
         id: creneauMatin?.id || null,
         exists: !!creneauMatin,
+        actif: !!creneauMatin, // Coché si créneau existe, sinon décoché
         notes: creneauMatin?.notes || '',
         salle_attribuee: creneauMatin?.salle_attribuee || '',
         salle_attente: creneauMatin?.salle_attente || '',
@@ -4175,12 +4176,12 @@ const PlanningManager = () => {
         horaire_fin: creneauMatin?.horaire_fin || (employe.role === 'Secrétaire' ? '12:00' : ''),
         conge: false,
         type_conge: '',
-        heures_conge: employe.heures_demi_journee_conge || 4,
-        supprimer: false
+        heures_conge: employe.heures_demi_journee_conge || 4
       },
       apresMidi: {
         id: creneauAM?.id || null,
         exists: !!creneauAM,
+        actif: !!creneauAM, // Coché si créneau existe, sinon décoché
         notes: creneauAM?.notes || '',
         salle_attribuee: creneauAM?.salle_attribuee || '',
         salle_attente: creneauAM?.salle_attente || '',
@@ -4189,8 +4190,7 @@ const PlanningManager = () => {
         horaire_fin: creneauAM?.horaire_fin || (employe.role === 'Secrétaire' ? '18:00' : ''),
         conge: false,
         type_conge: '',
-        heures_conge: employe.heures_demi_journee_conge || 4,
-        supprimer: false
+        heures_conge: employe.heures_demi_journee_conge || 4
       },
       heures_supp_jour: 0,
       heures_rattraper_jour: 0
