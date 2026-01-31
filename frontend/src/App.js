@@ -10513,12 +10513,12 @@ const PlanningManager = () => {
               </p>
             </div>
             
-            <div className="flex justify-end space-x-2 pt-4 border-t">
+            <div className="flex justify-between items-center pt-4 border-t">
               <Button type="button" variant="outline" onClick={() => setShowJourneeModal(false)}>
                 Annuler
               </Button>
               <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
-                Enregistrer
+                📅 Enregistrer Journée Complète
               </Button>
             </div>
           </form>
