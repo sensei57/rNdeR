@@ -66,6 +66,9 @@ class UserBase(BaseModel):
     semaine_b_id: Optional[str] = None  # ID de l'horaire prédéfini pour semaine B
     heures_semaine_a: Optional[float] = 35.0  # Heures à faire en semaine A
     heures_semaine_b: Optional[float] = 35.0  # Heures à faire en semaine B
+    # Configuration détaillée des semaines A/B (horaires par jour pour secrétaires, demi-journées pour médecins/assistants)
+    semaine_a_config: Optional[list] = None  # Liste de jours avec horaires ou demi-journées
+    semaine_b_config: Optional[list] = None  # Liste de jours avec horaires ou demi-journées
 
 class UserCreate(UserBase):
     password: str
@@ -83,6 +86,8 @@ class UserUpdate(BaseModel):
     semaine_b_id: Optional[str] = None
     heures_semaine_a: Optional[float] = None
     heures_semaine_b: Optional[float] = None
+    semaine_a_config: Optional[list] = None
+    semaine_b_config: Optional[list] = None
 
 class User(UserBase):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
