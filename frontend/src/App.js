@@ -8690,6 +8690,62 @@ const PlanningManager = () => {
                 </div>
               )}
             </div>
+
+            {/* Configuration des Semaines A/B par employé */}
+            <div className="mt-6 border-t pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-gray-700">📅 Semaines A/B par employé</h3>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowConfigSemainesModal(true)}
+                >
+                  ⚙️ Configurer
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 gap-2">
+                {/* Secrétaires */}
+                <div className="bg-pink-50 rounded p-2">
+                  <h4 className="text-xs font-bold text-pink-700 mb-2">📋 Secrétaires</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {users.filter(u => u.actif && u.role === 'Secrétaire').map(emp => (
+                      <div key={emp.id} className="flex items-center justify-between bg-white rounded px-2 py-1 text-xs">
+                        <span className="font-medium truncate">{emp.prenom} {emp.nom}</span>
+                        <div className="flex gap-1 ml-2">
+                          <span className={`px-1 rounded ${emp.semaine_a_id ? 'bg-pink-200 text-pink-800' : 'bg-gray-100 text-gray-400'}`}>
+                            A{emp.semaine_a_id ? '✓' : ''}
+                          </span>
+                          <span className={`px-1 rounded ${emp.semaine_b_id ? 'bg-pink-200 text-pink-800' : 'bg-gray-100 text-gray-400'}`}>
+                            B{emp.semaine_b_id ? '✓' : ''}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Assistants */}
+                <div className="bg-green-50 rounded p-2">
+                  <h4 className="text-xs font-bold text-green-700 mb-2">👥 Assistants</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {users.filter(u => u.actif && u.role === 'Assistant').map(emp => (
+                      <div key={emp.id} className="flex items-center justify-between bg-white rounded px-2 py-1 text-xs">
+                        <span className="font-medium truncate">{emp.prenom} {emp.nom}</span>
+                        <div className="flex gap-1 ml-2">
+                          <span className={`px-1 rounded ${emp.semaine_a_id ? 'bg-green-200 text-green-800' : 'bg-gray-100 text-gray-400'}`}>
+                            A{emp.semaine_a_id ? '✓' : ''}
+                          </span>
+                          <span className={`px-1 rounded ${emp.semaine_b_id ? 'bg-green-200 text-green-800' : 'bg-gray-100 text-gray-400'}`}>
+                            B{emp.semaine_b_id ? '✓' : ''}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
