@@ -7964,178 +7964,279 @@ const PlanningManager = () => {
                         });
                         const jours = demiJournees / 2;
                         const joursStr = jours % 1 === 0 ? jours.toString() : jours.toFixed(1).replace('.', ',');
-                        const firstDate = new Date(planningMois[0]?.date || selectedMonth + '-01');
-                        const year = firstDate.getFullYear();
-                        const month = firstDate.getMonth();
-                        const daysInMonth = new Date(year, month + 1, 0).getDate();
-                        const datesMonth = [];
-                        for (let i = 1; i <= daysInMonth; i++) {
-                          datesMonth.push(formatDateISO(year, month + 1, i));
-                        }
-                        const heuresFaites = calculateHeures(secretaire.id, datesMonth);
-                        const heuresContrat = (secretaire.heures_semaine_fixe || 35) * 4; // ~4 semaines/mois
-                        const heuresSup = secretaire.heures_supplementaires || 0;
-                        const congesDemiJ = calculateConges(secretaire.id, datesMonth);
-                        const congesHeures = congesDemiJ * (secretaire.heures_demi_journee_conge || 4);
                         
                         return (
-                          <div key={secretaire.id} className="bg-pink-50 border border-pink-200 rounded-lg p-3">
-                            <div className="font-medium text-gray-800 mb-2">{secretaire.prenom} {secretaire.nom}</div>
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div>
-                                <span className="text-gray-500">Heures:</span>
-                                <span className="font-bold text-pink-700 ml-1">{heuresFaites}h / {heuresContrat}h</span>
-                              </div>
-                              <div>
-                                <span className="text-gray-500">H sup:</span>
-                                <span className={`font-bold ml-1 ${heuresSup >= 0 ? 'text-orange-600' : 'text-blue-600'}`}>
-                                  {heuresSup >= 0 ? '+' : ''}{heuresSup.toFixed(1)}h
-                                </span>
-                              </div>
-                              <div className="col-span-2">
-                                <span className="text-gray-500">Congés:</span>
-                                <span className="font-bold text-green-600 ml-1">{congesDemiJ} ½j ({congesHeures}h)</span>
-                              </div>
-                            </div>
-                          </div>
+                          <SelectItem 
+                            key={emp.id} 
+                            value={emp.id}
+                            data-employee-name={`${emp.prenom} ${emp.nom}`.toLowerCase()}
+                          >
+                            {emp.role === 'Médecin' ? '👨‍⚕️' : emp.role === 'Assistant' ? '👥' : '📋'} {emp.prenom} {emp.nom} ({joursStr}j)
+                          </SelectItem>
                         );
                       })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Assistants */}
-                {users.filter(u => u.role === 'Assistant' && u.actif).length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-bold text-green-700 mb-2 bg-green-100 p-2 rounded">👥 Assistants</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {users.filter(u => u.role === 'Assistant' && u.actif).map(assistant => {
-                        const firstDate = new Date(planningMois[0]?.date || selectedMonth + '-01');
-                        const year = firstDate.getFullYear();
-                        const month = firstDate.getMonth();
-                        const daysInMonth = new Date(year, month + 1, 0).getDate();
-                        const datesMonth = [];
-                        for (let i = 1; i <= daysInMonth; i++) {
-                          datesMonth.push(formatDateISO(year, month + 1, i));
-                        }
-                        const demiJFaites = calculateDemiJournees(assistant.id, datesMonth);
-                        const demiJPrevues = ((assistant.limite_demi_journees_a || 10) + (assistant.limite_demi_journees_b || 10)) / 2 * 4; // Moyenne * 4 semaines
-                        const heuresFaites = demiJFaites * (assistant.heures_par_jour || 4);
-                        const heuresSup = assistant.heures_supplementaires || 0;
-                        const congesDemiJ = calculateConges(assistant.id, datesMonth);
-                        const congesHeures = congesDemiJ * (assistant.heures_demi_journee_conge || 4);
-                        
-                        return (
-                          <div key={assistant.id} className="bg-green-50 border border-green-200 rounded-lg p-3">
-                            <div className="font-medium text-gray-800 mb-2">{assistant.prenom} {assistant.nom}</div>
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div>
-                                <span className="text-gray-500">½j:</span>
-                                <span className="font-bold text-green-700 ml-1">{demiJFaites} / {Math.round(demiJPrevues)}</span>
-                              </div>
-                              <div>
-                                <span className="text-gray-500">Heures:</span>
-                                <span className="font-bold text-green-700 ml-1">{heuresFaites}h</span>
-                              </div>
-                              <div>
-                                <span className="text-gray-500">H sup:</span>
-                                <span className={`font-bold ml-1 ${heuresSup >= 0 ? 'text-orange-600' : 'text-blue-600'}`}>
-                                  {heuresSup >= 0 ? '+' : ''}{heuresSup.toFixed(1)}h
-                                </span>
-                              </div>
-                              <div>
-                                <span className="text-gray-500">Congés:</span>
-                                <span className="font-bold text-green-600 ml-1">{congesDemiJ} ½j ({congesHeures}h)</span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Médecins */}
-                {users.filter(u => u.role === 'Médecin' && u.actif).length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-bold text-blue-700 mb-2 bg-blue-100 p-2 rounded">👨‍⚕️ Médecins</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {users.filter(u => u.role === 'Médecin' && u.actif).map(medecin => {
-                        const firstDate = new Date(planningMois[0]?.date || selectedMonth + '-01');
-                        const year = firstDate.getFullYear();
-                        const month = firstDate.getMonth();
-                        const daysInMonth = new Date(year, month + 1, 0).getDate();
-                        const datesMonth = [];
-                        for (let i = 1; i <= daysInMonth; i++) {
-                          datesMonth.push(formatDateISO(year, month + 1, i));
-                        }
-                        const demiJFaites = calculateDemiJournees(medecin.id, datesMonth);
-                        const heuresSup = medecin.heures_supplementaires || 0;
-                        
-                        return (
-                          <div key={medecin.id} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                            <div className="font-medium text-gray-800 mb-2">Dr. {medecin.prenom} {medecin.nom}</div>
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div>
-                                <span className="text-gray-500">½j:</span>
-                                <span className="font-bold text-blue-700 ml-1">{demiJFaites}</span>
-                              </div>
-                              <div>
-                                <span className="text-gray-500">H sup:</span>
-                                <span className={`font-bold ml-1 ${heuresSup >= 0 ? 'text-orange-600' : 'text-blue-600'}`}>
-                                  {heuresSup >= 0 ? '+' : ''}{heuresSup.toFixed(1)}h
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {/* Calendrier mensuel */}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr>
+                    <th className="border p-2 bg-gray-100 w-32">Employé</th>
+                    {Array.from({ length: new Date(new Date(selectedMonth + '-01').getFullYear(), new Date(selectedMonth + '-01').getMonth() + 1, 0).getDate() }, (_, i) => {
+                      const date = new Date(selectedMonth + '-01');
+                      date.setDate(i + 1);
+                      const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                      return (
+                        <th key={i} className={`border p-1 text-xs ${isWeekend ? 'bg-gray-200' : 'bg-gray-50'}`}>
+                          <div>{date.toLocaleDateString('fr-FR', { weekday: 'short' }).charAt(0).toUpperCase()}</div>
+                          <div>{i + 1}</div>
+                        </th>
+                      );
+                    })}
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Affichage des employés filtrés */}
+                  {sortEmployeesByRoleThenName(
+                    users.filter(u => {
+                      if (!u.actif || u.role === 'Directeur') return false;
+                      if (filterEmployeMois === 'tous') return true;
+                      if (filterEmployeMois === 'medecins') return u.role === 'Médecin';
+                      return u.id === filterEmployeMois;
+                    })
+                  ).map(emp => {
+                    const empColor = emp.role === 'Médecin' ? 'blue' : emp.role === 'Assistant' ? 'green' : 'pink';
+                    return (
+                      <tr key={emp.id} className={`hover:bg-${empColor}-50`}>
+                        <td className={`border p-1 text-xs font-medium bg-${empColor}-50`}>
+                          {emp.role === 'Médecin' && 'Dr. '}{emp.prenom} {emp.nom}
+                        </td>
+                        {Array.from({ length: new Date(new Date(selectedMonth + '-01').getFullYear(), new Date(selectedMonth + '-01').getMonth() + 1, 0).getDate() }, (_, i) => {
+                          const dateStr = formatDateISO(
+                            new Date(selectedMonth + '-01').getFullYear(),
+                            new Date(selectedMonth + '-01').getMonth() + 1,
+                            i + 1
+                          );
+                          const date = new Date(dateStr + 'T12:00:00');
+                          const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                          
+                          const creneauMatin = planningMois.find(p => p.employe_id === emp.id && p.date === dateStr && p.creneau === 'MATIN');
+                          const creneauAM = planningMois.find(p => p.employe_id === emp.id && p.date === dateStr && p.creneau === 'APRES_MIDI');
+                          const congesJour = conges.filter(c => c.utilisateur_id === emp.id && c.statut === 'APPROUVE' && c.date_debut <= dateStr && c.date_fin >= dateStr);
+                          const hasConge = congesJour.length > 0;
+                          
+                          let cellContent = '';
+                          let cellClass = isWeekend ? 'bg-gray-100' : 'bg-white';
+                          
+                          if (hasConge) {
+                            const conge = congesJour[0];
+                            cellContent = conge.type_conge === 'CONGE_PAYE' ? 'CP' : conge.type_conge === 'RTT' ? 'RTT' : conge.type_conge === 'REPOS' ? 'R' : 'C';
+                            cellClass = 'bg-red-100 text-red-700';
+                          } else if (creneauMatin && creneauAM) {
+                            cellContent = 'J';
+                            cellClass = `bg-${empColor}-200`;
+                          } else if (creneauMatin) {
+                            cellContent = 'M';
+                            cellClass = `bg-${empColor}-100`;
+                          } else if (creneauAM) {
+                            cellContent = 'AM';
+                            cellClass = `bg-${empColor}-100`;
+                          }
+                          
+                          return (
+                            <td 
+                              key={i} 
+                              className={`border p-1 text-xs text-center cursor-pointer hover:opacity-80 ${cellClass}`}
+                              onClick={() => {
+                                setMoisDetailsData({
+                                  date: dateStr,
+                                  creneau: 'MATIN',
+                                  employes: planningMois.filter(p => p.date === dateStr)
+                                });
+                                setShowMoisDetailsModal(true);
+                              }}
+                            >
+                              {cellContent}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Légende */}
+            <div className="mt-4 flex flex-wrap gap-4 text-xs">
+              <div className="flex items-center gap-1"><span className="w-4 h-4 bg-blue-200 rounded"></span> Médecin journée</div>
+              <div className="flex items-center gap-1"><span className="w-4 h-4 bg-green-200 rounded"></span> Assistant journée</div>
+              <div className="flex items-center gap-1"><span className="w-4 h-4 bg-pink-200 rounded"></span> Secrétaire journée</div>
+              <div className="flex items-center gap-1"><span className="w-4 h-4 bg-red-100 rounded"></span> Congé</div>
+              <div><strong>M</strong> = Matin, <strong>AM</strong> = Après-midi, <strong>J</strong> = Journée</div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
-      {/* VUE MENSUELLE - suite avec le calendrier */}
+      {/* VUE MENSUELLE - Récapitulatif en dessous */}
       {viewMode === 'mois' && (
         <Card className="mt-4">
-          <CardHeader className="bg-gradient-to-r from-indigo-50 to-indigo-100">
-            <CardTitle className="flex items-center justify-between">
-              <span className="flex items-center space-x-2">
-                <Calendar className="h-5 w-5" />
-                <span>
-                  📅 Planning Mensuel - {new Date(selectedMonth + '-01').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
-                </span>
-              </span>
-              {/* Filtre employé pour le directeur ou vue planning complète */}
-              {hasDirectorView() && (
-                <div className="flex items-center space-x-2">
-                  <Label className="text-sm">Filtrer par employé:</Label>
-                  <Select value={filterEmployeMois} onValueChange={setFilterEmployeMois}>
-                    <SelectTrigger className="w-[300px]">
-                      <SelectValue placeholder="Tous les employés" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <div className="p-2 border-b">
-                        <Input
-                          placeholder="🔍 Rechercher..."
-                          className="h-8"
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => {
-                            const term = e.target.value.toLowerCase();
-                            const items = e.target.closest('.select-content')?.querySelectorAll('[data-employee-name]');
-                            items?.forEach(item => {
-                              const name = item.getAttribute('data-employee-name');
-                              item.style.display = name?.includes(term) ? '' : 'none';
-                            });
-                          }}
-                        />
-                      </div>
-                      <SelectItem value="tous">👥 Tous les employés</SelectItem>
-                      <SelectItem value="medecins">👨‍⚕️ Médecins uniquement</SelectItem>
+          <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100">
+            <CardTitle className="flex items-center space-x-2">
+              <span>📊 Récapitulatif du Mois</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <div className="space-y-4">
+              {/* Secrétaires */}
+              {users.filter(u => u.role === 'Secrétaire' && u.actif).length > 0 && (
+                <div>
+                  <h3 className="text-sm font-bold text-pink-700 mb-2 bg-pink-100 p-2 rounded">📋 Secrétaires</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {users.filter(u => u.role === 'Secrétaire' && u.actif).map(secretaire => {
+                      const firstDate = new Date(planningMois[0]?.date || selectedMonth + '-01');
+                      const year = firstDate.getFullYear();
+                      const month = firstDate.getMonth();
+                      const daysInMonth = new Date(year, month + 1, 0).getDate();
+                      const datesMonth = [];
+                      for (let i = 1; i <= daysInMonth; i++) {
+                        datesMonth.push(formatDateISO(year, month + 1, i));
+                      }
+                      const heuresFaites = calculateHeures(secretaire.id, datesMonth);
+                      const heuresContrat = (secretaire.heures_semaine_fixe || 35) * 4;
+                      const heuresSup = secretaire.heures_supplementaires || 0;
+                      const congesDemiJ = calculateConges(secretaire.id, datesMonth);
+                      const congesHeures = congesDemiJ * (secretaire.heures_demi_journee_conge || 4);
+                      
+                      return (
+                        <div key={secretaire.id} className="bg-pink-50 border border-pink-200 rounded-lg p-3">
+                          <div className="font-medium text-gray-800 mb-2">{secretaire.prenom} {secretaire.nom}</div>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <span className="text-gray-500">Heures:</span>
+                              <span className="font-bold text-pink-700 ml-1">{heuresFaites}h / {heuresContrat}h</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">H sup:</span>
+                              <span className={`font-bold ml-1 ${heuresSup >= 0 ? 'text-orange-600' : 'text-blue-600'}`}>
+                                {heuresSup >= 0 ? '+' : ''}{heuresSup.toFixed(1)}h
+                              </span>
+                            </div>
+                            <div className="col-span-2">
+                              <span className="text-gray-500">Congés:</span>
+                              <span className="font-bold text-green-600 ml-1">{congesDemiJ} ½j ({congesHeures}h)</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Assistants */}
+              {users.filter(u => u.role === 'Assistant' && u.actif).length > 0 && (
+                <div>
+                  <h3 className="text-sm font-bold text-green-700 mb-2 bg-green-100 p-2 rounded">👥 Assistants</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {users.filter(u => u.role === 'Assistant' && u.actif).map(assistant => {
+                      const firstDate = new Date(planningMois[0]?.date || selectedMonth + '-01');
+                      const year = firstDate.getFullYear();
+                      const month = firstDate.getMonth();
+                      const daysInMonth = new Date(year, month + 1, 0).getDate();
+                      const datesMonth = [];
+                      for (let i = 1; i <= daysInMonth; i++) {
+                        datesMonth.push(formatDateISO(year, month + 1, i));
+                      }
+                      const demiJFaites = calculateDemiJournees(assistant.id, datesMonth);
+                      const demiJPrevues = ((assistant.limite_demi_journees_a || 10) + (assistant.limite_demi_journees_b || 10)) / 2 * 4;
+                      const heuresFaites = demiJFaites * (assistant.heures_par_jour || 4);
+                      const heuresSup = assistant.heures_supplementaires || 0;
+                      const congesDemiJ = calculateConges(assistant.id, datesMonth);
+                      const congesHeures = congesDemiJ * (assistant.heures_demi_journee_conge || 4);
+                      
+                      return (
+                        <div key={assistant.id} className="bg-green-50 border border-green-200 rounded-lg p-3">
+                          <div className="font-medium text-gray-800 mb-2">{assistant.prenom} {assistant.nom}</div>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <span className="text-gray-500">½j:</span>
+                              <span className="font-bold text-green-700 ml-1">{demiJFaites} / {Math.round(demiJPrevues)}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Heures:</span>
+                              <span className="font-bold text-green-700 ml-1">{heuresFaites}h</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">H sup:</span>
+                              <span className={`font-bold ml-1 ${heuresSup >= 0 ? 'text-orange-600' : 'text-blue-600'}`}>
+                                {heuresSup >= 0 ? '+' : ''}{heuresSup.toFixed(1)}h
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Congés:</span>
+                              <span className="font-bold text-green-600 ml-1">{congesDemiJ} ½j ({congesHeures}h)</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Médecins */}
+              {users.filter(u => u.role === 'Médecin' && u.actif).length > 0 && (
+                <div>
+                  <h3 className="text-sm font-bold text-blue-700 mb-2 bg-blue-100 p-2 rounded">👨‍⚕️ Médecins</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {users.filter(u => u.role === 'Médecin' && u.actif).map(medecin => {
+                      const firstDate = new Date(planningMois[0]?.date || selectedMonth + '-01');
+                      const year = firstDate.getFullYear();
+                      const month = firstDate.getMonth();
+                      const daysInMonth = new Date(year, month + 1, 0).getDate();
+                      const datesMonth = [];
+                      for (let i = 1; i <= daysInMonth; i++) {
+                        datesMonth.push(formatDateISO(year, month + 1, i));
+                      }
+                      const demiJFaites = calculateDemiJournees(medecin.id, datesMonth);
+                      const heuresSup = medecin.heures_supplementaires || 0;
+                      
+                      return (
+                        <div key={medecin.id} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                          <div className="font-medium text-gray-800 mb-2">Dr. {medecin.prenom} {medecin.nom}</div>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <span className="text-gray-500">½j:</span>
+                              <span className="font-bold text-blue-700 ml-1">{demiJFaites}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">H sup:</span>
+                              <span className={`font-bold ml-1 ${heuresSup >= 0 ? 'text-orange-600' : 'text-blue-600'}`}>
+                                {heuresSup >= 0 ? '+' : ''}{heuresSup.toFixed(1)}h
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Modal Détails Vue Mois */}
+      <Dialog open={showMoisDetailsModal} onOpenChange={setShowMoisDetailsModal}>
                       {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role !== 'Directeur')).map(emp => {
                         let demiJournees = 0;
                         planningMois.filter(p => p.employe_id === emp.id).forEach(p => {
