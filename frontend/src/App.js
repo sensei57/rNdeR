@@ -4205,6 +4205,24 @@ const PlanningManager = () => {
     try {
       const promises = [];
       
+      // SUPPRIMER les créneaux si demandé
+      if (journeeData.matin.supprimer && journeeData.matin.id) {
+        await axios.delete(`${API}/planning/${journeeData.matin.id}`);
+        toast.success('Créneau matin supprimé');
+      }
+      if (journeeData.apresMidi.supprimer && journeeData.apresMidi.id) {
+        await axios.delete(`${API}/planning/${journeeData.apresMidi.id}`);
+        toast.success('Créneau après-midi supprimé');
+      }
+      
+      // Si suppression, recharger et sortir
+      if (journeeData.matin.supprimer || journeeData.apresMidi.supprimer) {
+        setShowJourneeModal(false);
+        fetchPlanningTableau(selectedWeek);
+        // Continuer avec le reste seulement si pas tout supprimé
+        if (journeeData.matin.supprimer && journeeData.apresMidi.supprimer) return;
+      }
+      
       // Créer un congé si demandé pour les secrétaires
       if (journeeData.employe?.role === 'Secrétaire' && (journeeData.matin.conge || journeeData.apresMidi.conge)) {
         // Déterminer le type de congé et la durée
@@ -4256,10 +4274,10 @@ const PlanningManager = () => {
       // Pour les assistants : créer le créneau même si rien n'est rempli (marquer "Présent")
       const isAssistant = journeeData.employe?.role === 'Assistant';
       
-      // Traiter le matin - pour les assistants, toujours créer si pas de congé coché
-      const shouldCreateMatin = journeeData.matin.exists || journeeData.matin.notes || journeeData.matin.salle_attribuee || 
+      // Traiter le matin - NE PAS traiter si supprimer est coché
+      const shouldCreateMatin = !journeeData.matin.supprimer && (journeeData.matin.exists || journeeData.matin.notes || journeeData.matin.salle_attribuee || 
           journeeData.matin.medecin_ids?.length > 0 || journeeData.matin.horaire_debut || 
-          (isAssistant && !journeeData.matin.conge);
+          (isAssistant && !journeeData.matin.conge));
           
       if (shouldCreateMatin) {
         const payloadMatin = {
@@ -4283,10 +4301,10 @@ const PlanningManager = () => {
         }
       }
       
-      // Traiter l'après-midi - pour les assistants, toujours créer si pas de congé coché
-      const shouldCreateAM = journeeData.apresMidi.exists || journeeData.apresMidi.notes || journeeData.apresMidi.salle_attribuee || 
+      // Traiter l'après-midi - NE PAS traiter si supprimer est coché
+      const shouldCreateAM = !journeeData.apresMidi.supprimer && (journeeData.apresMidi.exists || journeeData.apresMidi.notes || journeeData.apresMidi.salle_attribuee || 
           journeeData.apresMidi.medecin_ids?.length > 0 || journeeData.apresMidi.horaire_debut ||
-          (isAssistant && !journeeData.apresMidi.conge);
+          (isAssistant && !journeeData.apresMidi.conge));
           
       if (shouldCreateAM) {
         const payloadAM = {
