@@ -2851,6 +2851,8 @@ const PlanningManager = () => {
     let demiJourneesEffectuees = 0;
     let heuresPrevues = 0;
     let demiJourneesPrevues = 0;
+    let heuresConges = 0;
+    let congesCount = 0;
     
     // Parcourir chaque jour du mois
     for (let jour = new Date(premierJour); jour <= dernierJour; jour.setDate(jour.getDate() + 1)) {
