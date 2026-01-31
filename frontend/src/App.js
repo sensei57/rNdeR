@@ -11609,6 +11609,11 @@ const DemandesTravailManager = () => {
               </Button>
             </div>
             
+            {/* Indication système de clics */}
+            <div className="text-xs text-center text-gray-500 bg-gray-50 rounded p-2">
+              💡 1 clic = 🌅 Matin | 2 clics = 🌆 Après-midi | 3 clics = 🌞 Journée | 4 clics = ⭕ Désactivé
+            </div>
+            
             {/* Calendrier du mois sélectionné */}
             {moisAnnee[moisSelectionne] && (
               <div className="border rounded-lg p-4">
