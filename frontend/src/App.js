@@ -8963,9 +8963,8 @@ const PlanningManager = () => {
                           const demiJourneesSemaine = semaineAffichee === 'A' ? (medecin.limite_demi_journees_a || 10) : (medecin.limite_demi_journees_b || 10);
                           const heuresContrat = medecin.heures_semaine_fixe || (demiJourneesSemaine * 4);
                           
-                          // Calcul différence heures effectuées vs contrat
-                          const diffHeures = heures - heuresContrat;
-                          const heuresSupRecup = diffHeures + (medecin.heures_supplementaires || 0);
+                          // Cumul stocké (solde depuis début d'année)
+                          const cumulHeuresSupRecup = medecin.heures_supplementaires || 0;
                           
                           // Couleur colonne Contrat: Jaune=égal, Vert=moins(récup), Rouge=plus(sup)
                           const getCouleurContrat = (effectuees, contrat) => {
@@ -8983,12 +8982,9 @@ const PlanningManager = () => {
                               <td className={`border p-1 text-center text-xs font-bold ${getCouleur(heures, heuresContrat)}`}>{heures}h</td>
                               <td className={`border p-1 text-center text-xs font-bold ${getCouleurContrat(heures, heuresContrat)}`}>
                                 {heuresContrat}h
-                                <div className="text-xs font-normal">
-                                  ({diffHeures >= 0 ? '+' : ''}{diffHeures.toFixed(0)}h)
-                                </div>
                               </td>
-                              <td className={`border p-1 text-center text-xs font-bold ${heuresSupRecup >= 0 ? 'text-orange-600 bg-orange-50' : 'text-blue-600 bg-blue-50'}`}>
-                                {heuresSupRecup >= 0 ? '+' : ''}{heuresSupRecup.toFixed(1)}h
+                              <td className={`border p-1 text-center text-xs font-bold ${cumulHeuresSupRecup >= 0 ? 'text-orange-600 bg-orange-50' : 'text-blue-600 bg-blue-50'}`}>
+                                {cumulHeuresSupRecup >= 0 ? '+' : ''}{cumulHeuresSupRecup.toFixed(1)}h
                               </td>
                               <td className="border p-1 text-center text-xs bg-gray-50">-</td>
                               <td className="border p-1 text-center text-xs bg-gray-50">-</td>
