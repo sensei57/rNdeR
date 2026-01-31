@@ -10097,6 +10097,27 @@ const PlanningManager = () => {
                     className="h-9 text-sm mt-1"
                   />
                 </div>
+                
+                {/* Boutons Matin */}
+                <div className="flex gap-2 pt-2 border-t">
+                  <Button 
+                    type="button" 
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-sm"
+                    onClick={handleEnregistrerMatin}
+                  >
+                    ✓ Enregistrer Matin
+                  </Button>
+                  {journeeData.matin.exists && (
+                    <Button 
+                      type="button" 
+                      variant="destructive"
+                      className="text-sm"
+                      onClick={handleSupprimerMatin}
+                    >
+                      🗑️
+                    </Button>
+                  )}
+                </div>
               </div>
               
               {/* FLÈCHES DE COPIE AU CENTRE - Seulement pour Assistants */}
