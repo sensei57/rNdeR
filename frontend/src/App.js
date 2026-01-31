@@ -8350,10 +8350,25 @@ const PlanningManager = () => {
                       </th>
                     ))}
                     <th className="border p-2 text-center bg-gray-300 text-xs" title="Total demi-journées">½j</th>
-                    <th className="border p-2 text-center bg-blue-200 text-xs" title="Heures effectuées">H Eff</th>
-                    <th className="border p-2 text-center bg-purple-200 text-xs" title="Heures semaine A ou B">H/Sem</th>
-                    <th className="border p-2 text-center bg-indigo-200 text-xs" title="Heures contrat">Contrat</th>
-                    <th className="border p-2 text-center bg-orange-200 text-xs" title="Heures supplémentaires">H Supp</th>
+                    <th className="border p-2 text-center bg-blue-200 text-xs" title="Heures effectuées cette semaine (selon Semaine A ou B)">
+                      <div className="flex flex-col items-center">
+                        <span>H Eff</span>
+                        <select 
+                          className="text-xs border rounded px-1 mt-1 bg-white"
+                          value={localStorage.getItem('semaineAffichee') || 'A'}
+                          onChange={(e) => {
+                            localStorage.setItem('semaineAffichee', e.target.value);
+                            window.dispatchEvent(new Event('storage'));
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <option value="A">Sem A</option>
+                          <option value="B">Sem B</option>
+                        </select>
+                      </div>
+                    </th>
+                    <th className="border p-2 text-center bg-indigo-200 text-xs" title="Comparaison heures faites vs contrat: Jaune=égal, Vert=moins(récup), Rouge=plus(sup)">Contrat</th>
+                    <th className="border p-2 text-center bg-orange-200 text-xs" title="Heures supplémentaires ou à récupérer (+/-)">H +/-</th>
                     <th className="border p-2 text-center bg-green-200 text-xs" title="Heures de congés">Congés</th>
                   </tr>
                   <tr className="bg-gray-50">
@@ -8374,9 +8389,8 @@ const PlanningManager = () => {
                     ))}
                     <th className="border p-1 text-center text-xs bg-gray-300">½j</th>
                     <th className="border p-1 text-center text-xs bg-blue-200">H</th>
-                    <th className="border p-1 text-center text-xs bg-purple-200">H/S</th>
                     <th className="border p-1 text-center text-xs bg-indigo-200">Ctr</th>
-                    <th className="border p-1 text-center text-xs bg-orange-200">Sup</th>
+                    <th className="border p-1 text-center text-xs bg-orange-200">+/-</th>
                     <th className="border p-1 text-center text-xs bg-green-200">Cg</th>
                   </tr>
                 </thead>
