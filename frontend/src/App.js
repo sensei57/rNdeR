@@ -10789,21 +10789,21 @@ const PlanningManager = () => {
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-2xl">👨‍⚕️</span>
                 <h3 className="font-bold text-blue-800 text-lg">Médecins</h3>
+                <span className="text-xs text-gray-500">(pas de contrat horaire)</span>
               </div>
               
               {/* En-tête du tableau */}
-              <div className="grid grid-cols-5 gap-3 mb-3 px-2">
+              <div className="grid grid-cols-4 gap-3 mb-3 px-2">
                 <div className="font-semibold text-gray-600 text-sm">Nom</div>
                 <div className="font-semibold text-gray-600 text-sm text-center">Semaine Type</div>
                 <div className="font-semibold text-gray-600 text-sm text-center">½j Sem A</div>
                 <div className="font-semibold text-gray-600 text-sm text-center">½j Sem B</div>
-                <div className="font-semibold text-purple-700 text-sm text-center">Heures Contrat</div>
               </div>
               
               {/* Liste des employés */}
               <div className="space-y-2">
                 {users.filter(u => u.actif && u.role === 'Médecin').map(emp => (
-                  <div key={emp.id} className="grid grid-cols-5 gap-3 items-center bg-white p-3 rounded-lg shadow-sm border border-blue-100">
+                  <div key={emp.id} className="grid grid-cols-4 gap-3 items-center bg-white p-3 rounded-lg shadow-sm border border-blue-100">
                     <div className="font-medium text-gray-800">Dr. {emp.prenom} {emp.nom}</div>
                     <div className="flex justify-center gap-1">
                       <Button
@@ -10837,14 +10837,6 @@ const PlanningManager = () => {
                         className="h-9 w-16 text-center border-2 border-gray-200 rounded-lg focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
                         defaultValue={emp.limite_demi_journees_b || 10}
                         onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_b', parseInt(e.target.value) || 10)}
-                      />
-                    </div>
-                    <div className="flex justify-center">
-                      <input
-                        type="number"
-                        className="h-9 w-16 text-center border-2 border-purple-300 rounded-lg bg-purple-50 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 font-semibold text-purple-700"
-                        defaultValue={emp.heures_semaine_fixe || 40}
-                        onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_fixe', parseFloat(e.target.value) || 40)}
                       />
                     </div>
                   </div>
