@@ -9295,51 +9295,7 @@ const PlanningManager = () => {
               </div>
             )}
             
-            {/* Boutons de copie Matin ↔ Après-midi pour Assistants */}
-            {journeeData.employe?.role === 'Assistant' && (
-              <div className="flex justify-center items-center gap-4 py-2 mb-2 bg-gradient-to-r from-blue-50 via-white to-yellow-50 rounded-lg border border-gray-200">
-                <span className="text-sm font-medium text-blue-700">🌅 Matin</span>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-8 px-3 text-xs font-bold bg-blue-100 hover:bg-blue-200 border-blue-300 text-blue-700"
-                    title="Copier Matin → Après-midi"
-                    onClick={() => setJourneeData(prev => ({
-                      ...prev,
-                      apresMidi: {
-                        ...prev.apresMidi,
-                        medecin_ids: [...(prev.matin.medecin_ids || [])],
-                        salle_attribuee: prev.matin.salle_attribuee || ''
-                      }
-                    }))}
-                  >
-                    Copier ➡️
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-8 px-3 text-xs font-bold bg-yellow-100 hover:bg-yellow-200 border-yellow-400 text-yellow-700"
-                    title="Copier Après-midi → Matin"
-                    onClick={() => setJourneeData(prev => ({
-                      ...prev,
-                      matin: {
-                        ...prev.matin,
-                        medecin_ids: [...(prev.apresMidi.medecin_ids || [])],
-                        salle_attribuee: prev.apresMidi.salle_attribuee || ''
-                      }
-                    }))}
-                  >
-                    ⬅️ Copier
-                  </Button>
-                </div>
-                <span className="text-sm font-medium text-yellow-700">🌆 Après-midi</span>
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-[1fr_auto_1fr] gap-2">
               {/* MATIN */}
               <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <h3 className="font-bold text-blue-800 flex items-center text-base">
