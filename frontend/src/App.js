@@ -10722,8 +10722,9 @@ const PlanningManager = () => {
               </div>
               
               {/* En-tête du tableau */}
-              <div className="grid grid-cols-4 gap-3 mb-3 px-2">
+              <div className="grid grid-cols-5 gap-3 mb-3 px-2">
                 <div className="font-semibold text-gray-600 text-sm">Nom</div>
+                <div className="font-semibold text-gray-600 text-sm text-center">Semaine Type</div>
                 <div className="font-semibold text-gray-600 text-sm text-center">½j Sem A</div>
                 <div className="font-semibold text-gray-600 text-sm text-center">½j Sem B</div>
                 <div className="font-semibold text-purple-700 text-sm text-center">Heures Contrat</div>
@@ -10732,12 +10733,30 @@ const PlanningManager = () => {
               {/* Liste des employés */}
               <div className="space-y-2">
                 {users.filter(u => u.actif && u.role === 'Médecin').map(emp => (
-                  <div key={emp.id} className="grid grid-cols-4 gap-3 items-center bg-white p-3 rounded-lg shadow-sm border border-blue-100">
+                  <div key={emp.id} className="grid grid-cols-5 gap-3 items-center bg-white p-3 rounded-lg shadow-sm border border-blue-100">
                     <div className="font-medium text-gray-800">Dr. {emp.prenom} {emp.nom}</div>
+                    <div className="flex justify-center gap-1">
+                      <Button
+                        size="sm"
+                        variant={emp.semaine_a_config ? "default" : "outline"}
+                        className={`h-8 px-3 text-xs ${emp.semaine_a_config ? "bg-blue-600 hover:bg-blue-700" : "hover:bg-blue-100"}`}
+                        onClick={() => openConfigSemaine(emp, 'A')}
+                      >
+                        A {emp.semaine_a_config ? '✓' : ''}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={emp.semaine_b_config ? "default" : "outline"}
+                        className={`h-8 px-3 text-xs ${emp.semaine_b_config ? "bg-blue-600 hover:bg-blue-700" : "hover:bg-blue-100"}`}
+                        onClick={() => openConfigSemaine(emp, 'B')}
+                      >
+                        B {emp.semaine_b_config ? '✓' : ''}
+                      </Button>
+                    </div>
                     <div className="flex justify-center">
                       <input
                         type="number"
-                        className="h-9 w-20 text-center border-2 border-gray-200 rounded-lg focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
+                        className="h-9 w-16 text-center border-2 border-gray-200 rounded-lg focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
                         defaultValue={emp.limite_demi_journees_a || 10}
                         onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_a', parseInt(e.target.value) || 10)}
                       />
@@ -10745,7 +10764,7 @@ const PlanningManager = () => {
                     <div className="flex justify-center">
                       <input
                         type="number"
-                        className="h-9 w-20 text-center border-2 border-gray-200 rounded-lg focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
+                        className="h-9 w-16 text-center border-2 border-gray-200 rounded-lg focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
                         defaultValue={emp.limite_demi_journees_b || 10}
                         onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_b', parseInt(e.target.value) || 10)}
                       />
@@ -10753,7 +10772,7 @@ const PlanningManager = () => {
                     <div className="flex justify-center">
                       <input
                         type="number"
-                        className="h-9 w-20 text-center border-2 border-purple-300 rounded-lg bg-purple-50 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 font-semibold text-purple-700"
+                        className="h-9 w-16 text-center border-2 border-purple-300 rounded-lg bg-purple-50 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 font-semibold text-purple-700"
                         defaultValue={emp.heures_semaine_fixe || 40}
                         onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_fixe', parseFloat(e.target.value) || 40)}
                       />
