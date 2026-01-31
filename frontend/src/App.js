@@ -10140,8 +10140,91 @@ const PlanningManager = () => {
                     )}
                   </div>
                 </div>
+                
+                {/* Heures de congés personnalisées */}
+                <div className="mt-3 pt-3 border-t">
+                  <p className="text-xs text-gray-500 mb-2">💡 Par défaut: {journeeData.employe?.heures_demi_journee_conge || 4}h par demi-journée. Modifier si besoin:</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    {journeeData.matin.conge && (
+                      <div className="flex items-center gap-2">
+                        <Label className="text-xs whitespace-nowrap">Heures congé Matin:</Label>
+                        <Input
+                          type="number"
+                          step="0.5"
+                          className="h-8 text-xs w-20"
+                          value={journeeData.matin.heures_conge || journeeData.employe?.heures_demi_journee_conge || 4}
+                          onChange={(e) => setJourneeData(prev => ({
+                            ...prev,
+                            matin: { ...prev.matin, heures_conge: parseFloat(e.target.value) || 4 }
+                          }))}
+                        />
+                      </div>
+                    )}
+                    {journeeData.apresMidi.conge && (
+                      <div className="flex items-center gap-2">
+                        <Label className="text-xs whitespace-nowrap">Heures congé AM:</Label>
+                        <Input
+                          type="number"
+                          step="0.5"
+                          className="h-8 text-xs w-20"
+                          value={journeeData.apresMidi.heures_conge || journeeData.employe?.heures_demi_journee_conge || 4}
+                          onChange={(e) => setJourneeData(prev => ({
+                            ...prev,
+                            apresMidi: { ...prev.apresMidi, heures_conge: parseFloat(e.target.value) || 4 }
+                          }))}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
+            
+            {/* Section Heures Supplémentaires / À rattraper */}
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mt-4">
+              <h4 className="font-semibold text-orange-700 mb-3">⏱️ Heures supplémentaires / À rattraper (ce jour)</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-green-700">➕ Heures supp effectuées</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      placeholder="0"
+                      className="h-9 text-sm"
+                      value={journeeData.heures_supp_jour || ''}
+                      onChange={(e) => setJourneeData(prev => ({
+                        ...prev,
+                        heures_supp_jour: parseFloat(e.target.value) || 0
+                      }))}
+                    />
+                    <span className="text-sm text-gray-500">h</span>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-blue-700">➖ Heures à rattraper</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      placeholder="0"
+                      className="h-9 text-sm"
+                      value={journeeData.heures_rattraper_jour || ''}
+                      onChange={(e) => setJourneeData(prev => ({
+                        ...prev,
+                        heures_rattraper_jour: parseFloat(e.target.value) || 0
+                      }))}
+                    />
+                    <span className="text-sm text-gray-500">h</span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                💡 Ces heures seront ajoutées/soustraites au compteur global de l'employé
+              </p>
+            </div>
             
             <div className="flex justify-end space-x-2 pt-4 border-t">
               <Button type="button" variant="outline" onClick={() => setShowJourneeModal(false)}>
