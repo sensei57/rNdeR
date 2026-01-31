@@ -4168,6 +4168,10 @@ const PlanningManager = () => {
       c.date_fin >= date
     );
     
+    // Pré-cocher les cases congé si un congé existe
+    const hasConge = !!congeExistant;
+    const typeCongeExistant = congeExistant?.type_conge || 'CONGE_PAYE';
+    
     setJourneeData({
       employe_id: employe.id,
       employe: employe,
@@ -4176,45 +4180,43 @@ const PlanningManager = () => {
       matin: {
         id: creneauMatin?.id || null,
         exists: !!creneauMatin,
-        actif: !!creneauMatin, // Coché si créneau existe, sinon décoché
+        actif: !!creneauMatin,
         notes: creneauMatin?.notes || '',
         salle_attribuee: creneauMatin?.salle_attribuee || '',
         salle_attente: creneauMatin?.salle_attente || '',
         medecin_ids: creneauMatin?.medecin_ids || [],
         horaire_debut: creneauMatin?.horaire_debut || (employe.role === 'Secrétaire' ? '08:00' : ''),
         horaire_fin: creneauMatin?.horaire_fin || (employe.role === 'Secrétaire' ? '12:00' : ''),
-        conge: false,
-        type_conge: '',
+        conge: hasConge,
+        type_conge: hasConge ? typeCongeExistant : '',
         heures_conge: employe.heures_demi_journee_conge || 4
       },
       apresMidi: {
         id: creneauAM?.id || null,
         exists: !!creneauAM,
-        actif: !!creneauAM, // Coché si créneau existe, sinon décoché
+        actif: !!creneauAM,
         notes: creneauAM?.notes || '',
         salle_attribuee: creneauAM?.salle_attribuee || '',
         salle_attente: creneauAM?.salle_attente || '',
         medecin_ids: creneauAM?.medecin_ids || [],
         horaire_debut: creneauAM?.horaire_debut || (employe.role === 'Secrétaire' ? '14:00' : ''),
         horaire_fin: creneauAM?.horaire_fin || (employe.role === 'Secrétaire' ? '18:00' : ''),
-        conge: false,
-        type_conge: '',
+        conge: hasConge,
+        type_conge: hasConge ? typeCongeExistant : '',
         heures_conge: employe.heures_demi_journee_conge || 4
       },
       heures_supp_jour: 0,
       heures_rattraper_jour: 0
     });
-    setShowAssistantsDetails(false); // Réinitialiser l'affichage des assistants
+    setShowAssistantsDetails(false);
     setShowJourneeModal(true);
   };
   
   // Supprimer un congé existant
   const handleSupprimerCongeExistant = async (congeId) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce congé ?')) return;
     try {
       await axios.delete(`${API}/conges/${congeId}`);
       toast.success('Congé supprimé !');
-      setShowJourneeModal(false);
       fetchConges();
       fetchPlanningTableau(selectedWeek);
     } catch (error) {
