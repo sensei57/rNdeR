@@ -8887,7 +8887,7 @@ const PlanningManager = () => {
                                 }`}
                                 onClick={() => {
                                   if (demandeAMEnAttente) return;
-                                  creneauAM ? openQuickCreneauModal(medecin, date, 'APRES_MIDI', creneauAM) : openJourneeModal(medecin, date);
+                                  openJourneeModal(medecin, date);
                                 }}
                                 title={
                                   demandeAMEnAttente 
