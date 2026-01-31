@@ -10415,77 +10415,69 @@ const PlanningManager = () => {
 
       {/* Modal Configuration Semaines A/B */}
       <Dialog open={showConfigSemainesModal} onOpenChange={setShowConfigSemainesModal}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center space-x-2">
-              <Settings className="h-5 w-5 text-gray-600" />
-              <span>⚙️ Configuration des Semaines A/B</span>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Settings className="h-6 w-6 text-gray-600" />
+              Paramétrage des heures contrat
             </DialogTitle>
-            <DialogDescription>
-              Cliquez sur A ou B pour définir la semaine type. Définissez les heures/demi-journées à effectuer.
+            <DialogDescription className="text-sm">
+              Configurez les heures de travail hebdomadaires pour chaque employé
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-6">
-            {/* Secrétaires - Horaires par jour */}
-            <div className="border rounded-lg p-4">
-              <h3 className="font-bold text-pink-700 mb-3 text-lg">📋 SECRÉTAIRES</h3>
-              <p className="text-xs text-gray-500 mb-3">Définir les horaires de travail par jour et les heures à effectuer par semaine</p>
+          <div className="space-y-8 mt-4">
+            
+            {/* SECTION SECRÉTAIRES */}
+            <div className="bg-pink-50 rounded-xl p-5 border border-pink-200">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-2xl">📋</span>
+                <h3 className="font-bold text-pink-800 text-lg">Secrétaires</h3>
+              </div>
+              
+              {/* En-tête du tableau */}
+              <div className="grid grid-cols-5 gap-3 mb-3 px-2">
+                <div className="font-semibold text-gray-600 text-sm">Nom</div>
+                <div className="font-semibold text-gray-600 text-sm text-center">Heures Sem A</div>
+                <div className="font-semibold text-gray-600 text-sm text-center">Heures Sem B</div>
+                <div className="font-semibold text-purple-700 text-sm text-center">Heures Contrat</div>
+                <div className="font-semibold text-orange-600 text-sm text-center">H/½j Congé</div>
+              </div>
+              
+              {/* Liste des employés */}
               <div className="space-y-2">
                 {users.filter(u => u.actif && u.role === 'Secrétaire').map(emp => (
-                  <div key={emp.id} className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-2 items-center bg-pink-50 p-3 rounded-lg">
-                    <span className="font-medium">{emp.prenom} {emp.nom}</span>
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant={emp.semaine_a_config ? "default" : "outline"}
-                        className={`h-7 px-2 text-xs ${emp.semaine_a_config ? "bg-pink-600 hover:bg-pink-700" : "hover:bg-pink-100"}`}
-                        onClick={() => openConfigSemaine(emp, 'A')}
-                      >
-                        A {emp.semaine_a_config ? '✓' : ''}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={emp.semaine_b_config ? "default" : "outline"}
-                        className={`h-7 px-2 text-xs ${emp.semaine_b_config ? "bg-pink-600 hover:bg-pink-700" : "hover:bg-pink-100"}`}
-                        onClick={() => openConfigSemaine(emp, 'B')}
-                      >
-                        B {emp.semaine_b_config ? '✓' : ''}
-                      </Button>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Label className="text-xs whitespace-nowrap">H/sem A:</Label>
+                  <div key={emp.id} className="grid grid-cols-5 gap-3 items-center bg-white p-3 rounded-lg shadow-sm border border-pink-100">
+                    <div className="font-medium text-gray-800">{emp.prenom} {emp.nom}</div>
+                    <div className="flex justify-center">
                       <input
                         type="number"
-                        className="h-7 text-xs w-14 px-1 border rounded"
+                        className="h-9 w-20 text-center border-2 border-gray-200 rounded-lg focus:border-pink-400 focus:ring-1 focus:ring-pink-200"
                         defaultValue={emp.heures_semaine_a || 35}
                         onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_a', parseFloat(e.target.value) || 35)}
                       />
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Label className="text-xs whitespace-nowrap">H/sem B:</Label>
+                    <div className="flex justify-center">
                       <input
                         type="number"
-                        className="h-7 text-xs w-14 px-1 border rounded"
+                        className="h-9 w-20 text-center border-2 border-gray-200 rounded-lg focus:border-pink-400 focus:ring-1 focus:ring-pink-200"
                         defaultValue={emp.heures_semaine_b || 35}
                         onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_b', parseFloat(e.target.value) || 35)}
                       />
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Label className="text-xs whitespace-nowrap text-purple-700 font-bold">Contrat:</Label>
+                    <div className="flex justify-center">
                       <input
                         type="number"
-                        className="h-7 text-xs w-14 px-1 border border-purple-300 rounded"
+                        className="h-9 w-20 text-center border-2 border-purple-300 rounded-lg bg-purple-50 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 font-semibold text-purple-700"
                         defaultValue={emp.heures_semaine_fixe || 35}
                         onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_fixe', parseFloat(e.target.value) || 35)}
                       />
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Label className="text-xs whitespace-nowrap text-orange-700">H/½j congé:</Label>
+                    <div className="flex justify-center">
                       <input
                         type="number"
                         step="0.5"
-                        className="h-7 text-xs w-14 px-1 border border-orange-300 rounded"
+                        className="h-9 w-20 text-center border-2 border-orange-200 rounded-lg bg-orange-50 focus:border-orange-400 focus:ring-1 focus:ring-orange-200"
                         defaultValue={emp.heures_demi_journee_conge || 4}
                         onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'heures_demi_journee_conge', parseFloat(e.target.value) || 4)}
                       />
@@ -10495,66 +10487,56 @@ const PlanningManager = () => {
               </div>
             </div>
 
-            {/* Assistants - Demi-journées */}
-            <div className="border rounded-lg p-4">
-              <h3 className="font-bold text-green-700 mb-3 text-lg">👥 ASSISTANTS</h3>
-              <p className="text-xs text-gray-500 mb-3">Définir les demi-journées de présence, heures de travail et congés</p>
+            {/* SECTION ASSISTANTS */}
+            <div className="bg-green-50 rounded-xl p-5 border border-green-200">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-2xl">👥</span>
+                <h3 className="font-bold text-green-800 text-lg">Assistants</h3>
+              </div>
+              
+              {/* En-tête du tableau */}
+              <div className="grid grid-cols-5 gap-3 mb-3 px-2">
+                <div className="font-semibold text-gray-600 text-sm">Nom</div>
+                <div className="font-semibold text-gray-600 text-sm text-center">½j Sem A</div>
+                <div className="font-semibold text-gray-600 text-sm text-center">½j Sem B</div>
+                <div className="font-semibold text-purple-700 text-sm text-center">Heures Contrat</div>
+                <div className="font-semibold text-orange-600 text-sm text-center">H/½j Congé</div>
+              </div>
+              
+              {/* Liste des employés */}
               <div className="space-y-2">
                 {users.filter(u => u.actif && u.role === 'Assistant').map(emp => (
-                  <div key={emp.id} className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-2 items-center bg-green-50 p-3 rounded-lg">
-                    <span className="font-medium">{emp.prenom} {emp.nom}</span>
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant={emp.semaine_a_config ? "default" : "outline"}
-                        className={`h-7 px-2 text-xs ${emp.semaine_a_config ? "bg-green-600 hover:bg-green-700" : "hover:bg-green-100"}`}
-                        onClick={() => openConfigSemaine(emp, 'A')}
-                      >
-                        A {emp.semaine_a_config ? '✓' : ''}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={emp.semaine_b_config ? "default" : "outline"}
-                        className={`h-7 px-2 text-xs ${emp.semaine_b_config ? "bg-green-600 hover:bg-green-700" : "hover:bg-green-100"}`}
-                        onClick={() => openConfigSemaine(emp, 'B')}
-                      >
-                        B {emp.semaine_b_config ? '✓' : ''}
-                      </Button>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Label className="text-xs whitespace-nowrap">½j/sem A:</Label>
+                  <div key={emp.id} className="grid grid-cols-5 gap-3 items-center bg-white p-3 rounded-lg shadow-sm border border-green-100">
+                    <div className="font-medium text-gray-800">{emp.prenom} {emp.nom}</div>
+                    <div className="flex justify-center">
                       <input
                         type="number"
-                        className="h-7 text-xs w-12 px-1 border rounded"
+                        className="h-9 w-20 text-center border-2 border-gray-200 rounded-lg focus:border-green-400 focus:ring-1 focus:ring-green-200"
                         defaultValue={emp.limite_demi_journees_a || 10}
                         onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_a', parseInt(e.target.value) || 10)}
                       />
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Label className="text-xs whitespace-nowrap">½j/sem B:</Label>
+                    <div className="flex justify-center">
                       <input
                         type="number"
-                        className="h-7 text-xs w-12 px-1 border rounded"
+                        className="h-9 w-20 text-center border-2 border-gray-200 rounded-lg focus:border-green-400 focus:ring-1 focus:ring-green-200"
                         defaultValue={emp.limite_demi_journees_b || 10}
                         onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_b', parseInt(e.target.value) || 10)}
                       />
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Label className="text-xs whitespace-nowrap text-blue-700">H/½j trav:</Label>
+                    <div className="flex justify-center">
                       <input
                         type="number"
-                        step="0.5"
-                        className="h-7 text-xs w-12 px-1 border border-blue-300 rounded"
-                        defaultValue={emp.heures_par_jour || 4}
-                        onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'heures_par_jour', parseFloat(e.target.value) || 4)}
+                        className="h-9 w-20 text-center border-2 border-purple-300 rounded-lg bg-purple-50 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 font-semibold text-purple-700"
+                        defaultValue={emp.heures_semaine_fixe || 40}
+                        onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_fixe', parseFloat(e.target.value) || 40)}
                       />
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Label className="text-xs whitespace-nowrap text-orange-700">H/½j congé:</Label>
+                    <div className="flex justify-center">
                       <input
                         type="number"
                         step="0.5"
-                        className="h-7 text-xs w-12 px-1 border border-orange-300 rounded"
+                        className="h-9 w-20 text-center border-2 border-orange-200 rounded-lg bg-orange-50 focus:border-orange-400 focus:ring-1 focus:ring-orange-200"
                         defaultValue={emp.heures_demi_journee_conge || 4}
                         onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'heures_demi_journee_conge', parseFloat(e.target.value) || 4)}
                       />
@@ -10564,58 +10546,80 @@ const PlanningManager = () => {
               </div>
             </div>
 
-            {/* Médecins - Demi-journées */}
-            <div className="border rounded-lg p-4">
-              <h3 className="font-bold text-blue-700 mb-3 text-lg">👨‍⚕️ MÉDECINS</h3>
-              <p className="text-xs text-gray-500 mb-3">Définir les demi-journées de présence</p>
+            {/* SECTION MÉDECINS */}
+            <div className="bg-blue-50 rounded-xl p-5 border border-blue-200">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-2xl">👨‍⚕️</span>
+                <h3 className="font-bold text-blue-800 text-lg">Médecins</h3>
+              </div>
+              
+              {/* En-tête du tableau */}
+              <div className="grid grid-cols-4 gap-3 mb-3 px-2">
+                <div className="font-semibold text-gray-600 text-sm">Nom</div>
+                <div className="font-semibold text-gray-600 text-sm text-center">½j Sem A</div>
+                <div className="font-semibold text-gray-600 text-sm text-center">½j Sem B</div>
+                <div className="font-semibold text-purple-700 text-sm text-center">Heures Contrat</div>
+              </div>
+              
+              {/* Liste des employés */}
               <div className="space-y-2">
                 {users.filter(u => u.actif && u.role === 'Médecin').map(emp => (
-                  <div key={emp.id} className="grid grid-cols-[1fr_auto_auto_auto] gap-3 items-center bg-blue-50 p-3 rounded-lg">
-                    <span className="font-medium">Dr. {emp.prenom} {emp.nom}</span>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant={emp.semaine_a_config ? "default" : "outline"}
-                        className={emp.semaine_a_config ? "bg-blue-600 hover:bg-blue-700" : "hover:bg-blue-100"}
-                        onClick={() => openConfigSemaine(emp, 'A')}
-                      >
-                        A {emp.semaine_a_config ? '✓' : ''}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={emp.semaine_b_config ? "default" : "outline"}
-                        className={emp.semaine_b_config ? "bg-blue-600 hover:bg-blue-700" : "hover:bg-blue-100"}
-                        onClick={() => openConfigSemaine(emp, 'B')}
-                      >
-                        B {emp.semaine_b_config ? '✓' : ''}
-                      </Button>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Label className="text-xs whitespace-nowrap">½j sem A:</Label>
+                  <div key={emp.id} className="grid grid-cols-4 gap-3 items-center bg-white p-3 rounded-lg shadow-sm border border-blue-100">
+                    <div className="font-medium text-gray-800">Dr. {emp.prenom} {emp.nom}</div>
+                    <div className="flex justify-center">
                       <input
                         type="number"
-                        className="h-7 text-xs w-12 px-1 border rounded"
+                        className="h-9 w-20 text-center border-2 border-gray-200 rounded-lg focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
                         defaultValue={emp.limite_demi_journees_a || 10}
                         onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_a', parseInt(e.target.value) || 10)}
                       />
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Label className="text-xs whitespace-nowrap">½j sem B:</Label>
+                    <div className="flex justify-center">
                       <input
                         type="number"
-                        className="h-7 text-xs w-12 px-1 border rounded"
+                        className="h-9 w-20 text-center border-2 border-gray-200 rounded-lg focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
                         defaultValue={emp.limite_demi_journees_b || 10}
                         onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_b', parseInt(e.target.value) || 10)}
                       />
                     </div>
+                    <div className="flex justify-center">
+                      <input
+                        type="number"
+                        className="h-9 w-20 text-center border-2 border-purple-300 rounded-lg bg-purple-50 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 font-semibold text-purple-700"
+                        defaultValue={emp.heures_semaine_fixe || 40}
+                        onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_fixe', parseFloat(e.target.value) || 40)}
+                      />
+                    </div>
                   </div>
                 ))}
+              </div>
+            </div>
+            
+            {/* Légende */}
+            <div className="bg-gray-50 rounded-lg p-4 border">
+              <h4 className="font-semibold text-gray-700 mb-2">💡 Légende des couleurs dans le planning :</h4>
+              <div className="flex gap-6 text-sm">
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded bg-yellow-200 border"></span>
+                  <span>Heures faites = Contrat</span>
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded bg-green-200 border"></span>
+                  <span>Heures à récupérer</span>
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded bg-red-200 border"></span>
+                  <span>Heures supplémentaires</span>
+                </span>
               </div>
             </div>
           </div>
           
-          <div className="flex justify-end pt-4 border-t">
-            <Button onClick={() => setShowConfigSemainesModal(false)}>
+          <div className="flex justify-end pt-4 border-t mt-4">
+            <Button 
+              className="bg-gray-800 hover:bg-gray-900 text-white px-6"
+              onClick={() => setShowConfigSemainesModal(false)}
+            >
               Fermer
             </Button>
           </div>
