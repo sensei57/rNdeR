@@ -10339,6 +10339,27 @@ const PlanningManager = () => {
                     className="h-9 text-sm mt-1"
                   />
                 </div>
+                
+                {/* Boutons Après-midi */}
+                <div className="flex gap-2 pt-2 border-t">
+                  <Button 
+                    type="button" 
+                    className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-sm"
+                    onClick={handleEnregistrerApresMidi}
+                  >
+                    ✓ Enregistrer Après-midi
+                  </Button>
+                  {journeeData.apresMidi.exists && (
+                    <Button 
+                      type="button" 
+                      variant="destructive"
+                      className="text-sm"
+                      onClick={handleSupprimerApresMidi}
+                    >
+                      🗑️
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
             
