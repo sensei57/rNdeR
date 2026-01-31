@@ -8348,15 +8348,24 @@ const PlanningManager = () => {
                             </React.Fragment>
                           );
                         })}
-                        <td className={`border p-2 text-center font-bold ${getTotalColor(total)}`}>{total}</td>
+                        <td className={`border p-2 text-center font-bold ${getTotalColor(total, 'employe', assistant)}`}>{total}</td>
+                        <td className="border p-2 text-center font-bold bg-blue-50">{heures}h</td>
                       </tr>
                     );
                   })}
 
                   {/* SECTION MÉDECINS */}
                   <tr className="bg-blue-100">
-                    <td className="border p-2 font-bold text-blue-800">
+                    <td 
+                      className="border p-2 font-bold text-blue-800 cursor-pointer hover:bg-blue-200"
+                      onClick={() => openSemaineABCModal({ type: 'section', section: 'Médecin' })}
+                      title="Cliquer pour appliquer Semaine A, B ou Congés"
+                    >
                       👨‍⚕️ MÉDECINS
+                      <div className="text-xs font-normal text-blue-600 mt-1">
+                        <span className="bg-blue-200 px-1 rounded">A</span>
+                        <span className="bg-blue-200 px-1 rounded ml-1">B</span>
+                      </div>
                     </td>
                     {planningTableau.dates.map((date, dateIndex) => (
                       <td 
@@ -8369,12 +8378,25 @@ const PlanningManager = () => {
                       </td>
                     ))}
                     <td className="border p-1 bg-blue-100"></td>
+                    <td className="border p-1 bg-blue-100"></td>
                   </tr>
                   {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role === 'Médecin')).map(medecin => {
                     const total = getTotalDemiJournees(medecin.id);
+                    const heures = getTotalHeures(medecin.id);
                     return (
                       <tr key={medecin.id} className="hover:bg-blue-50">
-                        <td className="border p-2 font-medium">Dr. {medecin.prenom} {medecin.nom}</td>
+                        <td 
+                          className="border p-2 font-medium cursor-pointer hover:bg-blue-200"
+                          onClick={() => openSemaineABCModal({ type: 'employe', employe: medecin })}
+                          title="Cliquer pour appliquer Semaine A, B ou Congés"
+                        >
+                          <div>Dr. {medecin.prenom} {medecin.nom}</div>
+                          <div className="flex gap-1 mt-1">
+                            <span className="text-xs bg-blue-100 px-1 rounded cursor-pointer hover:bg-blue-300" title="Semaine A">A</span>
+                            <span className="text-xs bg-blue-100 px-1 rounded cursor-pointer hover:bg-blue-300" title="Semaine B">B</span>
+                            <span className="text-xs bg-gray-100 px-1 rounded cursor-pointer hover:bg-gray-300" title="Congés semaine">Co</span>
+                          </div>
+                        </td>
                         {planningTableau.dates.map((date, dateIndex) => {
                           const creneauMatin = getCreneauForEmploye(medecin.id, date, 'MATIN');
                           const creneauAM = getCreneauForEmploye(medecin.id, date, 'APRES_MIDI');
