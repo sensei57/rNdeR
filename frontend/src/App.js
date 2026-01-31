@@ -8926,16 +8926,35 @@ const PlanningManager = () => {
                         {(() => {
                           const semaineAffichee = localStorage.getItem('semaineAffichee') || 'A';
                           const demiJourneesSemaine = semaineAffichee === 'A' ? (medecin.limite_demi_journees_a || 10) : (medecin.limite_demi_journees_b || 10);
+                          const heuresContrat = medecin.heures_semaine_fixe || (demiJourneesSemaine * 4);
+                          
+                          // Calcul différence heures effectuées vs contrat
+                          const diffHeures = heures - heuresContrat;
+                          const heuresSupRecup = diffHeures + (medecin.heures_supplementaires || 0);
+                          
+                          // Couleur colonne Contrat: Jaune=égal, Vert=moins(récup), Rouge=plus(sup)
+                          const getCouleurContrat = (effectuees, contrat) => {
+                            if (Math.abs(effectuees - contrat) < 0.5) return 'bg-yellow-200 text-yellow-800';
+                            return effectuees < contrat ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800';
+                          };
+                          
                           const getCouleur = (val, cible) => {
-                            if (val === cible) return 'bg-yellow-100';
+                            if (Math.abs(val - cible) < 0.5) return 'bg-yellow-100';
                             return val < cible ? 'bg-green-100' : 'bg-red-100';
                           };
                           return (
                             <>
                               <td className={`border p-1 text-center text-xs font-bold ${getCouleur(total, demiJourneesSemaine)}`}>{total}</td>
-                              <td className="border p-1 text-center text-xs bg-blue-50">{heures}h</td>
-                              <td className="border p-1 text-center text-xs bg-purple-50">{demiJourneesSemaine}</td>
-                              <td className="border p-1 text-center text-xs bg-gray-50">-</td>
+                              <td className={`border p-1 text-center text-xs font-bold ${getCouleur(heures, heuresContrat)}`}>{heures}h</td>
+                              <td className={`border p-1 text-center text-xs font-bold ${getCouleurContrat(heures, heuresContrat)}`}>
+                                {heuresContrat}h
+                                <div className="text-xs font-normal">
+                                  ({diffHeures >= 0 ? '+' : ''}{diffHeures.toFixed(0)}h)
+                                </div>
+                              </td>
+                              <td className={`border p-1 text-center text-xs font-bold ${heuresSupRecup >= 0 ? 'text-orange-600 bg-orange-50' : 'text-blue-600 bg-blue-50'}`}>
+                                {heuresSupRecup >= 0 ? '+' : ''}{heuresSupRecup.toFixed(1)}h
+                              </td>
                               <td className="border p-1 text-center text-xs bg-gray-50">-</td>
                               <td className="border p-1 text-center text-xs bg-gray-50">-</td>
                             </>
