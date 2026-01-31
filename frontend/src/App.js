@@ -10477,39 +10477,39 @@ const PlanningManager = () => {
                     </div>
                     <div className="flex items-center gap-1">
                       <Label className="text-xs whitespace-nowrap">H/sem A:</Label>
-                      <Input
+                      <input
                         type="number"
-                        className="h-7 text-xs w-12"
-                        value={emp.heures_semaine_a || 35}
-                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_a', parseFloat(e.target.value) || 35)}
+                        className="h-7 text-xs w-14 px-1 border rounded"
+                        defaultValue={emp.heures_semaine_a || 35}
+                        onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_a', parseFloat(e.target.value) || 35)}
                       />
                     </div>
                     <div className="flex items-center gap-1">
                       <Label className="text-xs whitespace-nowrap">H/sem B:</Label>
-                      <Input
+                      <input
                         type="number"
-                        className="h-7 text-xs w-12"
-                        value={emp.heures_semaine_b || 35}
-                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_b', parseFloat(e.target.value) || 35)}
+                        className="h-7 text-xs w-14 px-1 border rounded"
+                        defaultValue={emp.heures_semaine_b || 35}
+                        onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_b', parseFloat(e.target.value) || 35)}
                       />
                     </div>
                     <div className="flex items-center gap-1">
                       <Label className="text-xs whitespace-nowrap text-purple-700 font-bold">Contrat:</Label>
-                      <Input
+                      <input
                         type="number"
-                        className="h-7 text-xs w-12 border-purple-300"
-                        value={emp.heures_semaine_fixe || 35}
-                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_fixe', parseFloat(e.target.value) || 35)}
+                        className="h-7 text-xs w-14 px-1 border border-purple-300 rounded"
+                        defaultValue={emp.heures_semaine_fixe || 35}
+                        onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_fixe', parseFloat(e.target.value) || 35)}
                       />
                     </div>
                     <div className="flex items-center gap-1">
                       <Label className="text-xs whitespace-nowrap text-orange-700">H/½j congé:</Label>
-                      <Input
+                      <input
                         type="number"
                         step="0.5"
-                        className="h-7 text-xs w-12 border-orange-300"
-                        value={emp.heures_demi_journee_conge || 4}
-                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_demi_journee_conge', parseFloat(e.target.value) || 4)}
+                        className="h-7 text-xs w-14 px-1 border border-orange-300 rounded"
+                        defaultValue={emp.heures_demi_journee_conge || 4}
+                        onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'heures_demi_journee_conge', parseFloat(e.target.value) || 4)}
                       />
                     </div>
                   </div>
