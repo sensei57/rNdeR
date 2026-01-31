@@ -8759,8 +8759,25 @@ const PlanningManager = () => {
                             </React.Fragment>
                           );
                         })}
-                        <td className={`border p-2 text-center font-bold ${getTotalColor(total, 'employe', medecin)}`}>{total}</td>
-                        <td className="border p-2 text-center font-bold bg-blue-50">{heures}h</td>
+                        {/* Colonnes récapitulatives de fin de ligne - Médecins */}
+                        {(() => {
+                          const semaineAffichee = localStorage.getItem('semaineAffichee') || 'A';
+                          const demiJourneesSemaine = semaineAffichee === 'A' ? (medecin.limite_demi_journees_a || 10) : (medecin.limite_demi_journees_b || 10);
+                          const getCouleur = (val, cible) => {
+                            if (val === cible) return 'bg-yellow-100';
+                            return val < cible ? 'bg-green-100' : 'bg-red-100';
+                          };
+                          return (
+                            <>
+                              <td className={`border p-1 text-center text-xs font-bold ${getCouleur(total, demiJourneesSemaine)}`}>{total}</td>
+                              <td className="border p-1 text-center text-xs bg-blue-50">{heures}h</td>
+                              <td className="border p-1 text-center text-xs bg-purple-50">{demiJourneesSemaine}</td>
+                              <td className="border p-1 text-center text-xs bg-gray-50">-</td>
+                              <td className="border p-1 text-center text-xs bg-gray-50">-</td>
+                              <td className="border p-1 text-center text-xs bg-gray-50">-</td>
+                            </>
+                          );
+                        })()}
                       </tr>
                     );
                   })}
