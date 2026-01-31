@@ -8376,11 +8376,8 @@ const PlanningManager = () => {
                         <span>H Eff</span>
                         <select 
                           className="text-xs border rounded px-1 mt-1 bg-white"
-                          value={localStorage.getItem('semaineAffichee') || 'A'}
-                          onChange={(e) => {
-                            localStorage.setItem('semaineAffichee', e.target.value);
-                            window.dispatchEvent(new Event('storage'));
-                          }}
+                          value={semaineAffichee}
+                          onChange={(e) => setSemaineAffichee(e.target.value)}
                           onClick={(e) => e.stopPropagation()}
                         >
                           <option value="A">Sem A</option>
