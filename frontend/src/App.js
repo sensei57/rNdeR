@@ -8844,7 +8844,7 @@ const PlanningManager = () => {
                                 }`}
                                 onClick={() => {
                                   if (demandeMatinEnAttente) return; // Les boutons gèrent
-                                  creneauMatin ? openQuickCreneauModal(medecin, date, 'MATIN', creneauMatin) : openJourneeModal(medecin, date);
+                                  openJourneeModal(medecin, date);
                                 }}
                                 title={
                                   demandeMatinEnAttente 
