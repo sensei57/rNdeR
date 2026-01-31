@@ -8509,7 +8509,7 @@ const PlanningManager = () => {
                                 }`}
                                 onClick={() => {
                                   if (hasCongeEnAttente || hasCongeApprouve) return;
-                                  creneauAM ? openQuickCreneauModal(secretaire, date, 'APRES_MIDI', creneauAM) : openJourneeModal(secretaire, date);
+                                  openJourneeModal(secretaire, date);
                                 }}
                                 title={
                                   hasCongeEnAttente ? `⏳ Demande en attente` :
