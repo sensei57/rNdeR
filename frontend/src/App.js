@@ -8852,78 +8852,207 @@ const PlanningManager = () => {
               )}
             </div>
 
-            {/* Configuration des Semaines A/B par employé */}
+            {/* TABLEAU RÉCAPITULATIF UNIFIÉ - Gestion des Heures */}
             <div className="mt-6 border-t pt-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-bold text-gray-700">📅 Semaines A/B par employé - Décompte du mois</h3>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowConfigSemainesModal(true)}
-                >
-                  ⚙️ Configurer
-                </Button>
+                <h3 className="text-sm font-bold text-gray-700">📊 Récapitulatif Heures & Demi-journées</h3>
+                <div className="flex gap-2">
+                  <select 
+                    className="text-xs border rounded px-2 py-1"
+                    value={localStorage.getItem('semaineAffichee') || 'A'}
+                    onChange={(e) => {
+                      localStorage.setItem('semaineAffichee', e.target.value);
+                      window.dispatchEvent(new Event('storage'));
+                    }}
+                  >
+                    <option value="A">Afficher Sem A</option>
+                    <option value="B">Afficher Sem B</option>
+                  </select>
+                  <Button size="sm" variant="outline" onClick={() => setShowConfigSemainesModal(true)}>
+                    ⚙️ Configurer
+                  </Button>
+                </div>
               </div>
               
-              <div className="grid grid-cols-1 gap-2">
-                {/* Secrétaires */}
-                <div className="bg-pink-50 rounded p-2">
-                  <h4 className="text-xs font-bold text-pink-700 mb-2">📋 Secrétaires (heures)</h4>
-                  <div className="space-y-1">
-                    {users.filter(u => u.actif && u.role === 'Secrétaire').map(emp => {
-                      const moisActuel = planningTableau.dates?.[0] ? new Date(planningTableau.dates[0]).getMonth() : new Date().getMonth();
-                      const anneeActuelle = planningTableau.dates?.[0] ? new Date(planningTableau.dates[0]).getFullYear() : new Date().getFullYear();
-                      const decompte = getDecompteMensuel(emp, moisActuel, anneeActuelle);
-                      return (
-                        <div key={emp.id} className="flex items-center justify-between bg-white rounded px-2 py-1 text-xs">
-                          <span className="font-medium truncate flex-1">{emp.prenom} {emp.nom}</span>
-                          <div className="flex items-center gap-2">
-                            <span className={`px-1 rounded ${emp.semaine_a_config ? 'bg-pink-200 text-pink-800' : 'bg-gray-100 text-gray-400'}`}>A</span>
-                            <span className={`px-1 rounded ${emp.semaine_b_config ? 'bg-pink-200 text-pink-800' : 'bg-gray-100 text-gray-400'}`}>B</span>
-                            <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                              decompte.status === 'ok' ? 'bg-green-100 text-green-700' :
-                              decompte.status === 'trop' ? 'bg-orange-100 text-orange-700' :
-                              'bg-red-100 text-red-700'
-                            }`}>
-                              {decompte.status === 'ok' ? '✓ OK' :
-                               decompte.status === 'trop' ? `+${decompte.diff.toFixed(1)}h` :
-                               `${decompte.diff.toFixed(1)}h`}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+              {/* Légende couleurs */}
+              <div className="flex gap-4 mb-3 text-xs">
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-yellow-200"></span> OK</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-green-200"></span> En dessous</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-200"></span> Au dessus</span>
+              </div>
+              
+              {/* Tableau Secrétaires */}
+              <div className="mb-4">
+                <h4 className="text-xs font-bold text-pink-700 mb-2 bg-pink-100 p-1 rounded">📋 SECRÉTAIRES</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-pink-50">
+                        <th className="border p-1 text-left">Employé</th>
+                        <th className="border p-1 text-center" title="Demi-journées travaillées">½j</th>
+                        <th className="border p-1 text-center" title="Heures prévues semaine">H/Sem</th>
+                        <th className="border p-1 text-center" title="Heures effectuées">H Eff.</th>
+                        <th className="border p-1 text-center" title="Heures supplémentaires ou à rattraper">H Supp/Rattr</th>
+                        <th className="border p-1 text-center" title="Heures de congés">H Congés</th>
+                        <th className="border p-1 text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.filter(u => u.actif && u.role === 'Secrétaire').map(emp => {
+                        const moisActuel = planningTableau.dates?.[0] ? new Date(planningTableau.dates[0]).getMonth() : new Date().getMonth();
+                        const anneeActuelle = planningTableau.dates?.[0] ? new Date(planningTableau.dates[0]).getFullYear() : new Date().getFullYear();
+                        const decompte = getDecompteMensuel(emp, moisActuel, anneeActuelle);
+                        const semaineAffichee = localStorage.getItem('semaineAffichee') || 'A';
+                        const heuresSemaine = semaineAffichee === 'A' ? (emp.heures_semaine_a || 35) : (emp.heures_semaine_b || 35);
+                        const diff = decompte.effectuees - decompte.prevues;
+                        const getCouleur = (val, cible) => {
+                          if (Math.abs(val - cible) < 0.5) return 'bg-yellow-100';
+                          return val < cible ? 'bg-green-100' : 'bg-red-100';
+                        };
+                        return (
+                          <tr key={emp.id} className="hover:bg-pink-50">
+                            <td className="border p-1 font-medium">{emp.prenom} {emp.nom}</td>
+                            <td className={`border p-1 text-center ${getCouleur(decompte.effectuees / 4, decompte.prevues / 4)}`}>
+                              {Math.round(decompte.effectuees / 4)}
+                            </td>
+                            <td className="border p-1 text-center">{heuresSemaine}h</td>
+                            <td className={`border p-1 text-center ${getCouleur(decompte.effectuees, decompte.prevues)}`}>
+                              {decompte.effectuees.toFixed(1)}h
+                            </td>
+                            <td className={`border p-1 text-center font-bold ${(emp.heures_supplementaires || 0) >= 0 ? 'text-orange-600' : 'text-blue-600'}`}>
+                              {(emp.heures_supplementaires || 0) >= 0 ? '+' : ''}{(emp.heures_supplementaires || 0).toFixed(1)}h
+                            </td>
+                            <td className="border p-1 text-center">
+                              {(decompte.heuresConges || 0).toFixed(1)}h
+                            </td>
+                            <td className="border p-1 text-center">
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-6 px-2 text-xs"
+                                onClick={() => {
+                                  const heures = prompt(`Heures supp (+) ou à rattraper (-) pour ${emp.prenom}:`, emp.heures_supplementaires || 0);
+                                  if (heures !== null) {
+                                    updateEmployeSemaineConfig(emp.id, 'heures_supplementaires', parseFloat(heures) || 0);
+                                  }
+                                }}
+                              >
+                                ✏️
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-                
-                {/* Assistants */}
-                <div className="bg-green-50 rounded p-2">
-                  <h4 className="text-xs font-bold text-green-700 mb-2">👥 Assistants (½ journées)</h4>
-                  <div className="space-y-1">
-                    {users.filter(u => u.actif && u.role === 'Assistant').map(emp => {
-                      const moisActuel = planningTableau.dates?.[0] ? new Date(planningTableau.dates[0]).getMonth() : new Date().getMonth();
-                      const anneeActuelle = planningTableau.dates?.[0] ? new Date(planningTableau.dates[0]).getFullYear() : new Date().getFullYear();
-                      const decompte = getDecompteMensuel(emp, moisActuel, anneeActuelle);
-                      return (
-                        <div key={emp.id} className="flex items-center justify-between bg-white rounded px-2 py-1 text-xs">
-                          <span className="font-medium truncate flex-1">{emp.prenom} {emp.nom}</span>
-                          <div className="flex items-center gap-2">
-                            <span className={`px-1 rounded ${emp.semaine_a_config ? 'bg-green-200 text-green-800' : 'bg-gray-100 text-gray-400'}`}>A</span>
-                            <span className={`px-1 rounded ${emp.semaine_b_config ? 'bg-green-200 text-green-800' : 'bg-gray-100 text-gray-400'}`}>B</span>
-                            <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                              decompte.status === 'ok' ? 'bg-green-100 text-green-700' :
-                              decompte.status === 'trop' ? 'bg-orange-100 text-orange-700' :
-                              'bg-red-100 text-red-700'
+              </div>
+              
+              {/* Tableau Assistants */}
+              <div className="mb-4">
+                <h4 className="text-xs font-bold text-green-700 mb-2 bg-green-100 p-1 rounded">👥 ASSISTANTS</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-green-50">
+                        <th className="border p-1 text-left">Employé</th>
+                        <th className="border p-1 text-center" title="Demi-journées travaillées">½j Eff.</th>
+                        <th className="border p-1 text-center" title="Demi-journées prévues">½j Prév.</th>
+                        <th className="border p-1 text-center" title="Différence">Diff</th>
+                        <th className="border p-1 text-center" title="Heures supplémentaires ou à rattraper">H Supp/Rattr</th>
+                        <th className="border p-1 text-center" title="Demi-journées de congés">½j Congés</th>
+                        <th className="border p-1 text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.filter(u => u.actif && u.role === 'Assistant').map(emp => {
+                        const moisActuel = planningTableau.dates?.[0] ? new Date(planningTableau.dates[0]).getMonth() : new Date().getMonth();
+                        const anneeActuelle = planningTableau.dates?.[0] ? new Date(planningTableau.dates[0]).getFullYear() : new Date().getFullYear();
+                        const decompte = getDecompteMensuel(emp, moisActuel, anneeActuelle);
+                        const getCouleur = (val, cible) => {
+                          if (val === cible) return 'bg-yellow-100';
+                          return val < cible ? 'bg-green-100' : 'bg-red-100';
+                        };
+                        return (
+                          <tr key={emp.id} className="hover:bg-green-50">
+                            <td className="border p-1 font-medium">{emp.prenom} {emp.nom}</td>
+                            <td className={`border p-1 text-center ${getCouleur(decompte.effectuees, decompte.prevues)}`}>
+                              {decompte.effectuees}
+                            </td>
+                            <td className="border p-1 text-center">{decompte.prevues}</td>
+                            <td className={`border p-1 text-center font-bold ${
+                              decompte.diff === 0 ? 'text-gray-600' : decompte.diff > 0 ? 'text-red-600' : 'text-green-600'
                             }`}>
-                              {decompte.status === 'ok' ? '✓ OK' :
-                               decompte.status === 'trop' ? `+${decompte.diff} ½j` :
-                               `${decompte.diff} ½j`}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                              {decompte.diff > 0 ? '+' : ''}{decompte.diff}
+                            </td>
+                            <td className={`border p-1 text-center font-bold ${(emp.heures_supplementaires || 0) >= 0 ? 'text-orange-600' : 'text-blue-600'}`}>
+                              {(emp.heures_supplementaires || 0) >= 0 ? '+' : ''}{(emp.heures_supplementaires || 0).toFixed(1)}h
+                            </td>
+                            <td className="border p-1 text-center">
+                              {decompte.conges || 0}
+                            </td>
+                            <td className="border p-1 text-center">
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-6 px-2 text-xs"
+                                onClick={() => {
+                                  const heures = prompt(`Heures supp (+) ou à rattraper (-) pour ${emp.prenom}:`, emp.heures_supplementaires || 0);
+                                  if (heures !== null) {
+                                    updateEmployeSemaineConfig(emp.id, 'heures_supplementaires', parseFloat(heures) || 0);
+                                  }
+                                }}
+                              >
+                                ✏️
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              {/* Tableau Médecins */}
+              <div>
+                <h4 className="text-xs font-bold text-blue-700 mb-2 bg-blue-100 p-1 rounded">👨‍⚕️ MÉDECINS</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-blue-50">
+                        <th className="border p-1 text-left">Médecin</th>
+                        <th className="border p-1 text-center">½j Eff.</th>
+                        <th className="border p-1 text-center">½j Prév.</th>
+                        <th className="border p-1 text-center">Diff</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.filter(u => u.actif && u.role === 'Médecin').map(emp => {
+                        const moisActuel = planningTableau.dates?.[0] ? new Date(planningTableau.dates[0]).getMonth() : new Date().getMonth();
+                        const anneeActuelle = planningTableau.dates?.[0] ? new Date(planningTableau.dates[0]).getFullYear() : new Date().getFullYear();
+                        const decompte = getDecompteMensuel(emp, moisActuel, anneeActuelle);
+                        const getCouleur = (val, cible) => {
+                          if (val === cible) return 'bg-yellow-100';
+                          return val < cible ? 'bg-green-100' : 'bg-red-100';
+                        };
+                        return (
+                          <tr key={emp.id} className="hover:bg-blue-50">
+                            <td className="border p-1 font-medium">Dr. {emp.prenom} {emp.nom}</td>
+                            <td className={`border p-1 text-center ${getCouleur(decompte.effectuees, decompte.prevues)}`}>
+                              {decompte.effectuees}
+                            </td>
+                            <td className="border p-1 text-center">{decompte.prevues}</td>
+                            <td className={`border p-1 text-center font-bold ${
+                              decompte.diff === 0 ? 'text-gray-600' : decompte.diff > 0 ? 'text-red-600' : 'text-green-600'
+                            }`}>
+                              {decompte.diff > 0 ? '+' : ''}{decompte.diff}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
