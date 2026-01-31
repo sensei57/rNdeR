@@ -10263,7 +10263,12 @@ const PlanningManager = () => {
                   </>
                 )}
                 
-                {journeeData.apresMidi.actif && journeeData.employe?.role === 'Assistant' && (
+                {journeeData.employe?.role === 'Assistant' && (
+                  <>
+                    <div>
+                      <Label className="text-sm font-medium">👨‍⚕️ Médecins</Label>
+                      <div className="space-y-2 max-h-40 overflow-y-auto mt-1">
+                        {getMedecinsPresentsPourCreneau(journeeData.date, 'APRES_MIDI').map(med => {
                           const autreAssistant = getAssistantPourMedecin(med.id, journeeData.date, 'APRES_MIDI', journeeData.employe_id);
                           const estDejaAssocie = autreAssistant !== null;
                           return (
