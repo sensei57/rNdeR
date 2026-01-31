@@ -8799,7 +8799,6 @@ const PlanningManager = () => {
                         })}
                         {/* Colonnes récapitulatives de fin de ligne - Assistants */}
                         {(() => {
-                          const semaineAffichee = localStorage.getItem('semaineAffichee') || 'A';
                           const demiJourneesSemaine = semaineAffichee === 'A' ? (assistant.limite_demi_journees_a || 10) : (assistant.limite_demi_journees_b || 10);
                           const heuresContrat = assistant.heures_semaine_fixe || (demiJourneesSemaine * 4);
                           
