@@ -9848,29 +9848,28 @@ const PlanningManager = () => {
             
             <div className="grid grid-cols-[1fr_auto_1fr] gap-2">
               {/* MATIN */}
-              <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className={`space-y-4 p-4 rounded-lg border ${journeeData.matin.actif ? 'bg-blue-50 border-blue-200' : 'bg-gray-100 border-gray-300'}`}>
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-blue-800 flex items-center text-base">
-                    <CalendarDays className="h-5 w-5 mr-2" /> Matin
-                    {journeeData.matin.exists && <span className="ml-2 text-xs text-green-600">(existant)</span>}
-                  </h3>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={journeeData.matin.actif}
+                      onChange={(e) => setJourneeData(prev => ({
+                        ...prev,
+                        matin: { ...prev.matin, actif: e.target.checked }
+                      }))}
+                      className="w-5 h-5 accent-blue-600"
+                    />
+                    <h3 className={`font-bold flex items-center text-base ${journeeData.matin.actif ? 'text-blue-800' : 'text-gray-500'}`}>
+                      <CalendarDays className="h-5 w-5 mr-2" /> Matin
+                    </h3>
+                  </label>
                   {journeeData.matin.exists && (
-                    <label className="flex items-center gap-2 text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200 cursor-pointer hover:bg-red-100">
-                      <input
-                        type="checkbox"
-                        checked={journeeData.matin.supprimer}
-                        onChange={(e) => setJourneeData(prev => ({
-                          ...prev,
-                          matin: { ...prev.matin, supprimer: e.target.checked }
-                        }))}
-                        className="w-4 h-4"
-                      />
-                      <span className="text-xs font-bold">🗑️ Supprimer</span>
-                    </label>
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Existant</span>
                   )}
                 </div>
                 
-                {journeeData.employe?.role === 'Secrétaire' && (
+                {journeeData.matin.actif && journeeData.employe?.role === 'Secrétaire' && (
                   <>
                     {/* Sélection rapide des horaires prédéfinis pour le MATIN */}
                     <div className="space-y-2">
