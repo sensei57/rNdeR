@@ -10318,6 +10318,15 @@ const PlanningManager = () => {
                         onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_b', parseFloat(e.target.value) || 35)}
                       />
                     </div>
+                    <div className="flex items-center gap-1">
+                      <Label className="text-xs whitespace-nowrap text-purple-700 font-bold">Contrat:</Label>
+                      <Input
+                        type="number"
+                        className="h-8 text-xs w-16 border-purple-300"
+                        value={emp.heures_semaine_fixe || 35}
+                        onChange={(e) => updateEmployeSemaineConfig(emp.id, 'heures_semaine_fixe', parseFloat(e.target.value) || 35)}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
