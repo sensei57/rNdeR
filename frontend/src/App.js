@@ -8255,8 +8255,12 @@ const PlanningManager = () => {
                         />
                       </th>
                     ))}
-                    <th className="border p-2 text-center bg-gray-300">Total</th>
-                    <th className="border p-2 text-center bg-blue-200">Heures</th>
+                    <th className="border p-2 text-center bg-gray-300 text-xs" title="Total demi-journées">½j</th>
+                    <th className="border p-2 text-center bg-blue-200 text-xs" title="Heures effectuées">H Eff</th>
+                    <th className="border p-2 text-center bg-purple-200 text-xs" title="Heures semaine A ou B">H/Sem</th>
+                    <th className="border p-2 text-center bg-indigo-200 text-xs" title="Heures contrat">Contrat</th>
+                    <th className="border p-2 text-center bg-orange-200 text-xs" title="Heures supplémentaires">H Supp</th>
+                    <th className="border p-2 text-center bg-green-200 text-xs" title="Heures de congés">Congés</th>
                   </tr>
                   <tr className="bg-gray-50">
                     <th className="border p-1"></th>
