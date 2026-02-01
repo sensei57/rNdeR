@@ -9034,7 +9034,9 @@ const PlanningManager = () => {
                     <td className="border p-1 bg-pink-100 text-xs text-center font-bold">½j</td>
                     <td className="border p-1 bg-pink-100 text-xs text-center font-bold">H</td>
                     <td className="border p-1 bg-pink-100 text-xs text-center font-bold">Ctr</td>
-                    <td className="border p-1 bg-pink-100 text-xs text-center font-bold">+/-</td>
+                    <td className="border p-1 bg-pink-100 text-xs text-center font-bold" title="Heures supp/récup Semaine">+/- S</td>
+                    <td className="border p-1 bg-pink-100 text-xs text-center font-bold" title="Heures supp/récup Mois">+/- M</td>
+                    <td className="border p-1 bg-pink-100 text-xs text-center font-bold" title="Heures supp/récup Année">+/- A</td>
                     <td className="border p-1 bg-pink-100 text-xs text-center font-bold">Cg</td>
                   </tr>
                   {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role === 'Secrétaire')).map(secretaire => {
