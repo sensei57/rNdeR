@@ -13875,11 +13875,13 @@ const AdminManager = () => {
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [notificationMessage, setNotificationMessage] = useState('');
+  const [editUserData, setEditUserData] = useState({ nom: '', prenom: '', email: '', role: '', password: '' });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
