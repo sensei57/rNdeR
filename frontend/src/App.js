@@ -4900,6 +4900,121 @@ const PlanningManager = () => {
     return Math.round(totalMinutes / 60 * 10) / 10; // Arrondir à 0.1h
   };
 
+  // Calculer les heures supp/récup pour le MOIS en cours
+  const getHeuresSupMois = (employeId) => {
+    const employe = users.find(u => u.id === employeId);
+    if (!employe || !planningTableau.dates?.length) return 0;
+    
+    // Récupérer le mois de la semaine affichée
+    const dateRef = new Date(planningTableau.dates[0] + 'T12:00:00');
+    const mois = dateRef.getMonth();
+    const annee = dateRef.getFullYear();
+    const premierJour = new Date(annee, mois, 1);
+    const dernierJour = new Date(annee, mois + 1, 0);
+    
+    let heuresEffectives = 0;
+    let heuresContrat = 0;
+    const heuresParJour = (employe.heures_par_jour || 7);
+    const heuresParSemaine = employe.heures_semaine_fixe || 35;
+    
+    // Parcourir chaque jour du mois
+    for (let jour = new Date(premierJour); jour <= dernierJour; jour.setDate(jour.getDate() + 1)) {
+      const dateStr = jour.toISOString().split('T')[0];
+      const jourSemaine = jour.getDay();
+      
+      // Ignorer dimanche
+      if (jourSemaine === 0) continue;
+      
+      // Heures prévues (jours ouvrés lun-ven ou lun-sam selon config)
+      if (jourSemaine >= 1 && jourSemaine <= 5) {
+        heuresContrat += heuresParSemaine / 5;
+      }
+      
+      // Heures effectuées (créneaux du planning)
+      const creneauxJour = planningTableau.planning?.[dateStr]?.filter(c => c.employe_id === employeId) || [];
+      creneauxJour.forEach(creneau => {
+        if (employe.role === 'Secrétaire' && creneau.horaire_debut && creneau.horaire_fin) {
+          const [h1, m1] = creneau.horaire_debut.split(':').map(Number);
+          const [h2, m2] = creneau.horaire_fin.split(':').map(Number);
+          heuresEffectives += (h2 + m2/60) - (h1 + m1/60);
+        } else {
+          heuresEffectives += heuresParJour / 2; // Une demi-journée
+        }
+      });
+      
+      // Ajouter les congés payés (comptent comme heures travaillées)
+      const congesJour = congesApprouves?.filter(c => 
+        c.utilisateur_id === employeId && 
+        dateStr >= c.date_debut && dateStr <= c.date_fin &&
+        c.type_conge !== 'REPOS' && c.type_conge !== 'REPOS_COMPENSATEUR'
+      ) || [];
+      congesJour.forEach(conge => {
+        const heuresConge = employe.heures_demi_journee_conge || 4;
+        heuresEffectives += conge.demi_journee ? heuresConge : heuresConge * 2;
+      });
+    }
+    
+    return Math.round((heuresEffectives - heuresContrat) * 10) / 10;
+  };
+
+  // Calculer les heures supp/récup pour l'ANNÉE en cours
+  const getHeuresSupAnnee = (employeId) => {
+    const employe = users.find(u => u.id === employeId);
+    if (!employe || !planningTableau.dates?.length) return 0;
+    
+    // Récupérer l'année de la semaine affichée
+    const dateRef = new Date(planningTableau.dates[0] + 'T12:00:00');
+    const annee = dateRef.getFullYear();
+    
+    let heuresEffectives = 0;
+    let heuresContrat = 0;
+    const heuresParJour = (employe.heures_par_jour || 7);
+    const heuresParSemaine = employe.heures_semaine_fixe || 35;
+    
+    // Parcourir chaque jour de l'année (du 1er janvier jusqu'à aujourd'hui ou fin de l'année)
+    const premierJour = new Date(annee, 0, 1);
+    const dernierJour = new Date(); // Aujourd'hui
+    dernierJour.setHours(23, 59, 59, 999);
+    
+    for (let jour = new Date(premierJour); jour <= dernierJour; jour.setDate(jour.getDate() + 1)) {
+      const dateStr = jour.toISOString().split('T')[0];
+      const jourSemaine = jour.getDay();
+      
+      // Ignorer dimanche
+      if (jourSemaine === 0) continue;
+      
+      // Heures prévues (jours ouvrés lun-ven)
+      if (jourSemaine >= 1 && jourSemaine <= 5) {
+        heuresContrat += heuresParSemaine / 5;
+      }
+      
+      // Heures effectuées (créneaux du planning)
+      const creneauxJour = planningTableau.planning?.[dateStr]?.filter(c => c.employe_id === employeId) || [];
+      creneauxJour.forEach(creneau => {
+        if (employe.role === 'Secrétaire' && creneau.horaire_debut && creneau.horaire_fin) {
+          const [h1, m1] = creneau.horaire_debut.split(':').map(Number);
+          const [h2, m2] = creneau.horaire_fin.split(':').map(Number);
+          heuresEffectives += (h2 + m2/60) - (h1 + m1/60);
+        } else {
+          heuresEffectives += heuresParJour / 2; // Une demi-journée
+        }
+      });
+      
+      // Ajouter les congés payés (comptent comme heures travaillées)
+      const congesJour = congesApprouves?.filter(c => 
+        c.utilisateur_id === employeId && 
+        dateStr >= c.date_debut && dateStr <= c.date_fin &&
+        c.type_conge !== 'REPOS' && c.type_conge !== 'REPOS_COMPENSATEUR'
+      ) || [];
+      congesJour.forEach(conge => {
+        const heuresConge = employe.heures_demi_journee_conge || 4;
+        heuresEffectives += conge.demi_journee ? heuresConge : heuresConge * 2;
+      });
+    }
+    
+    return Math.round((heuresEffectives - heuresContrat) * 10) / 10;
+  };
+
   // Ouvrir le modal A/B/Co pour un employé ou une section
   const openSemaineABCModal = (target) => {
     setSemaineABCTarget(target);
