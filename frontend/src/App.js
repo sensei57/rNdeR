@@ -3176,7 +3176,8 @@ const PlanningManager = () => {
   
   // Exporter le planning en image (capture d'écran)
   const handleExportPlanningImage = async () => {
-    if (!planningTableRef.current) {
+    const tableElement = planningTableRef.current;
+    if (!tableElement) {
       toast.error('Tableau non disponible');
       return;
     }
@@ -3184,36 +3185,35 @@ const PlanningManager = () => {
     try {
       toast.info('Capture en cours...');
       
-      // Sauvegarder le style original
-      const originalStyle = planningTableRef.current.style.cssText;
-      const parentElement = planningTableRef.current.parentElement;
-      const parentOriginalStyle = parentElement?.style.cssText;
+      // Cloner le tableau pour la capture
+      const clone = tableElement.cloneNode(true);
+      clone.style.position = 'absolute';
+      clone.style.left = '-9999px';
+      clone.style.top = '0';
+      clone.style.width = 'auto';
+      clone.style.minWidth = 'max-content';
+      clone.style.background = 'white';
+      document.body.appendChild(clone);
       
-      // Temporairement supprimer l'overflow pour capturer tout le tableau
-      if (parentElement) {
-        parentElement.style.overflow = 'visible';
-        parentElement.style.width = 'auto';
-        parentElement.style.maxWidth = 'none';
-      }
-      planningTableRef.current.style.width = 'auto';
-      planningTableRef.current.style.minWidth = 'max-content';
+      // Attendre que le clone soit rendu
+      await new Promise(resolve => setTimeout(resolve, 100));
       
-      const canvas = await html2canvas(planningTableRef.current, {
+      const canvas = await html2canvas(clone, {
         scale: 2,
         useCORS: true,
         logging: false,
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: planningTableRef.current.scrollWidth + 100,
-        windowHeight: planningTableRef.current.scrollHeight + 100,
-        width: planningTableRef.current.scrollWidth,
-        height: planningTableRef.current.scrollHeight
+        backgroundColor: '#ffffff',
+        width: clone.scrollWidth,
+        height: clone.scrollHeight
       });
       
-      // Restaurer les styles originaux
-      planningTableRef.current.style.cssText = originalStyle;
-      if (parentElement) {
-        parentElement.style.cssText = parentOriginalStyle || '';
+      // Supprimer le clone
+      document.body.removeChild(clone);
+      
+      // Vérifier que le canvas n'est pas vide
+      if (canvas.width === 0 || canvas.height === 0) {
+        toast.error('Erreur: capture vide');
+        return;
       }
       
       const link = document.createElement('a');
@@ -3223,7 +3223,7 @@ const PlanningManager = () => {
       toast.success('Image téléchargée !');
     } catch (error) {
       console.error('Erreur capture:', error);
-      toast.error('Erreur lors de la capture');
+      toast.error('Erreur lors de la capture: ' + (error.message || 'Erreur inconnue'));
     }
   };
   
