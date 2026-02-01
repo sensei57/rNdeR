@@ -3141,11 +3141,38 @@ const PlanningManager = () => {
     
     try {
       toast.info('Capture en cours...');
+      
+      // Sauvegarder le style original
+      const originalStyle = planningTableRef.current.style.cssText;
+      const parentElement = planningTableRef.current.parentElement;
+      const parentOriginalStyle = parentElement?.style.cssText;
+      
+      // Temporairement supprimer l'overflow pour capturer tout le tableau
+      if (parentElement) {
+        parentElement.style.overflow = 'visible';
+        parentElement.style.width = 'auto';
+        parentElement.style.maxWidth = 'none';
+      }
+      planningTableRef.current.style.width = 'auto';
+      planningTableRef.current.style.minWidth = 'max-content';
+      
       const canvas = await html2canvas(planningTableRef.current, {
         scale: 2,
         useCORS: true,
-        logging: false
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: planningTableRef.current.scrollWidth + 100,
+        windowHeight: planningTableRef.current.scrollHeight + 100,
+        width: planningTableRef.current.scrollWidth,
+        height: planningTableRef.current.scrollHeight
       });
+      
+      // Restaurer les styles originaux
+      planningTableRef.current.style.cssText = originalStyle;
+      if (parentElement) {
+        parentElement.style.cssText = parentOriginalStyle || '';
+      }
       
       const link = document.createElement('a');
       link.download = `planning_${selectedWeek}.png`;
@@ -3153,6 +3180,7 @@ const PlanningManager = () => {
       link.click();
       toast.success('Image téléchargée !');
     } catch (error) {
+      console.error('Erreur capture:', error);
       toast.error('Erreur lors de la capture');
     }
   };
