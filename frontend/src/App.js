@@ -9195,10 +9195,10 @@ const PlanningManager = () => {
                                     {getTypeCongeShortLabel(congeApprouve.type_conge)}
                                   </span>
                                 ) : creneauMatin ? (
-                                  <div className="text-xs">
-                                    <span className="font-semibold">{creneauMatin.horaire_debut?.substring(0,5)}</span>
-                                    <span>-</span>
-                                    <span className="font-semibold">{creneauMatin.horaire_pause_debut?.substring(0,5) || creneauMatin.horaire_fin?.substring(0,5)}</span>
+                                  <div className="text-xs leading-tight">
+                                    <div className="font-semibold">{creneauMatin.horaire_debut?.substring(0,5)}</div>
+                                    <div className="text-gray-400">-</div>
+                                    <div className="font-semibold">{creneauMatin.horaire_pause_debut?.substring(0,5) || creneauMatin.horaire_fin?.substring(0,5)}</div>
                                   </div>
                                 ) : <span className="text-gray-300">+</span>}
                               </td>
@@ -9227,10 +9227,10 @@ const PlanningManager = () => {
                                     {getTypeCongeShortLabel(congeApprouve.type_conge)}
                                   </span>
                                 ) : creneauAM ? (
-                                  <div className="text-xs">
-                                    <span className="font-semibold">{creneauAM.horaire_pause_fin?.substring(0,5) || creneauAM.horaire_debut?.substring(0,5)}</span>
-                                    <span>-</span>
-                                    <span className="font-semibold">{creneauAM.horaire_fin?.substring(0,5)}</span>
+                                  <div className="text-xs leading-tight">
+                                    <div className="font-semibold">{creneauAM.horaire_pause_fin?.substring(0,5) || creneauAM.horaire_debut?.substring(0,5)}</div>
+                                    <div className="text-gray-400">-</div>
+                                    <div className="font-semibold">{creneauAM.horaire_fin?.substring(0,5)}</div>
                                   </div>
                                 ) : <span className="text-gray-300">+</span>}
                               </td>
