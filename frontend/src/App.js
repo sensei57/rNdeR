@@ -9238,7 +9238,7 @@ const PlanningManager = () => {
                           );
                         })}
                         {/* Colonnes récapitulatives de fin de ligne */}
-                        {(() => {
+                        {showRecapColumns && (() => {
                           const heuresContrat = secretaire.heures_semaine_fixe || 35;
                           
                           // Calculer les heures de congés pour cette semaine
