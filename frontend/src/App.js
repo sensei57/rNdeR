@@ -9706,7 +9706,7 @@ const PlanningManager = () => {
                           );
                         })}
                         {/* Colonnes récapitulatives de fin de ligne - Médecins */}
-                        {(() => {
+                        {showRecapColumns && (() => {
                           const demiJourneesSemaine = semaineAffichee === 'A' ? (medecin.limite_demi_journees_a || 10) : (medecin.limite_demi_journees_b || 10);
                           
                           // Cumul stocké (solde depuis début d'année)
@@ -9723,6 +9723,7 @@ const PlanningManager = () => {
                               <td className={`border p-1 text-center text-xs font-bold ${cumulHeuresSupRecup >= 0 ? 'text-orange-600 bg-orange-50' : 'text-blue-600 bg-blue-50'}`}>
                                 {cumulHeuresSupRecup >= 0 ? '+' : ''}{cumulHeuresSupRecup.toFixed(1)}h
                               </td>
+                              <td className="border p-1 text-center text-xs bg-gray-50">-</td>
                               <td className="border p-1 text-center text-xs bg-gray-50">-</td>
                               <td className="border p-1 text-center text-xs bg-gray-50">-</td>
                               <td className="border p-1 text-center text-xs bg-gray-50">-</td>
