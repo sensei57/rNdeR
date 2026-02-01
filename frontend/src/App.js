@@ -2647,7 +2647,7 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="flex items-start gap-4">
           {/* Plan Matin */}
           {planMatin && (
             <div className="space-y-2">
@@ -2658,6 +2658,29 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
               <div className="relative bg-blue-50 rounded-lg p-4 overflow-hidden border border-blue-200" style={{ height: '750px', width: '550px' }}>
                 {planMatin.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => renderSalle(salle, 'MATIN'))}
               </div>
+            </div>
+          )}
+          
+          {/* Boutons de copie flèches */}
+          {isDirector && planMatin && planApresMidi && (
+            <div className="flex flex-col items-center justify-center space-y-4 py-8">
+              <button
+                onClick={() => copyAssignations('matinToAM')}
+                className="flex items-center justify-center w-12 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg transition-all hover:scale-110"
+                title="Copier le Matin vers l'Après-midi"
+              >
+                <span className="text-xl">→</span>
+              </button>
+              <div className="text-xs text-gray-500 text-center">
+                Copier<br/>salles
+              </div>
+              <button
+                onClick={() => copyAssignations('amToMatin')}
+                className="flex items-center justify-center w-12 h-12 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-lg transition-all hover:scale-110"
+                title="Copier l'Après-midi vers le Matin"
+              >
+                <span className="text-xl">←</span>
+              </button>
             </div>
           )}
           
