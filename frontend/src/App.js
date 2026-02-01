@@ -9556,15 +9556,11 @@ const PlanningManager = () => {
                   {/* SECTION MÉDECINS */}
                   <tr className="bg-blue-100">
                     <td 
-                      className="border p-2 font-bold text-blue-800 cursor-pointer hover:bg-blue-200"
+                      className="border p-1 font-bold text-blue-800 cursor-pointer hover:bg-blue-200 text-xs"
                       onClick={() => openSemaineABCModal({ type: 'section', section: 'Médecin' })}
                       title="Cliquer pour appliquer Semaine A, B ou Congés"
                     >
                       👨‍⚕️ MÉDECINS
-                      <div className="text-xs font-normal text-blue-600 mt-1">
-                        <span className="bg-blue-200 px-1 rounded">A</span>
-                        <span className="bg-blue-200 px-1 rounded ml-1">B</span>
-                      </div>
                     </td>
                     {planningTableau.dates.map((date, dateIndex) => (
                       <td 
