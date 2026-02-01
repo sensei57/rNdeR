@@ -9736,27 +9736,36 @@ const PlanningManager = () => {
 
                   {/* LIGNE TOTAL MÉDECINS */}
                   <tr className="bg-gray-200 font-bold">
-                    <td className="border p-2">TOTAL MÉDECINS</td>
+                    <td className="border p-1 text-xs">TOTAL MÉDECINS</td>
                     {planningTableau.dates.map(date => {
                       const totalMatin = countMedecinsForCreneau(date, 'MATIN');
                       const totalAM = countMedecinsForCreneau(date, 'APRES_MIDI');
                       return (
                         <React.Fragment key={`total-${date}`}>
-                          <td className={`border p-2 text-center ${getTotalColor(totalMatin, 'medecins')}`}>
+                          <td className={`border p-1 text-center text-xs ${getTotalColor(totalMatin, 'medecins')}`}>
                             {totalMatin}
                           </td>
-                          <td className={`border p-2 text-center ${getTotalColor(totalAM, 'medecins')}`}>
+                          <td className={`border p-1 text-center text-xs ${getTotalColor(totalAM, 'medecins')}`}>
                             {totalAM}
                           </td>
                         </React.Fragment>
                       );
                     })}
-                    <td className="border p-2 text-center bg-gray-300">
-                      {planningTableau.dates.reduce((sum, date) => 
-                        sum + countMedecinsForCreneau(date, 'MATIN') + countMedecinsForCreneau(date, 'APRES_MIDI'), 0
-                      )}
-                    </td>
-                    <td className="border p-2 text-center bg-gray-300"></td>
+                    {showRecapColumns && (
+                      <>
+                        <td className="border p-1 text-center text-xs bg-gray-300">
+                          {planningTableau.dates.reduce((sum, date) => 
+                            sum + countMedecinsForCreneau(date, 'MATIN') + countMedecinsForCreneau(date, 'APRES_MIDI'), 0
+                          )}
+                        </td>
+                        <td className="border p-1 text-center bg-gray-300"></td>
+                        <td className="border p-1 text-center bg-gray-300"></td>
+                        <td className="border p-1 text-center bg-gray-300"></td>
+                        <td className="border p-1 text-center bg-gray-300"></td>
+                        <td className="border p-1 text-center bg-gray-300"></td>
+                        <td className="border p-1 text-center bg-gray-300"></td>
+                      </>
+                    )}
                   </tr>
                 </tbody>
               </table>
