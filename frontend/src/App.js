@@ -4456,7 +4456,8 @@ const PlanningManager = () => {
         nom: p.employe?.nom,
         prenom: p.employe?.prenom,
         initiales: `${p.employe?.prenom?.[0] || ''}${p.employe?.nom?.[0] || ''}`.toUpperCase()
-      }));
+      }))
+      .sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
   };
 
   // Créer ou modifier un créneau rapidement depuis la Vue Planning
