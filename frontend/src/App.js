@@ -8982,6 +8982,15 @@ const PlanningManager = () => {
               </span>
               <div className="flex items-center space-x-2">
                 <Button 
+                  variant={showRecapColumns ? "default" : "outline"}
+                  size="sm" 
+                  onClick={() => setShowRecapColumns(!showRecapColumns)}
+                  className="text-xs"
+                  title={showRecapColumns ? "Masquer les colonnes récap" : "Afficher les colonnes récap"}
+                >
+                  {showRecapColumns ? '📊 Masquer Récap' : '📊 Afficher Récap'}
+                </Button>
+                <Button 
                   variant="outline" 
                   size="sm" 
                   onClick={handleExportPlanningPDF}
