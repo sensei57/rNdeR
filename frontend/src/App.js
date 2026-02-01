@@ -2486,6 +2486,72 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
     }
   };
 
+  // Copier les assignations d'un créneau vers un autre (Matin → AM ou AM → Matin)
+  const copyAssignations = async (direction) => {
+    if (!isDirector) return;
+    
+    try {
+      const sourcePlan = direction === 'matinToAM' ? planMatin : planApresMidi;
+      const targetCreneau = direction === 'matinToAM' ? 'APRES_MIDI' : 'MATIN';
+      const sourceLabel = direction === 'matinToAM' ? 'Matin' : 'Après-midi';
+      const targetLabel = direction === 'matinToAM' ? 'Après-midi' : 'Matin';
+      
+      if (!sourcePlan) {
+        toast.error(`Aucune donnée ${sourceLabel} à copier`);
+        return;
+      }
+      
+      // Récupérer le planning de la date pour le créneau cible
+      const targetPlanningResponse = await axios.get(`${API}/planning/semaine/${selectedDate}`);
+      const targetPlanning = targetPlanningResponse.data.planning?.[selectedDate] || [];
+      
+      let copiedCount = 0;
+      let skippedCount = 0;
+      
+      // Pour chaque salle avec une occupation dans le plan source
+      for (const salle of sourcePlan.salles) {
+        if (!salle.occupation) continue;
+        
+        const employeId = salle.occupation.employe_id;
+        const salleNom = salle.nom;
+        const typeSalle = salle.type_salle;
+        
+        // Vérifier si l'employé est présent dans le créneau cible
+        const targetCreneau_emp = targetPlanning.find(c => 
+          c.employe_id === employeId && c.creneau === targetCreneau
+        );
+        
+        if (!targetCreneau_emp) {
+          skippedCount++;
+          continue; // L'employé n'est pas présent dans le créneau cible
+        }
+        
+        // Mettre à jour le créneau cible avec l'assignation
+        const updateData = typeSalle === 'ATTENTE' 
+          ? { salle_attente: salleNom }
+          : { salle_attribuee: salleNom };
+        
+        await axios.put(`${API}/planning/${targetCreneau_emp.id}`, updateData);
+        copiedCount++;
+      }
+      
+      if (copiedCount > 0) {
+        toast.success(`${copiedCount} assignation(s) copiée(s) du ${sourceLabel} vers l'${targetLabel}`);
+      }
+      if (skippedCount > 0) {
+        toast.info(`${skippedCount} assignation(s) ignorée(s) (employés absents l'${targetLabel})`);
+      }
+      if (copiedCount === 0 && skippedCount === 0) {
+        toast.info(`Aucune assignation à copier`);
+      }
+      
+      fetchPlans();
+    } catch (error) {
+      console.error('Erreur copie assignations:', error);
+      toast.error('Erreur lors de la copie des assignations');
+    }
+  };
+
   const renderSalle = (salle, creneau) => {
     const occupation = salle.occupation;
     const baseClasses = "absolute border-2 rounded-lg p-2 text-xs font-medium transition-all flex flex-col justify-center items-center";
