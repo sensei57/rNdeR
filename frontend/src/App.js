@@ -14017,6 +14017,66 @@ const AdminManager = () => {
     }
   };
 
+  // Ouvrir la modale d'édition du profil complet
+  const openEditProfileModal = (userItem) => {
+    setSelectedUser(userItem);
+    setEditUserData({
+      nom: userItem.nom || '',
+      prenom: userItem.prenom || '',
+      email: userItem.email || '',
+      role: userItem.role || 'Secrétaire',
+      password: ''
+    });
+    setShowEditProfileModal(true);
+  };
+
+  // Sauvegarder le profil complet
+  const handleSaveProfile = async () => {
+    if (!editUserData.nom || !editUserData.prenom || !editUserData.email) {
+      toast.error('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+    
+    if (!editUserData.email.includes('@')) {
+      toast.error('Veuillez entrer une adresse email valide');
+      return;
+    }
+
+    try {
+      // Mettre à jour les informations de base
+      await axios.put(`${API}/users/${selectedUser.id}`, {
+        nom: editUserData.nom,
+        prenom: editUserData.prenom,
+        role: editUserData.role
+      });
+      
+      // Mettre à jour l'email si changé
+      if (editUserData.email !== selectedUser.email) {
+        await axios.put(`${API}/admin/users/${selectedUser.id}/email`, {
+          email: editUserData.email
+        });
+      }
+      
+      // Mettre à jour le mot de passe si renseigné
+      if (editUserData.password && editUserData.password.length >= 6) {
+        await axios.put(`${API}/admin/users/${selectedUser.id}/password`, {
+          password: editUserData.password
+        });
+      } else if (editUserData.password && editUserData.password.length < 6) {
+        toast.error('Le mot de passe doit contenir au moins 6 caractères');
+        return;
+      }
+      
+      toast.success('Profil modifié avec succès');
+      fetchAllUsers();
+      setShowEditProfileModal(false);
+      setSelectedUser(null);
+      setEditUserData({ nom: '', prenom: '', email: '', role: '', password: '' });
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la modification du profil');
+    }
+  };
+
   const handleDeleteUser = async () => {
     const expectedText = `SUPPRIMER ${selectedUser?.prenom} ${selectedUser?.nom}`;
     
