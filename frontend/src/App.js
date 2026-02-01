@@ -9036,16 +9036,27 @@ const PlanningManager = () => {
                           let heuresCongesPayesSemaine = 0; // Congés payés = comptent comme travail
                           let heuresReposSemaine = 0; // Repos = ne comptent pas
                           let nbConges = 0;
+                          const congesDejaComptes = new Set(); // Éviter de compter le même congé plusieurs fois
                           planningTableau.dates.forEach(date => {
                             const congesJour = getCongesForEmployeDate(secretaire.id, date);
                             congesJour.forEach(conge => {
-                              nbConges++;
+                              // Créer une clé unique pour ce congé + ce jour
+                              const cleConge = `${conge.id}-${date}`;
+                              if (congesDejaComptes.has(cleConge)) return;
+                              congesDejaComptes.add(cleConge);
+                              
                               const heuresConge = secretaire.heures_demi_journee_conge || 4;
+                              // Déterminer le nombre d'heures pour ce jour
+                              // Si demi_journee est true → heuresConge (1 demi-journée)
+                              // Si demi_journee est false → heuresConge * 2 (journée complète)
+                              const heuresJour = conge.demi_journee ? heuresConge : heuresConge * 2;
+                              
+                              nbConges++;
                               // Les congés payés comptent comme heures travaillées, pas les repos
                               if (conge.type_conge === 'REPOS' || conge.type_conge === 'REPOS_COMPENSATEUR') {
-                                heuresReposSemaine += heuresConge;
+                                heuresReposSemaine += heuresJour;
                               } else {
-                                heuresCongesPayesSemaine += heuresConge;
+                                heuresCongesPayesSemaine += heuresJour;
                               }
                             });
                           });
@@ -9056,8 +9067,8 @@ const PlanningManager = () => {
                           // Calcul différence heures (avec congés payés) vs contrat
                           const diffHeures = heuresAvecConges - heuresContrat;
                           
-                          // Cumul stocké (solde depuis début d'année, ajustable manuellement)
-                          const cumulHeuresSupRecup = secretaire.heures_supplementaires || 0;
+                          // Heures supp/récup de cette semaine (basé sur la différence calculée)
+                          const heuresSupSemaine = diffHeures;
                           
                           // Couleur colonne Contrat: Jaune=égal, Vert=moins(récup), Rouge=plus(sup)
                           const getCouleurContrat = (effectuees, contrat) => {
