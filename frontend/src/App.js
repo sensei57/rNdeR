@@ -5725,12 +5725,18 @@ const PlanningManager = () => {
         classes += 'bg-blue-50 text-blue-900 border-blue-300';
       }
     } else if (role === 'Assistant') {
-      // Pour les assistants : vérifier s'ils ont des médecins associés
+      // Pour les assistants : vérifier s'ils ont des médecins associés et/ou une salle de travail
       const hasMedecin = getMedecinsForAssistantInPlanning(creneau.employe_id, creneau.date, creneau.creneau).length > 0;
+      const hasSalleTravail = creneau.salle_attribuee && creneau.salle_attribuee.trim() !== '';
       
       if (hasMedecin) {
+        // Vert foncé : a des médecins associés
         classes += 'bg-green-600 text-white border-green-700';
+      } else if (hasSalleTravail) {
+        // Vert moyen : a une salle de travail mais pas de médecin
+        classes += 'bg-green-400 text-white border-green-500';
       } else {
+        // Vert clair : juste présent, pas de salle ni de médecin
         classes += 'bg-green-100 text-green-900 border-green-300';
       }
     } else if (role === 'Secrétaire') {
