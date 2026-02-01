@@ -2755,6 +2755,7 @@ const PlanningManager = () => {
   const [showDetails, setShowDetails] = useState(true); // Afficher ou masquer les détails (Box, Salle d'attente, Assistants)
   const [showMoisDetailsModal, setShowMoisDetailsModal] = useState(false); // Modal détails vue mois
   const [moisDetailsData, setMoisDetailsData] = useState({ date: '', creneau: '', employes: [] }); // Données pour le modal
+  const [showRecapColumns, setShowRecapColumns] = useState(true); // Afficher ou masquer les colonnes récapitulatives (½j, H, Ctr, +/- S, +/- M, +/- A, Cg)
   
   // Référence pour le tableau planning (pour export PDF)
   const planningTableRef = useRef(null);
