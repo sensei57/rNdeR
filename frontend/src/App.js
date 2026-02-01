@@ -4904,6 +4904,12 @@ const PlanningManager = () => {
     return total;
   };
 
+  // Fonction pour abréger un nom (Prénom N.)
+  const abbreviateName = (prenom, nom) => {
+    if (!prenom || !nom) return prenom || nom || '';
+    return `${prenom} ${nom.charAt(0)}.`;
+  };
+
   // Obtenir la couleur du total selon les règles
   const getTotalColor = (total, type = 'employe', employe = null) => {
     if (type === 'employe') {
