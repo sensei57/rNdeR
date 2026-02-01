@@ -4333,6 +4333,32 @@ const PlanningManager = () => {
     }
   };
 
+  // Supprimer la JOURNÉE COMPLÈTE (matin + après-midi)
+  const handleSupprimerJourneeComplete = async () => {
+    if (!journeeData.matin.id && !journeeData.apresMidi.id) {
+      toast.error('Aucun créneau à supprimer');
+      return;
+    }
+    
+    try {
+      const promises = [];
+      if (journeeData.matin.id) {
+        promises.push(axios.delete(`${API}/planning/${journeeData.matin.id}`));
+      }
+      if (journeeData.apresMidi.id) {
+        promises.push(axios.delete(`${API}/planning/${journeeData.apresMidi.id}`));
+      }
+      
+      await Promise.all(promises);
+      toast.success('Journée complète supprimée !');
+      setShowJourneeModal(false);
+      fetchPlanningTableau(selectedWeek);
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error('Erreur lors de la suppression');
+    }
+  };
+
   // Enregistrer la JOURNÉE COMPLÈTE (matin + après-midi)
   const handleJourneeSubmit = async (e) => {
     if (e) e.preventDefault();
