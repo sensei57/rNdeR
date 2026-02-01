@@ -8997,17 +8997,17 @@ const PlanningManager = () => {
               </div>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 overflow-x-auto">
+          <CardContent className="p-2 overflow-x-auto">
             {loading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
               </div>
             ) : (
               <div ref={planningTableRef}>
-              <table className="w-full border-collapse text-sm">
+              <table className="w-full border-collapse text-xs table-fixed">
                 <thead>
                   <tr className="bg-gray-100">
-                    <th className="border p-2 text-left min-w-[150px]">
+                    <th className="border p-1 text-left" style={{width: '120px'}}>
                       <div className="flex items-center space-x-2">
                         <span>Employé</span>
                         <input
