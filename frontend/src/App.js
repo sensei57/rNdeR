@@ -10881,9 +10881,20 @@ const PlanningManager = () => {
               <Button type="button" variant="outline" onClick={() => setShowJourneeModal(false)}>
                 Annuler
               </Button>
-              <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
-                📅 Enregistrer Journée Complète
-              </Button>
+              <div className="flex gap-2">
+                {(journeeData.matin.exists || journeeData.apresMidi.exists) && (
+                  <Button 
+                    type="button" 
+                    variant="destructive"
+                    onClick={handleSupprimerJourneeComplete}
+                  >
+                    🗑️ Supprimer Journée
+                  </Button>
+                )}
+                <Button type="submit" className="bg-teal-600 hover:bg-teal-700">
+                  📅 Enregistrer Journée Complète
+                </Button>
+              </div>
             </div>
           </form>
         </DialogContent>
