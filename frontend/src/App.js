@@ -14399,6 +14399,80 @@ const AdminManager = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Modal de modification du profil complet */}
+      <Dialog open={showEditProfileModal} onOpenChange={setShowEditProfileModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              ✏️ Modifier le profil de {selectedUser?.prenom} {selectedUser?.nom}
+            </DialogTitle>
+            <DialogDescription>
+              Modifiez toutes les informations de l'utilisateur
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Prénom *</Label>
+                <Input
+                  value={editUserData.prenom}
+                  onChange={(e) => setEditUserData(prev => ({ ...prev, prenom: e.target.value }))}
+                  placeholder="Prénom"
+                />
+              </div>
+              <div>
+                <Label>Nom *</Label>
+                <Input
+                  value={editUserData.nom}
+                  onChange={(e) => setEditUserData(prev => ({ ...prev, nom: e.target.value }))}
+                  placeholder="Nom"
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Email *</Label>
+              <Input
+                type="email"
+                value={editUserData.email}
+                onChange={(e) => setEditUserData(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="exemple@hopital.fr"
+              />
+            </div>
+            <div>
+              <Label>Rôle *</Label>
+              <select
+                className="w-full p-2 border rounded"
+                value={editUserData.role}
+                onChange={(e) => setEditUserData(prev => ({ ...prev, role: e.target.value }))}
+              >
+                <option value="Médecin">Médecin</option>
+                <option value="Assistant">Assistant</option>
+                <option value="Secrétaire">Secrétaire</option>
+                <option value="Directeur">Directeur</option>
+              </select>
+            </div>
+            <div>
+              <Label>Nouveau mot de passe (optionnel)</Label>
+              <Input
+                type="password"
+                value={editUserData.password}
+                onChange={(e) => setEditUserData(prev => ({ ...prev, password: e.target.value }))}
+                placeholder="Laisser vide pour ne pas changer"
+              />
+              <p className="text-xs text-gray-500 mt-1">Minimum 6 caractères si renseigné</p>
+            </div>
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setShowEditProfileModal(false)}>
+                Annuler
+              </Button>
+              <Button onClick={handleSaveProfile} className="bg-teal-600 hover:bg-teal-700">
+                💾 Enregistrer les modifications
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Modal de suppression définitive */}
       {/* Modal de modification d'email */}
       <Dialog open={showEmailModal} onOpenChange={setShowEmailModal}>
