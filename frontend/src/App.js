@@ -9087,8 +9087,8 @@ const PlanningManager = () => {
                               <td className={`border p-1 text-center text-xs font-bold ${getCouleurContrat(heuresAvecConges, heuresContrat)}`}>
                                 {heuresContrat}h
                               </td>
-                              <td className={`border p-1 text-center text-xs font-bold ${cumulHeuresSupRecup >= 0 ? 'text-orange-600 bg-orange-50' : 'text-blue-600 bg-blue-50'}`}>
-                                {cumulHeuresSupRecup >= 0 ? '+' : ''}{cumulHeuresSupRecup.toFixed(1)}h
+                              <td className={`border p-1 text-center text-xs font-bold ${heuresSupSemaine > 0 ? 'text-orange-600 bg-orange-50' : heuresSupSemaine < 0 ? 'text-blue-600 bg-blue-50' : ''}`}>
+                                {heuresSupSemaine > 0 ? '+' : ''}{heuresSupSemaine.toFixed(1)}h
                               </td>
                               <td className={`border p-1 text-center text-xs font-bold ${(heuresCongesPayesSemaine + heuresReposSemaine) > 0 ? 'bg-green-200 text-green-800' : 'bg-green-50'}`}>{heuresCongesPayesSemaine + heuresReposSemaine}h</td>
                             </>
