@@ -4185,8 +4185,9 @@ const PlanningManager = () => {
         salle_attribuee: creneauMatin?.salle_attribuee || '',
         salle_attente: creneauMatin?.salle_attente || '',
         medecin_ids: creneauMatin?.medecin_ids || [],
-        horaire_debut: creneauMatin?.horaire_debut || (employe.role === 'Secrétaire' ? '08:00' : ''),
-        horaire_fin: creneauMatin?.horaire_fin || (employe.role === 'Secrétaire' ? '12:00' : ''),
+        // Ne pré-remplir les horaires QUE si un créneau existe
+        horaire_debut: creneauMatin?.horaire_debut || '',
+        horaire_fin: creneauMatin?.horaire_fin || '',
         conge: hasConge,
         type_conge: hasConge ? typeCongeExistant : '',
         heures_conge: employe.heures_demi_journee_conge || 4
@@ -4199,8 +4200,9 @@ const PlanningManager = () => {
         salle_attribuee: creneauAM?.salle_attribuee || '',
         salle_attente: creneauAM?.salle_attente || '',
         medecin_ids: creneauAM?.medecin_ids || [],
-        horaire_debut: creneauAM?.horaire_debut || (employe.role === 'Secrétaire' ? '14:00' : ''),
-        horaire_fin: creneauAM?.horaire_fin || (employe.role === 'Secrétaire' ? '18:00' : ''),
+        // Ne pré-remplir les horaires QUE si un créneau existe
+        horaire_debut: creneauAM?.horaire_debut || '',
+        horaire_fin: creneauAM?.horaire_fin || '',
         conge: hasConge,
         type_conge: hasConge ? typeCongeExistant : '',
         heures_conge: employe.heures_demi_journee_conge || 4
