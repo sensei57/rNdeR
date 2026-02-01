@@ -10337,7 +10337,7 @@ const PlanningManager = () => {
                   <>
                     <div>
                       <Label className="text-sm font-medium">👨‍⚕️ Médecins</Label>
-                      <div className="space-y-2 max-h-40 overflow-y-auto mt-1">
+                      <div className="space-y-2 mt-1">
                         {getMedecinsPresentsPourCreneau(journeeData.date, 'MATIN').map(med => {
                           const autreAssistant = getAssistantPourMedecin(med.id, journeeData.date, 'MATIN', journeeData.employe_id);
                           const estDejaAssocie = autreAssistant !== null;
@@ -10573,7 +10573,7 @@ const PlanningManager = () => {
                   <>
                     <div>
                       <Label className="text-sm font-medium">👨‍⚕️ Médecins</Label>
-                      <div className="space-y-2 max-h-40 overflow-y-auto mt-1">
+                      <div className="space-y-2 mt-1">
                         {getMedecinsPresentsPourCreneau(journeeData.date, 'APRES_MIDI').map(med => {
                           const autreAssistant = getAssistantPourMedecin(med.id, journeeData.date, 'APRES_MIDI', journeeData.employe_id);
                           const estDejaAssocie = autreAssistant !== null;
