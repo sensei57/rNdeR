@@ -3043,8 +3043,8 @@ const PlanningManager = () => {
     try {
       toast.info('Génération du PDF en cours...');
       
-      // Créer un nouveau document PDF
-      const pdf = new jsPDF('landscape', 'mm', 'a4');
+      // Créer un nouveau document PDF en format paysage avec plus d'espace
+      const pdf = new jsPDF('landscape', 'mm', 'a3');
       
       // Titre
       const weekStart = planningTableau.dates?.[0] || selectedWeek;
@@ -3054,62 +3054,100 @@ const PlanningManager = () => {
       pdf.setFontSize(10);
       pdf.text(`Exporté le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}`, 14, 22);
       
-      // Préparer les données pour le tableau
+      // Préparer les données pour le tableau avec les nouvelles colonnes
       const tableHead = [['Employé', ...planningTableau.dates.flatMap(d => {
         const date = new Date(d + 'T12:00:00');
-        return [`${date.toLocaleDateString('fr-FR', { weekday: 'short' })} M`, `${date.toLocaleDateString('fr-FR', { weekday: 'short' })} AM`];
-      }), 'Total']];
+        return [`${date.toLocaleDateString('fr-FR', { weekday: 'short' })} M`, `AM`];
+      }), '½j', 'H', 'Ctr', '+/- S', '+/- M', '+/- A', 'Cg']];
       
       const tableBody = [];
       
+      // Fonction pour calculer les stats d'un employé
+      const getEmployeStats = (employe) => {
+        let totalDemiJournees = 0;
+        let totalHeures = 0;
+        let heuresConges = 0;
+        
+        planningTableau.dates?.forEach(date => {
+          const creneaux = planningTableau.planning?.[date]?.filter(c => c.employe_id === employe.id) || [];
+          totalDemiJournees += creneaux.length;
+          creneaux.forEach(c => {
+            if (employe.role === 'Secrétaire' && c.horaire_debut && c.horaire_fin) {
+              const [h1, m1] = c.horaire_debut.split(':').map(Number);
+              const [h2, m2] = c.horaire_fin.split(':').map(Number);
+              totalHeures += (h2 + m2/60) - (h1 + m1/60);
+            } else {
+              totalHeures += (employe.heures_par_jour || 7) / 2;
+            }
+          });
+          
+          // Congés
+          const congesJour = congesApprouves?.filter(c => 
+            c.utilisateur_id === employe.id && 
+            date >= c.date_debut && date <= c.date_fin
+          ) || [];
+          congesJour.forEach(c => {
+            const h = employe.heures_demi_journee_conge || 4;
+            heuresConges += c.demi_journee ? h : h * 2;
+          });
+        });
+        
+        const heuresContrat = employe.heures_semaine_fixe || 35;
+        const heuresSupSemaine = totalHeures + heuresConges - heuresContrat;
+        
+        return {
+          demiJournees: totalDemiJournees,
+          heures: Math.round(totalHeures * 10) / 10,
+          contrat: heuresContrat,
+          supSemaine: Math.round(heuresSupSemaine * 10) / 10,
+          supMois: getHeuresSupMois(employe.id),
+          supAnnee: getHeuresSupAnnee(employe.id),
+          conges: Math.round(heuresConges * 10) / 10
+        };
+      };
+      
       // Ajouter les secrétaires
-      tableBody.push([{ content: '📋 SECRÉTAIRES', colSpan: tableHead[0].length, styles: { fillColor: [255, 192, 203] } }]);
+      tableBody.push([{ content: 'SECRÉTAIRES', colSpan: tableHead[0].length, styles: { fillColor: [255, 192, 203], fontStyle: 'bold' } }]);
       users.filter(u => u.actif && u.role === 'Secrétaire').forEach(sec => {
+        const stats = getEmployeStats(sec);
         const row = [`${sec.prenom} ${sec.nom}`];
-        let total = 0;
         planningTableau.dates.forEach(date => {
           const creneauM = planningTableau.planning?.[date]?.find(p => p.employe_id === sec.id && p.creneau === 'MATIN');
           const creneauAM = planningTableau.planning?.[date]?.find(p => p.employe_id === sec.id && p.creneau === 'APRES_MIDI');
-          row.push(creneauM ? '✓' : '');
-          row.push(creneauAM ? '✓' : '');
-          if (creneauM) total++;
-          if (creneauAM) total++;
+          row.push(creneauM ? (creneauM.horaire_debut ? `${creneauM.horaire_debut}-${creneauM.horaire_fin}` : '✓') : '');
+          row.push(creneauAM ? (creneauAM.horaire_debut ? `${creneauAM.horaire_debut}-${creneauAM.horaire_fin}` : '✓') : '');
         });
-        row.push(total.toString());
+        row.push(stats.demiJournees, `${stats.heures}h`, `${stats.contrat}h`, `${stats.supSemaine}h`, `${stats.supMois}h`, `${stats.supAnnee}h`, `${stats.conges}h`);
         tableBody.push(row);
       });
       
       // Ajouter les assistants
-      tableBody.push([{ content: '👥 ASSISTANTS', colSpan: tableHead[0].length, styles: { fillColor: [144, 238, 144] } }]);
+      tableBody.push([{ content: 'ASSISTANTS', colSpan: tableHead[0].length, styles: { fillColor: [144, 238, 144], fontStyle: 'bold' } }]);
       users.filter(u => u.actif && u.role === 'Assistant').forEach(ass => {
+        const stats = getEmployeStats(ass);
         const row = [`${ass.prenom} ${ass.nom}`];
-        let total = 0;
         planningTableau.dates.forEach(date => {
           const creneauM = planningTableau.planning?.[date]?.find(p => p.employe_id === ass.id && p.creneau === 'MATIN');
           const creneauAM = planningTableau.planning?.[date]?.find(p => p.employe_id === ass.id && p.creneau === 'APRES_MIDI');
           row.push(creneauM ? '✓' : '');
           row.push(creneauAM ? '✓' : '');
-          if (creneauM) total++;
-          if (creneauAM) total++;
         });
-        row.push(total.toString());
+        row.push(stats.demiJournees, `${stats.heures}h`, `${stats.contrat}h`, `${stats.supSemaine}h`, `${stats.supMois}h`, `${stats.supAnnee}h`, `${stats.conges}h`);
         tableBody.push(row);
       });
       
       // Ajouter les médecins
-      tableBody.push([{ content: '👨‍⚕️ MÉDECINS', colSpan: tableHead[0].length, styles: { fillColor: [173, 216, 230] } }]);
+      tableBody.push([{ content: 'MÉDECINS', colSpan: tableHead[0].length, styles: { fillColor: [173, 216, 230], fontStyle: 'bold' } }]);
       users.filter(u => u.actif && u.role === 'Médecin').forEach(med => {
+        const stats = getEmployeStats(med);
         const row = [`Dr. ${med.prenom} ${med.nom}`];
-        let total = 0;
         planningTableau.dates.forEach(date => {
           const creneauM = planningTableau.planning?.[date]?.find(p => p.employe_id === med.id && p.creneau === 'MATIN');
           const creneauAM = planningTableau.planning?.[date]?.find(p => p.employe_id === med.id && p.creneau === 'APRES_MIDI');
           row.push(creneauM ? creneauM.salle_attribuee || '✓' : '');
           row.push(creneauAM ? creneauAM.salle_attribuee || '✓' : '');
-          if (creneauM) total++;
-          if (creneauAM) total++;
         });
-        row.push(total.toString());
+        row.push(stats.demiJournees, `${stats.heures}h`, '-', `${stats.supSemaine}h`, `${stats.supMois}h`, `${stats.supAnnee}h`, '-');
         tableBody.push(row);
       });
       
@@ -3118,9 +3156,12 @@ const PlanningManager = () => {
         head: tableHead,
         body: tableBody,
         startY: 28,
-        styles: { fontSize: 8, cellPadding: 2 },
-        headStyles: { fillColor: [59, 130, 246] },
-        alternateRowStyles: { fillColor: [245, 245, 245] }
+        styles: { fontSize: 7, cellPadding: 1.5 },
+        headStyles: { fillColor: [59, 130, 246], fontSize: 6 },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        columnStyles: {
+          0: { cellWidth: 35 } // Colonne Employé plus large
+        }
       });
       
       // Sauvegarder
@@ -3128,7 +3169,7 @@ const PlanningManager = () => {
       toast.success('PDF téléchargé !');
     } catch (error) {
       console.error('Erreur PDF:', error);
-      toast.error('Erreur lors de la génération du PDF');
+      toast.error(`Erreur lors de la génération du PDF: ${error.message || 'Erreur inconnue'}`);
     }
   };
   
