@@ -4109,8 +4109,9 @@ const PlanningManager = () => {
       date: date,
       creneau: creneau,
       notes: existingCreneau?.notes || '',
-      horaire_debut: existingCreneau?.horaire_debut || (employe.role === 'Secrétaire' ? (creneau === 'MATIN' ? '08:00' : '14:00') : ''),
-      horaire_fin: existingCreneau?.horaire_fin || (employe.role === 'Secrétaire' ? (creneau === 'MATIN' ? '12:00' : '18:00') : ''),
+      // Ne pré-remplir les horaires QUE si un créneau existe
+      horaire_debut: existingCreneau?.horaire_debut || '',
+      horaire_fin: existingCreneau?.horaire_fin || '',
       horaire_pause_debut: existingCreneau?.horaire_pause_debut || '',
       horaire_pause_fin: existingCreneau?.horaire_pause_fin || '',
       salle_attribuee: existingCreneau?.salle_attribuee || '',
