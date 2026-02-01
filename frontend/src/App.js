@@ -8721,9 +8721,11 @@ const PlanningManager = () => {
             
             {/* Légende */}
             <div className="mt-4 flex flex-wrap gap-4 text-xs">
-              <div className="flex items-center gap-1"><span className="w-4 h-4 bg-blue-200 rounded"></span> Médecin journée</div>
-              <div className="flex items-center gap-1"><span className="w-4 h-4 bg-green-200 rounded"></span> Assistant journée</div>
-              <div className="flex items-center gap-1"><span className="w-4 h-4 bg-pink-200 rounded"></span> Secrétaire journée</div>
+              <div className="flex items-center gap-1"><span className="w-4 h-4 bg-blue-200 rounded"></span> Médecin</div>
+              <div className="flex items-center gap-1"><span className="w-4 h-4 bg-green-100 border border-green-300 rounded"></span> Assistant (présent)</div>
+              <div className="flex items-center gap-1"><span className="w-4 h-4 bg-green-400 rounded"></span> Assistant + salle</div>
+              <div className="flex items-center gap-1"><span className="w-4 h-4 bg-green-600 rounded"></span> Assistant + médecin</div>
+              <div className="flex items-center gap-1"><span className="w-4 h-4 bg-pink-200 rounded"></span> Secrétaire</div>
               <div className="flex items-center gap-1"><span className="w-4 h-4 bg-red-100 rounded"></span> Congé</div>
               <div><strong>M</strong> = Matin, <strong>AM</strong> = Après-midi, <strong>J</strong> = Journée</div>
             </div>
