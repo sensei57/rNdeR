@@ -9099,26 +9099,28 @@ const PlanningManager = () => {
                         >AM</th>
                       </React.Fragment>
                     ))}
-                    <th className="border p-1 text-center text-xs bg-gray-300">½j</th>
-                    <th className="border p-1 text-center text-xs bg-blue-200">H</th>
-                    <th className="border p-1 text-center text-xs bg-indigo-200">Ctr</th>
-                    <th className="border p-1 text-center text-xs bg-orange-200">+/-</th>
-                    <th className="border p-1 text-center text-xs bg-green-200">Cg</th>
+                    {showRecapColumns && (
+                      <>
+                        <th className="border p-1 text-center text-xs bg-gray-300">½j</th>
+                        <th className="border p-1 text-center text-xs bg-blue-200">H</th>
+                        <th className="border p-1 text-center text-xs bg-indigo-200">Ctr</th>
+                        <th className="border p-1 text-center text-xs bg-orange-200">+/- S</th>
+                        <th className="border p-1 text-center text-xs bg-orange-100">+/- M</th>
+                        <th className="border p-1 text-center text-xs bg-orange-50">+/- A</th>
+                        <th className="border p-1 text-center text-xs bg-green-200">Cg</th>
+                      </>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
                   {/* SECTION SECRÉTAIRES */}
                   <tr className="bg-pink-100">
                     <td 
-                      className="border p-2 font-bold text-pink-800 cursor-pointer hover:bg-pink-200"
+                      className="border p-1 font-bold text-pink-800 cursor-pointer hover:bg-pink-200 text-xs"
                       onClick={() => openSemaineABCModal({ type: 'section', section: 'Secrétaire' })}
                       title="Cliquer pour appliquer Semaine A, B ou Congés"
                     >
                       📋 SECRÉTAIRES
-                      <div className="text-xs font-normal text-pink-600 mt-1">
-                        <span className="bg-pink-200 px-1 rounded">A</span>
-                        <span className="bg-pink-200 px-1 rounded ml-1">B</span>
-                      </div>
                     </td>
                     {planningTableau.dates.map((date, dateIndex) => (
                       <td 
