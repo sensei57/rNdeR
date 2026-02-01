@@ -9058,24 +9058,30 @@ const PlanningManager = () => {
                         />
                       </th>
                     ))}
-                    <th className="border p-2 text-center bg-gray-300 text-xs" title="Total demi-journées">½j</th>
-                    <th className="border p-2 text-center bg-blue-200 text-xs" title="Heures effectuées cette semaine (selon Semaine A ou B)">
-                      <div className="flex flex-col items-center">
-                        <span>H Eff</span>
-                        <select 
-                          className="text-xs border rounded px-1 mt-1 bg-white"
-                          value={semaineAffichee}
-                          onChange={(e) => setSemaineAffichee(e.target.value)}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <option value="A">Sem A</option>
-                          <option value="B">Sem B</option>
-                        </select>
-                      </div>
-                    </th>
-                    <th className="border p-2 text-center bg-indigo-200 text-xs" title="Comparaison heures faites vs contrat: Jaune=égal, Vert=moins(récup), Rouge=plus(sup)">Contrat</th>
-                    <th className="border p-2 text-center bg-orange-200 text-xs" title="Heures supplémentaires ou à récupérer (+/-)">H +/-</th>
-                    <th className="border p-2 text-center bg-green-200 text-xs" title="Heures de congés">Congés</th>
+                    {showRecapColumns && (
+                      <>
+                        <th className="border p-1 text-center bg-gray-300 text-xs" title="Total demi-journées">½j</th>
+                        <th className="border p-1 text-center bg-blue-200 text-xs" title="Heures effectuées cette semaine (selon Semaine A ou B)">
+                          <div className="flex flex-col items-center">
+                            <span>H Eff</span>
+                            <select 
+                              className="text-xs border rounded px-1 mt-1 bg-white"
+                              value={semaineAffichee}
+                              onChange={(e) => setSemaineAffichee(e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <option value="A">Sem A</option>
+                              <option value="B">Sem B</option>
+                            </select>
+                          </div>
+                        </th>
+                        <th className="border p-1 text-center bg-indigo-200 text-xs" title="Comparaison heures faites vs contrat">Ctr</th>
+                        <th className="border p-1 text-center bg-orange-200 text-xs" title="Heures supp/récup Semaine">+/- S</th>
+                        <th className="border p-1 text-center bg-orange-100 text-xs" title="Heures supp/récup Mois">+/- M</th>
+                        <th className="border p-1 text-center bg-orange-50 text-xs" title="Heures supp/récup Année">+/- A</th>
+                        <th className="border p-1 text-center bg-green-200 text-xs" title="Heures de congés">Cg</th>
+                      </>
+                    )}
                   </tr>
                   <tr className="bg-gray-50">
                     <th className="border p-1"></th>
