@@ -9426,6 +9426,20 @@ const PlanningManager = () => {
                               <td className={`border p-1 text-center text-xs font-bold ${heuresSupSemaine > 0 ? 'text-orange-600 bg-orange-50' : heuresSupSemaine < 0 ? 'text-blue-600 bg-blue-50' : ''}`}>
                                 {heuresSupSemaine > 0 ? '+' : ''}{heuresSupSemaine.toFixed(1)}h
                               </td>
+                              {(() => {
+                                const heuresSupMois = getHeuresSupMois(assistant.id);
+                                const heuresSupAnnee = getHeuresSupAnnee(assistant.id);
+                                return (
+                                  <>
+                                    <td className={`border p-1 text-center text-xs font-bold ${heuresSupMois > 0 ? 'text-orange-600 bg-orange-50' : heuresSupMois < 0 ? 'text-blue-600 bg-blue-50' : ''}`} title="Mois">
+                                      {heuresSupMois > 0 ? '+' : ''}{heuresSupMois.toFixed(1)}h
+                                    </td>
+                                    <td className={`border p-1 text-center text-xs font-bold ${heuresSupAnnee > 0 ? 'text-orange-600 bg-orange-50' : heuresSupAnnee < 0 ? 'text-blue-600 bg-blue-50' : ''}`} title="Année">
+                                      {heuresSupAnnee > 0 ? '+' : ''}{heuresSupAnnee.toFixed(1)}h
+                                    </td>
+                                  </>
+                                );
+                              })()}
                               <td className={`border p-1 text-center text-xs font-bold ${(nbCongesPayesSemaine + nbReposSemaine) > 0 ? 'bg-green-200 text-green-800' : 'bg-green-50'}`}>{(nbCongesPayesSemaine + nbReposSemaine) > 0 ? `${nbCongesPayesSemaine + nbReposSemaine}½j` : '0'}</td>
                             </>
                           );
