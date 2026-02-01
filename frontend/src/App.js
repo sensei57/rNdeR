@@ -9116,13 +9116,17 @@ const PlanningManager = () => {
                         <div className="text-gray-500">{new Date(date + 'T12:00:00').getDate()}/{new Date(date + 'T12:00:00').getMonth() + 1}</div>
                       </td>
                     ))}
-                    <td className="border p-1 bg-pink-100 text-xs text-center font-bold">½j</td>
-                    <td className="border p-1 bg-pink-100 text-xs text-center font-bold">H</td>
-                    <td className="border p-1 bg-pink-100 text-xs text-center font-bold">Ctr</td>
-                    <td className="border p-1 bg-pink-100 text-xs text-center font-bold" title="Heures supp/récup Semaine">+/- S</td>
-                    <td className="border p-1 bg-pink-100 text-xs text-center font-bold" title="Heures supp/récup Mois">+/- M</td>
-                    <td className="border p-1 bg-pink-100 text-xs text-center font-bold" title="Heures supp/récup Année">+/- A</td>
-                    <td className="border p-1 bg-pink-100 text-xs text-center font-bold">Cg</td>
+                    {showRecapColumns && (
+                      <>
+                        <td className="border p-1 bg-pink-100 text-xs text-center font-bold">½j</td>
+                        <td className="border p-1 bg-pink-100 text-xs text-center font-bold">H</td>
+                        <td className="border p-1 bg-pink-100 text-xs text-center font-bold">Ctr</td>
+                        <td className="border p-1 bg-pink-100 text-xs text-center font-bold" title="Heures supp/récup Semaine">+/- S</td>
+                        <td className="border p-1 bg-pink-100 text-xs text-center font-bold" title="Heures supp/récup Mois">+/- M</td>
+                        <td className="border p-1 bg-pink-100 text-xs text-center font-bold" title="Heures supp/récup Année">+/- A</td>
+                        <td className="border p-1 bg-pink-100 text-xs text-center font-bold">Cg</td>
+                      </>
+                    )}
                   </tr>
                   {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role === 'Secrétaire')).map(secretaire => {
                     const total = getTotalDemiJournees(secretaire.id);
@@ -9130,14 +9134,14 @@ const PlanningManager = () => {
                     return (
                       <tr key={secretaire.id} className="hover:bg-pink-50">
                         <td 
-                          className="border p-2 font-medium"
+                          className="border p-1 font-medium text-xs whitespace-nowrap"
                         >
                           <span 
                             className="cursor-pointer hover:bg-pink-200 px-1 rounded"
                             onClick={() => openSemaineABCModal({ type: 'employe', employe: secretaire })}
                             title="Cliquer pour appliquer Semaine A, B ou Congés"
                           >
-                            {secretaire.prenom} {secretaire.nom}
+                            {abbreviateName(secretaire.prenom, secretaire.nom)}
                           </span>
                         </td>
                         {planningTableau.dates.map((date, dateIndex) => {
