@@ -9572,12 +9572,17 @@ const PlanningManager = () => {
                         <div className="text-gray-500">{new Date(date + 'T12:00:00').getDate()}/{new Date(date + 'T12:00:00').getMonth() + 1}</div>
                       </td>
                     ))}
-                    <td className="border p-1 bg-blue-100 text-xs text-center font-bold">½j</td>
-                    <td className="border p-1 bg-blue-100 text-xs text-center font-bold">H</td>
-                    <td className="border p-1 bg-blue-100 text-xs text-center font-bold">+/-</td>
-                    <td className="border p-1 bg-blue-100"></td>
-                    <td className="border p-1 bg-blue-100"></td>
-                    <td className="border p-1 bg-blue-100"></td>
+                    {showRecapColumns && (
+                      <>
+                        <td className="border p-1 bg-blue-100 text-xs text-center font-bold">½j</td>
+                        <td className="border p-1 bg-blue-100 text-xs text-center font-bold">H</td>
+                        <td className="border p-1 bg-blue-100 text-xs text-center font-bold">+/-</td>
+                        <td className="border p-1 bg-blue-100"></td>
+                        <td className="border p-1 bg-blue-100"></td>
+                        <td className="border p-1 bg-blue-100"></td>
+                        <td className="border p-1 bg-blue-100"></td>
+                      </>
+                    )}
                   </tr>
                   {sortEmployeesByRoleThenName(users.filter(u => u.actif && u.role === 'Médecin')).map(medecin => {
                     const total = getTotalDemiJournees(medecin.id);
@@ -9585,14 +9590,14 @@ const PlanningManager = () => {
                     return (
                       <tr key={medecin.id} className="hover:bg-blue-50">
                         <td 
-                          className="border p-2 font-medium"
+                          className="border p-1 font-medium text-xs whitespace-nowrap"
                         >
                           <span 
                             className="cursor-pointer hover:bg-blue-200 px-1 rounded"
                             onClick={() => openSemaineABCModal({ type: 'employe', employe: medecin })}
                             title="Cliquer pour appliquer Semaine A, B ou Congés"
                           >
-                            Dr. {medecin.prenom} {medecin.nom}
+                            Dr. {abbreviateName(medecin.prenom, medecin.nom)}
                           </span>
                         </td>
                         {planningTableau.dates.map((date, dateIndex) => {
