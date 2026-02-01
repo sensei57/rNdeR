@@ -9225,28 +9225,39 @@ const PlanningManager = () => {
                           const heuresContrat = assistant.heures_semaine_fixe || (demiJourneesSemaine * 4);
                           
                           // Calculer les demi-journées de congés pour cette semaine
-                          let nbCongesPayesSemaine = 0; // Congés payés = comptent comme travail
-                          let nbReposSemaine = 0; // Repos = ne comptent pas
+                          let nbCongesPayesSemaine = 0; // Congés payés = comptent comme travail (en demi-journées)
+                          let nbReposSemaine = 0; // Repos = ne comptent pas (en demi-journées)
+                          const congesDejaComptes = new Set(); // Éviter de compter le même congé plusieurs fois
                           planningTableau.dates.forEach(date => {
                             const congesJour = getCongesForEmployeDate(assistant.id, date);
                             congesJour.forEach(conge => {
+                              // Créer une clé unique pour ce congé + ce jour
+                              const cleConge = `${conge.id}-${date}`;
+                              if (congesDejaComptes.has(cleConge)) return;
+                              congesDejaComptes.add(cleConge);
+                              
+                              // Déterminer le nombre de demi-journées pour ce jour
+                              // Si demi_journee est true → 1 demi-journée, sinon → 2 demi-journées (journée complète)
+                              const demiJourneesJour = conge.demi_journee ? 1 : 2;
+                              
                               if (conge.type_conge === 'REPOS' || conge.type_conge === 'REPOS_COMPENSATEUR') {
-                                nbReposSemaine++;
+                                nbReposSemaine += demiJourneesJour;
                               } else {
-                                nbCongesPayesSemaine++;
+                                nbCongesPayesSemaine += demiJourneesJour;
                               }
                             });
                           });
                           
                           // Heures des congés payés (comptent comme travail)
+                          // heures_demi_journee_conge est le nombre d'heures par DEMI-JOURNÉE de congé
                           const heuresCongesPayes = nbCongesPayesSemaine * (assistant.heures_demi_journee_conge || 4);
                           const heuresAvecConges = heures + heuresCongesPayes;
                           
                           // Calcul différence heures (avec congés payés) vs contrat
                           const diffHeures = heuresAvecConges - heuresContrat;
                           
-                          // Cumul stocké (solde depuis début d'année, ajustable manuellement)
-                          const cumulHeuresSupRecup = assistant.heures_supplementaires || 0;
+                          // Heures supp/récup de cette semaine (basé sur la différence calculée)
+                          const heuresSupSemaine = diffHeures;
                           
                           // Couleur colonne Contrat: Jaune=égal, Vert=moins(récup), Rouge=plus(sup)
                           const getCouleurContrat = (effectuees, contrat) => {
