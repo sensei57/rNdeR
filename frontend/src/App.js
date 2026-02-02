@@ -2519,9 +2519,10 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
       
       // Pour chaque salle avec une occupation dans le plan source
       for (const salle of sourcePlan.salles) {
-        if (!salle.occupation || !salle.occupation.employe_id) continue;
+        // Vérifier que la salle a une occupation avec un employé
+        if (!salle.occupation || !salle.occupation.employe || !salle.occupation.employe.id) continue;
         
-        const employeId = salle.occupation.employe_id;
+        const employeId = salle.occupation.employe.id;
         const salleNom = salle.nom;
         const typeSalle = salle.type_salle;
         
