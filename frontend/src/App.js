@@ -2496,7 +2496,7 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
       const sourceLabel = direction === 'matinToAM' ? 'Matin' : 'Après-midi';
       const targetLabel = direction === 'matinToAM' ? 'Après-midi' : 'Matin';
       
-      if (!sourcePlan) {
+      if (!sourcePlan || !sourcePlan.salles) {
         toast.error(`Aucune donnée ${sourceLabel} à copier`);
         return;
       }
@@ -2505,50 +2505,63 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
       const targetPlanningResponse = await axios.get(`${API}/planning/semaine/${selectedDate}`);
       const targetPlanning = targetPlanningResponse.data.planning?.[selectedDate] || [];
       
+      if (targetPlanning.length === 0) {
+        toast.warning(`Aucun créneau ${targetLabel} trouvé pour cette date`);
+        return;
+      }
+      
       let copiedCount = 0;
       let skippedCount = 0;
+      const errors = [];
       
       // Pour chaque salle avec une occupation dans le plan source
       for (const salle of sourcePlan.salles) {
-        if (!salle.occupation) continue;
+        if (!salle.occupation || !salle.occupation.employe_id) continue;
         
         const employeId = salle.occupation.employe_id;
         const salleNom = salle.nom;
         const typeSalle = salle.type_salle;
         
         // Vérifier si l'employé est présent dans le créneau cible
-        const targetCreneau_emp = targetPlanning.find(c => 
+        const targetCreneauEmp = targetPlanning.find(c => 
           c.employe_id === employeId && c.creneau === targetCreneau
         );
         
-        if (!targetCreneau_emp) {
+        if (!targetCreneauEmp) {
           skippedCount++;
           continue; // L'employé n'est pas présent dans le créneau cible
         }
         
-        // Mettre à jour le créneau cible avec l'assignation
-        const updateData = typeSalle === 'ATTENTE' 
-          ? { salle_attente: salleNom }
-          : { salle_attribuee: salleNom };
-        
-        await axios.put(`${API}/planning/${targetCreneau_emp.id}`, updateData);
-        copiedCount++;
+        try {
+          // Mettre à jour le créneau cible avec l'assignation
+          const updateData = typeSalle === 'ATTENTE' 
+            ? { salle_attente: salleNom }
+            : { salle_attribuee: salleNom };
+          
+          await axios.put(`${API}/planning/${targetCreneauEmp.id}`, updateData);
+          copiedCount++;
+        } catch (err) {
+          errors.push(`${salle.nom}: ${err.message}`);
+        }
       }
       
       if (copiedCount > 0) {
         toast.success(`${copiedCount} assignation(s) copiée(s) du ${sourceLabel} vers l'${targetLabel}`);
       }
       if (skippedCount > 0) {
-        toast.info(`${skippedCount} assignation(s) ignorée(s) (employés absents l'${targetLabel})`);
+        toast.info(`${skippedCount} employé(s) absent(s) l'${targetLabel}`);
       }
       if (copiedCount === 0 && skippedCount === 0) {
         toast.info(`Aucune assignation à copier`);
+      }
+      if (errors.length > 0) {
+        console.error('Erreurs:', errors);
       }
       
       fetchPlans();
     } catch (error) {
       console.error('Erreur copie assignations:', error);
-      toast.error('Erreur lors de la copie des assignations');
+      toast.error(`Erreur: ${error.response?.data?.detail || error.message || 'Erreur inconnue'}`);
     }
   };
 
