@@ -2503,7 +2503,10 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
       
       // Récupérer le planning de la date pour le créneau cible
       const targetPlanningResponse = await axios.get(`${API}/planning/semaine/${selectedDate}`);
-      const targetPlanning = targetPlanningResponse.data.planning?.[selectedDate] || [];
+      const planningParJour = targetPlanningResponse.data.planning?.[selectedDate] || {};
+      
+      // Récupérer les créneaux du créneau cible (MATIN ou APRES_MIDI)
+      const targetPlanning = planningParJour[targetCreneau] || [];
       
       if (targetPlanning.length === 0) {
         toast.warning(`Aucun créneau ${targetLabel} trouvé pour cette date`);
@@ -2523,9 +2526,7 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
         const typeSalle = salle.type_salle;
         
         // Vérifier si l'employé est présent dans le créneau cible
-        const targetCreneauEmp = targetPlanning.find(c => 
-          c.employe_id === employeId && c.creneau === targetCreneau
-        );
+        const targetCreneauEmp = targetPlanning.find(c => c.employe_id === employeId);
         
         if (!targetCreneauEmp) {
           skippedCount++;
@@ -2541,7 +2542,7 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
           await axios.put(`${API}/planning/${targetCreneauEmp.id}`, updateData);
           copiedCount++;
         } catch (err) {
-          errors.push(`${salle.nom}: ${err.message}`);
+          errors.push(`${salle.nom}: ${err.response?.data?.detail || err.message}`);
         }
       }
       
@@ -2556,6 +2557,7 @@ const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
       }
       if (errors.length > 0) {
         console.error('Erreurs:', errors);
+        toast.warning(`${errors.length} erreur(s) lors de la copie`);
       }
       
       fetchPlans();
