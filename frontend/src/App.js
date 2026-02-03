@@ -10707,6 +10707,33 @@ const PlanningManager = () => {
                         />
                       </div>
                     </div>
+                    {/* Calcul des heures travaillées - Matin */}
+                    {journeeData.matin.horaire_debut && journeeData.matin.horaire_fin && (
+                      <div className="bg-blue-50 rounded p-2 text-center">
+                        <span className="text-sm font-bold text-blue-700">
+                          {(() => {
+                            const [h1, m1] = journeeData.matin.horaire_debut.split(':').map(Number);
+                            const [h2, m2] = journeeData.matin.horaire_fin.split(':').map(Number);
+                            const minutesMatin = (h2 * 60 + m2) - (h1 * 60 + m1);
+                            const heuresMatin = Math.floor(minutesMatin / 60);
+                            const minsMatin = minutesMatin % 60;
+                            
+                            // Calculer aussi les heures de l'après-midi si disponibles
+                            let minutesAM = 0;
+                            if (journeeData.apresMidi.horaire_debut && journeeData.apresMidi.horaire_fin) {
+                              const [h3, m3] = journeeData.apresMidi.horaire_debut.split(':').map(Number);
+                              const [h4, m4] = journeeData.apresMidi.horaire_fin.split(':').map(Number);
+                              minutesAM = (h4 * 60 + m4) - (h3 * 60 + m3);
+                            }
+                            const totalMinutes = minutesMatin + minutesAM;
+                            const heuresTotal = Math.floor(totalMinutes / 60);
+                            const minsTotal = totalMinutes % 60;
+                            
+                            return `${heuresMatin}H${minsMatin > 0 ? minsMatin.toString().padStart(2, '0') : ''} | Journée: ${heuresTotal}H${minsTotal > 0 ? minsTotal.toString().padStart(2, '0') : ''}`;
+                          })()}
+                        </span>
+                      </div>
+                    )}
                   </>
                 )}
                 
