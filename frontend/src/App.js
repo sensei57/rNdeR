@@ -903,8 +903,11 @@ const ActualitesManager = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    // Attendre que l'utilisateur soit authentifié avant de charger les données
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
 
   // Filtrer les anniversaires : prochain ou ceux dans la même semaine
   const getAnniversairesAffiches = () => {
