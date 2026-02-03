@@ -4917,6 +4917,47 @@ async def get_anniversaires(current_user: User = Depends(get_current_user)):
     return anniversaires[:10]  # Retourner les 10 prochains
 
 
+# Upload d'image de profil
+import os
+import shutil
+
+UPLOAD_DIR = "/app/backend/uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+@api_router.post("/upload/photo")
+async def upload_photo(file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
+    """Upload une photo de profil"""
+    # Vérifier le type de fichier
+    allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Type de fichier non autorisé. Utilisez JPG, PNG, GIF ou WEBP.")
+    
+    # Générer un nom unique
+    file_ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
+    file_name = f"{current_user.id}_{uuid.uuid4().hex[:8]}.{file_ext}"
+    file_path = os.path.join(UPLOAD_DIR, file_name)
+    
+    # Sauvegarder le fichier
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de l'upload: {str(e)}")
+    
+    # Retourner l'URL
+    photo_url = f"/api/uploads/{file_name}"
+    return {"photo_url": photo_url, "filename": file_name}
+
+@api_router.get("/uploads/{filename}")
+async def get_uploaded_file(filename: str):
+    """Servir un fichier uploadé"""
+    from fastapi.responses import FileResponse
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Fichier non trouvé")
+    return FileResponse(file_path)
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
