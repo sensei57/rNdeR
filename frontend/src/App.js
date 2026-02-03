@@ -871,10 +871,12 @@ const ActualitesManager = () => {
   const { user } = useAuth();
 
   const today = new Date().toISOString().split('T')[0];
+  console.log('Date aujourd\'hui pour Actualités:', today);
 
   const fetchData = async () => {
     try {
       setLoading(true);
+      console.log('Appel API cabinet/plan pour date:', today);
       const [actusRes, annivRes, planMatinRes, planAMRes] = await Promise.all([
         axios.get(`${API}/actualites`),
         axios.get(`${API}/anniversaires`),
