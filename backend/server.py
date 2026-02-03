@@ -239,6 +239,37 @@ class PermissionDocumentCreate(BaseModel):
     utilisateur_autorise_id: str
     type_permission: str = "LECTURE"
 
+# Actualités Models
+class Actualite(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    titre: str
+    contenu: str
+    type_contenu: str = "texte"  # "texte", "image", "fichier"
+    fichier_url: Optional[str] = None
+    fichier_nom: Optional[str] = None
+    auteur_id: str
+    date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    date_modification: Optional[datetime] = None
+    actif: bool = True
+    priorite: int = 0  # Plus élevé = plus important
+
+class ActualiteCreate(BaseModel):
+    titre: str
+    contenu: str
+    type_contenu: str = "texte"
+    fichier_url: Optional[str] = None
+    fichier_nom: Optional[str] = None
+    priorite: int = 0
+
+class ActualiteUpdate(BaseModel):
+    titre: Optional[str] = None
+    contenu: Optional[str] = None
+    type_contenu: Optional[str] = None
+    fichier_url: Optional[str] = None
+    fichier_nom: Optional[str] = None
+    priorite: Optional[int] = None
+    actif: Optional[bool] = None
+
 # Documents Coffre Fort Models
 class DocumentPersonnel(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
