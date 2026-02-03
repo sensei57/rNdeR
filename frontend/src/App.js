@@ -17961,7 +17961,7 @@ const MonProfilManager = () => {
             {/* Aperçu photo */}
             <div className="flex justify-center">
               <Avatar className="h-20 w-20">
-                {profileData.photo_url && <AvatarImage src={profileData.photo_url} />}
+                {profileData.photo_url && <AvatarImage src={getPhotoUrl(profileData.photo_url)} />}
                 <AvatarFallback className="bg-teal-500 text-white text-xl">
                   {profileData.prenom?.[0]}{profileData.nom?.[0]}
                 </AvatarFallback>
