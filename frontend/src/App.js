@@ -1091,6 +1091,36 @@ const PersonnelManager = () => {
                   />
                 </div>
                 
+                <div className="space-y-2">
+                  <Label htmlFor="date_naissance">Date de naissance</Label>
+                  <Input
+                    id="date_naissance"
+                    type="date"
+                    value={newPersonnel.date_naissance}
+                    onChange={(e) => setNewPersonnel({...newPersonnel, date_naissance: e.target.value})}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="photo_url">Photo (URL)</Label>
+                  <Input
+                    id="photo_url"
+                    value={newPersonnel.photo_url}
+                    onChange={(e) => setNewPersonnel({...newPersonnel, photo_url: e.target.value})}
+                    placeholder="https://exemple.com/photo.jpg (optionnel)"
+                  />
+                  {newPersonnel.photo_url && (
+                    <div className="mt-2 flex justify-center">
+                      <img 
+                        src={newPersonnel.photo_url} 
+                        alt="Aperçu" 
+                        className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                        onError={(e) => e.target.style.display = 'none'}
+                      />
+                    </div>
+                  )}
+                </div>
+                
                 {!editingPersonnel && (
                   <div className="space-y-2">
                     <Label htmlFor="password">Mot de passe temporaire *</Label>
