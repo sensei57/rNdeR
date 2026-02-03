@@ -247,6 +247,7 @@ class Actualite(BaseModel):
     type_contenu: str = "texte"  # "texte", "image", "fichier"
     fichier_url: Optional[str] = None
     fichier_nom: Optional[str] = None
+    groupe_cible: str = "tous"  # "tous", "Médecin", "Assistant", "Secrétaire"
     auteur_id: str
     date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     date_modification: Optional[datetime] = None
@@ -259,6 +260,7 @@ class ActualiteCreate(BaseModel):
     type_contenu: str = "texte"
     fichier_url: Optional[str] = None
     fichier_nom: Optional[str] = None
+    groupe_cible: str = "tous"
     priorite: int = 0
 
 class ActualiteUpdate(BaseModel):
@@ -267,6 +269,7 @@ class ActualiteUpdate(BaseModel):
     type_contenu: Optional[str] = None
     fichier_url: Optional[str] = None
     fichier_nom: Optional[str] = None
+    groupe_cible: Optional[str] = None
     priorite: Optional[int] = None
     actif: Optional[bool] = None
 
