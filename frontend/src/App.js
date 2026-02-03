@@ -17946,14 +17946,47 @@ const MonProfilManager = () => {
             </div>
 
             <div>
-              <Label>Photo de profil (URL)</Label>
-              <Input
-                type="url"
-                placeholder="https://exemple.com/ma-photo.jpg"
-                value={profileData.photo_url}
-                onChange={(e) => setProfileData({...profileData, photo_url: e.target.value})}
-              />
-              <p className="text-xs text-gray-500 mt-1">Collez l'URL d'une image hébergée en ligne</p>
+              <Label>Photo de profil</Label>
+              <div className="flex items-center space-x-3">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    
+                    // Vérifier la taille (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                      toast.error('Image trop grande (max 5 Mo)');
+                      return;
+                    }
+                    
+                    try {
+                      const formData = new FormData();
+                      formData.append('file', file);
+                      
+                      const response = await axios.post(`${API}/upload/photo`, formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                      });
+                      
+                      setProfileData({...profileData, photo_url: response.data.photo_url});
+                      toast.success('Photo uploadée !');
+                    } catch (error) {
+                      toast.error('Erreur lors de l\'upload');
+                    }
+                  }}
+                  className="flex-1"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">JPG, PNG, GIF ou WEBP (max 5 Mo)</p>
+              {profileData.photo_url && (
+                <div className="mt-2 flex items-center space-x-2">
+                  <img src={profileData.photo_url.startsWith('/api') ? `${API.replace('/api', '')}${profileData.photo_url}` : profileData.photo_url} alt="Aperçu" className="w-16 h-16 rounded-full object-cover" onError={(e) => e.target.style.display='none'} />
+                  <Button type="button" variant="outline" size="sm" onClick={() => setProfileData({...profileData, photo_url: ''})}>
+                    Supprimer
+                  </Button>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end space-x-2 pt-2">
