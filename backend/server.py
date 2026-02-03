@@ -56,6 +56,8 @@ class UserBase(BaseModel):
     prenom: str
     role: str
     telephone: Optional[str] = None
+    date_naissance: Optional[str] = None  # Date de naissance (YYYY-MM-DD)
+    photo_url: Optional[str] = None  # URL de la photo de profil
     actif: bool = True
     vue_planning_complete: bool = False  # Vue planning comme directeur (lecture seule)
     peut_modifier_planning: bool = False  # Peut modifier le planning (créer/modifier/supprimer créneaux)
