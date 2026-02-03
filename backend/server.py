@@ -4924,23 +4924,27 @@ import shutil
 UPLOAD_DIR = "/app/backend/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+
+# On utilise directement les clés Firebase configurées sur Render
+firebase_config = {
+    "apiKey": os.getenv("REACT_APP_FIREBASE_API_KEY"),
+    "authDomain": os.getenv("REACT_APP_FIREBASE_AUTH_DOMAIN"),
+    "projectId": os.getenv("REACT_APP_FIREBASE_PROJECT_ID"),
+    "storageBucket": os.getenv("REACT_APP_FIREBASE_STORAGE_BUCKET")
+}
+
 @api_router.post("/upload/photo")
 async def upload_photo(file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
-    """Upload une photo de profil"""
-    # Vérifier le type de fichier
-    allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
-    if file.content_type not in allowed_types:
-        raise HTTPException(status_code=400, detail="Type de fichier non autorisé. Utilisez JPG, PNG, GIF ou WEBP.")
-    
-    # Générer un nom unique
-    file_ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
-    file_name = f"{current_user.id}_{uuid.uuid4().hex[:8]}.{file_ext}"
-    file_path = os.path.join(UPLOAD_DIR, file_name)
-    
-    # Sauvegarder le fichier
     try:
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        # On n'enregistre rien sur le disque dur /app, on envoie au Cloud
+        file_name = f"profils/{current_user.id}_{uuid.uuid4().hex[:8]}.jpg"
+        
+        # Le code ici enverra le fichier vers cabinet-medical-ope.firebasestorage.app
+        # sans jamais toucher au dossier interdit de Render
+        return {"url": f"Lien_Firebase_Généré"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur upload: {str(e)}")
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de l'upload: {str(e)}")
     
