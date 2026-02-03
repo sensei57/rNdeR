@@ -4782,6 +4782,134 @@ async def delete_fcm_token(current_user: User = Depends(get_current_user)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 
+# ==================== ACTUALITÉS ====================
+
+@api_router.get("/actualites")
+async def get_actualites(current_user: User = Depends(get_current_user)):
+    """Récupérer toutes les actualités actives"""
+    actualites = await db.actualites.find({"actif": True}).sort("priorite", -1).to_list(100)
+    
+    # Enrichir avec les informations de l'auteur
+    for actu in actualites:
+        if '_id' in actu:
+            del actu['_id']
+        auteur = await db.users.find_one({"id": actu.get("auteur_id")})
+        if auteur:
+            actu['auteur'] = {
+                "id": auteur.get("id"),
+                "nom": auteur.get("nom"),
+                "prenom": auteur.get("prenom"),
+                "role": auteur.get("role")
+            }
+    
+    return actualites
+
+@api_router.post("/actualites")
+async def create_actualite(actualite: ActualiteCreate, current_user: User = Depends(get_current_user)):
+    """Créer une nouvelle actualité (Directeur uniquement)"""
+    if current_user.role != "Directeur":
+        raise HTTPException(status_code=403, detail="Seul le directeur peut créer des actualités")
+    
+    nouvelle_actualite = Actualite(
+        titre=actualite.titre,
+        contenu=actualite.contenu,
+        type_contenu=actualite.type_contenu,
+        fichier_url=actualite.fichier_url,
+        fichier_nom=actualite.fichier_nom,
+        auteur_id=current_user.id,
+        priorite=actualite.priorite
+    )
+    
+    await db.actualites.insert_one(nouvelle_actualite.model_dump())
+    return nouvelle_actualite
+
+@api_router.put("/actualites/{actualite_id}")
+async def update_actualite(actualite_id: str, actualite: ActualiteUpdate, current_user: User = Depends(get_current_user)):
+    """Modifier une actualité (Directeur uniquement)"""
+    if current_user.role != "Directeur":
+        raise HTTPException(status_code=403, detail="Seul le directeur peut modifier des actualités")
+    
+    update_data = {k: v for k, v in actualite.model_dump().items() if v is not None}
+    update_data["date_modification"] = datetime.now(timezone.utc)
+    
+    result = await db.actualites.update_one(
+        {"id": actualite_id},
+        {"$set": update_data}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Actualité non trouvée")
+    
+    return {"message": "Actualité mise à jour"}
+
+@api_router.delete("/actualites/{actualite_id}")
+async def delete_actualite(actualite_id: str, current_user: User = Depends(get_current_user)):
+    """Supprimer une actualité (Directeur uniquement)"""
+    if current_user.role != "Directeur":
+        raise HTTPException(status_code=403, detail="Seul le directeur peut supprimer des actualités")
+    
+    result = await db.actualites.update_one(
+        {"id": actualite_id},
+        {"$set": {"actif": False}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Actualité non trouvée")
+    
+    return {"message": "Actualité supprimée"}
+
+@api_router.get("/anniversaires")
+async def get_anniversaires(current_user: User = Depends(get_current_user)):
+    """Récupérer les prochains anniversaires des employés"""
+    users = await db.users.find({"actif": True, "date_naissance": {"$ne": None}}).to_list(1000)
+    
+    today = datetime.now()
+    anniversaires = []
+    
+    for user in users:
+        if '_id' in user:
+            del user['_id']
+        
+        date_naissance = user.get("date_naissance")
+        if not date_naissance:
+            continue
+        
+        try:
+            # Parser la date de naissance
+            dn = datetime.strptime(date_naissance, "%Y-%m-%d")
+            
+            # Calculer le prochain anniversaire
+            anniv_cette_annee = dn.replace(year=today.year)
+            if anniv_cette_annee < today:
+                # L'anniversaire est passé cette année, prendre celui de l'année prochaine
+                anniv = dn.replace(year=today.year + 1)
+            else:
+                anniv = anniv_cette_annee
+            
+            # Calculer le nombre de jours restants
+            jours_restants = (anniv - today).days
+            
+            # Calculer l'âge qu'il/elle aura
+            age = anniv.year - dn.year
+            
+            anniversaires.append({
+                "id": user.get("id"),
+                "nom": user.get("nom"),
+                "prenom": user.get("prenom"),
+                "role": user.get("role"),
+                "photo_url": user.get("photo_url"),
+                "date_naissance": date_naissance,
+                "prochain_anniversaire": anniv.strftime("%Y-%m-%d"),
+                "jours_restants": jours_restants,
+                "age": age
+            })
+        except:
+            continue
+    
+    # Trier par jours restants
+    anniversaires.sort(key=lambda x: x["jours_restants"])
+    
+    return anniversaires[:10]  # Retourner les 10 prochains
 
 
 # Include the router in the main app
