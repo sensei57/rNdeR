@@ -17649,13 +17649,15 @@ const ChatManager = () => {
 // Mon Profil Component
 const MonProfilManager = () => {
   const { user, setUser } = useAuth();
-  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [newEmail, setNewEmail] = useState('');
   const [profileData, setProfileData] = useState({
     prenom: '',
-    nom: ''
+    nom: '',
+    email: '',
+    telephone: '',
+    date_naissance: '',
+    photo_url: ''
   });
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -17663,29 +17665,21 @@ const MonProfilManager = () => {
     confirmPassword: ''
   });
 
-  const handleUpdateEmail = async () => {
-    if (!newEmail || !newEmail.includes('@')) {
-      toast.error('Veuillez entrer une adresse email valide');
-      return;
-    }
-
-    try {
-      await axios.put(`${API}/users/me/email`, { email: newEmail });
-      toast.success('Email mis à jour avec succès. Veuillez vous reconnecter.');
-      setShowEmailModal(false);
-      setNewEmail('');
-      // Rediriger vers la page de connexion après 2 secondes
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 2000);
-    } catch (error) {
-      toast.error(error.response?.data?.detail || 'Erreur lors de la mise à jour de l\'email');
-    }
+  const openEditModal = () => {
+    setProfileData({
+      prenom: user?.prenom || '',
+      nom: user?.nom || '',
+      email: user?.email || '',
+      telephone: user?.telephone || '',
+      date_naissance: user?.date_naissance || '',
+      photo_url: user?.photo_url || ''
+    });
+    setShowEditModal(true);
   };
 
   const handleUpdateProfile = async () => {
-    if (!profileData.prenom || !profileData.nom) {
-      toast.error('Veuillez remplir tous les champs');
+    if (!profileData.prenom || !profileData.nom || !profileData.email) {
+      toast.error('Veuillez remplir les champs obligatoires (Prénom, Nom, Email)');
       return;
     }
 
@@ -17694,22 +17688,41 @@ const MonProfilManager = () => {
       return;
     }
 
+    if (!profileData.email.includes('@')) {
+      toast.error('Veuillez entrer une adresse email valide');
+      return;
+    }
+
     try {
-      const response = await axios.put(`${API}/users/me/profile`, {
+      // Mettre à jour le profil
+      await axios.put(`${API}/users/${user.id}`, {
         prenom: profileData.prenom,
-        nom: profileData.nom
+        nom: profileData.nom,
+        telephone: profileData.telephone || null,
+        date_naissance: profileData.date_naissance || null,
+        photo_url: profileData.photo_url || null
       });
+
+      // Si l'email a changé, mettre à jour séparément
+      if (profileData.email !== user.email) {
+        await axios.put(`${API}/users/me/email`, { email: profileData.email });
+        toast.success('Profil mis à jour. Reconnexion nécessaire (email modifié).');
+        setTimeout(() => { window.location.href = '/'; }, 2000);
+        return;
+      }
       
       // Mettre à jour les données utilisateur dans le contexte
       setUser({
         ...user,
         prenom: profileData.prenom,
-        nom: profileData.nom
+        nom: profileData.nom,
+        telephone: profileData.telephone,
+        date_naissance: profileData.date_naissance,
+        photo_url: profileData.photo_url
       });
       
-      toast.success('Profil mis à jour avec succès');
-      setShowProfileModal(false);
-      setProfileData({ prenom: '', nom: '' });
+      toast.success('Profil mis à jour avec succès !');
+      setShowEditModal(false);
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Erreur lors de la mise à jour du profil');
     }
@@ -17753,58 +17766,56 @@ const MonProfilManager = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Informations du compte</CardTitle>
-          <CardDescription>Vos informations personnelles</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Informations du compte</CardTitle>
+              <CardDescription>Vos informations personnelles</CardDescription>
+            </div>
+            <Button onClick={openEditModal}>
+              <Edit className="h-4 w-4 mr-2" />
+              Modifier mon profil
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <div className="flex items-center justify-between mb-4 pb-4 border-b">
-                <div className="flex items-center space-x-4">
-                  <Avatar className="h-16 w-16 bg-blue-500">
-                    <AvatarFallback className="text-white text-xl">
-                      {user?.prenom?.[0]}{user?.nom?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-2xl font-bold">{user?.prenom} {user?.nom}</p>
-                    <Badge variant="outline" className="mt-1">{user?.role}</Badge>
-                  </div>
-                </div>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => {
-                    setProfileData({ prenom: user?.prenom || '', nom: user?.nom || '' });
-                    setShowProfileModal(true);
-                  }}
-                >
-                  <Edit className="h-3 w-3 mr-1" />
-                  Modifier
-                </Button>
-              </div>
-            </div>
+          <div className="flex items-center space-x-6 pb-4 border-b">
+            <Avatar className="h-24 w-24">
+              {user?.photo_url && <AvatarImage src={user.photo_url} alt={`${user.prenom} ${user.nom}`} />}
+              <AvatarFallback className="bg-teal-500 text-white text-2xl">
+                {user?.prenom?.[0]}{user?.nom?.[0]}
+              </AvatarFallback>
+            </Avatar>
             <div>
-              <Label className="text-sm text-gray-500">Prénom</Label>
-              <p className="text-lg font-medium">{user?.prenom}</p>
+              <p className="text-2xl font-bold">{user?.prenom} {user?.nom}</p>
+              <Badge variant="outline" className="mt-1">{user?.role}</Badge>
+              {user?.date_naissance && (
+                <p className="text-sm text-gray-500 mt-2">
+                  🎂 Né(e) le {new Date(user.date_naissance + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </p>
+              )}
             </div>
-            <div>
-              <Label className="text-sm text-gray-500">Nom</Label>
-              <p className="text-lg font-medium">{user?.nom}</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <Label className="text-sm text-gray-500">📧 Email</Label>
+              <p className="text-lg font-medium">{user?.email}</p>
             </div>
-            <div>
-              <Label className="text-sm text-gray-500">Email</Label>
-              <div className="flex items-center space-x-2">
-                <p className="text-lg font-medium">{user?.email}</p>
-                <Button size="sm" variant="outline" onClick={() => setShowEmailModal(true)}>
-                  <Edit className="h-3 w-3 mr-1" />
-                  Modifier
-                </Button>
-              </div>
-            </div>
-            <div>
-              <Label className="text-sm text-gray-500">Téléphone</Label>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <Label className="text-sm text-gray-500">📞 Téléphone</Label>
               <p className="text-lg font-medium">{user?.telephone || 'Non renseigné'}</p>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <Label className="text-sm text-gray-500">🎂 Date de naissance</Label>
+              <p className="text-lg font-medium">
+                {user?.date_naissance 
+                  ? new Date(user.date_naissance + 'T12:00:00').toLocaleDateString('fr-FR')
+                  : 'Non renseignée'}
+              </p>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <Label className="text-sm text-gray-500">🖼️ Photo de profil</Label>
+              <p className="text-lg font-medium">{user?.photo_url ? '✅ Définie' : '❌ Non définie'}</p>
             </div>
           </div>
         </CardContent>
@@ -17812,7 +17823,7 @@ const MonProfilManager = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Sécurité</CardTitle>
+          <CardTitle>🔒 Sécurité</CardTitle>
           <CardDescription>Gérez votre mot de passe</CardDescription>
         </CardHeader>
         <CardContent>
@@ -17825,7 +17836,7 @@ const MonProfilManager = () => {
       {/* Gestion des notifications push */}
       <Card>
         <CardHeader>
-          <CardTitle>Notifications Push</CardTitle>
+          <CardTitle>🔔 Notifications Push</CardTitle>
           <CardDescription>Recevez votre planning quotidien sur votre téléphone</CardDescription>
         </CardHeader>
         <CardContent>
@@ -17837,7 +17848,7 @@ const MonProfilManager = () => {
       {user?.role === 'Directeur' && (
         <Card>
           <CardHeader>
-            <CardTitle>Tests de Notifications</CardTitle>
+            <CardTitle>🧪 Tests de Notifications</CardTitle>
             <CardDescription>Tester l'envoi des notifications quotidiennes</CardDescription>
           </CardHeader>
           <CardContent>
@@ -17861,76 +17872,96 @@ const MonProfilManager = () => {
         </Card>
       )}
 
-
-      {/* Modal de modification du profil (Nom et Prénom) */}
-      <Dialog open={showProfileModal} onOpenChange={setShowProfileModal}>
-        <DialogContent>
+      {/* Modal de modification du profil complet */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Modifier mon profil</DialogTitle>
             <DialogDescription>
-              Modifiez votre nom et prénom
+              Modifiez vos informations personnelles
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Aperçu photo */}
+            <div className="flex justify-center">
+              <Avatar className="h-20 w-20">
+                {profileData.photo_url && <AvatarImage src={profileData.photo_url} />}
+                <AvatarFallback className="bg-teal-500 text-white text-xl">
+                  {profileData.prenom?.[0]}{profileData.nom?.[0]}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Prénom *</Label>
+                <Input
+                  type="text"
+                  placeholder="Votre prénom"
+                  value={profileData.prenom}
+                  onChange={(e) => setProfileData({...profileData, prenom: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label>Nom *</Label>
+                <Input
+                  type="text"
+                  placeholder="Votre nom"
+                  value={profileData.nom}
+                  onChange={(e) => setProfileData({...profileData, nom: e.target.value})}
+                />
+              </div>
+            </div>
+
             <div>
-              <Label>Prénom</Label>
+              <Label>Email *</Label>
               <Input
-                type="text"
-                placeholder="Votre prénom"
-                value={profileData.prenom}
-                onChange={(e) => setProfileData({...profileData, prenom: e.target.value})}
+                type="email"
+                placeholder="votre@email.com"
+                value={profileData.email}
+                onChange={(e) => setProfileData({...profileData, email: e.target.value})}
+              />
+              {profileData.email !== user?.email && (
+                <p className="text-xs text-orange-600 mt-1">⚠️ Vous devrez vous reconnecter après changement d'email</p>
+              )}
+            </div>
+
+            <div>
+              <Label>Téléphone</Label>
+              <Input
+                type="tel"
+                placeholder="01 23 45 67 89"
+                value={profileData.telephone}
+                onChange={(e) => setProfileData({...profileData, telephone: e.target.value})}
               />
             </div>
+
             <div>
-              <Label>Nom</Label>
+              <Label>Date de naissance</Label>
               <Input
-                type="text"
-                placeholder="Votre nom"
-                value={profileData.nom}
-                onChange={(e) => setProfileData({...profileData, nom: e.target.value})}
+                type="date"
+                value={profileData.date_naissance}
+                onChange={(e) => setProfileData({...profileData, date_naissance: e.target.value})}
               />
             </div>
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setShowProfileModal(false)}>
+
+            <div>
+              <Label>Photo de profil (URL)</Label>
+              <Input
+                type="url"
+                placeholder="https://exemple.com/ma-photo.jpg"
+                value={profileData.photo_url}
+                onChange={(e) => setProfileData({...profileData, photo_url: e.target.value})}
+              />
+              <p className="text-xs text-gray-500 mt-1">Collez l'URL d'une image hébergée en ligne</p>
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-2">
+              <Button variant="outline" onClick={() => setShowEditModal(false)}>
                 Annuler
               </Button>
               <Button onClick={handleUpdateProfile}>
                 Enregistrer
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal de modification d'email */}
-      <Dialog open={showEmailModal} onOpenChange={setShowEmailModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Modifier mon email</DialogTitle>
-            <DialogDescription>
-              Vous devrez vous reconnecter après la modification
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>Email actuel</Label>
-              <Input value={user?.email} disabled />
-            </div>
-            <div>
-              <Label>Nouvel email</Label>
-              <Input
-                type="email"
-                placeholder="nouveau@email.com"
-                value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
-              />
-            </div>
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setShowEmailModal(false)}>
-                Annuler
-              </Button>
-              <Button onClick={handleUpdateEmail}>
-                Modifier l'email
               </Button>
             </div>
           </div>
