@@ -7,7 +7,7 @@ import requests
 import json
 
 def check_users():
-    base_url = "https://schedule-repair-4.preview.emergentagent.com"
+    base_url = "https://news-calendar-fix.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     # Login as directeur first

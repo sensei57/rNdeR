@@ -10,7 +10,7 @@ from datetime import datetime
 import json
 
 class HalfDayLeavesTester:
-    def __init__(self, base_url="https://schedule-repair-4.preview.emergentagent.com"):
+    def __init__(self, base_url="https://news-calendar-fix.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tokens = {}
