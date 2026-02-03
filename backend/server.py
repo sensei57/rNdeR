@@ -4945,17 +4945,6 @@ async def upload_photo(file: UploadFile = File(...), current_user: User = Depend
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de l'upload: {str(e)}")
     
-
-@api_router.get("/uploads/{filename}")
-async def get_uploaded_file(filename: str):
-    """Servir un fichier uploadé"""
-    from fastapi.responses import FileResponse
-    file_path = os.path.join(UPLOAD_DIR, filename)
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="Fichier non trouvé")
-    return FileResponse(file_path)
-
-
 # Include the router in the main app
 app.include_router(api_router)
 
