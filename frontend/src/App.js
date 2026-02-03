@@ -1190,59 +1190,44 @@ const ActualitesManager = () => {
         <CardContent>
           {(planMatin?.salles?.length > 0 || planApresMidi?.salles?.length > 0) ? (
             <>
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              <div className="flex flex-wrap justify-center gap-6">
               {/* Plan Matin */}
               {planMatin?.salles?.length > 0 && (
                 <div>
-                  <h3 className="text-center font-semibold text-blue-600 mb-2">☀️ Matin ({planMatin.salles.length} salles)</h3>
-                  <div className="relative bg-blue-50 rounded-lg p-3 border border-blue-200 overflow-auto" style={{ minHeight: '400px' }}>
-                    {planMatin.salles?.map(salle => {
-                      const scale = 0.45;
+                  <h3 className="text-center font-semibold text-blue-600 mb-2">☀️ Matin</h3>
+                  <div className="relative bg-blue-50 rounded-lg p-4 border border-blue-200" style={{ height: '600px', width: '450px' }}>
+                    {planMatin.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => {
                       const occupation = salle.occupation;
-                      const isAttente = salle.type_salle === 'ATTENTE';
+                      const adjustedX = salle.position_x > 0 ? salle.position_x - 1 : 0;
+                      
+                      let bgColor = 'bg-gray-100 border-gray-300';
+                      if (occupation) {
+                        if (salle.type_salle === 'MEDECIN') bgColor = 'bg-blue-100 border-blue-400';
+                        else if (salle.type_salle === 'ASSISTANT') bgColor = 'bg-green-100 border-green-400';
+                        else if (salle.type_salle === 'ATTENTE') bgColor = 'bg-yellow-100 border-yellow-400';
+                      }
                       
                       return (
                         <div
                           key={salle.id}
-                          className={`absolute rounded-lg border-2 flex flex-col items-center justify-center p-1 ${
-                            occupation ? (
-                              occupation.employe?.role === 'Médecin' ? 'bg-blue-100 border-blue-400' :
-                              occupation.employe?.role === 'Assistant' ? 'bg-green-100 border-green-400' :
-                              'bg-pink-100 border-pink-400'
-                            ) : 'bg-gray-100 border-gray-300'
-                          }`}
+                          className={`absolute rounded-lg border-2 flex flex-col items-center justify-center p-1 ${bgColor}`}
                           style={{
-                            left: `${(salle.position_x - 1) * 100 * scale}px`,
-                            top: `${(salle.position_y - 1) * 80 * scale}px`,
-                            width: `${salle.largeur * 100 * scale}px`,
-                            height: `${salle.hauteur * 80 * scale}px`
+                            left: `${adjustedX * 90}px`,
+                            top: `${salle.position_y * 85}px`,
+                            width: '80px',
+                            height: '70px'
                           }}
                         >
-                          {occupation && !isAttente ? (
-                            <>
-                              {occupation.employe?.photo_url ? (
-                                <img 
-                                  src={getPhotoUrl(occupation.employe.photo_url)} 
-                                  alt={occupation.employe.prenom}
-                                  className="w-10 h-10 rounded-full object-cover border-2 border-white shadow"
-                                />
-                              ) : (
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold ${
-                                  occupation.employe?.role === 'Médecin' ? 'bg-blue-500' : 'bg-green-500'
-                                }`}>
-                                  {occupation.employe?.prenom?.[0]}{occupation.employe?.nom?.[0]}
-                                </div>
-                              )}
-                              <div className="text-[10px] font-bold mt-1 text-center">{salle.nom}</div>
-                              <div className="text-[9px] text-gray-600">{occupation.employe?.prenom?.[0]}. {occupation.employe?.nom?.[0]}.</div>
-                            </>
-                          ) : isAttente && occupation ? (
-                            <>
-                              <div className="text-[10px] font-bold text-center">{salle.nom}</div>
-                              <div className="text-[9px] text-pink-600">{occupation.employe?.prenom?.[0]}. {occupation.employe?.nom?.[0]}.</div>
-                            </>
+                          <div className="font-bold text-[10px] text-center">{salle.nom}</div>
+                          {occupation ? (
+                            <div className="mt-1 text-center">
+                              <div className="text-[11px] font-bold bg-white bg-opacity-70 rounded-full w-6 h-6 flex items-center justify-center mx-auto border">
+                                {occupation.employe?.prenom?.[0]}{occupation.employe?.nom?.[0]}
+                              </div>
+                              <div className="text-[9px] mt-1">{occupation.employe?.prenom?.substring(0,6)}.</div>
+                            </div>
                           ) : (
-                            <div className="text-[10px] font-medium text-gray-500 text-center">{salle.nom}</div>
+                            <div className="text-[9px] text-gray-500 mt-1">Libre</div>
                           )}
                         </div>
                       );
@@ -1254,55 +1239,40 @@ const ActualitesManager = () => {
               {/* Plan Après-midi */}
               {planApresMidi?.salles?.length > 0 && (
                 <div>
-                  <h3 className="text-center font-semibold text-orange-600 mb-2">🌙 Après-midi ({planApresMidi.salles.length} salles)</h3>
-                  <div className="relative bg-orange-50 rounded-lg p-3 border border-orange-200 overflow-auto" style={{ minHeight: '400px' }}>
-                    {planApresMidi.salles.map(salle => {
-                      const scale = 0.45;
+                  <h3 className="text-center font-semibold text-orange-600 mb-2">🌙 Après-midi</h3>
+                  <div className="relative bg-orange-50 rounded-lg p-4 border border-orange-200" style={{ height: '600px', width: '450px' }}>
+                    {planApresMidi.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => {
                       const occupation = salle.occupation;
-                      const isAttente = salle.type_salle === 'ATTENTE';
+                      const adjustedX = salle.position_x > 0 ? salle.position_x - 1 : 0;
+                      
+                      let bgColor = 'bg-gray-100 border-gray-300';
+                      if (occupation) {
+                        if (salle.type_salle === 'MEDECIN') bgColor = 'bg-blue-100 border-blue-400';
+                        else if (salle.type_salle === 'ASSISTANT') bgColor = 'bg-green-100 border-green-400';
+                        else if (salle.type_salle === 'ATTENTE') bgColor = 'bg-yellow-100 border-yellow-400';
+                      }
                       
                       return (
                         <div
                           key={salle.id}
-                          className={`absolute rounded-lg border-2 flex flex-col items-center justify-center p-1 ${
-                            occupation ? (
-                              occupation.employe?.role === 'Médecin' ? 'bg-blue-100 border-blue-400' :
-                              occupation.employe?.role === 'Assistant' ? 'bg-green-100 border-green-400' :
-                              'bg-pink-100 border-pink-400'
-                            ) : 'bg-gray-100 border-gray-300'
-                          }`}
+                          className={`absolute rounded-lg border-2 flex flex-col items-center justify-center p-1 ${bgColor}`}
                           style={{
-                            left: `${(salle.position_x - 1) * 100 * scale}px`,
-                            top: `${(salle.position_y - 1) * 80 * scale}px`,
-                            width: `${salle.largeur * 100 * scale}px`,
-                            height: `${salle.hauteur * 80 * scale}px`
+                            left: `${adjustedX * 90}px`,
+                            top: `${salle.position_y * 85}px`,
+                            width: '80px',
+                            height: '70px'
                           }}
                         >
-                          {occupation && !isAttente ? (
-                            <>
-                              {occupation.employe?.photo_url ? (
-                                <img 
-                                  src={getPhotoUrl(occupation.employe.photo_url)} 
-                                  alt={occupation.employe.prenom}
-                                  className="w-10 h-10 rounded-full object-cover border-2 border-white shadow"
-                                />
-                              ) : (
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold ${
-                                  occupation.employe?.role === 'Médecin' ? 'bg-blue-500' : 'bg-green-500'
-                                }`}>
-                                  {occupation.employe?.prenom?.[0]}{occupation.employe?.nom?.[0]}
-                                </div>
-                              )}
-                              <div className="text-[10px] font-bold mt-1 text-center">{salle.nom}</div>
-                              <div className="text-[9px] text-gray-600">{occupation.employe?.prenom?.[0]}. {occupation.employe?.nom?.[0]}.</div>
-                            </>
-                          ) : isAttente && occupation ? (
-                            <>
-                              <div className="text-[10px] font-bold text-center">{salle.nom}</div>
-                              <div className="text-[9px] text-pink-600">{occupation.employe?.prenom?.[0]}. {occupation.employe?.nom?.[0]}.</div>
-                            </>
+                          <div className="font-bold text-[10px] text-center">{salle.nom}</div>
+                          {occupation ? (
+                            <div className="mt-1 text-center">
+                              <div className="text-[11px] font-bold bg-white bg-opacity-70 rounded-full w-6 h-6 flex items-center justify-center mx-auto border">
+                                {occupation.employe?.prenom?.[0]}{occupation.employe?.nom?.[0]}
+                              </div>
+                              <div className="text-[9px] mt-1">{occupation.employe?.prenom?.substring(0,6)}.</div>
+                            </div>
                           ) : (
-                            <div className="text-[10px] font-medium text-gray-500 text-center">{salle.nom}</div>
+                            <div className="text-[9px] text-gray-500 mt-1">Libre</div>
                           )}
                         </div>
                       );
@@ -1313,11 +1283,11 @@ const ActualitesManager = () => {
             </div>
             
             {/* Légende */}
-            <div className="mt-3 flex justify-center space-x-4 text-xs text-gray-500">
-              <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-blue-400 mr-1"></span> Médecin</div>
-              <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-green-400 mr-1"></span> Assistant</div>
-              <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-pink-400 mr-1"></span> Secrétaire</div>
-              <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-gray-300 mr-1"></span> Libre</div>
+            <div className="mt-4 flex justify-center space-x-4 text-xs text-gray-600">
+              <div className="flex items-center"><div className="w-3 h-3 bg-blue-100 border border-blue-400 rounded mr-1"></div> Médecin</div>
+              <div className="flex items-center"><div className="w-3 h-3 bg-green-100 border border-green-400 rounded mr-1"></div> Assistant</div>
+              <div className="flex items-center"><div className="w-3 h-3 bg-yellow-100 border border-yellow-400 rounded mr-1"></div> Attente</div>
+              <div className="flex items-center"><div className="w-3 h-3 bg-gray-100 border border-gray-300 rounded mr-1"></div> Libre</div>
             </div>
             </>
           ) : (
