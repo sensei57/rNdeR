@@ -1178,8 +1178,9 @@ const PersonnelManager = () => {
               <Card key={medecin.id}>
                 <CardHeader className="pb-3">
                   <div className="flex items-center space-x-3">
-                    <Avatar>
-                      <AvatarFallback className="bg-blue-500">
+                    <Avatar className="h-12 w-12">
+                      {medecin.photo_url && <AvatarImage src={medecin.photo_url} alt={`${medecin.prenom} ${medecin.nom}`} />}
+                      <AvatarFallback className="bg-blue-500 text-white">
                         {medecin.prenom?.[0]}{medecin.nom?.[0]}
                       </AvatarFallback>
                     </Avatar>
@@ -1217,6 +1218,11 @@ const PersonnelManager = () => {
                     <p className="text-sm text-gray-600">
                       <strong>Téléphone:</strong> {medecin.telephone || 'Non renseigné'}
                     </p>
+                    {medecin.date_naissance && (
+                      <p className="text-sm text-gray-600">
+                        <strong>Né(e) le:</strong> {new Date(medecin.date_naissance + 'T12:00:00').toLocaleDateString('fr-FR')}
+                      </p>
+                    )}
                     <div>
                       <p className="text-sm font-medium text-gray-700 mb-1">
                         Assistants assignés:
