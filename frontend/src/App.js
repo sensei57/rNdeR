@@ -1249,11 +1249,11 @@ const ActualitesManager = () => {
               )}
               
               {/* Plan Après-midi */}
-              {planApresMidi && (
+              {planApresMidi?.salles?.length > 0 && (
                 <div>
-                  <h3 className="text-center font-semibold text-orange-600 mb-2">🌙 Après-midi ({planApresMidi.salles?.length || 0} salles)</h3>
+                  <h3 className="text-center font-semibold text-orange-600 mb-2">🌙 Après-midi ({planApresMidi.salles.length} salles)</h3>
                   <div className="relative bg-orange-50 rounded-lg p-3 border border-orange-200 overflow-auto" style={{ minHeight: '400px' }}>
-                    {planApresMidi.salles?.map(salle => {
+                    {planApresMidi.salles.map(salle => {
                       const scale = 0.45;
                       const occupation = salle.occupation;
                       const isAttente = salle.type_salle === 'ATTENTE';
