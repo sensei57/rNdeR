@@ -84,6 +84,8 @@ class UserUpdate(BaseModel):
     nom: Optional[str] = None
     prenom: Optional[str] = None
     telephone: Optional[str] = None
+    date_naissance: Optional[str] = None
+    photo_url: Optional[str] = None
     actif: Optional[bool] = None
     vue_planning_complete: Optional[bool] = None
     peut_modifier_planning: Optional[bool] = None
