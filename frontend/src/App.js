@@ -988,6 +988,8 @@ const PersonnelManager = () => {
       prenom: '',
       role: 'Médecin',
       telephone: '',
+      date_naissance: '',
+      photo_url: '',
       password: ''
     });
     setEditingPersonnel(null);
