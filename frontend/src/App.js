@@ -1185,13 +1185,13 @@ const ActualitesManager = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {(planMatin || planApresMidi) ? (
+          {(planMatin?.salles?.length > 0 || planApresMidi?.salles?.length > 0) ? (
             <>
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {/* Plan Matin */}
-              {planMatin && (
+              {planMatin?.salles?.length > 0 && (
                 <div>
-                  <h3 className="text-center font-semibold text-blue-600 mb-2">☀️ Matin ({planMatin.salles?.length || 0} salles)</h3>
+                  <h3 className="text-center font-semibold text-blue-600 mb-2">☀️ Matin ({planMatin.salles.length} salles)</h3>
                   <div className="relative bg-blue-50 rounded-lg p-3 border border-blue-200 overflow-auto" style={{ minHeight: '400px' }}>
                     {planMatin.salles?.map(salle => {
                       const scale = 0.45;
