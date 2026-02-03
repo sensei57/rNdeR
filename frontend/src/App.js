@@ -843,6 +843,8 @@ const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab 
 const ActualitesManager = () => {
   const [actualites, setActualites] = useState([]);
   const [anniversaires, setAnniversaires] = useState([]);
+  const [planMatin, setPlanMatin] = useState(null);
+  const [planApresMidi, setPlanApresMidi] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingActualite, setEditingActualite] = useState(null);
@@ -857,15 +859,21 @@ const ActualitesManager = () => {
   });
   const { user } = useAuth();
 
+  const today = new Date().toISOString().split('T')[0];
+
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [actusRes, annivRes] = await Promise.all([
+      const [actusRes, annivRes, planMatinRes, planAMRes] = await Promise.all([
         axios.get(`${API}/actualites`),
-        axios.get(`${API}/anniversaires`)
+        axios.get(`${API}/anniversaires`),
+        axios.get(`${API}/cabinet/plan/${today}/MATIN`).catch(() => ({ data: null })),
+        axios.get(`${API}/cabinet/plan/${today}/APRES_MIDI`).catch(() => ({ data: null }))
       ]);
       setActualites(actusRes.data);
       setAnniversaires(annivRes.data);
+      setPlanMatin(planMatinRes.data);
+      setPlanApresMidi(planAMRes.data);
     } catch (error) {
       console.error('Erreur chargement actualités:', error);
     } finally {
