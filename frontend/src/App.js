@@ -949,6 +949,8 @@ const PersonnelManager = () => {
       prenom: personnel.prenom,
       role: personnel.role,
       telephone: personnel.telephone || '',
+      date_naissance: personnel.date_naissance || '',
+      photo_url: personnel.photo_url || '',
       password: '' // Ne pas pré-remplir le mot de passe
     });
     setShowPersonnelModal(true);
