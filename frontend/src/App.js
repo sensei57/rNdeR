@@ -1314,6 +1314,7 @@ const ActualitesManager = () => {
               <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-pink-400 mr-1"></span> Secrétaire</div>
               <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-gray-300 mr-1"></span> Libre</div>
             </div>
+            </>
           ) : (
             <div className="text-center py-8 text-gray-500">
               <MapPin className="h-12 w-12 mx-auto mb-3 text-gray-300" />
