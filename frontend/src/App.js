@@ -1167,15 +1167,15 @@ const ActualitesManager = () => {
       </div>
 
       {/* Plan du Cabinet du jour */}
-      {(planMatin || planApresMidi) && (
-        <Card className="mt-6">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center space-x-2">
-              <MapPin className="h-5 w-5 text-teal-600" />
-              <span>Plan du Cabinet - {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card className="mt-6">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center space-x-2">
+            <MapPin className="h-5 w-5 text-teal-600" />
+            <span>Plan du Cabinet - {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {(planMatin || planApresMidi) ? (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {/* Plan Matin */}
               {planMatin && (
