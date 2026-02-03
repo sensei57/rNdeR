@@ -9139,16 +9139,8 @@ const PlanningManager = () => {
               <table className="w-full border-collapse text-xs table-fixed">
                 <thead>
                   <tr className="bg-gray-100">
-                    <th className="border p-1 text-left" style={{width: '120px'}}>
-                      <div className="flex items-center space-x-2">
-                        <span>Employé</span>
-                        <input
-                          type="text"
-                          placeholder="Note générale..."
-                          className="flex-1 text-xs bg-gray-50 border border-gray-200 rounded px-2 py-1 font-normal focus:outline-none focus:ring-1 focus:ring-teal-300 placeholder-gray-400"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </div>
+                    <th className="border p-1 text-left text-xs" style={{width: '100px', maxWidth: '100px'}}>
+                      Employé
                     </th>
                     {planningTableau.dates.map((date, dateIndex) => (
                       <th 
