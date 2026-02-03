@@ -11385,12 +11385,20 @@ const PlanningManager = () => {
               <Button
                 variant="outline"
                 className="flex flex-col items-center py-4 hover:bg-pink-50 hover:border-pink-400"
-                onClick={() => {
+                onClick={async () => {
+                  let created = 0;
                   if (semaineABCTarget?.type === 'employe') {
-                    applySemaineToEmploye(semaineABCTarget.employe, 'A');
+                    created = await applySemaineToEmploye(semaineABCTarget.employe, 'A');
                   } else {
-                    applySemaineToSection(semaineABCTarget?.section, 'A');
+                    created = await applySemaineToSection(semaineABCTarget?.section, 'A');
                   }
+                  if (created > 0) {
+                    toast.success(`Semaine A appliquée ! ${created} créneau(x) créé(s)`);
+                    fetchPlanning();
+                  } else {
+                    toast.info('Aucun créneau créé (déjà existants ou congés)');
+                  }
+                  setShowSemaineABCModal(false);
                 }}
               >
                 <span className="text-2xl mb-1">📅</span>
@@ -11399,12 +11407,20 @@ const PlanningManager = () => {
               <Button
                 variant="outline"
                 className="flex flex-col items-center py-4 hover:bg-blue-50 hover:border-blue-400"
-                onClick={() => {
+                onClick={async () => {
+                  let created = 0;
                   if (semaineABCTarget?.type === 'employe') {
-                    applySemaineToEmploye(semaineABCTarget.employe, 'B');
+                    created = await applySemaineToEmploye(semaineABCTarget.employe, 'B');
                   } else {
-                    applySemaineToSection(semaineABCTarget?.section, 'B');
+                    created = await applySemaineToSection(semaineABCTarget?.section, 'B');
                   }
+                  if (created > 0) {
+                    toast.success(`Semaine B appliquée ! ${created} créneau(x) créé(s)`);
+                    fetchPlanning();
+                  } else {
+                    toast.info('Aucun créneau créé (déjà existants ou congés)');
+                  }
+                  setShowSemaineABCModal(false);
                 }}
               >
                 <span className="text-2xl mb-1">📆</span>
@@ -11413,12 +11429,21 @@ const PlanningManager = () => {
               <Button
                 variant="outline"
                 className="flex flex-col items-center py-4 hover:bg-orange-50 hover:border-orange-400"
-                onClick={() => {
+                onClick={async () => {
+                  let created = 0;
                   if (semaineABCTarget?.type === 'employe') {
-                    applyCongeSemaine(semaineABCTarget.employe);
+                    created = await applyCongeSemaine(semaineABCTarget.employe);
                   } else {
-                    applyCongeSemaineSection(semaineABCTarget?.section);
+                    created = await applyCongeSemaineSection(semaineABCTarget?.section);
                   }
+                  if (created > 0) {
+                    toast.success(`Congés appliqués ! ${created} jour(s) de congé créé(s)`);
+                    fetchConges();
+                    fetchPlanning();
+                  } else {
+                    toast.info('Aucun congé créé (déjà existants ou créneaux présents)');
+                  }
+                  setShowSemaineABCModal(false);
                 }}
               >
                 <span className="text-2xl mb-1">🏖️</span>
