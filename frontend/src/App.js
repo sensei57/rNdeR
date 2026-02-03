@@ -1681,23 +1681,88 @@ const PersonnelManager = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="photo_url">Photo (URL)</Label>
-                  <Input
-                    id="photo_url"
-                    value={newPersonnel.photo_url}
-                    onChange={(e) => setNewPersonnel({...newPersonnel, photo_url: e.target.value})}
-                    placeholder="https://exemple.com/photo.jpg (optionnel)"
-                  />
-                  {newPersonnel.photo_url && (
-                    <div className="mt-2 flex justify-center">
-                      <img 
-                        src={newPersonnel.photo_url} 
-                        alt="Aperçu" 
-                        className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
-                        onError={(e) => e.target.style.display = 'none'}
+                  <Label>Photo de profil</Label>
+                  <div className="flex flex-col items-center space-y-3">
+                    {/* Aperçu de la photo */}
+                    {newPersonnel.photo_url && (
+                      <div className="relative">
+                        <img 
+                          src={newPersonnel.photo_url.startsWith('/api') ? `${API.replace('/api', '')}${newPersonnel.photo_url}` : newPersonnel.photo_url} 
+                          alt="Aperçu" 
+                          className="w-24 h-24 rounded-full object-cover border-4 border-teal-200 shadow-lg"
+                          onError={(e) => e.target.style.display = 'none'}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setNewPersonnel({...newPersonnel, photo_url: ''})}
+                          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
+                    
+                    {/* Bouton d'upload */}
+                    <div className="flex flex-col items-center space-y-2 w-full">
+                      <input
+                        type="file"
+                        id="photo_upload"
+                        accept="image/jpeg,image/png,image/gif,image/webp"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          
+                          // Vérifier la taille (max 5MB)
+                          if (file.size > 5 * 1024 * 1024) {
+                            toast.error('La photo ne doit pas dépasser 5 Mo');
+                            return;
+                          }
+                          
+                          try {
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            
+                            const response = await axios.post(`${API}/upload/photo`, formData, {
+                              headers: { 'Content-Type': 'multipart/form-data' }
+                            });
+                            
+                            setNewPersonnel({...newPersonnel, photo_url: response.data.url});
+                            toast.success('Photo téléchargée avec succès');
+                          } catch (error) {
+                            console.error('Erreur upload:', error);
+                            toast.error('Erreur lors du téléchargement de la photo');
+                          }
+                          
+                          // Reset l'input pour permettre de re-sélectionner le même fichier
+                          e.target.value = '';
+                        }}
                       />
+                      <label
+                        htmlFor="photo_upload"
+                        className="flex items-center justify-center px-4 py-2 bg-teal-600 text-white rounded-lg cursor-pointer hover:bg-teal-700 transition-colors"
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        {newPersonnel.photo_url ? 'Changer la photo' : 'Télécharger une photo'}
+                      </label>
+                      <p className="text-xs text-gray-500">JPG, PNG, GIF ou WEBP (max 5 Mo)</p>
                     </div>
-                  )}
+                    
+                    {/* Option URL alternative */}
+                    <div className="w-full pt-2 border-t">
+                      <details className="text-sm">
+                        <summary className="cursor-pointer text-gray-500 hover:text-gray-700">
+                          Ou coller une URL d'image
+                        </summary>
+                        <Input
+                          className="mt-2"
+                          value={newPersonnel.photo_url?.startsWith('/api') ? '' : newPersonnel.photo_url}
+                          onChange={(e) => setNewPersonnel({...newPersonnel, photo_url: e.target.value})}
+                          placeholder="https://exemple.com/photo.jpg"
+                        />
+                      </details>
+                    </div>
+                  </div>
                 </div>
                 
                 {!editingPersonnel && (
