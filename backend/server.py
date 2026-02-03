@@ -4921,9 +4921,6 @@ async def get_anniversaires(current_user: User = Depends(get_current_user)):
 import os
 import shutil
 
-UPLOAD_DIR = "/app/backend/uploads"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
 
 # On utilise directement les clés Firebase configurées sur Render
 firebase_config = {
@@ -4948,9 +4945,6 @@ async def upload_photo(file: UploadFile = File(...), current_user: User = Depend
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de l'upload: {str(e)}")
     
-    # Retourner l'URL
-    photo_url = f"/api/uploads/{file_name}"
-    return {"photo_url": photo_url, "filename": file_name}
 
 @api_router.get("/uploads/{filename}")
 async def get_uploaded_file(filename: str):
