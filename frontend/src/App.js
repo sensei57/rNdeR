@@ -1155,6 +1155,149 @@ const ActualitesManager = () => {
         </div>
       </div>
 
+      {/* Plan du Cabinet du jour */}
+      {(planMatin || planApresMidi) && (
+        <Card className="mt-6">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center space-x-2">
+              <MapPin className="h-5 w-5 text-teal-600" />
+              <span>Plan du Cabinet - {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              {/* Plan Matin */}
+              {planMatin && (
+                <div>
+                  <h3 className="text-center font-semibold text-blue-600 mb-2">☀️ Matin</h3>
+                  <div className="relative bg-blue-50 rounded-lg p-3 border border-blue-200" style={{ height: '400px' }}>
+                    {planMatin.salles?.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => {
+                      const scale = 0.55;
+                      const occupation = salle.occupation;
+                      const isAttente = salle.type_salle === 'ATTENTE';
+                      
+                      return (
+                        <div
+                          key={salle.id}
+                          className={`absolute rounded-lg border-2 flex flex-col items-center justify-center p-1 ${
+                            occupation ? (
+                              occupation.employe?.role === 'Médecin' ? 'bg-blue-100 border-blue-400' :
+                              occupation.employe?.role === 'Assistant' ? 'bg-green-100 border-green-400' :
+                              'bg-pink-100 border-pink-400'
+                            ) : 'bg-gray-100 border-gray-300'
+                          }`}
+                          style={{
+                            left: `${(salle.position_x - 1) * 100 * scale}px`,
+                            top: `${(salle.position_y - 1) * 80 * scale}px`,
+                            width: `${salle.largeur * 100 * scale}px`,
+                            height: `${salle.hauteur * 80 * scale}px`
+                          }}
+                        >
+                          {occupation && !isAttente ? (
+                            <>
+                              {occupation.employe?.photo_url ? (
+                                <img 
+                                  src={occupation.employe.photo_url} 
+                                  alt={occupation.employe.prenom}
+                                  className="w-10 h-10 rounded-full object-cover border-2 border-white shadow"
+                                />
+                              ) : (
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold ${
+                                  occupation.employe?.role === 'Médecin' ? 'bg-blue-500' : 'bg-green-500'
+                                }`}>
+                                  {occupation.employe?.prenom?.[0]}{occupation.employe?.nom?.[0]}
+                                </div>
+                              )}
+                              <div className="text-[10px] font-bold mt-1 text-center">{salle.nom}</div>
+                              <div className="text-[9px] text-gray-600">{occupation.employe?.prenom?.[0]}. {occupation.employe?.nom?.[0]}.</div>
+                            </>
+                          ) : isAttente && occupation ? (
+                            <>
+                              <div className="text-[10px] font-bold text-center">{salle.nom}</div>
+                              <div className="text-[9px] text-pink-600">{occupation.employe?.prenom?.[0]}. {occupation.employe?.nom?.[0]}.</div>
+                            </>
+                          ) : (
+                            <div className="text-[10px] font-medium text-gray-500 text-center">{salle.nom}</div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              
+              {/* Plan Après-midi */}
+              {planApresMidi && (
+                <div>
+                  <h3 className="text-center font-semibold text-orange-600 mb-2">🌙 Après-midi</h3>
+                  <div className="relative bg-orange-50 rounded-lg p-3 border border-orange-200" style={{ height: '400px' }}>
+                    {planApresMidi.salles?.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => {
+                      const scale = 0.55;
+                      const occupation = salle.occupation;
+                      const isAttente = salle.type_salle === 'ATTENTE';
+                      
+                      return (
+                        <div
+                          key={salle.id}
+                          className={`absolute rounded-lg border-2 flex flex-col items-center justify-center p-1 ${
+                            occupation ? (
+                              occupation.employe?.role === 'Médecin' ? 'bg-blue-100 border-blue-400' :
+                              occupation.employe?.role === 'Assistant' ? 'bg-green-100 border-green-400' :
+                              'bg-pink-100 border-pink-400'
+                            ) : 'bg-gray-100 border-gray-300'
+                          }`}
+                          style={{
+                            left: `${(salle.position_x - 1) * 100 * scale}px`,
+                            top: `${(salle.position_y - 1) * 80 * scale}px`,
+                            width: `${salle.largeur * 100 * scale}px`,
+                            height: `${salle.hauteur * 80 * scale}px`
+                          }}
+                        >
+                          {occupation && !isAttente ? (
+                            <>
+                              {occupation.employe?.photo_url ? (
+                                <img 
+                                  src={occupation.employe.photo_url} 
+                                  alt={occupation.employe.prenom}
+                                  className="w-10 h-10 rounded-full object-cover border-2 border-white shadow"
+                                />
+                              ) : (
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold ${
+                                  occupation.employe?.role === 'Médecin' ? 'bg-blue-500' : 'bg-green-500'
+                                }`}>
+                                  {occupation.employe?.prenom?.[0]}{occupation.employe?.nom?.[0]}
+                                </div>
+                              )}
+                              <div className="text-[10px] font-bold mt-1 text-center">{salle.nom}</div>
+                              <div className="text-[9px] text-gray-600">{occupation.employe?.prenom?.[0]}. {occupation.employe?.nom?.[0]}.</div>
+                            </>
+                          ) : isAttente && occupation ? (
+                            <>
+                              <div className="text-[10px] font-bold text-center">{salle.nom}</div>
+                              <div className="text-[9px] text-pink-600">{occupation.employe?.prenom?.[0]}. {occupation.employe?.nom?.[0]}.</div>
+                            </>
+                          ) : (
+                            <div className="text-[10px] font-medium text-gray-500 text-center">{salle.nom}</div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Légende */}
+            <div className="mt-3 flex justify-center space-x-4 text-xs text-gray-500">
+              <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-blue-400 mr-1"></span> Médecin</div>
+              <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-green-400 mr-1"></span> Assistant</div>
+              <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-pink-400 mr-1"></span> Secrétaire</div>
+              <div className="flex items-center"><span className="w-3 h-3 rounded-full bg-gray-300 mr-1"></span> Libre</div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Modal création/édition */}
       {showModal && (
         <Dialog open={showModal} onOpenChange={setShowModal}>
