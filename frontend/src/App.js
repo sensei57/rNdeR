@@ -867,8 +867,8 @@ const ActualitesManager = () => {
       const [actusRes, annivRes, planMatinRes, planAMRes] = await Promise.all([
         axios.get(`${API}/actualites`),
         axios.get(`${API}/anniversaires`),
-        axios.get(`${API}/cabinet/plan/${today}/MATIN`).catch(() => ({ data: null })),
-        axios.get(`${API}/cabinet/plan/${today}/APRES_MIDI`).catch(() => ({ data: null }))
+        axios.get(`${API}/cabinet/plan/${today}?creneau=MATIN`).catch(() => ({ data: null })),
+        axios.get(`${API}/cabinet/plan/${today}?creneau=APRES_MIDI`).catch(() => ({ data: null }))
       ]);
       setActualites(actusRes.data);
       setAnniversaires(annivRes.data);
