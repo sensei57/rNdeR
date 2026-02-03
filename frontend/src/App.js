@@ -1698,7 +1698,7 @@ const PersonnelManager = () => {
                     {newPersonnel.photo_url && (
                       <div className="relative">
                         <img 
-                          src={newPersonnel.photo_url.startsWith('/api') ? `${API.replace('/api', '')}${newPersonnel.photo_url}` : newPersonnel.photo_url} 
+                          src={getPhotoUrl(newPersonnel.photo_url)} 
                           alt="Aperçu" 
                           className="w-24 h-24 rounded-full object-cover border-4 border-teal-200 shadow-lg"
                           onError={(e) => e.target.style.display = 'none'}
