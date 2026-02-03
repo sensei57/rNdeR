@@ -904,6 +904,8 @@ const PersonnelManager = () => {
           nom: newPersonnel.nom,
           prenom: newPersonnel.prenom,
           telephone: newPersonnel.telephone,
+          date_naissance: newPersonnel.date_naissance || null,
+          photo_url: newPersonnel.photo_url || null,
           actif: true
         };
 
