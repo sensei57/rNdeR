@@ -1051,7 +1051,7 @@ const ActualitesManager = () => {
               {anniversairesAffiches.map((anniv) => (
                 <div key={anniv.id} className="flex items-center space-x-3 bg-white rounded-lg px-4 py-2 shadow-sm">
                   <Avatar className="h-10 w-10">
-                    {anniv.photo_url && <AvatarImage src={anniv.photo_url} />}
+                    {anniv.photo_url && <AvatarImage src={getPhotoUrl(anniv.photo_url)} />}
                     <AvatarFallback className={
                       anniv.role === 'Médecin' ? 'bg-blue-500 text-white' :
                       anniv.role === 'Assistant' ? 'bg-green-500 text-white' :
