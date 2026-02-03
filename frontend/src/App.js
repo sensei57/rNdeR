@@ -1963,7 +1963,7 @@ const PersonnelManager = () => {
                 <CardHeader className="pb-3">
                   <div className="flex items-center space-x-3">
                     <Avatar className="h-12 w-12">
-                      {secretaire.photo_url && <AvatarImage src={secretaire.photo_url} alt={`${secretaire.prenom} ${secretaire.nom}`} />}
+                      {secretaire.photo_url && <AvatarImage src={getPhotoUrl(secretaire.photo_url)} alt={`${secretaire.prenom} ${secretaire.nom}`} />}
                       <AvatarFallback className="bg-purple-500 text-white">
                         {secretaire.prenom?.[0]}{secretaire.nom?.[0]}
                       </AvatarFallback>
