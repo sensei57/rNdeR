@@ -1307,8 +1307,9 @@ const PersonnelManager = () => {
               <Card key={secretaire.id}>
                 <CardHeader className="pb-3">
                   <div className="flex items-center space-x-3">
-                    <Avatar>
-                      <AvatarFallback className="bg-purple-500">
+                    <Avatar className="h-12 w-12">
+                      {secretaire.photo_url && <AvatarImage src={secretaire.photo_url} alt={`${secretaire.prenom} ${secretaire.nom}`} />}
+                      <AvatarFallback className="bg-purple-500 text-white">
                         {secretaire.prenom?.[0]}{secretaire.nom?.[0]}
                       </AvatarFallback>
                     </Avatar>
@@ -1345,6 +1346,11 @@ const PersonnelManager = () => {
                   <p className="text-sm text-gray-600">
                     <strong>Téléphone:</strong> {secretaire.telephone || 'Non renseigné'}
                   </p>
+                  {secretaire.date_naissance && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      <strong>Né(e) le:</strong> {new Date(secretaire.date_naissance + 'T12:00:00').toLocaleDateString('fr-FR')}
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             ))}
