@@ -4920,30 +4920,49 @@ async def get_anniversaires(current_user: User = Depends(get_current_user)):
 # Upload d'image de profil
 import os
 import shutil
+from pathlib import Path
 
-
-# On utilise directement les clés Firebase configurées sur Render
-firebase_config = {
-    "apiKey": os.getenv("REACT_APP_FIREBASE_API_KEY"),
-    "authDomain": os.getenv("REACT_APP_FIREBASE_AUTH_DOMAIN"),
-    "projectId": os.getenv("REACT_APP_FIREBASE_PROJECT_ID"),
-    "storageBucket": os.getenv("REACT_APP_FIREBASE_STORAGE_BUCKET")
-}
+# Dossier pour les uploads
+UPLOAD_DIR = Path("/app/backend/uploads/photos")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 @api_router.post("/upload/photo")
 async def upload_photo(file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
     try:
-        # On n'enregistre rien sur le disque dur /app, on envoie au Cloud
-        file_name = f"profils/{current_user.id}_{uuid.uuid4().hex[:8]}.jpg"
+        # Vérifier le type de fichier
+        allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp']
+        file_ext = file.filename.split('.')[-1].lower() if '.' in file.filename else ''
         
-        # Le code ici enverra le fichier vers cabinet-medical-ope.firebasestorage.app
-        # sans jamais toucher au dossier interdit de Render
-        return {"url": f"Lien_Firebase_Généré"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur upload: {str(e)}")
-
+        if file_ext not in allowed_extensions:
+            raise HTTPException(status_code=400, detail=f"Type de fichier non autorisé. Extensions acceptées: {', '.join(allowed_extensions)}")
+        
+        # Générer un nom de fichier unique
+        file_name = f"{current_user.id}_{uuid.uuid4().hex[:8]}.{file_ext}"
+        file_path = UPLOAD_DIR / file_name
+        
+        # Sauvegarder le fichier
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+        
+        # Retourner l'URL de l'image
+        photo_url = f"/api/uploads/photos/{file_name}"
+        
+        return {"url": photo_url, "filename": file_name}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de l'upload: {str(e)}")
+
+# Endpoint pour servir les images uploadées
+from fastapi.responses import FileResponse
+
+@api_router.get("/uploads/photos/{filename}")
+async def get_uploaded_photo(filename: str):
+    file_path = UPLOAD_DIR / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Image non trouvée")
+    return FileResponse(file_path)
     
 # Include the router in the main app
 app.include_router(api_router)
