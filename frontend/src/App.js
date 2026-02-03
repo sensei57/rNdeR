@@ -22,6 +22,17 @@ import html2canvas from 'html2canvas';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Fonction utilitaire pour obtenir l'URL complète d'une photo
+const getPhotoUrl = (photoUrl) => {
+  if (!photoUrl) return null;
+  // Si c'est une URL locale uploadée (commence par /api)
+  if (photoUrl.startsWith('/api')) {
+    return `${BACKEND_URL}${photoUrl}`;
+  }
+  // Sinon c'est une URL externe complète
+  return photoUrl;
+};
+
 // Fonction utilitaire pour trier les employés par rôle (Médecin > Assistant > Secrétaire) puis par prénom
 const sortEmployeesByRoleThenName = (employees) => {
   const roleOrder = { 'Médecin': 1, 'Assistant': 2, 'Secrétaire': 3, 'Directeur': 4 };
