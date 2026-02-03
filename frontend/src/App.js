@@ -878,9 +878,17 @@ const ActualitesManager = () => {
       const [actusRes, annivRes, planMatinRes, planAMRes] = await Promise.all([
         axios.get(`${API}/actualites`),
         axios.get(`${API}/anniversaires`),
-        axios.get(`${API}/cabinet/plan/${today}?creneau=MATIN`).catch(() => ({ data: null })),
-        axios.get(`${API}/cabinet/plan/${today}?creneau=APRES_MIDI`).catch(() => ({ data: null }))
+        axios.get(`${API}/cabinet/plan/${today}?creneau=MATIN`).catch((err) => {
+          console.log('Erreur plan matin:', err.response?.data || err.message);
+          return { data: null };
+        }),
+        axios.get(`${API}/cabinet/plan/${today}?creneau=APRES_MIDI`).catch((err) => {
+          console.log('Erreur plan après-midi:', err.response?.data || err.message);
+          return { data: null };
+        })
       ]);
+      console.log('Plan Matin:', planMatinRes.data);
+      console.log('Plan Après-midi:', planAMRes.data);
       setActualites(actusRes.data);
       setAnniversaires(annivRes.data);
       setPlanMatin(planMatinRes.data);
