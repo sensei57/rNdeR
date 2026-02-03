@@ -1208,7 +1208,7 @@ const ActualitesManager = () => {
                             <>
                               {occupation.employe?.photo_url ? (
                                 <img 
-                                  src={occupation.employe.photo_url} 
+                                  src={getPhotoUrl(occupation.employe.photo_url)} 
                                   alt={occupation.employe.prenom}
                                   className="w-10 h-10 rounded-full object-cover border-2 border-white shadow"
                                 />
@@ -1268,7 +1268,7 @@ const ActualitesManager = () => {
                             <>
                               {occupation.employe?.photo_url ? (
                                 <img 
-                                  src={occupation.employe.photo_url} 
+                                  src={getPhotoUrl(occupation.employe.photo_url)} 
                                   alt={occupation.employe.prenom}
                                   className="w-10 h-10 rounded-full object-cover border-2 border-white shadow"
                                 />
