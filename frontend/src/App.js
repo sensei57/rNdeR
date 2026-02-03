@@ -1907,7 +1907,7 @@ const PersonnelManager = () => {
                 <CardHeader className="pb-3">
                   <div className="flex items-center space-x-3">
                     <Avatar className="h-12 w-12">
-                      {assistant.photo_url && <AvatarImage src={assistant.photo_url} alt={`${assistant.prenom} ${assistant.nom}`} />}
+                      {assistant.photo_url && <AvatarImage src={getPhotoUrl(assistant.photo_url)} alt={`${assistant.prenom} ${assistant.nom}`} />}
                       <AvatarFallback className="bg-green-500 text-white">
                         {assistant.prenom?.[0]}{assistant.nom?.[0]}
                       </AvatarFallback>
