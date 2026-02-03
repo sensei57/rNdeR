@@ -1181,9 +1181,9 @@ const ActualitesManager = () => {
               {planMatin && (
                 <div>
                   <h3 className="text-center font-semibold text-blue-600 mb-2">☀️ Matin</h3>
-                  <div className="relative bg-blue-50 rounded-lg p-3 border border-blue-200" style={{ height: '400px' }}>
-                    {planMatin.salles?.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => {
-                      const scale = 0.55;
+                  <div className="relative bg-blue-50 rounded-lg p-3 border border-blue-200 overflow-auto" style={{ minHeight: '400px' }}>
+                    {planMatin.salles?.filter(s => s.position_x > 0).map(salle => {
+                      const scale = 0.45;
                       const occupation = salle.occupation;
                       const isAttente = salle.type_salle === 'ATTENTE';
                       
