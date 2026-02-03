@@ -17410,12 +17410,13 @@ const MonProfilManager = () => {
 
 // Main Dashboard
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState('personnel');
+  const [activeTab, setActiveTab] = useState('actualites');
   const [menuOpen, setMenuOpen] = useState(false);
   const { user } = useAuth();
 
   const getMenuItems = () => {
     const items = [
+      { id: 'actualites', label: 'Actualités', icon: Bell },
       { id: 'profil', label: 'Mon Profil', icon: Users },
       { id: 'personnel', label: 'Personnel', icon: Users },
       { id: 'planning', label: 'Planning', icon: Calendar },
@@ -17426,7 +17427,7 @@ const Dashboard = () => {
 
     // Ajouter demandes de créneaux pour médecins et directeur
     if (user?.role === 'Médecin' || user?.role === 'Directeur') {
-      items.splice(4, 0, { id: 'demandes-travail', label: 'Demande de créneaux', icon: CalendarDays });
+      items.splice(5, 0, { id: 'demandes-travail', label: 'Demande de créneaux', icon: CalendarDays });
     }
 
     // Plan Cabinet visible uniquement au Directeur dans le menu
@@ -17442,6 +17443,8 @@ const Dashboard = () => {
 
   const renderContent = () => {
     switch (activeTab) {
+      case 'actualites':
+        return <ActualitesManager />;
       case 'profil':
         return <MonProfilManager />;
       case 'personnel':
@@ -17465,7 +17468,7 @@ const Dashboard = () => {
       case 'admin':
         return <AdminManager />;
       default:
-        return <PersonnelManager />;
+        return <ActualitesManager />;
     }
   };
 
