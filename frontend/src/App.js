@@ -17856,7 +17856,7 @@ const MonProfilManager = () => {
         <CardContent className="space-y-4">
           <div className="flex items-center space-x-6 pb-4 border-b">
             <Avatar className="h-24 w-24">
-              {user?.photo_url && <AvatarImage src={user.photo_url} alt={`${user.prenom} ${user.nom}`} />}
+              {user?.photo_url && <AvatarImage src={getPhotoUrl(user.photo_url)} alt={`${user.prenom} ${user.nom}`} />}
               <AvatarFallback className="bg-teal-500 text-white text-2xl">
                 {user?.prenom?.[0]}{user?.nom?.[0]}
               </AvatarFallback>
