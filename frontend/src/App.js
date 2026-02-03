@@ -852,6 +852,7 @@ const ActualitesManager = () => {
     type_contenu: 'texte',
     fichier_url: '',
     fichier_nom: '',
+    groupe_cible: 'tous',
     priorite: 0
   });
   const { user } = useAuth();
@@ -875,6 +876,27 @@ const ActualitesManager = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Filtrer les anniversaires : prochain ou ceux dans la même semaine
+  const getAnniversairesAffiches = () => {
+    if (anniversaires.length === 0) return [];
+    
+    // Prendre ceux qui sont dans les 7 prochains jours ou le prochain si aucun cette semaine
+    const dansLaSemaine = anniversaires.filter(a => a.jours_restants <= 7);
+    
+    if (dansLaSemaine.length > 0) {
+      return dansLaSemaine;
+    }
+    
+    // Sinon, juste le prochain
+    return [anniversaires[0]];
+  };
+
+  // Filtrer les actualités générales (pour tout le monde)
+  const actualitesGenerales = actualites.filter(a => a.groupe_cible === 'tous' || !a.groupe_cible);
+
+  // Filtrer les actualités pour le groupe de l'utilisateur connecté
+  const actualitesPourMonGroupe = actualites.filter(a => a.groupe_cible === user?.role);
 
   const handleCreateActualite = async (e) => {
     e.preventDefault();
@@ -918,6 +940,7 @@ const ActualitesManager = () => {
       type_contenu: 'texte',
       fichier_url: '',
       fichier_nom: '',
+      groupe_cible: 'tous',
       priorite: 0
     });
     setEditingActualite(null);
@@ -931,14 +954,58 @@ const ActualitesManager = () => {
       type_contenu: actu.type_contenu,
       fichier_url: actu.fichier_url || '',
       fichier_nom: actu.fichier_nom || '',
+      groupe_cible: actu.groupe_cible || 'tous',
       priorite: actu.priorite || 0
     });
     setShowModal(true);
   };
 
+  // Composant pour afficher une actualité
+  const ActualiteCard = ({ actu }) => (
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-2">
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="text-base flex items-center space-x-2">
+              {actu.priorite > 0 && <span className="text-red-500">📌</span>}
+              <span>{actu.titre}</span>
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Par {actu.auteur?.prenom} {actu.auteur?.nom} • {new Date(actu.date_creation).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+            </CardDescription>
+          </div>
+          {user?.role === 'Directeur' && (
+            <div className="flex space-x-1">
+              <Button size="sm" variant="ghost" onClick={() => openEditModal(actu)} className="h-7 w-7 p-0">
+                <Edit className="h-3 w-3" />
+              </Button>
+              <Button size="sm" variant="ghost" className="text-red-600 h-7 w-7 p-0" onClick={() => handleDeleteActualite(actu.id)}>
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        {actu.type_contenu === 'image' && actu.fichier_url && (
+          <img src={actu.fichier_url} alt={actu.titre} className="w-full max-h-40 object-cover rounded-lg mb-2" />
+        )}
+        <p className="text-sm text-gray-700 whitespace-pre-wrap line-clamp-4">{actu.contenu}</p>
+        {actu.type_contenu === 'fichier' && actu.fichier_url && (
+          <a href={actu.fichier_url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center text-xs text-blue-600 hover:underline">
+            <FileText className="h-3 w-3 mr-1" />
+            {actu.fichier_nom || 'Fichier'}
+          </a>
+        )}
+      </CardContent>
+    </Card>
+  );
+
   if (loading) {
     return <div className="flex justify-center p-8">Chargement...</div>;
   }
+
+  const anniversairesAffiches = getAnniversairesAffiches();
 
   return (
     <div className="space-y-6">
@@ -956,123 +1023,126 @@ const ActualitesManager = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Colonne des anniversaires */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <span className="text-2xl">🎂</span>
-              <span>Prochains Anniversaires</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {anniversaires.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">Aucun anniversaire à venir</p>
-            ) : (
-              <div className="space-y-3">
-                {anniversaires.map((anniv) => (
-                  <div 
-                    key={anniv.id} 
-                    className={`flex items-center space-x-3 p-3 rounded-lg ${
-                      anniv.jours_restants === 0 ? 'bg-yellow-100 border-2 border-yellow-400' :
-                      anniv.jours_restants <= 7 ? 'bg-orange-50' : 'bg-gray-50'
-                    }`}
-                  >
-                    <Avatar className="h-10 w-10">
-                      {anniv.photo_url && <AvatarImage src={anniv.photo_url} />}
-                      <AvatarFallback className={
-                        anniv.role === 'Médecin' ? 'bg-blue-500 text-white' :
-                        anniv.role === 'Assistant' ? 'bg-green-500 text-white' :
-                        anniv.role === 'Secrétaire' ? 'bg-purple-500 text-white' :
-                        'bg-gray-500 text-white'
-                      }>
-                        {anniv.prenom?.[0]}{anniv.nom?.[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">
-                        {anniv.prenom} {anniv.nom}
-                        {anniv.jours_restants === 0 && <span className="ml-2">🎉</span>}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {anniv.jours_restants === 0 ? (
-                          <span className="text-yellow-700 font-bold">Aujourd'hui ! ({anniv.age} ans)</span>
-                        ) : anniv.jours_restants === 1 ? (
-                          <span className="text-orange-600">Demain ({anniv.age} ans)</span>
-                        ) : (
-                          <span>Dans {anniv.jours_restants} jours ({anniv.age} ans)</span>
-                        )}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {new Date(anniv.prochain_anniversaire + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
-                      </p>
-                    </div>
+      {/* Section Anniversaires - Centré en haut */}
+      {anniversairesAffiches.length > 0 && (
+        <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
+          <CardContent className="py-4">
+            <div className="flex items-center justify-center space-x-6 flex-wrap gap-4">
+              <span className="text-3xl">🎂</span>
+              {anniversairesAffiches.map((anniv) => (
+                <div key={anniv.id} className="flex items-center space-x-3 bg-white rounded-lg px-4 py-2 shadow-sm">
+                  <Avatar className="h-10 w-10">
+                    {anniv.photo_url && <AvatarImage src={anniv.photo_url} />}
+                    <AvatarFallback className={
+                      anniv.role === 'Médecin' ? 'bg-blue-500 text-white' :
+                      anniv.role === 'Assistant' ? 'bg-green-500 text-white' :
+                      anniv.role === 'Secrétaire' ? 'bg-purple-500 text-white' :
+                      'bg-gray-500 text-white'
+                    }>
+                      {anniv.prenom?.[0]}{anniv.nom?.[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium text-sm">
+                      {anniv.prenom} {anniv.nom}
+                      {anniv.jours_restants === 0 && <span className="ml-1">🎉</span>}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      {anniv.jours_restants === 0 ? (
+                        <span className="text-yellow-700 font-bold">Aujourd'hui ! ({anniv.age} ans)</span>
+                      ) : anniv.jours_restants === 1 ? (
+                        <span className="text-orange-600 font-medium">Demain ({anniv.age} ans)</span>
+                      ) : (
+                        <span>Dans {anniv.jours_restants} jours • {new Date(anniv.prochain_anniversaire + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                      )}
+                    </p>
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
+      )}
 
-        {/* Colonne des actualités */}
-        <div className="lg:col-span-2 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-700">📢 Actualités du Cabinet</h2>
+      {/* 2 Colonnes : Actualités Générales | Actualités Mon Groupe */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Colonne Gauche : Actualités Générales */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-gray-700 flex items-center space-x-2">
+            <span>📢</span>
+            <span>Actualités Générales</span>
+          </h2>
           
-          {actualites.length === 0 ? (
+          {actualitesGenerales.length === 0 ? (
             <Card>
-              <CardContent className="py-8 text-center text-gray-500">
-                Aucune actualité pour le moment
+              <CardContent className="py-6 text-center text-gray-500 text-sm">
+                Aucune actualité générale
               </CardContent>
             </Card>
           ) : (
-            actualites.map((actu) => (
-              <Card key={actu.id} className="overflow-hidden">
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg flex items-center space-x-2">
-                        {actu.priorite > 0 && <span className="text-red-500">📌</span>}
-                        <span>{actu.titre}</span>
-                      </CardTitle>
-                      <CardDescription className="text-xs">
-                        Par {actu.auteur?.prenom} {actu.auteur?.nom} • {new Date(actu.date_creation).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                      </CardDescription>
+            <div className="space-y-3">
+              {actualitesGenerales.map((actu) => (
+                <ActualiteCard key={actu.id} actu={actu} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Colonne Droite : Actualités pour mon groupe */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold flex items-center space-x-2" style={{
+            color: user?.role === 'Médecin' ? '#3B82F6' : 
+                   user?.role === 'Assistant' ? '#22C55E' : 
+                   user?.role === 'Secrétaire' ? '#A855F7' : '#6B7280'
+          }}>
+            <span>{user?.role === 'Médecin' ? '👨‍⚕️' : user?.role === 'Assistant' ? '👥' : user?.role === 'Secrétaire' ? '📋' : '📢'}</span>
+            <span>Actualités {user?.role === 'Directeur' ? 'Ciblées' : `pour les ${user?.role}s`}</span>
+          </h2>
+          
+          {user?.role === 'Directeur' ? (
+            // Le directeur voit toutes les actualités ciblées groupées
+            <div className="space-y-4">
+              {['Médecin', 'Assistant', 'Secrétaire'].map(role => {
+                const actusRole = actualites.filter(a => a.groupe_cible === role);
+                if (actusRole.length === 0) return null;
+                return (
+                  <div key={role}>
+                    <h3 className="text-sm font-medium text-gray-500 mb-2 flex items-center">
+                      <span className={`w-2 h-2 rounded-full mr-2 ${
+                        role === 'Médecin' ? 'bg-blue-500' : 
+                        role === 'Assistant' ? 'bg-green-500' : 'bg-purple-500'
+                      }`}></span>
+                      Pour les {role}s
+                    </h3>
+                    <div className="space-y-2">
+                      {actusRole.map(actu => <ActualiteCard key={actu.id} actu={actu} />)}
                     </div>
-                    {user?.role === 'Directeur' && (
-                      <div className="flex space-x-1">
-                        <Button size="sm" variant="ghost" onClick={() => openEditModal(actu)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" className="text-red-600" onClick={() => handleDeleteActualite(actu.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
                   </div>
-                </CardHeader>
-                <CardContent>
-                  {actu.type_contenu === 'image' && actu.fichier_url && (
-                    <img 
-                      src={actu.fichier_url} 
-                      alt={actu.titre} 
-                      className="w-full max-h-64 object-cover rounded-lg mb-3"
-                    />
-                  )}
-                  <p className="text-gray-700 whitespace-pre-wrap">{actu.contenu}</p>
-                  {actu.type_contenu === 'fichier' && actu.fichier_url && (
-                    <a 
-                      href={actu.fichier_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="mt-3 inline-flex items-center space-x-2 text-blue-600 hover:underline"
-                    >
-                      <FileText className="h-4 w-4" />
-                      <span>{actu.fichier_nom || 'Télécharger le fichier'}</span>
-                    </a>
-                  )}
+                );
+              })}
+              {actualites.filter(a => ['Médecin', 'Assistant', 'Secrétaire'].includes(a.groupe_cible)).length === 0 && (
+                <Card>
+                  <CardContent className="py-6 text-center text-gray-500 text-sm">
+                    Aucune actualité ciblée
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          ) : (
+            // Les autres voient seulement les actualités de leur groupe
+            actualitesPourMonGroupe.length === 0 ? (
+              <Card>
+                <CardContent className="py-6 text-center text-gray-500 text-sm">
+                  Aucune actualité pour les {user?.role}s
                 </CardContent>
               </Card>
-            ))
+            ) : (
+              <div className="space-y-3">
+                {actualitesPourMonGroupe.map((actu) => (
+                  <ActualiteCard key={actu.id} actu={actu} />
+                ))}
+              </div>
+            )
           )}
         </div>
       </div>
@@ -1095,21 +1165,41 @@ const ActualitesManager = () => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>Type de contenu</Label>
-                <Select 
-                  value={newActualite.type_contenu} 
-                  onValueChange={(v) => setNewActualite({...newActualite, type_contenu: v})}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="texte">📝 Texte uniquement</SelectItem>
-                    <SelectItem value="image">🖼️ Avec image</SelectItem>
-                    <SelectItem value="fichier">📎 Avec fichier</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Type de contenu</Label>
+                  <Select 
+                    value={newActualite.type_contenu} 
+                    onValueChange={(v) => setNewActualite({...newActualite, type_contenu: v})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="texte">📝 Texte</SelectItem>
+                      <SelectItem value="image">🖼️ Image</SelectItem>
+                      <SelectItem value="fichier">📎 Fichier</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Diffuser à</Label>
+                  <Select 
+                    value={newActualite.groupe_cible} 
+                    onValueChange={(v) => setNewActualite({...newActualite, groupe_cible: v})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="tous">📢 Tout le monde</SelectItem>
+                      <SelectItem value="Médecin">👨‍⚕️ Médecins uniquement</SelectItem>
+                      <SelectItem value="Assistant">👥 Assistants uniquement</SelectItem>
+                      <SelectItem value="Secrétaire">📋 Secrétaires uniquement</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -1118,35 +1208,35 @@ const ActualitesManager = () => {
                   value={newActualite.contenu}
                   onChange={(e) => setNewActualite({...newActualite, contenu: e.target.value})}
                   placeholder="Contenu de l'actualité..."
-                  className="w-full min-h-[120px] p-3 border rounded-md"
+                  className="w-full min-h-[100px] p-3 border rounded-md text-sm"
                   required
                 />
               </div>
 
               {(newActualite.type_contenu === 'image' || newActualite.type_contenu === 'fichier') && (
                 <div className="space-y-2">
-                  <Label>URL du {newActualite.type_contenu === 'image' ? 'de l\'image' : 'fichier'}</Label>
+                  <Label>URL {newActualite.type_contenu === 'image' ? 'de l\'image' : 'du fichier'}</Label>
                   <Input
                     value={newActualite.fichier_url}
                     onChange={(e) => setNewActualite({...newActualite, fichier_url: e.target.value})}
-                    placeholder="https://exemple.com/fichier.pdf"
+                    placeholder="https://..."
                   />
                   {newActualite.type_contenu === 'fichier' && (
                     <Input
                       value={newActualite.fichier_nom}
                       onChange={(e) => setNewActualite({...newActualite, fichier_nom: e.target.value})}
-                      placeholder="Nom du fichier (optionnel)"
+                      placeholder="Nom du fichier"
                       className="mt-2"
                     />
                   )}
                   {newActualite.type_contenu === 'image' && newActualite.fichier_url && (
-                    <img src={newActualite.fichier_url} alt="Aperçu" className="mt-2 max-h-32 rounded" onError={(e) => e.target.style.display='none'} />
+                    <img src={newActualite.fichier_url} alt="Aperçu" className="mt-2 max-h-24 rounded" onError={(e) => e.target.style.display='none'} />
                   )}
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label>Priorité (épingler en haut)</Label>
+                <Label>Priorité</Label>
                 <Select 
                   value={String(newActualite.priorite)} 
                   onValueChange={(v) => setNewActualite({...newActualite, priorite: parseInt(v)})}
