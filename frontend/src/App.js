@@ -4994,7 +4994,8 @@ const PlanningManager = () => {
       horaire_pause_fin: existingCreneau?.horaire_pause_fin || '',
       salle_attribuee: existingCreneau?.salle_attribuee || '',
       salle_attente: existingCreneau?.salle_attente || '',
-      medecin_ids: existingCreneau?.medecin_ids || []
+      medecin_ids: existingCreneau?.medecin_ids || [],
+      est_repos: existingCreneau?.est_repos || false
     });
     setShowQuickCreneauModal(true);
   };
