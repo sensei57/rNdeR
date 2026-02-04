@@ -5807,7 +5807,7 @@ const PlanningManager = () => {
     
     let heuresEffectives = 0;
     let heuresContrat = 0;
-    const heuresParJour = (employe.heures_par_jour || 7);
+    const heuresParDemiJ = employe.heures_demi_journee_travail || (employe.heures_par_jour ? employe.heures_par_jour / 2 : 3.5);
     const heuresParSemaine = employe.heures_semaine_fixe || 35;
     
     // Parcourir chaque jour du mois
@@ -5823,15 +5823,15 @@ const PlanningManager = () => {
         heuresContrat += heuresParSemaine / 5;
       }
       
-      // Heures effectuées (créneaux du planning)
-      const creneauxJour = planningTableau.planning?.[dateStr]?.filter(c => c.employe_id === employeId) || [];
+      // Heures effectuées (créneaux du planning) - exclure les repos
+      const creneauxJour = planningTableau.planning?.[dateStr]?.filter(c => c.employe_id === employeId && !c.est_repos) || [];
       creneauxJour.forEach(creneau => {
         if (employe.role === 'Secrétaire' && creneau.horaire_debut && creneau.horaire_fin) {
           const [h1, m1] = creneau.horaire_debut.split(':').map(Number);
           const [h2, m2] = creneau.horaire_fin.split(':').map(Number);
           heuresEffectives += (h2 + m2/60) - (h1 + m1/60);
         } else {
-          heuresEffectives += heuresParJour / 2; // Une demi-journée
+          heuresEffectives += heuresParDemiJ; // Une demi-journée
         }
       });
       
