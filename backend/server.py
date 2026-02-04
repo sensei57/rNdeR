@@ -144,6 +144,7 @@ class CreneauPlanning(BaseModel):
     horaire_pause_fin: Optional[str] = None  # Pour secrétaires : heure de reprise après-midi "14:00"
     notes: Optional[str] = None
     heures_supplementaires: Optional[float] = 0.0  # Heures supplémentaires pour ce créneau
+    est_repos: bool = False  # True si c'est un créneau de repos (non comptabilisé)
     date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class CreneauPlanningCreate(BaseModel):
