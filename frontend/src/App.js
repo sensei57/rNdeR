@@ -3870,6 +3870,9 @@ const PlanningManager = () => {
       
       const tableBody = [];
       
+      // Types de congés non comptabilisés
+      const typesCongesNonComptabilises = ['REPOS', 'ABSENT'];
+      
       // Fonction pour calculer les stats d'un employé
       const getEmployeStats = (employe) => {
         let totalDemiJournees = 0;
@@ -3877,7 +3880,8 @@ const PlanningManager = () => {
         let heuresConges = 0;
         
         planningTableau.dates?.forEach(date => {
-          const creneaux = planningTableau.planning?.[date]?.filter(c => c.employe_id === employe.id) || [];
+          // Filtrer les créneaux en excluant les repos
+          const creneaux = planningTableau.planning?.[date]?.filter(c => c.employe_id === employe.id && !c.est_repos) || [];
           totalDemiJournees += creneaux.length;
           creneaux.forEach(c => {
             if (employe.role === 'Secrétaire' && c.horaire_debut && c.horaire_fin) {
@@ -3885,14 +3889,17 @@ const PlanningManager = () => {
               const [h2, m2] = c.horaire_fin.split(':').map(Number);
               totalHeures += (h2 + m2/60) - (h1 + m1/60);
             } else {
-              totalHeures += (employe.heures_par_jour || 7) / 2;
+              // Utiliser heures_demi_journee_travail si défini
+              const heuresParDemiJ = employe.heures_demi_journee_travail || (employe.heures_par_jour ? employe.heures_par_jour / 2 : 3.5);
+              totalHeures += heuresParDemiJ;
             }
           });
           
-          // Congés
+          // Congés - exclure REPOS et ABSENT
           const congesJour = congesApprouves?.filter(c => 
             c.utilisateur_id === employe.id && 
-            date >= c.date_debut && date <= c.date_fin
+            date >= c.date_debut && date <= c.date_fin &&
+            !typesCongesNonComptabilises.includes(c.type_conge)
           ) || [];
           congesJour.forEach(c => {
             const h = employe.heures_demi_journee_conge || 4;
