@@ -8925,9 +8925,12 @@ const PlanningManager = () => {
                       {users.filter(u => u.role === 'Assistant' && u.actif).map(assistant => {
                         const demiJFaites = calculateDemiJournees(assistant.id, planningSemaine.dates);
                         const demiJPrevues = semaineAffichee === 'A' ? (assistant.limite_demi_journees_a || 10) : (assistant.limite_demi_journees_b || 10);
-                        const heuresFaites = demiJFaites * (assistant.heures_par_jour || 4);
+                        // Utiliser heures_demi_journee_travail si défini, sinon fallback sur heures_par_jour/2
+                        const heuresParDemiJ = assistant.heures_demi_journee_travail || (assistant.heures_par_jour ? assistant.heures_par_jour / 2 : 3.5);
+                        const heuresFaites = demiJFaites * heuresParDemiJ;
                         const heuresSup = assistant.heures_supplementaires || 0;
-                        const congesDemiJ = calculateConges(assistant.id, planningSemaine.dates);
+                        // Calculer uniquement les vrais congés (pas les repos)
+                        const congesDemiJ = calculateCongesComptabilises(assistant.id, planningSemaine.dates);
                         const congesHeures = congesDemiJ * (assistant.heures_demi_journee_conge || 4);
                         
                         return (
@@ -8950,10 +8953,12 @@ const PlanningManager = () => {
                                   {heuresSup >= 0 ? '+' : ''}{heuresSup.toFixed(1)}h
                                 </span>
                               </div>
+                              {congesDemiJ > 0 && (
                               <div>
                                 <span className="text-gray-500">Congés:</span>
                                 <span className="font-bold text-green-600 ml-1">{congesDemiJ} ½j ({congesHeures}h)</span>
                               </div>
+                              )}
                             </div>
                           </div>
                         );
