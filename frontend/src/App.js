@@ -4070,7 +4070,8 @@ const PlanningManager = () => {
     horaire_debut: '',
     horaire_fin: '',
     horaire_pause_debut: '',
-    horaire_pause_fin: ''
+    horaire_pause_fin: '',
+    est_repos: false
   });
   
   // État pour le modal journée complète (matin + après-midi)
