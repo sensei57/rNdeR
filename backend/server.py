@@ -174,6 +174,7 @@ class CreneauPlanningUpdate(BaseModel):
     horaire_pause_fin: Optional[str] = None
     notes: Optional[str] = None
     heures_supplementaires: Optional[float] = None
+    est_repos: Optional[bool] = None
 
 # Groupe Chat Models
 class GroupeChat(BaseModel):
