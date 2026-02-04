@@ -6637,10 +6637,11 @@ const PlanningManager = () => {
       const planning = planningSemaine.planning[date];
       if (!planning) return;
       
-      const creneauxMatin = planning.MATIN?.filter(c => c.employe_id === employeId) || [];
-      const creneauxApresMidi = planning.APRES_MIDI?.filter(c => c.employe_id === employeId) || [];
+      // Filtrer les créneaux qui ne sont PAS des repos
+      const creneauxMatin = planning.MATIN?.filter(c => c.employe_id === employeId && !c.est_repos) || [];
+      const creneauxApresMidi = planning.APRES_MIDI?.filter(c => c.employe_id === employeId && !c.est_repos) || [];
       
-      // Chaque créneau (MATIN ou APRES_MIDI) = 1 demi-journée
+      // Chaque créneau (MATIN ou APRES_MIDI) = 1 demi-journée (sauf repos)
       if (creneauxMatin.length > 0) total += 1;
       if (creneauxApresMidi.length > 0) total += 1;
     });
