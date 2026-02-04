@@ -19,10 +19,13 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 
-  (window.location.hostname.includes('onrender.com') && window.location.hostname.includes('test')
-    ? 'https://ope-francis-test.onrender.com' 
-    : 'https://ope-francis.onrender.com');
+const BACKEND_URL = (window.location.hostname.includes('test'))
+  ? 'https://ope-francis-test.onrender.com'
+  : 'https://ope-francis.onrender.com';
+
+const API = `${BACKEND_URL}/api`;
+
+console.log("Connecté au backend :", BACKEND_URL); 
 
 // Fonction utilitaire pour obtenir l'URL complète d'une photo
 const getPhotoUrl = (photoUrl) => {
