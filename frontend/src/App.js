@@ -11009,10 +11009,25 @@ const PlanningManager = () => {
                   />
                 </div>
                 
+                {/* Option Repos (non comptabilisé) */}
+                <div className="flex items-center space-x-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                  <input
+                    type="checkbox"
+                    id="est_repos"
+                    checked={quickCreneauData.est_repos}
+                    onChange={(e) => setQuickCreneauData(prev => ({ ...prev, est_repos: e.target.checked }))}
+                    className="h-5 w-5 text-orange-600 rounded border-orange-300 focus:ring-orange-500"
+                  />
+                  <label htmlFor="est_repos" className="flex-1 cursor-pointer">
+                    <span className="font-medium text-orange-700">😴 Repos (non comptabilisé)</span>
+                    <p className="text-xs text-orange-600">Cocher si ce créneau ne doit pas être comptabilisé dans les heures de travail</p>
+                  </label>
+                </div>
+                
                 {/* Aperçu de l'affichage */}
-                <div className="bg-blue-50 border border-blue-200 rounded p-2 text-sm">
+                <div className={`border rounded p-2 text-sm ${quickCreneauData.est_repos ? 'bg-orange-100 border-orange-300' : 'bg-blue-50 border-blue-200'}`}>
                   <span className="font-semibold">Aperçu: </span>
-                  {quickCreneauData.salle_attribuee || quickCreneauData.notes || 'PRÉSENT'}
+                  {quickCreneauData.est_repos ? '😴 REPOS (non comptabilisé)' : (quickCreneauData.salle_attribuee || quickCreneauData.notes || 'PRÉSENT')}
                 </div>
               </div>
             ) : (
