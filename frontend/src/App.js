@@ -6703,6 +6703,31 @@ const PlanningManager = () => {
     return joursConges;
   };
 
+  // Calculer uniquement les congés COMPTABILISÉS (exclut REPOS et ABSENT)
+  const calculateCongesComptabilises = (employeId, dates) => {
+    if (!congesApprouves || congesApprouves.length === 0) return 0;
+    
+    const typesNonComptabilises = ['REPOS', 'ABSENT'];
+    let demiJourneesConges = 0;
+    
+    dates.forEach(date => {
+      // Chercher les congés approuvés pour cet employé à cette date (hors repos)
+      const congesJour = congesApprouves.filter(c => 
+        c.employe_id === employeId && 
+        c.date_debut <= date && 
+        c.date_fin >= date &&
+        !typesNonComptabilises.includes(c.type_conge)
+      );
+      
+      congesJour.forEach(conge => {
+        // Si c'est une demi-journée, compter 1, sinon compter 2
+        demiJourneesConges += conge.demi_journee ? 1 : 2;
+      });
+    });
+    
+    return demiJourneesConges;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
