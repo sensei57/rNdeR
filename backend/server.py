@@ -93,6 +93,7 @@ class UserUpdate(BaseModel):
     peut_modifier_planning: Optional[bool] = None
     heures_par_jour: Optional[float] = None
     heures_demi_journee_conge: Optional[float] = None
+    heures_demi_journee_travail: Optional[float] = None
     limite_demi_journees: Optional[int] = None
     limite_demi_journees_a: Optional[int] = None
     limite_demi_journees_b: Optional[int] = None
