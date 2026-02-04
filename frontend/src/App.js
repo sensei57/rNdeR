@@ -5380,7 +5380,8 @@ const PlanningManager = () => {
         horaire_pause_fin: quickCreneauData.horaire_pause_fin || null,
         salle_attribuee: quickCreneauData.salle_attribuee || null,
         salle_attente: quickCreneauData.salle_attente || null,
-        medecin_ids: quickCreneauData.medecin_ids || []
+        medecin_ids: quickCreneauData.medecin_ids || [],
+        est_repos: quickCreneauData.est_repos || false
       };
       
       if (quickCreneauData.id) {
