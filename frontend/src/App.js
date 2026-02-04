@@ -19,11 +19,14 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 
-const BACKEND_URL = (window.location.hostname.includes('test'))
-  ? 'https://ope-francis-test.onrender.com'
-  : 'https://ope-francis.onrender.com';
+const BACKEND_URL = window.location.hostname.includes('test') 
+    ? 'https://ope-francis-test.onrender.com' 
+    : 'https://ope-francis.onrender.com';
 
 const API = `${BACKEND_URL}/api`;
+
+console.log("Mode détecté :", window.location.hostname.includes('test') ? "TEST" : "PRODUCTION");
+console.log("URL Backend utilisée :", BACKEND_URL);
 
 console.log("Connecté au backend :", BACKEND_URL); 
 
