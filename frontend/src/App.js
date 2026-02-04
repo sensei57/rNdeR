@@ -20,7 +20,7 @@ import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 
 // FORCE LE TEST : Aucune condition, on pointe direct sur le backend de test
-const BACKEND_URL = 'https://ope-francis-test.onrender.com';
+const BACKEND_URL = 'https://ope-francis.onrender.com';
 const API = `${BACKEND_URL}/api`;
 
 console.log("!!! ATTENTION : CECI EST LA VERSION DE TEST !!!");
