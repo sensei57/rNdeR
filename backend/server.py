@@ -161,6 +161,7 @@ class CreneauPlanningCreate(BaseModel):
     horaire_pause_fin: Optional[str] = None
     notes: Optional[str] = None
     heures_supplementaires: Optional[float] = 0.0
+    est_repos: bool = False
 
 class CreneauPlanningUpdate(BaseModel):
     medecin_attribue_id: Optional[str] = None
