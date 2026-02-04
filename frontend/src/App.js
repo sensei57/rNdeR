@@ -4081,8 +4081,8 @@ const PlanningManager = () => {
     employe_id: '',
     employe: null,
     date: '',
-    matin: { notes: '', salle_attribuee: '', salle_attente: '', medecin_ids: [], horaire_debut: '', horaire_fin: '', conge: false, type_conge: '' },
-    apresMidi: { notes: '', salle_attribuee: '', salle_attente: '', medecin_ids: [], horaire_debut: '', horaire_fin: '', conge: false, type_conge: '' }
+    matin: { notes: '', salle_attribuee: '', salle_attente: '', medecin_ids: [], horaire_debut: '', horaire_fin: '', conge: false, type_conge: '', est_repos: false },
+    apresMidi: { notes: '', salle_attribuee: '', salle_attente: '', medecin_ids: [], horaire_debut: '', horaire_fin: '', conge: false, type_conge: '', est_repos: false }
   });
   
   const [newSemaineType, setNewSemaineType] = useState({
