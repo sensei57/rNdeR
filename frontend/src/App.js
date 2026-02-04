@@ -19,12 +19,15 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 
-// FORCE LE TEST : Aucune condition, on pointe direct sur le backend de test
-const BACKEND_URL = 'https://ope-francis.onrender.com';
+const BACKEND_URL = window.location.hostname.includes('test') 
+  ? 'https://ope-francis-test.onrender.com' 
+  : 'https://ope-francis.onrender.com';
+
 const API = `${BACKEND_URL}/api`;
 
-console.log("!!! ATTENTION : CECI EST LA VERSION DE TEST !!!");
-console.log("Connecté à :", BACKEND_URL);
+// Un seul log clair pour savoir où on est
+console.log(`%c 🚀 MODE ${window.location.hostname.includes('test') ? 'TEST' : 'PROD'} ACTIF `, 
+            `background: ${window.location.hostname.includes('test') ? '#ffeb3b' : '#4caf50'}; color: #000; font-weight: bold;`);
 
 // Fonction utilitaire pour obtenir l'URL complète d'une photo
 const getPhotoUrl = (photoUrl) => {
