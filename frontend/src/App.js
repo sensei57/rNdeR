@@ -5777,8 +5777,8 @@ const PlanningManager = () => {
               totalMinutes += Math.max(0, minutes);
             }
           } else {
-            // Pour assistants/médecins : utiliser heures par jour / 2 (demi-journée)
-            const heuresParDemiJournee = (employe.heures_par_jour || 7) / 2;
+            // Pour assistants/médecins : utiliser heures_demi_journee_travail si défini
+            const heuresParDemiJournee = employe.heures_demi_journee_travail || (employe.heures_par_jour ? employe.heures_par_jour / 2 : 3.5);
             totalMinutes += heuresParDemiJournee * 60;
           }
           
