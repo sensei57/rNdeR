@@ -12275,11 +12275,12 @@ const PlanningManager = () => {
               </div>
               
               {/* En-tête du tableau */}
-              <div className="grid grid-cols-6 gap-3 mb-3 px-2">
+              <div className="grid grid-cols-7 gap-3 mb-3 px-2">
                 <div className="font-semibold text-gray-600 text-sm">Nom</div>
                 <div className="font-semibold text-gray-600 text-sm text-center">Semaine Type</div>
                 <div className="font-semibold text-gray-600 text-sm text-center">½j Sem A</div>
                 <div className="font-semibold text-gray-600 text-sm text-center">½j Sem B</div>
+                <div className="font-semibold text-green-700 text-sm text-center">H/½j Travail</div>
                 <div className="font-semibold text-purple-700 text-sm text-center">Heures Contrat</div>
                 <div className="font-semibold text-orange-600 text-sm text-center">H/½j Congé</div>
               </div>
@@ -12287,7 +12288,7 @@ const PlanningManager = () => {
               {/* Liste des employés */}
               <div className="space-y-2">
                 {users.filter(u => u.actif && u.role === 'Assistant').map(emp => (
-                  <div key={emp.id} className="grid grid-cols-6 gap-3 items-center bg-white p-3 rounded-lg shadow-sm border border-green-100">
+                  <div key={emp.id} className="grid grid-cols-7 gap-3 items-center bg-white p-3 rounded-lg shadow-sm border border-green-100">
                     <div className="font-medium text-gray-800">{emp.prenom} {emp.nom}</div>
                     <div className="flex justify-center gap-1">
                       <Button
@@ -12321,6 +12322,19 @@ const PlanningManager = () => {
                         className="h-9 w-16 text-center border-2 border-gray-200 rounded-lg focus:border-green-400 focus:ring-1 focus:ring-green-200"
                         defaultValue={emp.limite_demi_journees_b || 10}
                         onBlur={(e) => updateEmployeSemaineConfig(emp.id, 'limite_demi_journees_b', parseInt(e.target.value) || 10)}
+                      />
+                    </div>
+                    <div className="flex justify-center">
+                      <input
+                        type="number"
+                        step="0.5"
+                        placeholder="-"
+                        className={`h-9 w-16 text-center border-2 rounded-lg focus:border-green-500 focus:ring-1 focus:ring-green-200 font-semibold ${emp.heures_demi_journee_travail ? 'border-green-300 bg-green-50 text-green-700' : 'border-red-300 bg-red-50 text-red-500'}`}
+                        defaultValue={emp.heures_demi_journee_travail || ''}
+                        onBlur={(e) => {
+                          const val = e.target.value ? parseFloat(e.target.value) : null;
+                          updateEmployeSemaineConfig(emp.id, 'heures_demi_journee_travail', val);
+                        }}
                       />
                     </div>
                     <div className="flex justify-center">
