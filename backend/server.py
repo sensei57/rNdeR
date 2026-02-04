@@ -65,6 +65,7 @@ class UserBase(BaseModel):
     # Nouveaux champs pour la gestion des heures et semaines A/B
     heures_par_jour: Optional[float] = 7.0  # Heures par jour par défaut (pour assistants)
     heures_demi_journee_conge: Optional[float] = 4.0  # Heures par demi-journée de congé
+    heures_demi_journee_travail: Optional[float] = None  # Heures par demi-journée de travail (assistants) - doit être défini manuellement
     limite_demi_journees: Optional[int] = 10  # Limite de demi-journées par semaine (legacy)
     limite_demi_journees_a: Optional[int] = 10  # Limite de demi-journées semaine A
     limite_demi_journees_b: Optional[int] = 10  # Limite de demi-journées semaine B
