@@ -19,16 +19,12 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 
-const BACKEND_URL = window.location.hostname.includes('test') 
-    ? 'https://ope-francis-test.onrender.com' 
-    : 'https://ope-francis.onrender.com';
-
+// FORCE LE TEST : Aucune condition, on pointe direct sur le backend de test
+const BACKEND_URL = 'https://ope-francis-test.onrender.com';
 const API = `${BACKEND_URL}/api`;
 
-console.log("Mode détecté :", window.location.hostname.includes('test') ? "TEST" : "PRODUCTION");
-console.log("URL Backend utilisée :", BACKEND_URL);
-
-console.log("Connecté au backend :", BACKEND_URL); 
+console.log("!!! ATTENTION : CECI EST LA VERSION DE TEST !!!");
+console.log("Connecté à :", BACKEND_URL);
 
 // Fonction utilitaire pour obtenir l'URL complète d'une photo
 const getPhotoUrl = (photoUrl) => {
