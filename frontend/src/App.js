@@ -11031,13 +11031,30 @@ const PlanningManager = () => {
                 </div>
               </div>
             ) : (
-              <div className="space-y-2">
-                <Label>Note (optionnel)</Label>
-                <Input
-                  placeholder="Laisser vide pour 'Présence'"
-                  value={quickCreneauData.notes}
-                  onChange={(e) => setQuickCreneauData(prev => ({ ...prev, notes: e.target.value }))}
-                />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Note (optionnel)</Label>
+                  <Input
+                    placeholder="Laisser vide pour 'Présence'"
+                    value={quickCreneauData.notes}
+                    onChange={(e) => setQuickCreneauData(prev => ({ ...prev, notes: e.target.value }))}
+                  />
+                </div>
+                
+                {/* Option Repos (non comptabilisé) pour non-secrétaires */}
+                <div className="flex items-center space-x-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                  <input
+                    type="checkbox"
+                    id="est_repos_simple"
+                    checked={quickCreneauData.est_repos}
+                    onChange={(e) => setQuickCreneauData(prev => ({ ...prev, est_repos: e.target.checked }))}
+                    className="h-5 w-5 text-orange-600 rounded border-orange-300 focus:ring-orange-500"
+                  />
+                  <label htmlFor="est_repos_simple" className="flex-1 cursor-pointer">
+                    <span className="font-medium text-orange-700">😴 Repos (non comptabilisé)</span>
+                    <p className="text-xs text-orange-600">Cocher si ce créneau ne doit pas être comptabilisé dans les heures de travail</p>
+                  </label>
+                </div>
               </div>
             )}
             <div className="flex justify-between">
