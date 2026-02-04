@@ -6659,7 +6659,8 @@ const PlanningManager = () => {
       if (!planning) return;
       
       const creneaux = [...(planning.MATIN || []), ...(planning.APRES_MIDI || [])];
-      const creneauxEmploye = creneaux.filter(c => c.employe_id === employeId);
+      // Exclure les repos du calcul
+      const creneauxEmploye = creneaux.filter(c => c.employe_id === employeId && !c.est_repos);
       
       creneauxEmploye.forEach(creneau => {
         if (creneau.horaire_debut && creneau.horaire_fin) {
