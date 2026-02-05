@@ -1740,6 +1740,60 @@ async def get_planning(
     
     return enriched_creneaux
 
+# Notes journalières du planning - DOIT être AVANT /planning/{date}
+@api_router.get("/planning/notes")
+async def get_notes_planning(
+    date_debut: Optional[str] = None,
+    date_fin: Optional[str] = None,
+    current_user: User = Depends(get_current_user)
+):
+    """Récupère les notes journalières du planning"""
+    query = {}
+    if date_debut and date_fin:
+        query["date"] = {"$gte": date_debut, "$lte": date_fin}
+    elif date_debut:
+        query["date"] = date_debut
+    
+    notes = await db.notes_planning.find(query).to_list(100)
+    # Supprimer _id pour JSON serialization
+    for note in notes:
+        if '_id' in note:
+            del note['_id']
+    return notes
+
+@api_router.put("/planning/notes/{date}")
+async def save_note_planning(
+    date: str,
+    note_data: NotePlanningJourCreate,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    """Sauvegarde ou met à jour la note pour une date donnée"""
+    existing = await db.notes_planning.find_one({"date": date})
+    
+    if existing:
+        # Mise à jour
+        await db.notes_planning.update_one(
+            {"date": date},
+            {"$set": {
+                "note": note_data.note,
+                "date_modification": datetime.now(timezone.utc),
+                "modifie_par": current_user.id
+            }}
+        )
+        updated = await db.notes_planning.find_one({"date": date})
+        if '_id' in updated:
+            del updated['_id']
+        return updated
+    else:
+        # Création
+        note = NotePlanningJour(
+            date=date,
+            note=note_data.note,
+            modifie_par=current_user.id
+        )
+        await db.notes_planning.insert_one(note.dict())
+        return note.dict()
+
 @api_router.get("/planning/{date}", response_model=List[Dict[str, Any]])
 async def get_planning_by_date(
     date: str,
