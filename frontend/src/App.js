@@ -6729,7 +6729,7 @@ const PlanningManager = () => {
     dates.forEach(date => {
       // Chercher les congés approuvés pour cet employé à cette date (hors repos)
       const congesJour = congesApprouves.filter(c => 
-        c.employe_id === employeId && 
+        c.utilisateur_id === employeId && 
         c.date_debut <= date && 
         c.date_fin >= date &&
         !typesNonComptabilises.includes(c.type_conge)
