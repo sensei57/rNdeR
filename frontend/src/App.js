@@ -4237,12 +4237,15 @@ const PlanningManager = () => {
       setLoading(true);
       const monday = getMondayOfWeek(date);
       const weekDates = getWeekDates(monday);
+      const dateDebut = weekDates[0];
+      const dateFin = weekDates[weekDates.length - 1];
       
-      // Charger le planning, les utilisateurs, ET les congés en parallèle
-      const [usersRes, congesRes, demandesTravailRes, ...planningResponses] = await Promise.all([
+      // Charger le planning, les utilisateurs, les congés ET les notes en parallèle
+      const [usersRes, congesRes, demandesTravailRes, notesRes, ...planningResponses] = await Promise.all([
         axios.get(`${API}/users`),
         axios.get(`${API}/conges`),
         axios.get(`${API}/demandes-travail`),
+        axios.get(`${API}/planning/notes?date_debut=${dateDebut}&date_fin=${dateFin}`),
         ...weekDates.map(d => axios.get(`${API}/planning/${d}`))
       ]);
       
@@ -4255,6 +4258,13 @@ const PlanningManager = () => {
       
       // Mettre à jour les demandes de travail en attente
       setDemandesTravail(demandesTravailRes.data.filter(d => d.statut === 'EN_ATTENTE'));
+      
+      // Mettre à jour les notes de planning par date
+      const notesParDate = {};
+      notesRes.data.forEach(note => {
+        notesParDate[note.date] = note.note;
+      });
+      setNotesPlanningJour(notesParDate);
       
       // Construire les données du planning
       const planningData = {};
