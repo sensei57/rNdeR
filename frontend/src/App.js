@@ -5690,6 +5690,22 @@ const PlanningManager = () => {
     }
   };
 
+  // Sauvegarder une note pour un jour de planning
+  const handleSaveNotePlanningJour = async (date, note) => {
+    if (!canModifyPlanning()) {
+      toast.error('Vous n\'avez pas la permission de modifier le planning');
+      return;
+    }
+    
+    try {
+      await axios.put(`${API}/planning/notes/${date}`, { date, note });
+      setNotesPlanningJour(prev => ({...prev, [date]: note}));
+    } catch (error) {
+      console.error('Erreur sauvegarde note:', error);
+      toast.error('Erreur lors de la sauvegarde de la note');
+    }
+  };
+
   // Obtenir le label court du type de congé
   const getTypeCongeShortLabel = (type) => {
     const types = {
