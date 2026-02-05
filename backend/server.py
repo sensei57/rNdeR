@@ -5021,6 +5021,11 @@ async def upload_photo(file: UploadFile = File(...), current_user: User = Depend
 # Activation du routeur et des sécurités
 app.include_router(api_router)
 
+# Servir les fichiers uploadés (photos de profil)
+uploads_dir = ROOT_DIR / "uploads"
+uploads_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/api/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
