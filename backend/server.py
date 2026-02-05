@@ -4997,17 +4997,26 @@ firebase_config = {
 @api_router.post("/upload/photo")
 async def upload_photo(file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
     try:
-        # On définit le nom du fichier pour Firebase
-        file_ext = file.filename.split('.')[-1].lower() if '.' in file.filename else 'jpg'
-        file_name = f"profils/{current_user.id}_{uuid.uuid4().hex[:8]}.{file_ext}"
+        # Créer le dossier uploads s'il n'existe pas
+        upload_dir = ROOT_DIR / "uploads" / "photos"
+        upload_dir.mkdir(parents=True, exist_ok=True)
         
-        # On fabrique l'URL Firebase directement
-        # Note : Ton code frontend s'occupera de l'envoi réel vers Firebase
-        photo_url = f"https://firebasestorage.googleapis.com/v0/b/{firebase_config['storageBucket']}/o/{file_name.replace('/', '%2F')}?alt=media"
+        # On définit le nom du fichier
+        file_ext = file.filename.split('.')[-1].lower() if '.' in file.filename else 'jpg'
+        file_name = f"{current_user.id}_{uuid.uuid4().hex[:8]}.{file_ext}"
+        file_path = upload_dir / file_name
+        
+        # Sauvegarder le fichier
+        content = await file.read()
+        with open(file_path, "wb") as f:
+            f.write(content)
+        
+        # Retourner l'URL relative
+        photo_url = f"/api/uploads/photos/{file_name}"
         
         return {"url": photo_url, "filename": file_name}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur configuration photo: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur upload photo: {str(e)}")
 
 # Activation du routeur et des sécurités
 app.include_router(api_router)
