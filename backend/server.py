@@ -419,6 +419,19 @@ class PermissionStockCreate(BaseModel):
     peut_modifier: bool = False
     peut_ajouter: bool = False
     peut_supprimer: bool = False
+
+# Notes Journalières Planning
+class NotePlanningJour(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    date: str  # Format YYYY-MM-DD
+    note: str = ""
+    date_modification: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    modifie_par: Optional[str] = None
+
+class NotePlanningJourCreate(BaseModel):
+    date: str
+    note: str = ""
+
 # Semaine Type Models
 class SemaineType(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
