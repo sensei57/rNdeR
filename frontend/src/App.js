@@ -3745,10 +3745,12 @@ const PlanningManager = () => {
         demiJourneesEffectuees += creneauxJour.length;
       }
       
-      // Comptabiliser les congés (approuvés uniquement)
+      // Comptabiliser les congés (approuvés uniquement) - exclure REPOS et ABSENT
+      const typesCongesNonComptabilises = ['REPOS', 'ABSENT'];
       const congesJour = congesApprouves?.filter(c => 
-        c.employe_id === employe.id && 
-        dateStr >= c.date_debut && dateStr <= c.date_fin
+        c.utilisateur_id === employe.id && 
+        dateStr >= c.date_debut && dateStr <= c.date_fin &&
+        !typesCongesNonComptabilises.includes(c.type_conge)
       ) || [];
       
       congesJour.forEach(conge => {
