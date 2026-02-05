@@ -9938,6 +9938,9 @@ const PlanningManager = () => {
                           type="text"
                           placeholder="Note..."
                           className="w-full text-xs bg-transparent border-none text-center placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-teal-300 rounded"
+                          value={notesPlanningJour[date] || ''}
+                          onChange={(e) => setNotesPlanningJour(prev => ({...prev, [date]: e.target.value}))}
+                          onBlur={(e) => handleSaveNotePlanningJour(date, e.target.value)}
                           onClick={(e) => e.stopPropagation()}
                         />
                       </th>
