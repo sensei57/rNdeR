@@ -117,10 +117,30 @@ Ce script :
 
 ## 🔧 Configuration Technique
 
+### Sources des Credentials Firebase (priorité)
+1. **Variable d'environnement `FIREBASE_CREDENTIALS`** (JSON string) - ✅ Recommandé pour Render
+2. **Fichier `firebase-credentials.json`** dans `/app/backend/` - Fallback local
+
 ### Fichiers Modifiés
-- `/app/backend/push_notifications.py` : Module Firebase Admin SDK
-- `/app/backend/firebase-credentials.json` : Credentials Firebase (NE PAS PARTAGER)
-- `/app/backend/server.py` : Endpoint `/notifications/subscribe` mis à jour
+- `/app/backend/push_notifications.py` : Module Firebase Admin SDK (supporte env var + fichier)
+- `/app/backend/server.py` : Endpoints notifications
+
+### Endpoint de diagnostic (Directeur uniquement)
+```
+GET /api/notifications/firebase-status
+```
+Retourne :
+```json
+{
+  "initialized": true,
+  "credentials_source": "env_var",  // ou "file" ou "none"
+  "has_env_var": true,
+  "has_file": false,
+  "status": "active",
+  "message": "Firebase prêt pour les notifications push",
+  "users_with_fcm_token": 5
+}
+```
 
 ### Dépendances
 - `firebase-admin==7.1.0` (déjà installé)
