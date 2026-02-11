@@ -10297,8 +10297,10 @@ const PlanningManager = () => {
                           // Calcul différence heures (avec congés payés) vs contrat
                           const diffHeures = heuresAvecConges - heuresContrat;
                           
-                          // Heures supp/récup de cette semaine (basé sur la différence calculée)
-                          const heuresSupSemaine = diffHeures;
+                          // Heures supp/récup de cette semaine
+                          // HEURES_A_RECUPERER ajoute aux heures sup
+                          // HEURES_RECUPEREES retire des heures sup
+                          const heuresSupSemaine = diffHeures + heuresARecupererSemaine - heuresRecupereesSemaine;
                           
                           // Couleur colonne Contrat: Jaune=égal, Vert=moins(récup), Rouge=plus(sup)
                           const getCouleurContrat = (effectuees, contrat) => {
