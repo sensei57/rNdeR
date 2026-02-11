@@ -338,14 +338,49 @@ const PushNotificationManager = () => {
       });
 
       if (token) {
-        // Enregistrer le token au backend
+        // Collecter les informations de l'appareil
+        const userAgent = navigator.userAgent;
+        let browserName = 'Inconnu';
+        let osName = 'Inconnu';
+        let deviceName = 'Appareil';
+
+        // Détecter le navigateur
+        if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) browserName = 'Chrome';
+        else if (userAgent.includes('Firefox')) browserName = 'Firefox';
+        else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) browserName = 'Safari';
+        else if (userAgent.includes('Edg')) browserName = 'Edge';
+        else if (userAgent.includes('Opera')) browserName = 'Opera';
+
+        // Détecter l'OS
+        if (userAgent.includes('Windows')) osName = 'Windows';
+        else if (userAgent.includes('Mac')) osName = 'macOS';
+        else if (userAgent.includes('iPhone')) { osName = 'iOS'; deviceName = 'iPhone'; }
+        else if (userAgent.includes('iPad')) { osName = 'iPadOS'; deviceName = 'iPad'; }
+        else if (userAgent.includes('Android')) { osName = 'Android'; deviceName = 'Android'; }
+        else if (userAgent.includes('Linux')) osName = 'Linux';
+
+        // Construire le nom de l'appareil
+        if (deviceName === 'Appareil') {
+          deviceName = `${osName} - ${browserName}`;
+        } else {
+          deviceName = `${deviceName} - ${browserName}`;
+        }
+
+        // Enregistrer le token au backend avec les infos appareil
         await axios.post(`${API}/notifications/subscribe`, {
           token: token,
-          userId: user.id
+          userId: user.id,
+          device_info: {
+            userAgent: userAgent,
+            platform: navigator.platform,
+            deviceName: deviceName,
+            browser: browserName,
+            os: osName
+          }
         });
         
         setSubscribed(true);
-        toast.success('✅ Notifications Firebase activées ! Vous recevrez votre planning chaque matin à 7h45.');
+        toast.success(`✅ Notifications activées sur ${deviceName} ! Vous recevrez votre planning chaque matin à 7h45.`);
       } else {
         throw new Error('Impossible d\'obtenir le token FCM');
       }
