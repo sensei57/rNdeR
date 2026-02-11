@@ -6,6 +6,35 @@ Les notifications push Firebase sont maintenant **opérationnelles** avec Fireba
 
 ---
 
+## 🚀 Configuration pour Render (IMPORTANT)
+
+### Étape 1 : Obtenir les credentials Firebase
+
+1. Allez sur **https://console.firebase.google.com**
+2. Sélectionnez le projet **`cabinet-medical-ope`**
+3. Cliquez sur ⚙️ **Paramètres du projet** (roue dentée en haut à gauche)
+4. Onglet **Comptes de service**
+5. Cliquez sur **"Générer une nouvelle clé privée"**
+6. Un fichier JSON sera téléchargé (ex: `cabinet-medical-ope-firebase-adminsdk-xxxxx.json`)
+
+### Étape 2 : Configurer sur Render
+
+1. Dans Render, allez dans **Environment** de votre service backend
+2. Ajoutez une nouvelle variable d'environnement :
+   - **Key** : `FIREBASE_CREDENTIALS`
+   - **Value** : Copiez-collez **TOUT le contenu** du fichier JSON téléchargé
+3. Cliquez sur **Save Changes**
+4. Le service redémarrera automatiquement
+
+### Vérification
+
+Après le redémarrage, vous pouvez vérifier que Firebase est actif :
+- Connectez-vous comme Directeur
+- Appelez `GET /api/notifications/firebase-status`
+- Vous devriez voir `"initialized": true`
+
+---
+
 ## 🎯 Fonctionnalités
 
 Les notifications push sont envoyées automatiquement pour :
