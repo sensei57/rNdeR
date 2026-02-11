@@ -10227,6 +10227,8 @@ const PlanningManager = () => {
                           // Calculer les heures de congés pour cette semaine
                           let heuresCongesPayesSemaine = 0; // Congés payés = comptent comme travail
                           let heuresReposSemaine = 0; // Repos = ne comptent pas
+                          let heuresARecupererSemaine = 0; // Heures à récupérer = heures sup positives
+                          let heuresRecupereesSemaine = 0; // Heures récupérées = négatif heures sup
                           let nbConges = 0;
                           const congesDejaComptes = new Set(); // Éviter de compter le même congé plusieurs fois
                           planningTableau.dates.forEach(date => {
@@ -10237,17 +10239,27 @@ const PlanningManager = () => {
                               if (congesDejaComptes.has(cleConge)) return;
                               congesDejaComptes.add(cleConge);
                               
-                              const heuresConge = secretaire.heures_demi_journee_conge || 4;
+                              // Utiliser heures_conge du congé si défini
+                              const heuresConge = conge.heures_conge || secretaire.heures_demi_journee_conge || 4;
                               // Déterminer le nombre d'heures pour ce jour
                               // Si demi_journee est true → heuresConge (1 demi-journée)
                               // Si demi_journee est false → heuresConge * 2 (journée complète)
                               const heuresJour = conge.demi_journee ? heuresConge : heuresConge * 2;
                               
                               nbConges++;
-                              // Les congés payés comptent comme heures travaillées, pas les repos
+                              // Gestion des différents types de congés
                               if (conge.type_conge === 'REPOS' || conge.type_conge === 'REPOS_COMPENSATEUR') {
+                                // Repos = ne comptent pas du tout
                                 heuresReposSemaine += heuresJour;
+                              } else if (conge.type_conge === 'HEURES_A_RECUPERER') {
+                                // Heures à récupérer = compte comme travail + heures sup positives
+                                heuresCongesPayesSemaine += heuresJour;
+                                heuresARecupererSemaine += heuresJour;
+                              } else if (conge.type_conge === 'HEURES_RECUPEREES') {
+                                // Heures récupérées = négatif heures sup (ne compte pas comme travail)
+                                heuresRecupereesSemaine += heuresJour;
                               } else {
+                                // Autres congés (CONGE_PAYE, RTT, etc.) = comptent comme travail
                                 heuresCongesPayesSemaine += heuresJour;
                               }
                             });
