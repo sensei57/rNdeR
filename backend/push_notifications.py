@@ -1,8 +1,13 @@
 """
 Module pour gérer les notifications push via Firebase Admin SDK
+Supporte les credentials via:
+1. Variable d'environnement FIREBASE_CREDENTIALS (JSON string) - recommandé pour Render
+2. Fichier firebase-credentials.json (fallback)
 """
 import os
+import json
 import logging
+import tempfile
 import firebase_admin
 from firebase_admin import credentials, messaging
 
@@ -10,32 +15,71 @@ logger = logging.getLogger(__name__)
 
 # Initialisation Firebase Admin SDK
 _firebase_app = None
+_temp_cred_file = None  # Pour nettoyer le fichier temporaire si nécessaire
 
 def initialize_firebase():
     """Initialise Firebase Admin SDK avec les credentials"""
-    global _firebase_app
+    global _firebase_app, _temp_cred_file
     
     if _firebase_app is not None:
         return _firebase_app
     
     try:
-        # Chemin vers le fichier de credentials
-        cred_path = os.path.join(os.path.dirname(__file__), 'firebase-credentials.json')
+        cred = None
         
-        if not os.path.exists(cred_path):
-            logger.error(f"Fichier de credentials Firebase introuvable: {cred_path}")
-            return None
+        # Option 1: Variable d'environnement FIREBASE_CREDENTIALS (JSON string)
+        firebase_creds_env = os.environ.get('FIREBASE_CREDENTIALS')
+        if firebase_creds_env:
+            try:
+                # Parser le JSON depuis la variable d'environnement
+                cred_dict = json.loads(firebase_creds_env)
+                cred = credentials.Certificate(cred_dict)
+                logger.info("✅ Firebase credentials chargées depuis variable d'environnement FIREBASE_CREDENTIALS")
+            except json.JSONDecodeError as e:
+                logger.error(f"❌ Erreur parsing JSON FIREBASE_CREDENTIALS: {e}")
+                # Continuer pour essayer le fichier
+        
+        # Option 2: Fichier firebase-credentials.json (fallback)
+        if cred is None:
+            cred_path = os.path.join(os.path.dirname(__file__), 'firebase-credentials.json')
+            
+            if os.path.exists(cred_path):
+                cred = credentials.Certificate(cred_path)
+                logger.info(f"✅ Firebase credentials chargées depuis fichier: {cred_path}")
+            else:
+                logger.warning(f"⚠️ Fichier firebase-credentials.json introuvable: {cred_path}")
+                logger.warning("⚠️ Pour activer les notifications push, configurez FIREBASE_CREDENTIALS dans les variables d'environnement")
+                return None
         
         # Initialiser Firebase Admin
-        cred = credentials.Certificate(cred_path)
         _firebase_app = firebase_admin.initialize_app(cred)
         
         logger.info("✅ Firebase Admin SDK initialisé avec succès")
+        print("✅ Firebase Admin SDK initialisé avec succès - Notifications push activées")
         return _firebase_app
         
     except Exception as e:
         logger.error(f"❌ Erreur lors de l'initialisation Firebase: {e}")
+        print(f"❌ Erreur Firebase: {e}")
         return None
+
+
+def get_firebase_status():
+    """Retourne le statut de Firebase pour diagnostic"""
+    global _firebase_app
+    
+    has_env_var = bool(os.environ.get('FIREBASE_CREDENTIALS'))
+    has_file = os.path.exists(os.path.join(os.path.dirname(__file__), 'firebase-credentials.json'))
+    is_initialized = _firebase_app is not None
+    
+    return {
+        "initialized": is_initialized,
+        "credentials_source": "env_var" if has_env_var else ("file" if has_file else "none"),
+        "has_env_var": has_env_var,
+        "has_file": has_file,
+        "status": "active" if is_initialized else "inactive",
+        "message": "Firebase prêt pour les notifications push" if is_initialized else "Firebase non configuré - notifications push désactivées"
+    }
 
 
 async def send_push_notification(fcm_token: str, title: str, body: str, data: dict = None):
@@ -47,7 +91,12 @@ async def send_push_notification(fcm_token: str, title: str, body: str, data: di
         title: Titre de la notification
         body: Corps de la notification
         data: Données supplémentaires (optionnel)
+    
+    Returns:
+        bool: True si envoyé avec succès, False sinon
     """
+    global _firebase_app
+    
     # Initialiser Firebase si pas déjà fait
     if _firebase_app is None:
         initialize_firebase()
@@ -100,7 +149,12 @@ async def send_push_to_multiple(fcm_tokens: list, title: str, body: str, data: d
         title: Titre de la notification
         body: Corps de la notification
         data: Données supplémentaires (optionnel)
+    
+    Returns:
+        int: Nombre de notifications envoyées avec succès
     """
+    global _firebase_app
+    
     if not fcm_tokens:
         return 0
     
