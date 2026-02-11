@@ -3969,6 +3969,8 @@ const PlanningManager = () => {
         let totalDemiJournees = 0;
         let totalHeures = 0;
         let heuresConges = 0;
+        let heuresARecuperer = 0;  // Heures à récupérer = ajoutent aux heures sup
+        let heuresRecuperees = 0;  // Heures récupérées = retirent des heures sup
         
         planningTableau.dates?.forEach(date => {
           // Filtrer les créneaux en excluant les repos
@@ -3988,8 +3990,8 @@ const PlanningManager = () => {
           
           // Congés - gérer tous les types
           // REPOS : non comptabilisé nulle part
-          // HEURES_A_RECUPERER : heures travail + heures sup
-          // HEURES_RECUPEREES : négatif heures sup
+          // HEURES_A_RECUPERER : heures travail + heures sup positives
+          // HEURES_RECUPEREES : négatif heures sup (ne compte pas comme travail)
           // Autres (CONGE_PAYE, RTT, etc.) : heures travail
           const congesJour = congesApprouves?.filter(c => 
             c.utilisateur_id === employe.id && 
@@ -4000,16 +4002,25 @@ const PlanningManager = () => {
             // Utiliser heures_conge du congé si défini
             const h = c.heures_conge || employe.heures_demi_journee_conge || 4;
             const nbDemiJ = c.demi_journee ? 1 : 2;
+            const heuresTotal = h * nbDemiJ;
             
-            // HEURES_RECUPEREES ne compte pas comme travail
-            if (c.type_conge !== 'HEURES_RECUPEREES') {
-              heuresConges += h * nbDemiJ;
+            if (c.type_conge === 'HEURES_A_RECUPERER') {
+              // Heures à récupérer = compte comme travail + ajoute aux heures sup
+              heuresConges += heuresTotal;
+              heuresARecuperer += heuresTotal;
+            } else if (c.type_conge === 'HEURES_RECUPEREES') {
+              // Heures récupérées = retire des heures sup (ne compte PAS comme travail)
+              heuresRecuperees += heuresTotal;
+            } else {
+              // Autres congés = comptent comme travail
+              heuresConges += heuresTotal;
             }
           });
         });
         
         const heuresContrat = employe.heures_semaine_fixe || 35;
-        const heuresSupSemaine = totalHeures + heuresConges - heuresContrat;
+        // Calcul heures sup: base + heures à récupérer - heures récupérées
+        const heuresSupSemaine = (totalHeures + heuresConges - heuresContrat) + heuresARecuperer - heuresRecuperees;
         
         return {
           demiJournees: totalDemiJournees,
