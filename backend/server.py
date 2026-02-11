@@ -1859,11 +1859,54 @@ async def delete_creneau_planning(
     creneau_id: str,
     current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
 ):
+    # Récupérer le créneau avant suppression pour trouver la demande associée
+    creneau = await db.planning.find_one({"id": creneau_id})
+    if not creneau:
+        raise HTTPException(status_code=404, detail="Créneau non trouvé")
+    
+    # Supprimer le créneau
     result = await db.planning.delete_one({"id": creneau_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Créneau non trouvé")
     
-    return {"message": "Créneau supprimé avec succès"}
+    # CORRECTION BUG #4: Mettre à jour la demande de travail associée
+    # Chercher la demande de travail qui a créé ce créneau
+    demande_travail = await db.demandes_travail.find_one({
+        "utilisateur_id": creneau.get("utilisateur_id"),
+        "date_demandee": creneau.get("date"),
+        "statut": "APPROUVE"
+    })
+    
+    if demande_travail:
+        # Vérifier si tous les créneaux de cette demande ont été supprimés
+        creneaux_restants = await db.planning.count_documents({
+            "utilisateur_id": creneau.get("utilisateur_id"),
+            "date": creneau.get("date")
+        })
+        
+        if creneaux_restants == 0:
+            # Tous les créneaux supprimés -> Marquer la demande comme ANNULE
+            await db.demandes_travail.update_one(
+                {"id": demande_travail["id"]},
+                {"$set": {
+                    "statut": "ANNULE",
+                    "annule_par": current_user.id,
+                    "raison_annulation": "Créneau(x) supprimé(s) manuellement du planning",
+                    "date_annulation": datetime.now(timezone.utc)
+                }}
+            )
+            
+            # Notifier l'employé
+            user = await db.users.find_one({"id": creneau.get("utilisateur_id")})
+            if user:
+                await send_notification_to_user(
+                    user["id"],
+                    "⚠️ Créneau supprimé",
+                    f"Votre créneau du {creneau.get('date')} ({creneau.get('creneau')}) a été supprimé du planning par le Directeur.",
+                    {"type": "creneau_supprime", "date": creneau.get("date")}
+                )
+    
+    return {"message": "Créneau supprimé avec succès", "demande_mise_a_jour": demande_travail is not None}
 
 # Groupes de chat endpoints
 @api_router.post("/groupes-chat", response_model=GroupeChat)
