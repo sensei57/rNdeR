@@ -5783,7 +5783,9 @@ const PlanningManager = () => {
       'PATERNITE': 'PAT',
       'SANS_SOLDE': 'SS',
       'ABSENT': 'REP', // Fusionné avec REPOS -> affiche REP
-      'REPOS': 'REP',  // Repos/Absent non comptabilisé
+      'REPOS': 'REP',  // Repos non comptabilisé
+      'HEURES_A_RECUPERER': 'H+',  // Heures à récupérer
+      'HEURES_RECUPEREES': 'H-',   // Heures récupérées
       'AUTRE': 'AUT'
     };
     return types[type] || type?.substring(0, 3) || '?';
@@ -5791,13 +5793,25 @@ const PlanningManager = () => {
 
   // Déterminer si un congé est "comptabilisé" (congé payé, RTT, etc.) ou "non comptabilisé" (repos/absent)
   const isCongeComptabilise = (typeConge) => {
-    const nonComptabilises = ['ABSENT', 'REPOS'];
+    // REPOS = non comptabilisé nulle part
+    // HEURES_RECUPEREES = négatif dans les heures sup (ne compte pas comme travail)
+    const nonComptabilises = ['ABSENT', 'REPOS', 'HEURES_RECUPEREES'];
     return !nonComptabilises.includes(typeConge);
   };
 
   // Obtenir les classes CSS pour un congé selon son type
   const getCongeColorClasses = (typeConge, isBackground = false) => {
-    if (isCongeComptabilise(typeConge)) {
+    if (typeConge === 'HEURES_A_RECUPERER') {
+      // Heures à récupérer -> BLEU
+      return isBackground 
+        ? 'bg-blue-200 hover:bg-blue-300' 
+        : 'text-blue-800';
+    } else if (typeConge === 'HEURES_RECUPEREES') {
+      // Heures récupérées -> VIOLET
+      return isBackground 
+        ? 'bg-purple-200 hover:bg-purple-300' 
+        : 'text-purple-800';
+    } else if (isCongeComptabilise(typeConge)) {
       // Congés comptabilisés (CP, RTT, Maladie, etc.) -> ROUGE
       return isBackground 
         ? 'bg-red-200 hover:bg-red-300' 
