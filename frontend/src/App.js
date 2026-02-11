@@ -3960,15 +3960,25 @@ const PlanningManager = () => {
             }
           });
           
-          // Congés - exclure REPOS et ABSENT
+          // Congés - gérer tous les types
+          // REPOS : non comptabilisé nulle part
+          // HEURES_A_RECUPERER : heures travail + heures sup
+          // HEURES_RECUPEREES : négatif heures sup
+          // Autres (CONGE_PAYE, RTT, etc.) : heures travail
           const congesJour = congesApprouves?.filter(c => 
             c.utilisateur_id === employe.id && 
             date >= c.date_debut && date <= c.date_fin &&
             !typesCongesNonComptabilises.includes(c.type_conge)
           ) || [];
           congesJour.forEach(c => {
-            const h = employe.heures_demi_journee_conge || 4;
-            heuresConges += c.demi_journee ? h : h * 2;
+            // Utiliser heures_conge du congé si défini
+            const h = c.heures_conge || employe.heures_demi_journee_conge || 4;
+            const nbDemiJ = c.demi_journee ? 1 : 2;
+            
+            // HEURES_RECUPEREES ne compte pas comme travail
+            if (c.type_conge !== 'HEURES_RECUPEREES') {
+              heuresConges += h * nbDemiJ;
+            }
           });
         });
         
