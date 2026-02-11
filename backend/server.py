@@ -1415,6 +1415,7 @@ async def create_demande_conge(
         date_fin=demande_data.date_fin,
         type_conge=demande_data.type_conge,
         creneau=demande_data.creneau if demande_data.creneau else "JOURNEE_COMPLETE",
+        heures_conge=demande_data.heures_conge,  # Heures personnalisées par demi-journée
         motif=demande_data.motif if demande_data.motif else None
     )
     
