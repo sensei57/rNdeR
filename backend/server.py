@@ -630,7 +630,7 @@ class NotificationRequest(BaseModel):
 async def send_notification_to_user(user_id: str, title: str, body: str, data: Optional[Dict] = None):
     """Envoie une notification à un utilisateur spécifique (in-app + push)"""
     try:
-        # 1. Sauvegarder en base pour la notification in-app
+        # 1. Préparer la notification
         notification = {
             "id": str(uuid.uuid4()),
             "user_id": user_id,
@@ -638,26 +638,48 @@ async def send_notification_to_user(user_id: str, title: str, body: str, data: O
             "body": body,
             "data": data or {},
             "sent_at": datetime.now(timezone.utc),
-            "read": False
+            "read": False,
+            "push_status": "pending"  # pending, sent, failed, no_token
         }
         
-        await db.notifications.insert_one(notification)
-        print(f"📤 Notification in-app envoyée à {user_id}: {title}")
-        
         # 2. Envoyer notification push si l'utilisateur a un token FCM
-        user = await db.users.find_one({"id": user_id}, {"fcm_token": 1})
+        push_sent = False
+        user = await db.users.find_one({"id": user_id}, {"fcm_token": 1, "device_info": 1})
+        
         if user and user.get("fcm_token"):
-            from push_notifications import send_push_notification
-            await send_push_notification(
-                fcm_token=user["fcm_token"],
-                title=title,
-                body=body,
-                data=data or {}
-            )
-            print(f"📱 Push notification envoyée à {user_id}")
+            try:
+                from push_notifications import send_push_notification
+                push_result = await send_push_notification(
+                    fcm_token=user["fcm_token"],
+                    title=title,
+                    body=body,
+                    data=data or {}
+                )
+                if push_result:
+                    notification["push_status"] = "sent"
+                    notification["push_sent_at"] = datetime.now(timezone.utc)
+                    push_sent = True
+                    print(f"📱 Push notification envoyée à {user_id}")
+                else:
+                    notification["push_status"] = "failed"
+                    notification["push_error"] = "Firebase SDK returned False"
+                    print(f"⚠️ Push notification échouée pour {user_id}")
+            except Exception as push_error:
+                notification["push_status"] = "failed"
+                notification["push_error"] = str(push_error)
+                print(f"❌ Erreur push pour {user_id}: {push_error}")
+        else:
+            notification["push_status"] = "no_token"
+        
+        # 3. Sauvegarder en base pour la notification in-app (avec statut push)
+        await db.notifications.insert_one(notification)
+        print(f"📤 Notification in-app enregistrée pour {user_id}: {title} (push_status: {notification['push_status']})")
+        
+        return push_sent
         
     except Exception as e:
         print(f"❌ Erreur notification: {e}")
+        return False
 
 async def notify_director_new_request(type_request: str, user_name: str, details: str):
     """Notifie le directeur d'une nouvelle demande"""
