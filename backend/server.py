@@ -934,22 +934,41 @@ async def subscribe_to_notifications(
     subscription_data: dict,
     current_user: User = Depends(get_current_user)
 ):
-    """Enregistre le token FCM d'un utilisateur"""
+    """Enregistre le token FCM d'un utilisateur avec les informations de l'appareil"""
     try:
         fcm_token = subscription_data.get("token")
+        device_info = subscription_data.get("device_info", {})
         
         if not fcm_token:
             raise HTTPException(status_code=400, detail="Token FCM manquant")
         
-        # Enregistrer le token directement dans l'utilisateur
+        # Construire les infos appareil
+        device_data = {
+            "user_agent": device_info.get("userAgent", "Inconnu"),
+            "platform": device_info.get("platform", "Inconnu"),
+            "device_name": device_info.get("deviceName", "Appareil inconnu"),
+            "browser": device_info.get("browser", "Inconnu"),
+            "os": device_info.get("os", "Inconnu"),
+            "registered_at": datetime.now(timezone.utc)
+        }
+        
+        # Enregistrer le token et les infos appareil
         await db.users.update_one(
             {"id": current_user.id},
-            {"$set": {"fcm_token": fcm_token, "fcm_updated_at": datetime.now(timezone.utc)}}
+            {"$set": {
+                "fcm_token": fcm_token, 
+                "fcm_updated_at": datetime.now(timezone.utc),
+                "device_info": device_data
+            }}
         )
         
-        print(f"✅ Token FCM enregistré pour {current_user.prenom} {current_user.nom}")
+        print(f"✅ Token FCM enregistré pour {current_user.prenom} {current_user.nom} - Appareil: {device_data['device_name']} ({device_data['browser']})")
         
-        return {"message": "Token FCM enregistré avec succès", "user_id": current_user.id}
+        return {
+            "message": "Token FCM enregistré avec succès", 
+            "user_id": current_user.id,
+            "device_info": device_data
+        }
         
     except HTTPException:
         raise
