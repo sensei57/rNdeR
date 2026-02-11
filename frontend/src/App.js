@@ -2177,7 +2177,8 @@ const CongeManager = () => {
         date_fin: '',
         type_conge: '',
         creneau: 'JOURNEE_COMPLETE',
-        motif: ''
+        motif: '',
+        heures_conge: null
       });
       fetchDemandes();
     } catch (error) {
