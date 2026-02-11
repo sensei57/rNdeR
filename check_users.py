@@ -7,7 +7,7 @@ import requests
 import json
 
 def check_users():
-    base_url = "https://leave-counter-2.preview.emergentagent.com"
+    base_url = "https://french-greeting-56.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     # Login as directeur first
