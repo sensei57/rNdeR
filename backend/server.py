@@ -531,18 +531,20 @@ class DemandeCongeCreate(BaseModel):
     utilisateur_id: Optional[str] = None  # Pour que le Directeur puisse créer des demandes pour d'autres
     date_debut: str  # YYYY-MM-DD
     date_fin: str  # YYYY-MM-DD
-    type_conge: str  # "CONGE_PAYE", "RTT", "MALADIE", etc.
+    type_conge: str  # "CONGE_PAYE", "RTT", "MALADIE", "REPOS", "HEURES_A_RECUPERER", "HEURES_RECUPEREES", etc.
     creneau: Optional[str] = "JOURNEE_COMPLETE"  # "MATIN", "APRES_MIDI", "JOURNEE_COMPLETE"
     motif: Optional[str] = ""
+    heures_conge: Optional[float] = None  # Heures personnalisées par demi-journée (si différent de 4h)
 
 class DemandeConge(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     utilisateur_id: str
     date_debut: str  # YYYY-MM-DD
     date_fin: str  # YYYY-MM-DD
-    type_conge: str  # "CONGE_PAYE", "RTT", "MALADIE", etc.
+    type_conge: str  # "CONGE_PAYE", "RTT", "MALADIE", "REPOS", "HEURES_A_RECUPERER", "HEURES_RECUPEREES", etc.
     creneau: Optional[str] = "JOURNEE_COMPLETE"  # "MATIN", "APRES_MIDI", "JOURNEE_COMPLETE"
     motif: Optional[str] = None
+    heures_conge: Optional[float] = None  # Heures personnalisées par demi-journée (si différent de 4h)
     statut: str = "EN_ATTENTE"  # "EN_ATTENTE", "APPROUVE", "REJETE"
     date_demande: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     approuve_par: Optional[str] = None
