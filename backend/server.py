@@ -4937,10 +4937,35 @@ async def delete_fcm_token(current_user: User = Depends(get_current_user)):
     try:
         await db.users.update_one(
             {"id": current_user.id},
-            {"$unset": {"fcm_token": ""}}
+            {"$unset": {"fcm_token": "", "device_info": ""}}
         )
         
-        return {"message": "Token FCM supprimé avec succès"}
+        return {"message": "Token FCM et appareil supprimés avec succès"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+@api_router.get("/users/me/device-info")
+async def get_device_info(current_user: User = Depends(get_current_user)):
+    """Récupère les informations de l'appareil relié pour les notifications push"""
+    try:
+        user = await db.users.find_one({"id": current_user.id}, {"fcm_token": 1, "device_info": 1, "fcm_updated_at": 1})
+        
+        if not user or not user.get("fcm_token"):
+            return {
+                "has_device": False,
+                "message": "Aucun appareil relié pour les notifications push"
+            }
+        
+        device_info = user.get("device_info", {})
+        return {
+            "has_device": True,
+            "device_name": device_info.get("device_name", "Appareil inconnu"),
+            "browser": device_info.get("browser", "Inconnu"),
+            "platform": device_info.get("platform", "Inconnu"),
+            "os": device_info.get("os", "Inconnu"),
+            "registered_at": device_info.get("registered_at") or user.get("fcm_updated_at"),
+            "fcm_token_preview": user.get("fcm_token", "")[:20] + "..." if user.get("fcm_token") else None
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 
