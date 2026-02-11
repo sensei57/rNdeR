@@ -2389,7 +2389,11 @@ const CongeManager = () => {
                     <SelectItem value="PATERNITE">Congé paternité</SelectItem>
                     <SelectItem value="SANS_SOLDE">Congé sans solde</SelectItem>
                     {user?.role === 'Directeur' && (
-                      <SelectItem value="REPOS">Repos/Absent (non comptabilisé)</SelectItem>
+                      <>
+                        <SelectItem value="HEURES_A_RECUPERER">Heures à récupérer (+heures sup)</SelectItem>
+                        <SelectItem value="HEURES_RECUPEREES">Heures récupérées (-heures sup)</SelectItem>
+                        <SelectItem value="REPOS">Repos (non comptabilisé)</SelectItem>
+                      </>
                     )}
                   </SelectContent>
                 </Select>
@@ -2414,6 +2418,26 @@ const CongeManager = () => {
                   Sélectionnez si vous prenez une journée complète ou une demi-journée
                 </p>
               </div>
+              
+              {/* Heures personnalisées (optionnel) - Affiché uniquement si le directeur modifie */}
+              {user?.role === 'Directeur' && (
+                <div className="space-y-2">
+                  <Label htmlFor="heures_conge">Heures par demi-journée (optionnel)</Label>
+                  <Input
+                    id="heures_conge"
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    max="12"
+                    placeholder="4 (par défaut)"
+                    value={newDemande.heures_conge || ''}
+                    onChange={(e) => setNewDemande({...newDemande, heures_conge: e.target.value ? parseFloat(e.target.value) : null})}
+                  />
+                  <p className="text-xs text-gray-500">
+                    💡 Par défaut: 4h par demi-journée. Modifier uniquement si nécessaire.
+                  </p>
+                </div>
+              )}
               
               <div className="space-y-2">
                 <Label htmlFor="motif">Motif (optionnel)</Label>
