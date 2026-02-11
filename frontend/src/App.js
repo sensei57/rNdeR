@@ -5386,12 +5386,16 @@ const PlanningManager = () => {
         if (journeeData.matin.conge && !journeeData.apresMidi.conge) duree = 'MATIN';
         if (!journeeData.matin.conge && journeeData.apresMidi.conge) duree = 'APRES_MIDI';
         
+        // Utiliser les heures personnalisées si définies
+        const heuresConge = journeeData.matin.heures_conge || journeeData.apresMidi.heures_conge || null;
+        
         const congePayload = {
           utilisateur_id: journeeData.employe_id, // ID de la secrétaire
           date_debut: journeeData.date,
           date_fin: journeeData.date,
           type_conge: typeConge,
           duree: duree,
+          heures_conge: heuresConge,
           motif: `Congé ajouté depuis le planning`
         };
         
