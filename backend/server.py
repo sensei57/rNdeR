@@ -1569,12 +1569,12 @@ async def modifier_type_conge(
     current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
 ):
     """Modifier le type d'un congé (Directeur uniquement). 
-    Types: CONGE_PAYE, RTT, MALADIE, ABSENT, REPOS"""
+    Types: CONGE_PAYE, RTT, MALADIE, ABSENT, REPOS, HEURES_A_RECUPERER, HEURES_RECUPEREES"""
     demande = await db.demandes_conges.find_one({"id": demande_id})
     if not demande:
         raise HTTPException(status_code=404, detail="Demande non trouvée")
     
-    types_valides = ["CONGE_PAYE", "RTT", "MALADIE", "ABSENT", "REPOS", "AUTRE"]
+    types_valides = ["CONGE_PAYE", "RTT", "MALADIE", "ABSENT", "REPOS", "AUTRE", "HEURES_A_RECUPERER", "HEURES_RECUPEREES"]
     if nouveau_type not in types_valides:
         raise HTTPException(status_code=400, detail=f"Type invalide. Types valides: {', '.join(types_valides)}")
     
