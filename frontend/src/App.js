@@ -2112,7 +2112,8 @@ const CongeManager = () => {
     date_fin: '',
     type_conge: '',
     creneau: 'JOURNEE_COMPLETE',
-    motif: ''
+    motif: '',
+    heures_conge: null  // Heures personnalisées par demi-journée (optionnel)
   });
   const { user } = useAuth();
 
