@@ -3788,7 +3788,11 @@ const PlanningManager = () => {
         demiJourneesEffectuees += creneauxJour.length;
       }
       
-      // Comptabiliser les congés (approuvés uniquement) - exclure REPOS et ABSENT
+      // Comptabiliser les congés (approuvés uniquement)
+      // - REPOS : non comptabilisé nulle part
+      // - HEURES_A_RECUPERER : comptabilisé dans heures de travail + heures supplémentaires
+      // - HEURES_RECUPEREES : négatif dans les heures supplémentaires
+      // - Autres (CONGE_PAYE, RTT, etc.) : comptabilisé dans heures de travail et congés
       const typesCongesNonComptabilises = ['REPOS', 'ABSENT'];
       const congesJour = congesApprouves?.filter(c => 
         c.utilisateur_id === employe.id && 
@@ -3797,13 +3801,22 @@ const PlanningManager = () => {
       ) || [];
       
       congesJour.forEach(conge => {
-        const heuresConge = employe.heures_demi_journee_conge || 4;
-        if (conge.demi_journee) {
-          heuresConges += heuresConge;
-          congesCount += 1;
+        // Utiliser heures_conge du congé si défini, sinon valeur par défaut de l'employé
+        const heuresConge = conge.heures_conge || employe.heures_demi_journee_conge || 4;
+        const nbDemiJournees = conge.demi_journee ? 1 : 2;
+        const heuresTotal = heuresConge * nbDemiJournees;
+        
+        if (conge.type_conge === 'HEURES_RECUPEREES') {
+          // Heures récupérées = négatif dans heures sup (ne compte PAS comme travail)
+          // On ne l'ajoute pas aux heuresConges
+        } else if (conge.type_conge === 'HEURES_A_RECUPERER') {
+          // Heures à récupérer = compte comme travail ET heures sup positives
+          heuresConges += heuresTotal;
+          congesCount += nbDemiJournees;
         } else {
-          heuresConges += heuresConge * 2;
-          congesCount += 2;
+          // Autres types (CONGE_PAYE, RTT, MALADIE, etc.) = compte comme travail
+          heuresConges += heuresTotal;
+          congesCount += nbDemiJournees;
         }
       });
     }
