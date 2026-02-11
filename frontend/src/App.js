@@ -2241,13 +2241,19 @@ const CongeManager = () => {
       'PATERNITE': 'Congé paternité',
       'SANS_SOLDE': 'Congé sans solde',
       'ABSENT': 'Repos/Absent (non comptabilisé)',
-      'REPOS': 'Repos/Absent (non comptabilisé)',
+      'REPOS': 'Repos (non comptabilisé)',
+      'HEURES_A_RECUPERER': 'Heures à récupérer',
+      'HEURES_RECUPEREES': 'Heures récupérées',
       'AUTRE': 'Autre'
     };
     return types[type] || type;
   };
 
-  // Types de congés pour le sélecteur (ABSENT et REPOS fusionnés)
+  // Types de congés pour le sélecteur avec règles de comptabilisation
+  // - CONGE_PAYE, RTT, MALADIE, FORMATION, etc.: comptabilisé dans heures de travail et congés
+  // - REPOS: non comptabilisé nulle part
+  // - HEURES_A_RECUPERER: comptabilisé dans heures de travail + heures supplémentaires
+  // - HEURES_RECUPEREES: négatif dans les heures supplémentaires
   const typesConge = [
     { value: 'CONGE_PAYE', label: 'Congé payé' },
     { value: 'RTT', label: 'RTT' },
@@ -2256,7 +2262,9 @@ const CongeManager = () => {
     { value: 'MATERNITE', label: 'Congé maternité' },
     { value: 'PATERNITE', label: 'Congé paternité' },
     { value: 'SANS_SOLDE', label: 'Congé sans solde' },
-    { value: 'REPOS', label: 'Repos/Absent (non comptabilisé)' }
+    { value: 'HEURES_A_RECUPERER', label: 'Heures à récupérer (+heures sup)' },
+    { value: 'HEURES_RECUPEREES', label: 'Heures récupérées (-heures sup)' },
+    { value: 'REPOS', label: 'Repos (non comptabilisé)' }
   ];
 
   const getCreneauLabel = (creneau) => {
