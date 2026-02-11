@@ -1462,8 +1462,9 @@ async def create_conge_direct(
         "utilisateur_id": "uuid de l'utilisateur" (obligatoire),
         "date_debut": "2026-01-20",
         "date_fin": "2026-01-20",
-        "type_conge": "CONGE_PAYE" | "RTT" | "MALADIE" | "REPOS",
+        "type_conge": "CONGE_PAYE" | "RTT" | "MALADIE" | "REPOS" | "HEURES_A_RECUPERER" | "HEURES_RECUPEREES",
         "duree": "JOURNEE_COMPLETE" | "MATIN" | "APRES_MIDI",
+        "heures_conge": 4.0 (optionnel - heures par demi-journée),
         "motif": "optionnel"
     }
     """
@@ -1483,6 +1484,7 @@ async def create_conge_direct(
         date_fin=demande_data['date_fin'],
         type_conge=demande_data.get('type_conge', 'CONGE_PAYE'),
         creneau=demande_data.get('duree', 'JOURNEE_COMPLETE'),
+        heures_conge=demande_data.get('heures_conge'),  # Heures personnalisées par demi-journée
         motif=demande_data.get('motif', 'Créé depuis le planning'),
         statut='APPROUVE'  # Directement approuvé
     )
