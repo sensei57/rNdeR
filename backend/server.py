@@ -4969,6 +4969,25 @@ async def get_device_info(current_user: User = Depends(get_current_user)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 
+@api_router.get("/notifications/firebase-status")
+async def get_firebase_status_endpoint(current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))):
+    """Vérifie le statut de Firebase pour les notifications push (Directeur uniquement)"""
+    try:
+        from push_notifications import get_firebase_status
+        status = get_firebase_status()
+        
+        # Compter les utilisateurs avec token FCM
+        users_with_fcm = await db.users.count_documents({"fcm_token": {"$exists": True, "$ne": ""}})
+        status["users_with_fcm_token"] = users_with_fcm
+        
+        return status
+    except Exception as e:
+        return {
+            "initialized": False,
+            "status": "error",
+            "message": f"Erreur: {str(e)}"
+        }
+
 # ==================== ACTUALITÉS ====================
 
 @api_router.get("/actualites")
