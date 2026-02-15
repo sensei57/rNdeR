@@ -20,15 +20,13 @@ import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 import usePWA from './hooks/usePWA';
 
-const BACKEND_URL = window.location.hostname.includes('test') 
-  ? 'https://ope-francis-test.onrender.com' 
-  : 'https://ope-francis.onrender.com';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 
 const API = `${BACKEND_URL}/api`;
 
-// Un seul log clair pour savoir où on est
-console.log(`%c 🚀 MODE ${window.location.hostname.includes('test') ? 'TEST' : 'PROD'} ACTIF `, 
-            `background: ${window.location.hostname.includes('test') ? '#ffeb3b' : '#4caf50'}; color: #000; font-weight: bold;`);
+// Log pour debug
+console.log(`%c 🚀 Backend URL: ${BACKEND_URL} `, 
+            `background: #4caf50; color: #000; font-weight: bold;`);
 
 // Fonction utilitaire pour obtenir l'URL complète d'une photo
 const getPhotoUrl = (photoUrl) => {
