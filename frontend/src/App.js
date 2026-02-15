@@ -966,6 +966,8 @@ const PushNotificationManager = () => {
             Test
           </Button>
         </div>
+        {/* Liste des appareils */}
+        <DevicesList />
       </div>
     );
   }
@@ -984,6 +986,84 @@ const PushNotificationManager = () => {
         <Button onClick={requestPermission} size="sm" className="ml-4">
           Activer
         </Button>
+      </div>
+    </div>
+  );
+};
+
+// Composant pour afficher la liste des appareils enregistrés
+const DevicesList = () => {
+  const [devices, setDevices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    fetchDevices();
+  }, []);
+  
+  const fetchDevices = async () => {
+    try {
+      const response = await axios.get(`${API}/notifications/devices`);
+      setDevices(response.data.devices || []);
+    } catch (error) {
+      console.error('Erreur:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const removeDevice = async (deviceId) => {
+    if (!window.confirm('Supprimer cet appareil des notifications ?')) return;
+    
+    try {
+      await axios.delete(`${API}/notifications/devices/${deviceId}`);
+      toast.success('Appareil supprimé');
+      fetchDevices();
+    } catch (error) {
+      toast.error('Erreur lors de la suppression');
+    }
+  };
+  
+  const getDeviceIcon = (os) => {
+    if (os?.includes('iOS') || os?.includes('iPhone') || os?.includes('iPad')) return '📱';
+    if (os?.includes('Android')) return '📱';
+    if (os?.includes('Windows')) return '💻';
+    if (os?.includes('Mac')) return '🖥️';
+    return '📟';
+  };
+  
+  if (loading) return null;
+  
+  if (devices.length === 0) return null;
+  
+  return (
+    <div className="mt-3 pt-3 border-t border-green-200">
+      <p className="text-xs font-medium text-green-700 mb-2">
+        📲 Appareils enregistrés ({devices.length}/5)
+      </p>
+      <div className="space-y-2">
+        {devices.map((device, index) => (
+          <div 
+            key={device.device_id || index} 
+            className="flex items-center justify-between bg-white rounded px-2 py-1.5 text-xs"
+          >
+            <div className="flex items-center gap-2">
+              <span>{getDeviceIcon(device.os)}</span>
+              <div>
+                <p className="font-medium text-gray-800">{device.device_name || 'Appareil'}</p>
+                <p className="text-gray-500 text-[10px]">
+                  {device.registered_at ? new Date(device.registered_at).toLocaleDateString('fr-FR') : 'Date inconnue'}
+                </p>
+              </div>
+            </div>
+            <button 
+              onClick={() => removeDevice(device.device_id)}
+              className="text-red-500 hover:text-red-700 p-1"
+              title="Supprimer"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );
