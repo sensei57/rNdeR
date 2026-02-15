@@ -3954,14 +3954,15 @@ const PlanningManager = () => {
       
       const tableBody = [];
       
-      // Types de congés non comptabilisés
-      const typesCongesNonComptabilises = ['REPOS', 'ABSENT'];
+      // Types de congés non comptabilisés (REPOS = aucun effet)
+      const typesCongesNonComptabilises = ['REPOS'];
       
       // Fonction pour calculer les stats d'un employé
       const getEmployeStats = (employe) => {
         let totalDemiJournees = 0;
         let totalHeures = 0;
         let heuresConges = 0;
+        let congesCount = 0;  // Compteur de congés (uniquement CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE)
         let heuresARecuperer = 0;  // Heures à récupérer = ajoutent aux heures sup
         let heuresRecuperees = 0;  // Heures récupérées = retirent des heures sup
         
@@ -3982,10 +3983,10 @@ const PlanningManager = () => {
           });
           
           // Congés - gérer tous les types
-          // REPOS : non comptabilisé nulle part
-          // HEURES_A_RECUPERER : heures travail + heures sup positives
-          // HEURES_RECUPEREES : négatif heures sup (ne compte pas comme travail)
-          // Autres (CONGE_PAYE, RTT, etc.) : heures travail
+          // REPOS : non comptabilisé nulle part (aucun effet)
+          // HEURES_A_RECUPERER : heures sup positives (pas un "congé")
+          // HEURES_RECUPEREES : heures sup négatives (pas un "congé")
+          // CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE : comptés comme congés
           const congesJour = congesApprouves?.filter(c => 
             c.utilisateur_id === employe.id && 
             date >= c.date_debut && date <= c.date_fin &&
@@ -3998,15 +3999,16 @@ const PlanningManager = () => {
             const heuresTotal = h * nbDemiJ;
             
             if (c.type_conge === 'HEURES_A_RECUPERER') {
-              // Heures à récupérer = compte comme travail + ajoute aux heures sup
+              // Heures à récupérer = heures sup positives (PAS un congé)
               heuresConges += heuresTotal;
               heuresARecuperer += heuresTotal;
             } else if (c.type_conge === 'HEURES_RECUPEREES') {
-              // Heures récupérées = retire des heures sup (ne compte PAS comme travail)
+              // Heures récupérées = heures sup négatives (PAS un congé)
               heuresRecuperees += heuresTotal;
             } else {
-              // Autres congés = comptent comme travail
+              // CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE = vrais congés
               heuresConges += heuresTotal;
+              congesCount += nbDemiJ;
             }
           });
         });
