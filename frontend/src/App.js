@@ -1716,11 +1716,11 @@ const PersonnelManager = () => {
   };
 
   const getUsersByRole = (role) => {
-    return users.filter(u => u.role === role && u.actif);
+    return (users || []).filter(u => u.role === role && u.actif);
   };
 
   const getAssignedAssistants = (medecinId) => {
-    return assignations
+    return (assignations || [])
       .filter(a => a.medecin_id === medecinId && a.actif)
       .map(a => a.assistant);
   };
