@@ -18842,6 +18842,113 @@ const ProtectedRoute = ({ children }) => {
   return user ? children : <Navigate to="/login" replace />;
 };
 
+// Floating Chat Button Component - Visible partout
+const FloatingChatButton = ({ onNavigateToChat }) => {
+  const { user } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showPreview, setShowPreview] = useState(false);
+  const [recentMessages, setRecentMessages] = useState([]);
+
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchUnreadMessages = async () => {
+      try {
+        const response = await axios.get(`${API}/messages?limit=10`);
+        const messages = response.data || [];
+        // Compter les messages non lus (simplification - on compte les messages récents des autres)
+        const unread = messages.filter(m => m.expediteur?.id !== user.id).slice(0, 5);
+        setRecentMessages(unread);
+        setUnreadCount(unread.length);
+      } catch (error) {
+        console.log('Erreur fetch messages');
+      }
+    };
+
+    fetchUnreadMessages();
+    const interval = setInterval(fetchUnreadMessages, 10000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  if (!user) return null;
+
+  const getUserAvatar = (userData) => {
+    if (userData?.photo_url) {
+      return <img src={getPhotoUrl(userData.photo_url)} alt="" />;
+    }
+    const bgColor = userData?.role === 'Médecin' ? 'bg-gradient-to-br from-blue-400 to-blue-600' :
+                    userData?.role === 'Assistant' ? 'bg-gradient-to-br from-emerald-400 to-emerald-600' :
+                    'bg-gradient-to-br from-purple-400 to-purple-600';
+    return (
+      <div className={`avatar-fallback ${bgColor}`}>
+        {userData?.prenom?.[0]}{userData?.nom?.[0]}
+      </div>
+    );
+  };
+
+  return (
+    <>
+      {/* Bouton flottant */}
+      <button 
+        className="chat-floating-button"
+        onClick={() => setShowPreview(!showPreview)}
+        data-testid="floating-chat-btn"
+      >
+        <MessageSquare />
+        {unreadCount > 0 && (
+          <span className="chat-floating-badge">{unreadCount}</span>
+        )}
+      </button>
+
+      {/* Aperçu des messages */}
+      {showPreview && (
+        <div className="chat-floating-preview">
+          <div className="chat-floating-preview-header">
+            <span className="chat-floating-preview-title">Messages récents</span>
+            <button 
+              className="chat-floating-preview-close"
+              onClick={() => setShowPreview(false)}
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="chat-floating-preview-list">
+            {recentMessages.length === 0 ? (
+              <div className="p-4 text-center text-gray-500 text-sm">
+                Aucun message récent
+              </div>
+            ) : (
+              recentMessages.map(msg => (
+                <div 
+                  key={msg.id} 
+                  className="chat-floating-preview-item"
+                  onClick={() => {
+                    setShowPreview(false);
+                    if (onNavigateToChat) onNavigateToChat();
+                  }}
+                >
+                  <div className="chat-floating-preview-avatar">
+                    {getUserAvatar(msg.expediteur)}
+                  </div>
+                  <div className="chat-floating-preview-info">
+                    <div className="chat-floating-preview-name">
+                      {msg.expediteur?.prenom} {msg.expediteur?.nom}
+                    </div>
+                    <div className="chat-floating-preview-message">
+                      {msg.contenu?.substring(0, 40)}...
+                    </div>
+                  </div>
+                  <div className="chat-floating-preview-badge"></div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
 // Main App Component
 function App() {
   return (
