@@ -6081,6 +6081,8 @@ const PlanningManager = () => {
     
     let heuresEffectives = 0;
     let heuresContrat = 0;
+    let heuresARecuperer = 0;
+    let heuresRecuperees = 0;
     const heuresParDemiJ = employe.heures_demi_journee_travail || (employe.heures_par_jour ? employe.heures_par_jour / 2 : 3.5);
     const heuresParSemaine = employe.heures_semaine_fixe || 35;
     
@@ -6092,7 +6094,7 @@ const PlanningManager = () => {
       // Ignorer dimanche
       if (jourSemaine === 0) continue;
       
-      // Heures prévues (jours ouvrés lun-ven ou lun-sam selon config)
+      // Heures prévues (jours ouvrés lun-ven)
       if (jourSemaine >= 1 && jourSemaine <= 5) {
         heuresContrat += heuresParSemaine / 5;
       }
@@ -6109,19 +6111,36 @@ const PlanningManager = () => {
         }
       });
       
-      // Ajouter les congés payés (comptent comme heures travaillées)
+      // Traiter les congés selon leur type
       const congesJour = congesApprouves?.filter(c => 
         c.utilisateur_id === employeId && 
-        dateStr >= c.date_debut && dateStr <= c.date_fin &&
-        c.type_conge !== 'REPOS' && c.type_conge !== 'REPOS_COMPENSATEUR'
+        dateStr >= c.date_debut && dateStr <= c.date_fin
       ) || [];
       congesJour.forEach(conge => {
-        const heuresConge = employe.heures_demi_journee_conge || 4;
-        heuresEffectives += conge.demi_journee ? heuresConge : heuresConge * 2;
+        const heuresConge = conge.heures_conge || employe.heures_demi_journee_conge || 4;
+        const heuresJour = conge.demi_journee ? heuresConge : heuresConge * 2;
+        
+        // REPOS : ne compte pas du tout
+        if (conge.type_conge === 'REPOS' || conge.type_conge === 'REPOS_COMPENSATEUR') {
+          return;
+        }
+        // HEURES_A_RECUPERER : heures sup positives (PAS heures effectives)
+        if (conge.type_conge === 'HEURES_A_RECUPERER') {
+          heuresARecuperer += heuresJour;
+          return;
+        }
+        // HEURES_RECUPEREES : heures sup négatives (PAS heures effectives)
+        if (conge.type_conge === 'HEURES_RECUPEREES') {
+          heuresRecuperees += heuresJour;
+          return;
+        }
+        // CONGE_PAYE, MALADIE, CONGE_SANS_SOLDE : comptent comme heures effectives
+        heuresEffectives += heuresJour;
       });
     }
     
-    return Math.round((heuresEffectives - heuresContrat) * 10) / 10;
+    // Formule: (heures effectives - contrat) + heures à récupérer - heures récupérées
+    return Math.round((heuresEffectives - heuresContrat + heuresARecuperer - heuresRecuperees) * 10) / 10;
   };
 
   // Calculer les heures supp/récup pour l'ANNÉE en cours
@@ -6135,6 +6154,8 @@ const PlanningManager = () => {
     
     let heuresEffectives = 0;
     let heuresContrat = 0;
+    let heuresARecuperer = 0;
+    let heuresRecuperees = 0;
     const heuresParDemiJ = employe.heures_demi_journee_travail || (employe.heures_par_jour ? employe.heures_par_jour / 2 : 3.5);
     const heuresParSemaine = employe.heures_semaine_fixe || 35;
     
@@ -6167,19 +6188,36 @@ const PlanningManager = () => {
         }
       });
       
-      // Ajouter les congés payés (comptent comme heures travaillées)
+      // Traiter les congés selon leur type
       const congesJour = congesApprouves?.filter(c => 
         c.utilisateur_id === employeId && 
-        dateStr >= c.date_debut && dateStr <= c.date_fin &&
-        c.type_conge !== 'REPOS' && c.type_conge !== 'REPOS_COMPENSATEUR'
+        dateStr >= c.date_debut && dateStr <= c.date_fin
       ) || [];
       congesJour.forEach(conge => {
-        const heuresConge = employe.heures_demi_journee_conge || 4;
-        heuresEffectives += conge.demi_journee ? heuresConge : heuresConge * 2;
+        const heuresConge = conge.heures_conge || employe.heures_demi_journee_conge || 4;
+        const heuresJour = conge.demi_journee ? heuresConge : heuresConge * 2;
+        
+        // REPOS : ne compte pas du tout
+        if (conge.type_conge === 'REPOS' || conge.type_conge === 'REPOS_COMPENSATEUR') {
+          return;
+        }
+        // HEURES_A_RECUPERER : heures sup positives (PAS heures effectives)
+        if (conge.type_conge === 'HEURES_A_RECUPERER') {
+          heuresARecuperer += heuresJour;
+          return;
+        }
+        // HEURES_RECUPEREES : heures sup négatives (PAS heures effectives)
+        if (conge.type_conge === 'HEURES_RECUPEREES') {
+          heuresRecuperees += heuresJour;
+          return;
+        }
+        // CONGE_PAYE, MALADIE, CONGE_SANS_SOLDE : comptent comme heures effectives
+        heuresEffectives += heuresJour;
       });
     }
     
-    return Math.round((heuresEffectives - heuresContrat) * 10) / 10;
+    // Formule: (heures effectives - contrat) + heures à récupérer - heures récupérées
+    return Math.round((heuresEffectives - heuresContrat + heuresARecuperer - heuresRecuperees) * 10) / 10;
   };
 
   // Ouvrir le modal A/B/Co pour un employé ou une section
