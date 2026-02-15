@@ -9355,8 +9355,11 @@ const PlanningManager = () => {
                                     <div className="text-red-700 font-bold">🏖️ Congé</div>
                                     <div className="text-xs text-red-600">
                                       {conge.type_conge === 'CONGE_PAYE' ? 'CP' : 
-                                       conge.type_conge === 'RTT' ? 'RTT' : 
-                                       conge.type_conge === 'REPOS' ? 'Repos' : 'Congé'}
+                                       conge.type_conge === 'CONGE_SANS_SOLDE' ? 'CSS' : 
+                                       conge.type_conge === 'MALADIE' ? 'Maladie' :
+                                       conge.type_conge === 'REPOS' ? 'Repos' : 
+                                       conge.type_conge === 'HEURES_A_RECUPERER' ? 'H+' :
+                                       conge.type_conge === 'HEURES_RECUPEREES' ? 'H-' : 'Congé'}
                                     </div>
                                   </div>
                                 ) : (
