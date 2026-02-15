@@ -156,6 +156,209 @@ const RoomCardContent = ({ salle, occupation }) => {
   );
 };
 
+// Composant Plan du Cabinet avec scroll horizontal sur mobile et popup plein écran
+const CabinetPlanWithPopup = ({ planMatin, planApresMidi, user }) => {
+  const [showFullscreen, setShowFullscreen] = useState(false);
+  const [fullscreenPeriod, setFullscreenPeriod] = useState('matin'); // 'matin' ou 'apresmidi'
+  
+  const renderPlanContent = (plan, periodTitle, periodEmoji, isFullscreen = false) => {
+    if (!plan?.salles?.length) return null;
+    
+    const scale = isFullscreen ? 1 : 0.85;
+    const cardWidth = isFullscreen ? 85 : 78;
+    const cardHeight = isFullscreen ? 95 : 88;
+    
+    // Calculer les dimensions du container
+    const maxX = Math.max(...plan.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(s => s.position_x));
+    const maxY = Math.max(...plan.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(s => s.position_y));
+    const containerWidth = (maxX) * (cardWidth + 7) + cardWidth + 20;
+    const containerHeight = (maxY + 1) * (cardHeight + 7) + 20;
+    
+    return (
+      <div className={`cabinet-plan-period ${isFullscreen ? 'fullscreen-period' : ''}`}>
+        <div className="cabinet-plan-period-header">
+          <h3 className={`cabinet-plan-period-title ${periodTitle === 'Matin' ? 'morning' : 'afternoon'}`}>
+            <span>{periodEmoji}</span> {periodTitle}
+          </h3>
+        </div>
+        <div 
+          className={`cabinet-plan-scroll-container ${isFullscreen ? 'fullscreen-scroll' : ''}`}
+          onClick={() => {
+            if (!isFullscreen) {
+              setFullscreenPeriod(periodTitle === 'Matin' ? 'matin' : 'apresmidi');
+              setShowFullscreen(true);
+            }
+          }}
+        >
+          <div 
+            className="relative"
+            style={{ 
+              width: `${containerWidth}px`, 
+              height: `${containerHeight}px`,
+              minWidth: `${containerWidth}px`
+            }}
+          >
+            {plan.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => {
+              const occupation = salle.occupation;
+              const adjustedX = salle.position_x > 0 ? salle.position_x - 1 : 0;
+              
+              let statusClass = 'libre';
+              if (occupation) {
+                if (salle.type_salle === 'MEDECIN') statusClass = 'medecin';
+                else if (salle.type_salle === 'ASSISTANT') statusClass = 'assistant';
+                else if (salle.type_salle === 'ATTENTE') statusClass = 'attente';
+              }
+              
+              const hasPhoto = occupation?.employe?.photo_url;
+              
+              return (
+                <div
+                  key={salle.id}
+                  className={`room-card-positioned ${statusClass} ${hasPhoto ? 'has-photo' : ''}`}
+                  style={{
+                    position: 'absolute',
+                    left: `${adjustedX * (cardWidth + 7)}px`,
+                    top: `${salle.position_y * (cardHeight + 7)}px`,
+                    width: `${cardWidth}px`,
+                    height: `${cardHeight}px`
+                  }}
+                >
+                  {occupation && <div className="room-card-indicator"></div>}
+                  {occupation ? (
+                    <RoomCardContent salle={salle} occupation={occupation} />
+                  ) : (
+                    <>
+                      <div className="room-card-name">{salle.nom}</div>
+                      <div className="room-card-status">Libre</div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        {!isFullscreen && (
+          <div className="cabinet-plan-tap-hint md:hidden">
+            <span>👆 Appuyez pour agrandir</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  return (
+    <>
+      <div className="cabinet-plan-container">
+        <div className="cabinet-plan-header">
+          <div className="cabinet-plan-title">
+            <div className="cabinet-plan-title-icon">
+              <MapPin className="h-5 w-5" />
+            </div>
+            <span>Plan du Cabinet</span>
+          </div>
+          <span className="cabinet-plan-date">
+            {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </span>
+        </div>
+        
+        {(planMatin?.salles?.length > 0 || planApresMidi?.salles?.length > 0) ? (
+          <>
+            <div className="cabinet-plan-grid-wrapper">
+              {renderPlanContent(planMatin, 'Matin', '☀️')}
+              {renderPlanContent(planApresMidi, 'Après-midi', '🌙')}
+            </div>
+            
+            {/* Légende */}
+            <div className="cabinet-legend">
+              <div className="cabinet-legend-item">
+                <div className="cabinet-legend-dot medecin"></div>
+                <span>Médecin</span>
+              </div>
+              <div className="cabinet-legend-item">
+                <div className="cabinet-legend-dot assistant"></div>
+                <span>Assistant</span>
+              </div>
+              <div className="cabinet-legend-item">
+                <div className="cabinet-legend-dot attente"></div>
+                <span>Attente</span>
+              </div>
+              <div className="cabinet-legend-item">
+                <div className="cabinet-legend-dot libre"></div>
+                <span>Libre</span>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="empty-state">
+            <MapPin className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+            <p className="empty-state-title">Aucun planning pour aujourd'hui</p>
+            <p className="empty-state-text">Le plan s'affichera une fois que des créneaux seront programmés</p>
+          </div>
+        )}
+      </div>
+      
+      {/* Modal Plein Écran */}
+      {showFullscreen && (
+        <div className="cabinet-plan-fullscreen-modal" onClick={() => setShowFullscreen(false)}>
+          <div className="cabinet-plan-fullscreen-content" onClick={e => e.stopPropagation()}>
+            <button 
+              className="cabinet-plan-fullscreen-close"
+              onClick={() => setShowFullscreen(false)}
+            >
+              <X className="h-6 w-6" />
+            </button>
+            
+            <div className="cabinet-plan-fullscreen-header">
+              <h2>Plan du Cabinet</h2>
+              <div className="cabinet-plan-fullscreen-tabs">
+                <button 
+                  className={`tab-btn ${fullscreenPeriod === 'matin' ? 'active' : ''}`}
+                  onClick={() => setFullscreenPeriod('matin')}
+                >
+                  ☀️ Matin
+                </button>
+                <button 
+                  className={`tab-btn ${fullscreenPeriod === 'apresmidi' ? 'active' : ''}`}
+                  onClick={() => setFullscreenPeriod('apresmidi')}
+                >
+                  🌙 Après-midi
+                </button>
+              </div>
+            </div>
+            
+            <div className="cabinet-plan-fullscreen-scroll">
+              {fullscreenPeriod === 'matin' 
+                ? renderPlanContent(planMatin, 'Matin', '☀️', true)
+                : renderPlanContent(planApresMidi, 'Après-midi', '🌙', true)
+              }
+            </div>
+            
+            {/* Légende en plein écran */}
+            <div className="cabinet-legend fullscreen-legend">
+              <div className="cabinet-legend-item">
+                <div className="cabinet-legend-dot medecin"></div>
+                <span>Médecin</span>
+              </div>
+              <div className="cabinet-legend-item">
+                <div className="cabinet-legend-dot assistant"></div>
+                <span>Assistant</span>
+              </div>
+              <div className="cabinet-legend-item">
+                <div className="cabinet-legend-dot attente"></div>
+                <span>Attente</span>
+              </div>
+              <div className="cabinet-legend-item">
+                <div className="cabinet-legend-dot libre"></div>
+                <span>Libre</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
 // Composant carte Médecin avec gestion d'erreur d'image
 const MedecinCard = ({ medecin, user, handleEditPersonnel, handleDeletePersonnel, getAssignedAssistants }) => {
   const [imageError, setImageError] = useState(false);
