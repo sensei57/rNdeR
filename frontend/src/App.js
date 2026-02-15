@@ -4903,40 +4903,24 @@ const PlanningManager = () => {
     }
   };
 
-  // Fonction pour récupérer le planning du mois entier
+  // Fonction pour récupérer le planning du mois entier (OPTIMISÉ - 1 seule requête)
   const fetchPlanningMois = async (mois) => {
     try {
       setLoading(true);
-      const [year, month] = mois.split('-').map(Number);
-      const lastDay = new Date(year, month, 0).getDate(); // Nombre de jours dans le mois
       
-      // Récupérer tous les jours du mois
-      const allPlanning = [];
-      const promises = [];
-      
-      // Utiliser une boucle simple pour éviter les problèmes de fuseau horaire
-      for (let day = 1; day <= lastDay; day++) {
-        const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        promises.push(axios.get(`${API}/planning/${dateStr}`));
-      }
-      
-      // Récupérer aussi les demandes de travail en attente
-      const [demandesRes, ...responses] = await Promise.all([
-        axios.get(`${API}/demandes-travail`),
-        ...promises
+      // Utiliser le nouvel endpoint optimisé qui récupère tout le mois d'un coup
+      const [planningRes, demandesRes] = await Promise.all([
+        axios.get(`${API}/planning/mois/${mois}`),
+        axios.get(`${API}/demandes-travail`)
       ]);
-      
-      responses.forEach(res => {
-        allPlanning.push(...res.data);
-      });
       
       // Mettre à jour les demandes de travail
       setDemandesTravail(demandesRes.data.filter(d => d.statut === 'EN_ATTENTE'));
       
       // Filtrer selon les permissions
-      let planningData = allPlanning;
+      let planningData = planningRes.data;
       if (user?.role !== 'Directeur' && !user?.vue_planning_complete) {
-        planningData = allPlanning.filter(p => p.employe_id === user.id);
+        planningData = planningRes.data.filter(p => p.employe_id === user.id);
       }
       
       setPlanningMois(planningData);
