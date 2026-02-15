@@ -18266,6 +18266,7 @@ const ChatManager = () => {
             </div>
           )}
         </div>
+      </div>
       
       {/* Modal de création de groupe */}
       <Dialog open={showGroupModal} onOpenChange={setShowGroupModal}>
