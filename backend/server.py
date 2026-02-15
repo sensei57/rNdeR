@@ -18,23 +18,13 @@ import bcrypt
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection avec timeout pour éviter les blocages
-mongo_url = os.environ.get('MONGO_URL')
-if not mongo_url:
-    raise ValueError("MONGO_URL environment variable is not set!")
-    
-client = AsyncIOMotorClient(
-    mongo_url,
-    serverSelectionTimeoutMS=5000,  # Timeout de 5 secondes
-    connectTimeoutMS=5000,
-    socketTimeoutMS=5000
-)
-db = client[os.environ.get('DB_NAME', 'ophtacare')]
+# MongoDB connection
+mongo_url = os.environ['MONGO_URL']
+client = AsyncIOMotorClient(mongo_url)
+db = client[os.environ['DB_NAME']]
 
 # Security
-SECRET_KEY = os.environ.get('SECRET_KEY')
-if not SECRET_KEY:
-    raise ValueError("SECRET_KEY environment variable is not set!")
+SECRET_KEY = os.environ['SECRET_KEY']
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 
@@ -43,20 +33,6 @@ security = HTTPBearer()
 
 # Create the main app without a prefix
 app = FastAPI(title="Gestion Personnel Médical")
-
-# Health check endpoint (sans /api pour test rapide)
-@app.get("/")
-async def root():
-    return {"status": "ok", "message": "OphtaCare Backend is running"}
-
-@app.get("/health")
-async def health_check():
-    try:
-        # Test de connexion MongoDB
-        await client.admin.command('ping')
-        return {"status": "healthy", "database": "connected"}
-    except Exception as e:
-        return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
