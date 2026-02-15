@@ -1,0 +1,115 @@
+{
+  "identity": {
+    "name": "E1",
+    "mission": "Modernize Ophthalmology Dashboard to 'Clinical Elegance'",
+    "tone": "Professional, Efficient, Calm, Trustworthy",
+    "style_reference": "KEAP (Clean, Soft Shadows, Card-based, Automated Feel)"
+  },
+  "theme": {
+    "mode": "light",
+    "background": "#F9FAFB",
+    "surface": "#FFFFFF",
+    "border_radius": "10px"
+  },
+  "typography": {
+    "family": "Plus Jakarta Sans, sans-serif",
+    "scale": {
+      "h1": "text-3xl font-bold tracking-tight text-gray-900",
+      "h2": "text-2xl font-bold tracking-tight text-gray-900",
+      "h3": "text-xl font-semibold tracking-tight text-gray-900",
+      "body": "text-sm font-medium text-gray-600 leading-relaxed",
+      "label": "text-xs font-bold uppercase tracking-wider text-gray-500"
+    }
+  },
+  "colors": {
+    "primary": {
+      "main": "#0091B9",
+      "light": "#E6F4F8",
+      "dark": "#00576F",
+      "usage": "Primary Actions, Active States, Doctor Status"
+    },
+    "accent": {
+      "main": "#19CD91",
+      "light": "#E8FAF4",
+      "dark": "#0F7B57",
+      "usage": "Success Messages, Assistant Status, Growth Stats"
+    },
+    "status": {
+      "doctor": "#0091B9",
+      "assistant": "#19CD91",
+      "waiting": "#F59E0B",
+      "free": "#9CA3AF"
+    },
+    "neutral": {
+      "bg": "#F9FAFB",
+      "card": "#FFFFFF",
+      "text_primary": "#111827",
+      "text_secondary": "#6B7280"
+    }
+  },
+  "layout_strategy": {
+    "dashboard_grid": "grid grid-cols-1 md:grid-cols-12 gap-6 p-6",
+    "bento_grid": {
+      "news_section": "col-span-12 md:col-span-4 lg:col-span-3 row-span-2 h-full",
+      "cabinet_map": "col-span-12 md:col-span-8 lg:col-span-9 row-span-2 h-full",
+      "stats_bar": "col-span-12 grid grid-cols-2 md:grid-cols-4 gap-4"
+    },
+    "cabinet_map_grid": "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
+    "spacing": {
+      "container_padding": "p-6 md:p-8",
+      "card_padding": "p-6",
+      "section_gap": "gap-8"
+    }
+  },
+  "components": {
+    "card": {
+      "base": "bg-white rounded-[14px] border border-gray-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(0,145,185,0.1)] transition-all duration-300",
+      "header": "flex justify-between items-center mb-6",
+      "title": "text-lg font-bold text-gray-900"
+    },
+    "room_card": {
+      "wrapper": "relative overflow-hidden transition-all duration-300 hover:-translate-y-1 group",
+      "status_indicator": "absolute top-0 left-0 w-1 h-full transition-colors duration-300",
+      "content": "p-5 pl-7 bg-white border border-gray-100 rounded-xl h-full flex flex-col justify-between"
+    },
+    "status_badge": "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border",
+    "buttons": {
+      "primary": "bg-[#0091B9] hover:bg-[#007494] text-white font-semibold py-2.5 px-5 rounded-full shadow-[0_4px_14px_0_rgba(0,145,185,0.39)] transition-transform active:scale-95",
+      "ghost": "text-gray-600 hover:text-[#0091B9] hover:bg-gray-50 font-medium py-2 px-4 rounded-lg transition-colors"
+    },
+    "sidebar": {
+      "container": "hidden md:flex flex-col w-64 bg-white/95 backdrop-blur-xl border-r border-gray-100 h-screen sticky top-0 z-50",
+      "link": "flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 rounded-xl hover:bg-[#E6F4F8] hover:text-[#0091B9] transition-all my-1 mx-2"
+    }
+  },
+  "visual_assets": {
+    "images": [
+      {
+        "category": "Doctor Profile",
+        "url": "https://images.unsplash.com/photo-1645066928295-2506defde470?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDR8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBtZWRpY2FsJTIwZG9jdG9yJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzcxMTY2NDYzfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Professional Male Doctor"
+      },
+      {
+        "category": "Doctor Profile",
+        "url": "https://images.unsplash.com/photo-1642975967602-653d378f3b5b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDR8MHwxfHNlYXJjaHwyfHxtb2Rlcm4lMjBtZWRpY2FsJTIwZG9jdG9yJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzcxMTY2NDYzfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Professional Female Doctor"
+      },
+      {
+        "category": "News Thumbnail",
+        "url": "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=500",
+        "description": "Abstract Medical Blue (Placeholder)"
+      }
+    ],
+    "icons": "Use Lucide React icons (Activity, Calendar, Users, LayoutGrid, Bell, Settings)"
+  },
+  "instructions_to_main_agent": [
+    "CRITICAL: Do not overwrite App.css variables. Use them.",
+    "REFACTOR: The 'Cabinet Map' (Plan du Cabinet) must be a Grid of 'Room Cards', not a table.",
+    "FEATURE: Implement 'Actualités' (News) as a vertical list in a side card.",
+    "VISUAL: Add subtle motion.div entrance animations to the dashboard cards.",
+    "LAYOUT: Use a SidebarLayout component to wrap the protected pages.",
+    "STATUS LOGIC: Map existing CSS variables (primary, accent, warning, gray) to the statuses: Doctor (Primary), Assistant (Accent), Waiting (Warning/Yellow), Free (Gray/Muted).",
+    "HEADER: Make it sticky with glassmorphism (backdrop-blur-md bg-white/80).",
+    "DATA-TESTID: Add data-testid to all interactable elements (e.g., room-card-box1, nav-link-dashboard)."
+  ]
+}
