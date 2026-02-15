@@ -1443,55 +1443,53 @@ const ActualitesManager = () => {
         </div>
       </div>
 
-      {/* Plan du Cabinet du jour */}
-      <Card className="mt-6">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center space-x-2">
-            <MapPin className="h-5 w-5 text-teal-600" />
-            <span>Plan du Cabinet - {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {(planMatin?.salles?.length > 0 || planApresMidi?.salles?.length > 0) ? (
-            <>
-              <div className="flex flex-wrap justify-center gap-6">
+      {/* Plan du Cabinet du jour - Design moderne */}
+      <div className="cabinet-plan-container">
+        <div className="cabinet-plan-header">
+          <div className="cabinet-plan-title">
+            <div className="cabinet-plan-title-icon">
+              <MapPin className="h-5 w-5" />
+            </div>
+            <span>Plan du Cabinet</span>
+          </div>
+          <span className="cabinet-plan-date">
+            {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </span>
+        </div>
+        
+        {(planMatin?.salles?.length > 0 || planApresMidi?.salles?.length > 0) ? (
+          <>
+            <div className="cabinet-plan-grid-wrapper">
               {/* Plan Matin */}
               {planMatin?.salles?.length > 0 && (
-                <div>
-                  <h3 className="text-center font-semibold text-blue-600 mb-2">☀️ Matin</h3>
-                  <div className="relative bg-blue-50 rounded-lg p-4 border border-blue-200" style={{ height: '600px', width: '450px' }}>
+                <div className="cabinet-plan-period">
+                  <div className="cabinet-plan-period-header">
+                    <h3 className="cabinet-plan-period-title morning">
+                      <span>☀️</span> Matin
+                    </h3>
+                  </div>
+                  <div className="rooms-grid">
                     {planMatin.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => {
                       const occupation = salle.occupation;
-                      const adjustedX = salle.position_x > 0 ? salle.position_x - 1 : 0;
-                      
-                      let bgColor = 'bg-gray-100 border-gray-300';
+                      let statusClass = 'libre';
                       if (occupation) {
-                        if (salle.type_salle === 'MEDECIN') bgColor = 'bg-blue-100 border-blue-400';
-                        else if (salle.type_salle === 'ASSISTANT') bgColor = 'bg-green-100 border-green-400';
-                        else if (salle.type_salle === 'ATTENTE') bgColor = 'bg-yellow-100 border-yellow-400';
+                        if (salle.type_salle === 'MEDECIN') statusClass = 'medecin';
+                        else if (salle.type_salle === 'ASSISTANT') statusClass = 'assistant';
+                        else if (salle.type_salle === 'ATTENTE') statusClass = 'attente';
                       }
                       
                       return (
-                        <div
-                          key={salle.id}
-                          className={`absolute rounded-lg border-2 flex flex-col items-center justify-center p-1 ${bgColor}`}
-                          style={{
-                            left: `${adjustedX * 90}px`,
-                            top: `${salle.position_y * 85}px`,
-                            width: '80px',
-                            height: '70px'
-                          }}
-                        >
-                          <div className="font-bold text-[10px] text-center">{salle.nom}</div>
+                        <div key={salle.id} className={`room-card ${statusClass}`}>
+                          {occupation && <div className="room-card-indicator"></div>}
+                          <div className="room-card-name">{salle.nom}</div>
                           {occupation ? (
-                            <div className="mt-1 text-center">
-                              <div className="text-[11px] font-bold bg-white bg-opacity-70 rounded-full w-6 h-6 flex items-center justify-center mx-auto border">
-                                {occupation.employe?.prenom?.[0]}{occupation.employe?.nom?.[0]}
+                            <>
+                              <div className="room-card-employee">
+                                {occupation.employe?.prenom?.substring(0, 8)}
                               </div>
-                              <div className="text-[9px] mt-1">{occupation.employe?.prenom?.substring(0,6)}.</div>
-                            </div>
+                            </>
                           ) : (
-                            <div className="text-[9px] text-gray-500 mt-1">Libre</div>
+                            <div className="room-card-status">Libre</div>
                           )}
                         </div>
                       );
@@ -1502,41 +1500,34 @@ const ActualitesManager = () => {
               
               {/* Plan Après-midi */}
               {planApresMidi?.salles?.length > 0 && (
-                <div>
-                  <h3 className="text-center font-semibold text-orange-600 mb-2">🌙 Après-midi</h3>
-                  <div className="relative bg-orange-50 rounded-lg p-4 border border-orange-200" style={{ height: '600px', width: '450px' }}>
+                <div className="cabinet-plan-period">
+                  <div className="cabinet-plan-period-header">
+                    <h3 className="cabinet-plan-period-title afternoon">
+                      <span>🌙</span> Après-midi
+                    </h3>
+                  </div>
+                  <div className="rooms-grid">
                     {planApresMidi.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => {
                       const occupation = salle.occupation;
-                      const adjustedX = salle.position_x > 0 ? salle.position_x - 1 : 0;
-                      
-                      let bgColor = 'bg-gray-100 border-gray-300';
+                      let statusClass = 'libre';
                       if (occupation) {
-                        if (salle.type_salle === 'MEDECIN') bgColor = 'bg-blue-100 border-blue-400';
-                        else if (salle.type_salle === 'ASSISTANT') bgColor = 'bg-green-100 border-green-400';
-                        else if (salle.type_salle === 'ATTENTE') bgColor = 'bg-yellow-100 border-yellow-400';
+                        if (salle.type_salle === 'MEDECIN') statusClass = 'medecin';
+                        else if (salle.type_salle === 'ASSISTANT') statusClass = 'assistant';
+                        else if (salle.type_salle === 'ATTENTE') statusClass = 'attente';
                       }
                       
                       return (
-                        <div
-                          key={salle.id}
-                          className={`absolute rounded-lg border-2 flex flex-col items-center justify-center p-1 ${bgColor}`}
-                          style={{
-                            left: `${adjustedX * 90}px`,
-                            top: `${salle.position_y * 85}px`,
-                            width: '80px',
-                            height: '70px'
-                          }}
-                        >
-                          <div className="font-bold text-[10px] text-center">{salle.nom}</div>
+                        <div key={salle.id} className={`room-card ${statusClass}`}>
+                          {occupation && <div className="room-card-indicator"></div>}
+                          <div className="room-card-name">{salle.nom}</div>
                           {occupation ? (
-                            <div className="mt-1 text-center">
-                              <div className="text-[11px] font-bold bg-white bg-opacity-70 rounded-full w-6 h-6 flex items-center justify-center mx-auto border">
-                                {occupation.employe?.prenom?.[0]}{occupation.employe?.nom?.[0]}
+                            <>
+                              <div className="room-card-employee">
+                                {occupation.employe?.prenom?.substring(0, 8)}
                               </div>
-                              <div className="text-[9px] mt-1">{occupation.employe?.prenom?.substring(0,6)}.</div>
-                            </div>
+                            </>
                           ) : (
-                            <div className="text-[9px] text-gray-500 mt-1">Libre</div>
+                            <div className="room-card-status">Libre</div>
                           )}
                         </div>
                       );
@@ -1546,23 +1537,34 @@ const ActualitesManager = () => {
               )}
             </div>
             
-            {/* Légende */}
-            <div className="mt-4 flex justify-center space-x-4 text-xs text-gray-600">
-              <div className="flex items-center"><div className="w-3 h-3 bg-blue-100 border border-blue-400 rounded mr-1"></div> Médecin</div>
-              <div className="flex items-center"><div className="w-3 h-3 bg-green-100 border border-green-400 rounded mr-1"></div> Assistant</div>
-              <div className="flex items-center"><div className="w-3 h-3 bg-yellow-100 border border-yellow-400 rounded mr-1"></div> Attente</div>
-              <div className="flex items-center"><div className="w-3 h-3 bg-gray-100 border border-gray-300 rounded mr-1"></div> Libre</div>
+            {/* Légende modernisée */}
+            <div className="cabinet-legend">
+              <div className="cabinet-legend-item">
+                <div className="cabinet-legend-dot medecin"></div>
+                <span>Médecin</span>
+              </div>
+              <div className="cabinet-legend-item">
+                <div className="cabinet-legend-dot assistant"></div>
+                <span>Assistant</span>
+              </div>
+              <div className="cabinet-legend-item">
+                <div className="cabinet-legend-dot attente"></div>
+                <span>Attente</span>
+              </div>
+              <div className="cabinet-legend-item">
+                <div className="cabinet-legend-dot libre"></div>
+                <span>Libre</span>
+              </div>
             </div>
-            </>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <MapPin className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-              <p>Aucun planning pour aujourd'hui</p>
-              <p className="text-sm mt-1">Le plan s'affichera une fois que des créneaux seront programmés</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </>
+        ) : (
+          <div className="empty-state">
+            <MapPin className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+            <p className="empty-state-title">Aucun planning pour aujourd'hui</p>
+            <p className="empty-state-text">Le plan s'affichera une fois que des créneaux seront programmés</p>
+          </div>
+        )}
+      </div>
 
       {/* Modal création/édition */}
       {showModal && (
