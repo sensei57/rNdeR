@@ -3815,11 +3815,11 @@ const PlanningManager = () => {
       
       // Comptabiliser les congés (approuvés uniquement)
       // - REPOS : non comptabilisé nulle part (aucun effet)
-      // - HEURES_A_RECUPERER : comptabilisé comme heures supplémentaires positives (pas comme congé)
-      // - HEURES_RECUPEREES : comptabilisé comme heures supplémentaires négatives (pas comme congé)
-      // - CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE : comptabilisé dans la colonne "Congés"
+      // - HEURES_A_RECUPERER : heures supplémentaires positives (pas en heures effectuées, pas en congés)
+      // - HEURES_RECUPEREES : heures supplémentaires négatives (pas en heures effectuées, pas en congés)
+      // - CONGE_PAYE : comptabilisé en heures effectuées ET dans colonne "Congés"
+      // - CONGE_SANS_SOLDE, MALADIE : comptabilisé en heures effectuées SEULEMENT (pas en congés)
       const typesCongesNonComptabilises = ['REPOS'];
-      const typesNonCongés = ['REPOS', 'HEURES_A_RECUPERER', 'HEURES_RECUPEREES']; // Ces types ne comptent PAS comme congés
       const congesJour = congesApprouves?.filter(c => 
         c.utilisateur_id === employe.id && 
         dateStr >= c.date_debut && dateStr <= c.date_fin &&
@@ -3836,11 +3836,10 @@ const PlanningManager = () => {
           // Heures récupérées = négatif dans heures sup (ne compte PAS comme travail ni congé)
           // On ne l'ajoute pas aux heuresConges ni congesCount
         } else if (conge.type_conge === 'HEURES_A_RECUPERER') {
-          // Heures à récupérer = compte comme heures sup positives (pas comme congé)
-          heuresConges += heuresTotal;
-          // Ne pas incrémenter congesCount car ce n'est pas un "congé"
-        } else {
-          // CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE = compte comme travail ET congé
+          // Heures à récupérer = heures sup positives (pas en heures effectuées, pas en congés)
+          // On ne l'ajoute pas aux heuresConges ni congesCount
+        } else if (conge.type_conge === 'CONGE_PAYE') {
+          // CONGE_PAYE = compte comme heures effectuées ET comme congé
           heuresConges += heuresTotal;
           congesCount += nbDemiJournees;
         }
