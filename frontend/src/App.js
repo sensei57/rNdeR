@@ -22,20 +22,25 @@ import usePWA from './hooks/usePWA';
 
 // Configuration automatique de l'URL backend pour Render.com
 const getBackendUrl = () => {
-  // Si REACT_APP_BACKEND_URL est défini, l'utiliser
+  // Si REACT_APP_BACKEND_URL est défini, l'utiliser en priorité
   if (process.env.REACT_APP_BACKEND_URL) {
     return process.env.REACT_APP_BACKEND_URL;
   }
   
-  // Détection automatique pour Render.com
   const currentHost = window.location.hostname;
   
-  // Si on est sur Render (*.onrender.com)
+  // Détection automatique pour Render.com
   if (currentHost.includes('.onrender.com')) {
-    // Remplacer le nom du service frontend par celui du backend
-    // Ex: ope-francis-app-test.onrender.com -> ope-francis-api-test.onrender.com
-    const backendHost = currentHost.replace('-app-', '-api-');
-    return `https://${backendHost}`;
+    // Détecter si on est en mode TEST ou PROD
+    const isTestEnv = currentHost.includes('-test');
+    
+    if (isTestEnv) {
+      // Test: ope-francis-app-test -> ope-francis-api-test
+      return 'https://ope-francis-api-test.onrender.com';
+    } else {
+      // Prod: ope-francis-app -> ope-francis-api
+      return 'https://ope-francis-api.onrender.com';
+    }
   }
   
   // En local ou autre environnement
@@ -43,13 +48,14 @@ const getBackendUrl = () => {
 };
 
 const BACKEND_URL = getBackendUrl();
+const isTestMode = window.location.hostname.includes('-test') || window.location.hostname.includes('test');
 
 const API = `${BACKEND_URL}/api`;
 
 // Log pour debug
-console.log(`%c 🚀 Backend URL: ${BACKEND_URL} `, 
-            `background: #4caf50; color: #000; font-weight: bold;`);
-console.log(`%c 🔗 API URL: ${API} `, 
+console.log(`%c 🚀 MODE ${isTestMode ? 'TEST' : 'PROD'} ACTIF `, 
+            `background: ${isTestMode ? '#ffeb3b' : '#4caf50'}; color: #000; font-weight: bold;`);
+console.log(`%c 🔗 Backend: ${BACKEND_URL} `, 
             `background: #2196f3; color: #fff; font-weight: bold;`);
 
 // Fonction utilitaire pour obtenir l'URL complète d'une photo
