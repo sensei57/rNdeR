@@ -3994,9 +3994,10 @@ const PlanningManager = () => {
           
           // Congés - gérer tous les types
           // REPOS : non comptabilisé nulle part (aucun effet)
-          // HEURES_A_RECUPERER : heures sup positives (pas un "congé")
-          // HEURES_RECUPEREES : heures sup négatives (pas un "congé")
-          // CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE : comptés comme congés
+          // HEURES_A_RECUPERER : heures sup positives (pas en heures effectuées, pas en congés)
+          // HEURES_RECUPEREES : heures sup négatives (pas en heures effectuées, pas en congés)
+          // CONGE_PAYE : comptabilisé en heures effectuées ET en congés
+          // CONGE_SANS_SOLDE, MALADIE : comptabilisé en heures effectuées SEULEMENT (pas en congés)
           const congesJour = congesApprouves?.filter(c => 
             c.utilisateur_id === employe.id && 
             date >= c.date_debut && date <= c.date_fin &&
@@ -4009,16 +4010,18 @@ const PlanningManager = () => {
             const heuresTotal = h * nbDemiJ;
             
             if (c.type_conge === 'HEURES_A_RECUPERER') {
-              // Heures à récupérer = heures sup positives (PAS un congé)
-              heuresConges += heuresTotal;
+              // Heures à récupérer = heures sup positives (PAS en heures effectuées, PAS en congés)
               heuresARecuperer += heuresTotal;
             } else if (c.type_conge === 'HEURES_RECUPEREES') {
-              // Heures récupérées = heures sup négatives (PAS un congé)
+              // Heures récupérées = heures sup négatives (PAS en heures effectuées, PAS en congés)
               heuresRecuperees += heuresTotal;
-            } else {
-              // CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE = vrais congés
+            } else if (c.type_conge === 'CONGE_PAYE') {
+              // CONGE_PAYE = heures effectuées ET congés
               heuresConges += heuresTotal;
               congesCount += nbDemiJ;
+            } else {
+              // CONGE_SANS_SOLDE, MALADIE = heures effectuées SEULEMENT (pas en congés)
+              heuresConges += heuresTotal;
             }
           });
         });
