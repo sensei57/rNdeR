@@ -2597,31 +2597,52 @@ p {
 }
 
 /* ============================================
-   PWA BANNIÈRE EN HAUT
+   PWA BOUTON D'INSTALLATION DISCRET
    ============================================ */
 
-.pwa-top-banner {
+.pwa-install-floating-btn {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 44px;
-  background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
+  gap: 6px;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-full);
+  box-shadow: 0 2px 12px rgba(0, 145, 185, 0.35);
+  cursor: pointer;
   z-index: 1000;
-  box-shadow: 0 2px 8px rgba(0, 145, 185, 0.3);
+  transition: all var(--transition-fast);
 }
 
-/* Décaler le contenu principal quand la bannière PWA est visible */
-body:has(.pwa-top-banner) .dashboard-layout {
-  padding-top: 44px;
+.pwa-install-floating-btn:hover {
+  transform: translateX(-50%) translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 145, 185, 0.45);
 }
 
-body:has(.pwa-top-banner) .modern-navbar {
-  top: 44px;
+.pwa-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.pwa-close-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
 }
 
 /* ============================================
