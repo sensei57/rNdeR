@@ -3829,11 +3829,11 @@ const PlanningManager = () => {
           // Heures récupérées = négatif dans heures sup (ne compte PAS comme travail ni congé)
           // On ne l'ajoute pas aux heuresConges ni congesCount
         } else if (conge.type_conge === 'HEURES_A_RECUPERER') {
-          // Heures à récupérer = compte comme travail ET heures sup positives
+          // Heures à récupérer = compte comme heures sup positives (pas comme congé)
           heuresConges += heuresTotal;
-          congesCount += nbDemiJournees;
+          // Ne pas incrémenter congesCount car ce n'est pas un "congé"
         } else {
-          // Autres types (CONGE_PAYE, RTT, MALADIE, etc.) = compte comme travail
+          // CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE = compte comme travail ET congé
           heuresConges += heuresTotal;
           congesCount += nbDemiJournees;
         }
