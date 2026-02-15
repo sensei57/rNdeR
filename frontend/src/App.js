@@ -18971,6 +18971,7 @@ function App() {
           </Routes>
           <Toaster />
           <PWAInstallBanner />
+          <FloatingChatButton />
         </AuthProvider>
       </BrowserRouter>
     </div>
