@@ -1206,3 +1206,632 @@ p {
   background: var(--gray-100);
   margin: 8px 0;
 }
+
+
+/* ============================================
+   DASHBOARD MODERNE - REFONTE COMPLÈTE
+   ============================================ */
+
+/* Section Actualités avec style Bento */
+.news-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.news-card {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  border: 1px solid var(--gray-100);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.news-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-500), var(--accent-500));
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.news-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-200);
+}
+
+.news-card:hover::before {
+  opacity: 1;
+}
+
+.news-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.news-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.news-card-icon.birthday {
+  background: linear-gradient(135deg, #FFE5EC, #FFF0F3);
+  color: #E91E63;
+}
+
+.news-card-icon.general {
+  background: linear-gradient(135deg, var(--primary-50), var(--primary-100));
+  color: var(--primary-600);
+}
+
+.news-card-icon.targeted {
+  background: linear-gradient(135deg, var(--accent-50), var(--accent-100));
+  color: var(--accent-600);
+}
+
+.news-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0;
+}
+
+.news-card-empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--gray-400);
+  font-size: 14px;
+}
+
+/* Bannière anniversaire améliorée */
+.birthday-banner {
+  background: linear-gradient(135deg, #FFF5F7 0%, #FFF0F5 50%, #FFEBF0 100%);
+  border-radius: var(--radius-xl);
+  padding: 20px 28px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid rgba(233, 30, 99, 0.15);
+  box-shadow: 0 4px 20px rgba(233, 30, 99, 0.08);
+  margin-bottom: 24px;
+  animation: slideUp 0.5s ease-out;
+}
+
+.birthday-banner-icon {
+  font-size: 40px;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.birthday-banner-content {
+  flex: 1;
+}
+
+.birthday-banner-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 4px;
+}
+
+.birthday-banner-date {
+  font-size: 14px;
+  color: var(--gray-500);
+}
+
+.birthday-banner-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  border: 3px solid white;
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.2);
+}
+
+/* ============================================
+   PLAN DU CABINET - REDESIGN MODERNE
+   ============================================ */
+
+.cabinet-plan-container {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  border: 1px solid var(--gray-100);
+  box-shadow: var(--shadow);
+  margin-bottom: 32px;
+}
+
+.cabinet-plan-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--gray-100);
+}
+
+.cabinet-plan-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.cabinet-plan-title-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 145, 185, 0.3);
+}
+
+.cabinet-plan-date {
+  font-size: 14px;
+  color: var(--gray-500);
+  font-weight: 500;
+  background: var(--gray-100);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+}
+
+/* Grilles Matin / Après-midi */
+.cabinet-plan-grid-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+@media (max-width: 1024px) {
+  .cabinet-plan-grid-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cabinet-plan-period {
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  border: 1px solid var(--gray-100);
+}
+
+.cabinet-plan-period-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed var(--gray-200);
+}
+
+.cabinet-plan-period-title {
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cabinet-plan-period-title.morning {
+  color: #F59E0B;
+}
+
+.cabinet-plan-period-title.afternoon {
+  color: #8B5CF6;
+}
+
+/* Grille des salles */
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 12px;
+}
+
+/* Carte de salle moderne */
+.room-card {
+  aspect-ratio: 1;
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  border: 2px solid transparent;
+  min-height: 80px;
+}
+
+.room-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.room-card:hover {
+  transform: translateY(-4px) scale(1.05);
+  z-index: 10;
+}
+
+.room-card:hover::before {
+  opacity: 1;
+}
+
+/* États des salles */
+.room-card.libre {
+  background: white;
+  border-color: var(--gray-200);
+  color: var(--gray-400);
+}
+
+.room-card.libre:hover {
+  border-color: var(--gray-300);
+  box-shadow: var(--shadow-md);
+}
+
+.room-card.medecin {
+  background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
+  border-color: var(--primary-300);
+  color: var(--primary-700);
+}
+
+.room-card.medecin:hover {
+  border-color: var(--primary-400);
+  box-shadow: 0 8px 24px rgba(0, 145, 185, 0.25);
+}
+
+.room-card.medecin::before {
+  background: linear-gradient(135deg, transparent, rgba(0, 145, 185, 0.1));
+}
+
+.room-card.assistant {
+  background: linear-gradient(135deg, var(--accent-50) 0%, var(--accent-100) 100%);
+  border-color: var(--accent-300);
+  color: var(--accent-700);
+}
+
+.room-card.assistant:hover {
+  border-color: var(--accent-400);
+  box-shadow: 0 8px 24px rgba(25, 205, 145, 0.25);
+}
+
+.room-card.assistant::before {
+  background: linear-gradient(135deg, transparent, rgba(25, 205, 145, 0.1));
+}
+
+.room-card.attente {
+  background: linear-gradient(135deg, var(--warning-50) 0%, var(--warning-100) 100%);
+  border-color: var(--warning-300);
+  color: var(--warning-700);
+}
+
+.room-card.attente:hover {
+  border-color: var(--warning-400);
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.25);
+}
+
+.room-card-name {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.room-card-status {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+}
+
+.room-card-employee {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 4px;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Avatar dans la salle */
+.room-card-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  margin-bottom: 6px;
+  border: 2px solid white;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Indicateur de statut */
+.room-card-indicator {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  border: 2px solid white;
+  box-shadow: var(--shadow-sm);
+}
+
+.room-card.medecin .room-card-indicator {
+  background: var(--primary-500);
+}
+
+.room-card.assistant .room-card-indicator {
+  background: var(--accent-500);
+}
+
+.room-card.attente .room-card-indicator {
+  background: var(--warning-500);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Légende modernisée */
+.cabinet-legend {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--gray-100);
+  flex-wrap: wrap;
+}
+
+.cabinet-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-600);
+}
+
+.cabinet-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+}
+
+.cabinet-legend-dot.medecin {
+  background: linear-gradient(135deg, var(--primary-400), var(--primary-500));
+}
+
+.cabinet-legend-dot.assistant {
+  background: linear-gradient(135deg, var(--accent-400), var(--accent-500));
+}
+
+.cabinet-legend-dot.attente {
+  background: linear-gradient(135deg, var(--warning-400), var(--warning-500));
+}
+
+.cabinet-legend-dot.libre {
+  background: var(--gray-300);
+  border: 1px solid var(--gray-400);
+}
+
+/* ============================================
+   PAGE HEADER MODERNE
+   ============================================ */
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--gray-100);
+}
+
+.page-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-header-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 8px 24px rgba(0, 145, 185, 0.3);
+}
+
+.page-header-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.page-header-subtitle {
+  font-size: 14px;
+  color: var(--gray-500);
+  margin-top: 4px;
+}
+
+/* ============================================
+   BOUTONS MODERNES AMÉLIORÉS
+   ============================================ */
+
+.btn-modern {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-modern::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.btn-modern:hover::before {
+  opacity: 1;
+}
+
+.btn-modern-primary {
+  background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 145, 185, 0.3);
+}
+
+.btn-modern-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 145, 185, 0.4);
+}
+
+.btn-modern-secondary {
+  background: white;
+  color: var(--gray-700);
+  border: 2px solid var(--gray-200);
+}
+
+.btn-modern-secondary:hover {
+  border-color: var(--primary-300);
+  color: var(--primary-600);
+  background: var(--primary-50);
+}
+
+.btn-modern-success {
+  background: linear-gradient(135deg, var(--accent-500), var(--accent-600));
+  color: white;
+  box-shadow: 0 4px 12px rgba(25, 205, 145, 0.3);
+}
+
+.btn-modern-success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(25, 205, 145, 0.4);
+}
+
+/* ============================================
+   CONTENEUR PRINCIPAL DASHBOARD
+   ============================================ */
+
+.dashboard-container {
+  padding: 28px;
+  max-width: 1600px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.dashboard-grid {
+  display: grid;
+  gap: 24px;
+}
+
+/* Section cards */
+.section-card {
+  background: white;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--gray-100);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.section-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.section-card-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--gray-50);
+}
+
+.section-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gray-800);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-card-body {
+  padding: 24px;
+}
+
+/* ============================================
+   EMPTY STATE MODERNE
+   ============================================ */
+
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--gray-400);
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gray-500);
+  margin-bottom: 8px;
+}
+
+.empty-state-text {
+  font-size: 14px;
+  color: var(--gray-400);
+}
+
