@@ -1866,7 +1866,11 @@ const ActualitesManager = () => {
       </div>
 
       {/* Plan du Cabinet du jour - Design moderne avec disposition spatiale */}
-      <div className="cabinet-plan-container">
+      <CabinetPlanWithPopup 
+        planMatin={planMatin} 
+        planApresMidi={planApresMidi}
+        user={user}
+      />
         <div className="cabinet-plan-header">
           <div className="cabinet-plan-title">
             <div className="cabinet-plan-title-icon">
