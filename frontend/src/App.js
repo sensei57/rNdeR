@@ -17642,6 +17642,13 @@ const ChatManager = () => {
 
   useEffect(() => {
     fetchMessages();
+    
+    // Polling automatique pour les nouveaux messages (toutes les 5 secondes)
+    const interval = setInterval(() => {
+      fetchMessages();
+    }, 5000);
+    
+    return () => clearInterval(interval);
   }, [chatType, selectedGroupe, selectedUser]);
 
   const fetchUsers = async () => {
