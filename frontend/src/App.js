@@ -2158,73 +2158,14 @@ const PersonnelManager = () => {
         <TabsContent value="medecins">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {getUsersByRole('Médecin').map(medecin => (
-              <PersonnelCardWithPhoto 
+              <MedecinCard 
                 key={medecin.id} 
-                person={medecin} 
-                roleColor="blue"
+                medecin={medecin} 
                 user={user}
                 handleEditPersonnel={handleEditPersonnel}
                 handleDeletePersonnel={handleDeletePersonnel}
                 getAssignedAssistants={getAssignedAssistants}
-                rolePrefix="Dr."
               />
-            ))}
-                    </div>
-                  </div>
-                </div>
-                
-                <CardContent className="pt-14 pb-4 text-center">
-                  <h3 className="text-lg font-bold text-gray-900">Dr. {medecin.prenom} {medecin.nom}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{medecin.email}</p>
-                  
-                  <div className="mt-4 pt-4 border-t border-gray-100 space-y-2 text-left">
-                    <p className="text-sm text-gray-600 flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-gray-400" />
-                      {medecin.telephone || 'Non renseigné'}
-                    </p>
-                    {medecin.date_naissance && (
-                      <p className="text-sm text-gray-600 flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-gray-400" />
-                        {new Date(medecin.date_naissance + 'T12:00:00').toLocaleDateString('fr-FR')}
-                      </p>
-                    )}
-                    <div className="pt-2">
-                      <p className="text-xs font-medium text-gray-500 mb-2">Assistants assignés:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {getAssignedAssistants(medecin.id).map(assistant => (
-                          <Badge key={assistant?.id} variant="secondary" className="text-xs bg-blue-50 text-blue-700">
-                            {assistant?.prenom}
-                          </Badge>
-                        ))}
-                        {getAssignedAssistants(medecin.id).length === 0 && (
-                          <span className="text-xs text-gray-400 italic">Aucun</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {user?.role === 'Directeur' && (
-                    <div className="flex justify-center gap-2 mt-4 pt-4 border-t border-gray-100">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEditPersonnel(medecin)}
-                        className="gap-1"
-                      >
-                        <Edit className="h-3 w-3" /> Modifier
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDeletePersonnel(medecin.id, `${medecin.prenom} ${medecin.nom}`)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
             ))}
           </div>
         </TabsContent>
