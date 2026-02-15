@@ -1,154 +1,62 @@
-# OphtaGestion - PRD (Product Requirements Document)
+# PRD - OphtaGestion
 
-## Application Overview
-OphtaGestion est une application de gestion de cabinet ophtalmologique développée en React (frontend) et FastAPI (backend) avec MongoDB.
+## Énoncé du problème original
+Application de gestion pour cabinet d'ophtalmologie avec :
+- Planning du personnel et gestion des congés
+- Messagerie interne style WhatsApp
+- Plan du cabinet avec disposition des salles
+- Interface PWA installable
 
-## Original Problem Statement
-L'utilisateur a demandé une vérification complète de son site pour corriger des erreurs de code et des incohérences, notamment :
-1. Correction des bugs de synchronisation et de calcul des heures supplémentaires
-2. Modernisation du design avec un style inspiré de KEAP pour l'ophtalmologie
-3. Application PWA pour une expérience mobile native
+## Utilisateurs cibles
+- Directeur de cabinet (admin)
+- Médecins
+- Assistants
+- Secrétaires
 
-## Core Features Implemented
+## Architecture technique
+- **Frontend:** React + Tailwind CSS + Shadcn/UI
+- **Backend:** FastAPI + MongoDB
+- **Déploiement cible:** Render.com (production de l'utilisateur)
 
-### Authentication
-- Login avec email/password (JWT tokens)
-- Gestion des rôles : Directeur, Médecin, Assistant, Secrétaire
-- Session management
+## Ce qui a été implémenté
 
-### Planning Management
-- Vue jour, semaine, mois
-- Attribution des créneaux par employé
-- Configuration semaines A/B
-- Export PDF du planning
+### Session 15/02/2026
+- ✅ Correction erreur JavaScript `Phone is not defined` - Import manquant ajouté
+- ✅ Transformation de la bannière PWA en bouton discret centré
 
-### Leave Management (Congés)
-Types de congés supportés:
-- `CONGE_PAYE` : Congé payé (compte en heures effectives ET en congés)
-- `CONGE_SANS_SOLDE` : Congé sans solde (compte en heures effectives SEULEMENT)
-- `MALADIE` : Congé maladie (compte en heures effectives SEULEMENT)
-- `REPOS` : Repos (aucun effet)
-- `HEURES_A_RECUPERER` : Heures à récupérer (affecte heures sup positivement)
-- `HEURES_RECUPEREES` : Heures récupérées (affecte heures sup négativement)
+### Sessions précédentes
+- ✅ Refonte de la page de connexion moderne
+- ✅ Refonte du tableau de bord (Plan du Cabinet, Actualités)
+- ✅ Interface de chat style WhatsApp avec photos
+- ✅ Bulle de chat flottante avec compteur de messages non lus
+- ✅ Refonte des cartes d'employés dans la gestion du personnel
+- ✅ Arrière-plan thématique ophtalmologie
+- ✅ Icônes PWA personnalisées avec le logo utilisateur
 
-### Personnel Management
-- CRUD des utilisateurs
-- Configuration des heures par employé
-- Attribution des salles
+## Bugs en attente
 
-### Messaging & Actualités
-- Messagerie interne
-- Fil d'actualités avec refresh automatique (polling)
+### P2 - Création créneaux assistants
+- **Description:** L'approbation d'un congé pour un médecin ne crée pas les créneaux pour les assistants remplaçants
+- **Status:** Non investigué
 
-### PWA
-- Manifest.json configuré
-- Service worker pour offline support
-- Banner d'installation
+### P3 - Gestion des erreurs
+- **Description:** Utilisation de `alert()` génériques - à remplacer par des toasts
+- **Status:** Non commencé
 
-## Recent Session Accomplishments (15 Février 2026)
+## Tâches à venir
 
-### Bug Fix P0 : Calcul des heures supplémentaires
-**CORRIGÉ** - Les fonctions `getHeuresSupMois` et `getHeuresSupAnnee` dans `App.js` ont été mises à jour pour :
-- Inclure `MALADIE` et `CONGE_SANS_SOLDE` dans les heures effectives
-- Exclure `HEURES_A_RECUPERER` et `HEURES_RECUPEREES` des heures effectives tout en les comptant dans le solde des heures sup
-- Formule : `(heures effectives - contrat) + heures à récupérer - heures récupérées`
+### P0 - Refactorisation critique
+- **`frontend/src/App.js`** - Fichier monolithique de +20,000 lignes
+- À découper en composants: Dashboard, Chat, PersonnelList, CabinetPlan, etc.
 
-### Modernisation du Design - Style KEAP
-**COMPLÉTÉ** - Nouveau design moderne implémenté :
-- **Palette de couleurs** : Cyan/Turquoise (#0091B9 → #19CD91) pour l'ophtalmologie
-- **Typographie** : Police "Plus Jakarta Sans"
-- **Page de Login** : 
-  - Panneau gauche avec gradient et branding OphtaGestion
-  - Statistiques visuelles (98% temps gagné, 24/7, 100% sécurisé)
-  - Formulaire moderne épuré
-- **Navigation** :
-  - Navbar avec backdrop blur et shadow douce
-  - Logo OphtaGestion avec icône œil
-  - Menu hamburger avec dropdown animé
-  - Avatar utilisateur avec gradient selon le rôle
-- **CSS Variables** : Système complet de design tokens
+### P1 - Modernisation UI
+- Appliquer le nouveau style aux autres sections: Planning/Calendrier, formulaires, modales
 
-### Bug Fix : BACKEND_URL
-**CORRIGÉ** par l'agent de test - Le frontend utilisait une URL hardcodée Render.com au lieu de `process.env.REACT_APP_BACKEND_URL`
+## Fichiers clés
+- `/app/frontend/src/App.js` - Monolithe principal
+- `/app/frontend/src/App.css` - Styles avec thème ophtalmologie
+- `/app/backend/server.py` - API FastAPI
 
-## Technology Stack
-- **Frontend**: React 19, Tailwind CSS, Shadcn/UI, Axios
-- **Backend**: FastAPI (Python), Motor (async MongoDB)
-- **Database**: MongoDB
-- **Auth**: JWT tokens with pbkdf2_sha256 password hashing
-- **PWA**: Service Worker + Manifest
-
-## Code Architecture
-```
-/app/
-├── backend/
-│   ├── server.py        # API FastAPI (~1900 lignes)
-│   ├── requirements.txt
-│   └── .env
-├── frontend/
-│   ├── public/
-│   │   ├── index.html
-│   │   ├── manifest.json
-│   │   └── service-worker.js
-│   ├── src/
-│   │   ├── App.js         # Composant principal (~18700 lignes)
-│   │   ├── App.css        # Styles KEAP modernes
-│   │   ├── hooks/usePWA.js
-│   │   └── components/ui/  # Shadcn components
-│   └── package.json
-└── memory/
-    └── PRD.md
-```
-
-## API Endpoints (Key)
-- `POST /api/auth/login` - Authentification
-- `GET /api/users` - Liste des utilisateurs
-- `GET /api/planning/semaine/{date}` - Planning hebdomadaire
-- `GET/POST /api/conges` - Gestion des congés
-- `GET /api/init-admin-simple` - Initialisation admin
-
-## Test Credentials
-- **Email**: `directeur@cabinet.fr`
-- **Password**: `admin123`
-
-## Pending Tasks (Backlog)
-
-### P1 - Refactorisation de App.js
-Le fichier `frontend/src/App.js` fait ~18700 lignes et doit être découpé en composants modulaires :
-- PlanningManager.js
-- CongeManager.js
-- PersonnelManager.js
-- ChatManager.js
-- etc.
-
-### P2 - Vérification des créneaux assistants
-Vérifier que l'approbation des congés médecins crée bien les créneaux pour les assistants
-
-### P3 - Amélioration gestion des erreurs
-Remplacer les messages d'erreur génériques par des retours plus informatifs
-
-## Known Issues
-- Firebase notifications non configurées dans l'environnement de preview (manque FIREBASE_CREDENTIALS)
-
-## Design System
-
-### Colors
-```css
---primary-500: #0091B9;  /* Cyan médical */
---accent-500: #19CD91;   /* Vert émeraude */
---warm-500: #FF914B;     /* Orange accent */
-```
-
-### Shadows
-```css
---shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
---shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
---shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
-```
-
-### Border Radius
-```css
---radius: 10px;
---radius-lg: 20px;
---radius-full: 9999px;
-```
+## Credentials de test
+- Email: `directeur@cabinet.fr`
+- Mot de passe: `admin123`
