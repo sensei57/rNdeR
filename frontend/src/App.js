@@ -1362,20 +1362,21 @@ const ActualitesManager = () => {
       )}
 
       {/* 2 Colonnes : Actualités Générales | Actualités Mon Groupe */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="news-section">
         {/* Colonne Gauche : Actualités Générales */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-gray-700 flex items-center space-x-2">
-            <span>📢</span>
-            <span>Actualités Générales</span>
-          </h2>
+        <div className="news-card">
+          <div className="news-card-header">
+            <div className="news-card-icon general">
+              📢
+            </div>
+            <h2 className="news-card-title">Actualités Générales</h2>
+          </div>
           
           {actualitesGenerales.length === 0 ? (
-            <Card>
-              <CardContent className="py-6 text-center text-gray-500 text-sm">
-                Aucune actualité générale
-              </CardContent>
-            </Card>
+            <div className="empty-state">
+              <div className="empty-state-icon">📭</div>
+              <p className="empty-state-text">Aucune actualité générale</p>
+            </div>
           ) : (
             <div className="space-y-3">
               {actualitesGenerales.map((actu) => (
@@ -1386,15 +1387,15 @@ const ActualitesManager = () => {
         </div>
 
         {/* Colonne Droite : Actualités pour mon groupe */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold flex items-center space-x-2" style={{
-            color: user?.role === 'Médecin' ? '#3B82F6' : 
-                   user?.role === 'Assistant' ? '#22C55E' : 
-                   user?.role === 'Secrétaire' ? '#A855F7' : '#6B7280'
-          }}>
-            <span>{user?.role === 'Médecin' ? '👨‍⚕️' : user?.role === 'Assistant' ? '👥' : user?.role === 'Secrétaire' ? '📋' : '📢'}</span>
-            <span>Actualités {user?.role === 'Directeur' ? 'Ciblées' : `pour les ${user?.role}s`}</span>
-          </h2>
+        <div className="news-card">
+          <div className="news-card-header">
+            <div className={`news-card-icon ${user?.role === 'Médecin' ? 'general' : user?.role === 'Assistant' ? 'targeted' : 'general'}`}>
+              {user?.role === 'Médecin' ? '👨‍⚕️' : user?.role === 'Assistant' ? '👥' : user?.role === 'Secrétaire' ? '📋' : '🎯'}
+            </div>
+            <h2 className="news-card-title">
+              Actualités {user?.role === 'Directeur' ? 'Ciblées' : `pour les ${user?.role}s`}
+            </h2>
+          </div>
           
           {user?.role === 'Directeur' ? (
             // Le directeur voit toutes les actualités ciblées groupées
@@ -1404,10 +1405,10 @@ const ActualitesManager = () => {
                 if (actusRole.length === 0) return null;
                 return (
                   <div key={role}>
-                    <h3 className="text-sm font-medium text-gray-500 mb-2 flex items-center">
-                      <span className={`w-2 h-2 rounded-full mr-2 ${
-                        role === 'Médecin' ? 'bg-blue-500' : 
-                        role === 'Assistant' ? 'bg-green-500' : 'bg-purple-500'
+                    <h3 className="text-sm font-semibold text-gray-500 mb-3 flex items-center gap-2 pb-2 border-b border-gray-100">
+                      <span className={`w-3 h-3 rounded-full ${
+                        role === 'Médecin' ? 'bg-gradient-to-br from-blue-400 to-blue-600' : 
+                        role === 'Assistant' ? 'bg-gradient-to-br from-emerald-400 to-emerald-600' : 'bg-gradient-to-br from-purple-400 to-purple-600'
                       }`}></span>
                       Pour les {role}s
                     </h3>
@@ -1418,21 +1419,19 @@ const ActualitesManager = () => {
                 );
               })}
               {(actualites || []).filter(a => ['Médecin', 'Assistant', 'Secrétaire'].includes(a.groupe_cible)).length === 0 && (
-                <Card>
-                  <CardContent className="py-6 text-center text-gray-500 text-sm">
-                    Aucune actualité ciblée
-                  </CardContent>
-                </Card>
+                <div className="empty-state">
+                  <div className="empty-state-icon">🎯</div>
+                  <p className="empty-state-text">Aucune actualité ciblée</p>
+                </div>
               )}
             </div>
           ) : (
             // Les autres voient seulement les actualités de leur groupe
             actualitesPourMonGroupe.length === 0 ? (
-              <Card>
-                <CardContent className="py-6 text-center text-gray-500 text-sm">
-                  Aucune actualité pour les {user?.role}s
-                </CardContent>
-              </Card>
+              <div className="empty-state">
+                <div className="empty-state-icon">📭</div>
+                <p className="empty-state-text">Aucune actualité pour les {user?.role}s</p>
+              </div>
             ) : (
               <div className="space-y-3">
                 {actualitesPourMonGroupe.map((actu) => (
