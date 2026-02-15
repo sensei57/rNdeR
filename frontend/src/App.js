@@ -3243,6 +3243,8 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh }) => {
       toast.success(`${selectedSalle.nom} assignée à ${employe.prenom} ${employe.nom}`);
       setShowAssignModal(false);
       fetchPlans();
+      // Rafraîchir le planning principal
+      if (onRefresh) onRefresh();
     } catch (error) {
       toast.error('Erreur lors de l\'assignation');
     }
@@ -3259,6 +3261,8 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh }) => {
       toast.success('Assignation retirée');
       setShowAssignModal(false);
       fetchPlans();
+      // Rafraîchir le planning principal
+      if (onRefresh) onRefresh();
     } catch (error) {
       toast.error('Erreur lors du retrait');
     }
