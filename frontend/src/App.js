@@ -895,11 +895,56 @@ const PushNotificationManager = () => {
   }
 
   if (permission === 'denied') {
+    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+    
     return (
-      <div className="bg-red-50 border border-red-200 rounded p-3 text-sm">
-        <p className="text-red-800">
-          ⚠️ Notifications bloquées. Activez-les dans les paramètres de votre navigateur.
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm space-y-3">
+        <p className="text-red-800 font-medium">
+          ⚠️ Notifications bloquées
         </p>
+        <p className="text-red-700 text-xs">
+          Pour recevoir votre planning quotidien, vous devez autoriser les notifications dans les paramètres de votre appareil.
+        </p>
+        
+        <div className="bg-white rounded p-3 text-xs text-gray-700 space-y-2">
+          <p className="font-semibold">📱 Comment réactiver :</p>
+          {isIOS ? (
+            <ol className="list-decimal list-inside space-y-1 text-gray-600">
+              <li>Ouvrez <strong>Réglages</strong> de votre iPhone/iPad</li>
+              <li>Descendez et appuyez sur <strong>Safari</strong> (ou votre navigateur)</li>
+              <li>Appuyez sur <strong>Notifications</strong></li>
+              <li>Trouvez ce site et activez les notifications</li>
+            </ol>
+          ) : isAndroid ? (
+            <ol className="list-decimal list-inside space-y-1 text-gray-600">
+              <li>Appuyez sur le <strong>cadenas 🔒</strong> dans la barre d'adresse</li>
+              <li>Appuyez sur <strong>Autorisations</strong> ou <strong>Paramètres du site</strong></li>
+              <li>Activez <strong>Notifications</strong></li>
+              <li>Rechargez la page</li>
+            </ol>
+          ) : (
+            <ol className="list-decimal list-inside space-y-1 text-gray-600">
+              <li>Cliquez sur le <strong>cadenas 🔒</strong> dans la barre d'adresse</li>
+              <li>Cliquez sur <strong>Paramètres du site</strong></li>
+              <li>Changez <strong>Notifications</strong> sur "Autoriser"</li>
+              <li>Rechargez la page</li>
+            </ol>
+          )}
+        </div>
+        
+        <Button 
+          onClick={() => {
+            // Tenter de redemander (fonctionne sur certains navigateurs après un délai)
+            requestPermission();
+          }}
+          size="sm"
+          variant="outline"
+          className="w-full border-red-300 text-red-700 hover:bg-red-100"
+        >
+          🔄 Réessayer d'activer
+        </Button>
       </div>
     );
   }
