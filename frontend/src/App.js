@@ -5816,27 +5816,21 @@ const PlanningManager = () => {
   const getTypeCongeShortLabel = (type) => {
     const types = {
       'CONGE_PAYE': 'CP',
-      'RTT': 'RTT',
+      'CONGE_SANS_SOLDE': 'CSS',
       'MALADIE': 'MAL',
-      'FORMATION': 'FORM',
-      'MATERNITE': 'MAT',
-      'PATERNITE': 'PAT',
-      'SANS_SOLDE': 'SS',
-      'ABSENT': 'REP', // Fusionné avec REPOS -> affiche REP
-      'REPOS': 'REP',  // Repos non comptabilisé
-      'HEURES_A_RECUPERER': 'H+',  // Heures à récupérer
-      'HEURES_RECUPEREES': 'H-',   // Heures récupérées
-      'AUTRE': 'AUT'
+      'REPOS': 'REP',  // Repos non comptabilisé (aucun effet)
+      'HEURES_A_RECUPERER': 'H+',  // Heures à récupérer (heures sup positif)
+      'HEURES_RECUPEREES': 'H-'   // Heures récupérées (heures sup négatif)
     };
     return types[type] || type?.substring(0, 3) || '?';
   };
 
-  // Déterminer si un congé est "comptabilisé" (congé payé, RTT, etc.) ou "non comptabilisé" (repos/absent)
+  // Déterminer si un congé est "comptabilisé" (CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE)
+  // ou "non comptabilisé" (REPOS, HEURES_A_RECUPERER, HEURES_RECUPEREES)
   const isCongeComptabilise = (typeConge) => {
-    // REPOS = non comptabilisé nulle part
-    // HEURES_RECUPEREES = négatif dans les heures sup (ne compte pas comme travail)
-    const nonComptabilises = ['ABSENT', 'REPOS', 'HEURES_RECUPEREES'];
-    return !nonComptabilises.includes(typeConge);
+    // Seuls CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE comptent comme "congés"
+    const vraisConges = ['CONGE_PAYE', 'CONGE_SANS_SOLDE', 'MALADIE'];
+    return vraisConges.includes(typeConge);
   };
 
   // Obtenir les classes CSS pour un congé selon son type
