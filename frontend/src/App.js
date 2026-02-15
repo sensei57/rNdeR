@@ -4078,7 +4078,7 @@ const PlanningManager = () => {
         let totalDemiJournees = 0;
         let totalHeures = 0;
         let heuresConges = 0;
-        let congesCount = 0;  // Compteur de congés (uniquement CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE)
+        let congesCount = 0;  // Compteur de congés (uniquement CONGE_PAYE)
         let heuresARecuperer = 0;  // Heures à récupérer = ajoutent aux heures sup
         let heuresRecuperees = 0;  // Heures récupérées = retirent des heures sup
         
