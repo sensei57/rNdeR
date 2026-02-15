@@ -2372,12 +2372,8 @@ const CongeManager = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="CONGE_PAYE">Congé payé</SelectItem>
-                    <SelectItem value="RTT">RTT</SelectItem>
+                    <SelectItem value="CONGE_SANS_SOLDE">Congé sans solde</SelectItem>
                     <SelectItem value="MALADIE">Congé maladie</SelectItem>
-                    <SelectItem value="FORMATION">Formation</SelectItem>
-                    <SelectItem value="MATERNITE">Congé maternité</SelectItem>
-                    <SelectItem value="PATERNITE">Congé paternité</SelectItem>
-                    <SelectItem value="SANS_SOLDE">Congé sans solde</SelectItem>
                     {user?.role === 'Directeur' && (
                       <>
                         <SelectItem value="HEURES_A_RECUPERER">Heures à récupérer (+heures sup)</SelectItem>
