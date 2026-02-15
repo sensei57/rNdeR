@@ -18266,247 +18266,76 @@ const ChatManager = () => {
             </div>
           )}
         </div>
-      </div>
-                setSelectedUser(null);
-                setSelectedGroupe(null);
-              }}
-            >
-              Chat Général
-            </Button>
-            <Button
-              variant={chatType === 'PRIVE' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => {
-                setChatType('PRIVE');
-                setSelectedGroupe(null);
-              }}
-            >
-              Messages Privés
-            </Button>
-            <Button
-              variant={chatType === 'GROUPE' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => {
-                setChatType('GROUPE');
-                setSelectedUser(null);
-              }}
-            >
-              Groupes
-            </Button>
-          </div>
+      
+      {/* Modal de création de groupe */}
+      <Dialog open={showGroupModal} onOpenChange={setShowGroupModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Créer un Groupe</DialogTitle>
+          </DialogHeader>
           
-          {chatType === 'PRIVE' && (
-            <Select
-              value={selectedUser?.id || ''}
-              onValueChange={(value) => {
-                const user = users.find(u => u.id === value);
-                setSelectedUser(user);
-              }}
-            >
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Choisir un collègue" />
-              </SelectTrigger>
-              <SelectContent>
-                {users.map(u => (
-                  <SelectItem key={u.id} value={u.id}>
-                    {u.prenom} {u.nom} ({u.role})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          
-          {chatType === 'GROUPE' && (
-            <div className="flex items-center space-x-2">
-              <Select
-                value={selectedGroupe?.id || ''}
-                onValueChange={(value) => {
-                  const groupe = groupes.find(g => g.id === value);
-                  setSelectedGroupe(groupe);
-                }}
-              >
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Choisir un groupe" />
-                </SelectTrigger>
-                <SelectContent>
-                  {groupes.map(groupe => (
-                    <SelectItem key={groupe.id} value={groupe.id}>
-                      {groupe.nom} ({groupe.membres_details?.length || 0} membres)
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Dialog open={showGroupModal} onOpenChange={setShowGroupModal}>
-                <DialogTrigger asChild>
-                  <Button size="sm" variant="outline">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Créer un Groupe</DialogTitle>
-                  </DialogHeader>
-                  
-                  <form onSubmit={handleCreateGroupe} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Nom du groupe *</Label>
-                      <Input
-                        value={newGroupe.nom}
-                        onChange={(e) => setNewGroupe({...newGroupe, nom: e.target.value})}
-                        placeholder="Équipe chirurgie..."
-                        required
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Description</Label>
-                      <Textarea
-                        value={newGroupe.description}
-                        onChange={(e) => setNewGroupe({...newGroupe, description: e.target.value})}
-                        placeholder="Description du groupe..."
-                        rows={2}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Membres *</Label>
-                      <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {users.map(u => (
-                          <label key={u.id} className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              checked={newGroupe.membres.includes(u.id)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setNewGroupe({
-                                    ...newGroupe,
-                                    membres: [...newGroupe.membres, u.id]
-                                  });
-                                } else {
-                                  setNewGroupe({
-                                    ...newGroupe,
-                                    membres: newGroupe.membres.filter(id => id !== u.id)
-                                  });
-                                }
-                              }}
-                            />
-                            <span className="text-sm">
-                              {u.prenom} {u.nom} ({u.role})
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-end space-x-2">
-                      <Button type="button" variant="outline" onClick={() => setShowGroupModal(false)}>
-                        Annuler
-                      </Button>
-                      <Button type="submit">
-                        Créer Groupe
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
+          <form onSubmit={handleCreateGroupe} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Nom du groupe *</Label>
+              <Input
+                value={newGroupe.nom}
+                onChange={(e) => setNewGroupe({...newGroupe, nom: e.target.value})}
+                placeholder="Équipe chirurgie..."
+                required
+              />
             </div>
-          )}
-        </div>
-      </div>
-
-      <Card className="h-96 flex flex-col">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">
-            {chatType === 'GENERAL' 
-              ? 'Chat Général - Tous les employés'
-              : chatType === 'GROUPE'
-                ? selectedGroupe 
-                  ? `Groupe: ${selectedGroupe.nom} (${selectedGroupe.membres_details?.length || 0} membres)`
-                  : 'Sélectionnez un groupe'
-                : selectedUser 
-                  ? `Conversation avec ${selectedUser.prenom} ${selectedUser.nom}`
-                  : 'Sélectionnez un collègue'
-            }
-          </CardTitle>
-        </CardHeader>
-        
-        <CardContent className="flex-1 flex flex-col">
-          <div className="flex-1 overflow-y-auto space-y-3 mb-4 p-2 border rounded-lg bg-gray-50">
-            {messages.map(message => (
-              <div
-                key={message.id}
-                className={`flex ${
-                  message.expediteur.id === user.id ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                <div
-                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                    message.expediteur.id === user.id
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white border'
-                  }`}
-                >
-                  {message.expediteur.id !== user.id && (
-                    <div className="text-xs font-medium text-gray-600 mb-1">
-                      {message.expediteur.prenom} {message.expediteur.nom}
-                    </div>
-                  )}
-                  <div className="text-sm">
-                    {message.contenu}
-                  </div>
-                  <div className={`text-xs mt-1 ${
-                    message.expediteur.id === user.id ? 'text-blue-100' : 'text-gray-500'
-                  }`}>
-                    {formatMessageTime(message.date_envoi)}
-                  </div>
-                </div>
-              </div>
-            ))}
             
-            {messages.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                <MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                <p>Aucun message pour le moment</p>
-                <p className="text-sm">Soyez le premier à envoyer un message !</p>
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Textarea
+                value={newGroupe.description}
+                onChange={(e) => setNewGroupe({...newGroupe, description: e.target.value})}
+                placeholder="Description du groupe..."
+                rows={2}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Membres *</Label>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {users.map(u => (
+                  <label key={u.id} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={newGroupe.membres.includes(u.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setNewGroupe({
+                            ...newGroupe,
+                            membres: [...newGroupe.membres, u.id]
+                          });
+                        } else {
+                          setNewGroupe({
+                            ...newGroupe,
+                            membres: newGroupe.membres.filter(id => id !== u.id)
+                          });
+                        }
+                      }}
+                    />
+                    <span className="text-sm">
+                      {u.prenom} {u.nom} ({u.role})
+                    </span>
+                  </label>
+                ))}
               </div>
-            )}
-          </div>
-          
-          <form onSubmit={sendMessage} className="flex space-x-2">
-            <Input
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder={
-                chatType === 'GENERAL' 
-                  ? "Écrivez votre message à tous..." 
-                  : chatType === 'GROUPE'
-                    ? selectedGroupe
-                      ? `Message au groupe ${selectedGroupe.nom}...`
-                      : "Sélectionnez un groupe..."
-                    : selectedUser 
-                      ? `Message pour ${selectedUser.prenom}...`
-                      : "Sélectionnez un destinataire..."
-              }
-              disabled={
-                (chatType === 'PRIVE' && !selectedUser) ||
-                (chatType === 'GROUPE' && !selectedGroupe)
-              }
-              className="flex-1"
-            />
-            <Button 
-              type="submit"
-              disabled={
-                !newMessage.trim() || 
-                (chatType === 'PRIVE' && !selectedUser) ||
-                (chatType === 'GROUPE' && !selectedGroupe)
-              }
-            >
-              <Send className="h-4 w-4" />
-            </Button>
+            </div>
+            
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setShowGroupModal(false)}>
+                Annuler
+              </Button>
+              <Button type="submit">
+                Créer Groupe
+              </Button>
+            </div>
           </form>
-        </CardContent>
-      </Card>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
