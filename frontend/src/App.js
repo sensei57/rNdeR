@@ -1139,8 +1139,8 @@ const ActualitesManager = () => {
       ]);
       console.log('Plan Matin:', planMatinRes.data);
       console.log('Plan Après-midi:', planAMRes.data);
-      setActualites(actusRes.data);
-      setAnniversaires(annivRes.data);
+      setActualites(Array.isArray(actusRes.data) ? actusRes.data : []);
+      setAnniversaires(Array.isArray(annivRes.data) ? annivRes.data : []);
       setPlanMatin(planMatinRes.data);
       setPlanApresMidi(planAMRes.data);
     } catch (error) {
