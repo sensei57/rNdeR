@@ -1407,7 +1407,7 @@ const ActualitesManager = () => {
                   </div>
                 );
               })}
-              {actualites.filter(a => ['Médecin', 'Assistant', 'Secrétaire'].includes(a.groupe_cible)).length === 0 && (
+              {(actualites || []).filter(a => ['Médecin', 'Assistant', 'Secrétaire'].includes(a.groupe_cible)).length === 0 && (
                 <Card>
                   <CardContent className="py-6 text-center text-gray-500 text-sm">
                     Aucune actualité ciblée
