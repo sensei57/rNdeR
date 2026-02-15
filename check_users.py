@@ -7,7 +7,7 @@ import requests
 import json
 
 def check_users():
-    base_url = "https://ophthalmo-planning.preview.emergentagent.com"
+    base_url = "https://ophtal-desk.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     # Login as directeur first
