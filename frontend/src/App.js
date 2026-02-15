@@ -21,34 +21,11 @@ import html2canvas from 'html2canvas';
 import usePWA from './hooks/usePWA';
 
 // Configuration automatique de l'URL backend pour Render.com
-const getBackendUrl = () => {
-  // Si REACT_APP_BACKEND_URL est défini, l'utiliser en priorité
-  if (process.env.REACT_APP_BACKEND_URL) {
-    return process.env.REACT_APP_BACKEND_URL;
-  }
-  
-  const currentHost = window.location.hostname;
-  
-  // Détection automatique pour Render.com
-  if (currentHost.includes('.onrender.com')) {
-    // Détecter si on est en mode TEST ou PROD
-    const isTestEnv = currentHost.includes('-test');
-    
-    if (isTestEnv) {
-      // Test: ope-francis-app-test -> ope-francis-api-test
-      return 'https://ope-francis-api-test.onrender.com';
-    } else {
-      // Prod: ope-francis-app -> ope-francis-api
-      return 'https://ope-francis-api.onrender.com';
-    }
-  }
-  
-  // En local ou autre environnement
-  return '';
-};
+const BACKEND_URL = window.location.hostname.includes('test') 
+  ? 'https://ope-francis-test.onrender.com' 
+  : 'https://ope-francis.onrender.com';
 
-const BACKEND_URL = getBackendUrl();
-const isTestMode = window.location.hostname.includes('-test') || window.location.hostname.includes('test');
+const isTestMode = window.location.hostname.includes('test');
 
 const API = `${BACKEND_URL}/api`;
 
