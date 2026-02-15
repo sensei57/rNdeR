@@ -2487,7 +2487,7 @@ const CongeManager = () => {
 
   // Filtrer les demandes selon les critères sélectionnés
   const getFilteredDemandes = () => {
-    let filtered = [...demandes];
+    let filtered = [...(demandes || [])];
     
     // Si l'utilisateur n'est PAS Directeur, ne montrer que ses propres congés
     if (user?.role !== 'Directeur') {
