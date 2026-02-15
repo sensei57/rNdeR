@@ -1829,9 +1829,12 @@ const ActualitesManager = () => {
                       <span>🌙</span> Après-midi
                     </h3>
                   </div>
-                  {/* Version Mobile : Grille responsive */}
+                  {/* Version Mobile : Grille responsive - triée par position Y puis X */}
                   <div className="cabinet-plan-mobile-grid md:hidden">
-                    {planApresMidi.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => {
+                    {planApresMidi.salles
+                      .filter(s => s.position_x > 0 && s.position_x < 6)
+                      .sort((a, b) => (a.position_y * 10 + a.position_x) - (b.position_y * 10 + b.position_x))
+                      .map(salle => {
                       const occupation = salle.occupation;
                       let statusClass = 'libre';
                       if (occupation) {
