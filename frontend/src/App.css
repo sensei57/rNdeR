@@ -2804,3 +2804,161 @@ p {
   z-index: 1;
   min-height: 100vh;
 }
+
+/* ============================================
+   PLANNING MOBILE RESPONSIVE FIXES
+   ============================================ */
+
+/* Fix pour les boutons de vue sur mobile */
+@media (max-width: 768px) {
+  /* Boutons vue jour/semaine/mois */
+  .flex.space-x-2 > button {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  /* Réduire la taille des cartes calendrier sur mobile */
+  .grid.grid-cols-7 {
+    gap: 2px !important;
+  }
+  
+  .grid.grid-cols-7 > div {
+    min-height: 60px !important;
+  }
+  
+  /* Réduire les paddings sur mobile */
+  .grid.grid-cols-7 > div .text-sm,
+  .grid.grid-cols-7 > div .text-xs {
+    font-size: 0.625rem;
+  }
+  
+  /* Fix pour les en-têtes de jours */
+  .grid.grid-cols-7 > .text-center.font-semibold {
+    font-size: 0.625rem;
+    padding: 0.25rem;
+  }
+  
+  /* Fix pour les Select sur mobile */
+  .w-\[300px\] {
+    width: 100% !important;
+    max-width: 200px;
+  }
+  
+  /* Fix flex-wrap pour les filtres */
+  .flex.flex-wrap {
+    gap: 0.5rem !important;
+  }
+  
+  /* Masquer certains textes sur mobile */
+  .border-l.pl-4 > span.text-sm {
+    display: none;
+  }
+  
+  /* Vue planning - scroll horizontal */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Fix pour CardHeader sur mobile */
+  .CardHeader .flex.items-center.justify-between {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+}
+
+/* Fix très petits écrans (< 480px) */
+@media (max-width: 480px) {
+  /* Vue calendrier mois - format compact */
+  .grid.grid-cols-7 > div {
+    min-height: 50px !important;
+    padding: 2px !important;
+  }
+  
+  /* Masquer les textes "Matin" et "Après-midi" sur très petit écran */
+  .grid.grid-cols-7 .text-xs.text-center {
+    display: none;
+  }
+  
+  /* Afficher juste les indicateurs */
+  .grid.grid-cols-7 .text-center.font-bold.text-sm {
+    font-size: 0.5rem;
+  }
+  
+  /* En-têtes des jours très compacts */
+  .grid.grid-cols-7 > .text-center.font-semibold {
+    font-size: 0.5rem;
+  }
+  
+  /* Numéro du jour plus petit */
+  .grid.grid-cols-7 .text-right.px-2.py-1 {
+    padding: 0.125rem !important;
+    font-size: 0.625rem;
+  }
+  
+  /* Boutons d'action empilés */
+  .flex.items-center.space-x-2.border-l {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding-left: 0 !important;
+    border-left: none !important;
+  }
+  
+  .flex.items-center.space-x-2.border-l button {
+    font-size: 0.625rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .flex.items-center.space-x-2.border-l button span {
+    display: none;
+  }
+}
+
+/* Fix pour la vue Planning (grille hebdomadaire) */
+@media (max-width: 1024px) {
+  /* Permettre le scroll horizontal pour les tableaux */
+  table.w-full {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  table.w-full tbody {
+    display: table;
+    width: 100%;
+  }
+}
+
+/* Touch targets pour mobile */
+@media (hover: none) and (pointer: coarse) {
+  /* Augmenter la zone de clic sur mobile */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Fix pour les inputs date/month sur iOS */
+  input[type="date"],
+  input[type="month"] {
+    min-height: 44px;
+    font-size: 16px; /* Évite le zoom auto sur iOS */
+  }
+}
+
+/* Fix spécifique iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  /* Améliorer le scroll sur iOS */
+  .overflow-x-auto,
+  .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Fix pour les modaux sur iOS */
+  .fixed.inset-0 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+}
