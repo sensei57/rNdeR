@@ -1739,13 +1739,44 @@ const ActualitesManager = () => {
             <div className="cabinet-plan-grid-wrapper">
               {/* Plan Matin */}
               {planMatin?.salles?.length > 0 && (
-                <div className="cabinet-plan-period" style={{ padding: '20px' }}>
+                <div className="cabinet-plan-period" style={{ padding: '12px' }}>
                   <div className="cabinet-plan-period-header">
                     <h3 className="cabinet-plan-period-title morning">
                       <span>☀️</span> Matin
                     </h3>
                   </div>
-                  <div className="relative" style={{ height: '450px', width: '100%', minWidth: '400px' }}>
+                  {/* Version Mobile : Grille responsive */}
+                  <div className="cabinet-plan-mobile-grid md:hidden">
+                    {planMatin.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => {
+                      const occupation = salle.occupation;
+                      let statusClass = 'libre';
+                      if (occupation) {
+                        if (salle.type_salle === 'MEDECIN') statusClass = 'medecin';
+                        else if (salle.type_salle === 'ASSISTANT') statusClass = 'assistant';
+                        else if (salle.type_salle === 'ATTENTE') statusClass = 'attente';
+                      }
+                      const hasPhoto = occupation?.employe?.photo_url;
+                      
+                      return (
+                        <div
+                          key={salle.id}
+                          className={`room-card-mobile ${statusClass} ${hasPhoto ? 'has-photo' : ''}`}
+                        >
+                          {occupation && <div className="room-card-indicator-mobile"></div>}
+                          {occupation ? (
+                            <RoomCardContent salle={salle} occupation={occupation} />
+                          ) : (
+                            <>
+                              <div className="room-card-name">{salle.nom}</div>
+                              <div className="room-card-status">Libre</div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* Version Desktop : Positions absolues */}
+                  <div className="hidden md:block relative" style={{ height: '450px', width: '100%', minWidth: '400px' }}>
                     {planMatin.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => {
                       const occupation = salle.occupation;
                       const adjustedX = salle.position_x > 0 ? salle.position_x - 1 : 0;
@@ -1789,13 +1820,44 @@ const ActualitesManager = () => {
               
               {/* Plan Après-midi */}
               {planApresMidi?.salles?.length > 0 && (
-                <div className="cabinet-plan-period" style={{ padding: '20px' }}>
+                <div className="cabinet-plan-period" style={{ padding: '12px' }}>
                   <div className="cabinet-plan-period-header">
                     <h3 className="cabinet-plan-period-title afternoon">
                       <span>🌙</span> Après-midi
                     </h3>
                   </div>
-                  <div className="relative" style={{ height: '450px', width: '100%', minWidth: '400px' }}>
+                  {/* Version Mobile : Grille responsive */}
+                  <div className="cabinet-plan-mobile-grid md:hidden">
+                    {planApresMidi.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => {
+                      const occupation = salle.occupation;
+                      let statusClass = 'libre';
+                      if (occupation) {
+                        if (salle.type_salle === 'MEDECIN') statusClass = 'medecin';
+                        else if (salle.type_salle === 'ASSISTANT') statusClass = 'assistant';
+                        else if (salle.type_salle === 'ATTENTE') statusClass = 'attente';
+                      }
+                      const hasPhoto = occupation?.employe?.photo_url;
+                      
+                      return (
+                        <div
+                          key={salle.id}
+                          className={`room-card-mobile ${statusClass} ${hasPhoto ? 'has-photo' : ''}`}
+                        >
+                          {occupation && <div className="room-card-indicator-mobile"></div>}
+                          {occupation ? (
+                            <RoomCardContent salle={salle} occupation={occupation} />
+                          ) : (
+                            <>
+                              <div className="room-card-name">{salle.nom}</div>
+                              <div className="room-card-status">Libre</div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* Version Desktop : Positions absolues */}
+                  <div className="hidden md:block relative" style={{ height: '450px', width: '100%', minWidth: '400px' }}>
                     {planApresMidi.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => {
                       const occupation = salle.occupation;
                       const adjustedX = salle.position_x > 0 ? salle.position_x - 1 : 0;
