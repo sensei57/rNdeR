@@ -3370,6 +3370,38 @@ async def get_planning_semaine(
         "planning": planning_par_jour
     }
 
+# Planning du mois entier (optimisé pour éviter les requêtes multiples)
+@api_router.get("/planning/mois/{mois}")
+async def get_planning_mois(
+    mois: str,  # Format YYYY-MM
+    current_user: User = Depends(get_current_user)
+):
+    from datetime import datetime
+    import calendar
+    
+    # Parser le mois
+    year, month = map(int, mois.split('-'))
+    last_day = calendar.monthrange(year, month)[1]
+    
+    # Générer toutes les dates du mois
+    dates_mois = [f"{year}-{str(month).zfill(2)}-{str(day).zfill(2)}" for day in range(1, last_day + 1)]
+    
+    # Récupérer tout le planning du mois en une seule requête
+    planning = await db.planning.find({"date": {"$in": dates_mois}}).sort("date", 1).to_list(5000)
+    
+    # Supprimer _id et enrichir avec le rôle de l'employé
+    result = []
+    for creneau in planning:
+        if '_id' in creneau:
+            del creneau['_id']
+        
+        # Récupérer le rôle de l'employé
+        employe = await db.users.find_one({"id": creneau["employe_id"]})
+        creneau["employe_role"] = employe.get("role") if employe else None
+        result.append(creneau)
+    
+    return result
+
 # Plan du cabinet
 @api_router.get("/cabinet/plan/{date}")
 async def get_plan_cabinet(
