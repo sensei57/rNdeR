@@ -7,7 +7,7 @@ import requests
 import json
 
 def reset_marie_password():
-    base_url = "https://french-greeting-56.preview.emergentagent.com"
+    base_url = "https://clinic-debug-hub.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     # Login as directeur first

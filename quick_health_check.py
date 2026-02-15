@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 VÉRIFICATION RAPIDE - Test de santé du système après redémarrage
-URL Backend: https://french-greeting-56.preview.emergentagent.com/api
+URL Backend: https://clinic-debug-hub.preview.emergentagent.com/api
 IDENTIFIANTS: Email: directeur@cabinet.fr, Mot de passe: admin123
 """
 
@@ -12,7 +12,7 @@ from datetime import datetime
 
 class QuickHealthChecker:
     def __init__(self):
-        self.base_url = "https://french-greeting-56.preview.emergentagent.com"
+        self.base_url = "https://clinic-debug-hub.preview.emergentagent.com"
         self.api_url = f"{self.base_url}/api"
         self.token = None
         self.tests_passed = 0
