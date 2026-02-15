@@ -672,9 +672,11 @@ const NotificationBadge = ({ setActiveTab }) => {
     try {
       const response = await axios.get(`${API}/notifications`);
       // Garder TOUTES les notifications, pas seulement les non lues
-      setUserNotifications(response.data);
+      // S'assurer que c'est un tableau
+      setUserNotifications(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Erreur lors du chargement des notifications utilisateur');
+      setUserNotifications([]);
     }
   };
 
