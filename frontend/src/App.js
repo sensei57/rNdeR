@@ -948,6 +948,13 @@ const ActualitesManager = () => {
     // Attendre que l'utilisateur soit authentifié avant de charger les données
     if (user) {
       fetchData();
+      
+      // Polling automatique pour les actualités (toutes les 30 secondes)
+      const interval = setInterval(() => {
+        fetchData();
+      }, 30000);
+      
+      return () => clearInterval(interval);
     }
   }, [user]);
 
