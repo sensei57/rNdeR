@@ -10651,18 +10651,26 @@ const PlanningManager = () => {
                               const demiJourneesJour = conge.demi_journee ? 1 : 2;
                               const heuresJour = conge.demi_journee ? heuresConge : heuresConge * 2;
                               
+                              // REPOS : non comptabilisé nulle part
+                              // HEURES_A_RECUPERER : heures sup positives (pas heures travail, pas congé)
+                              // HEURES_RECUPEREES : heures sup négatives (pas heures travail, pas congé)
+                              // CONGE_PAYE : heures travail + congé comptabilisé
+                              // CONGE_SANS_SOLDE, MALADIE : heures travail seulement (pas congé)
                               if (conge.type_conge === 'REPOS' || conge.type_conge === 'REPOS_COMPENSATEUR') {
                                 // Repos = ne comptent pas du tout
                                 nbReposSemaine += demiJourneesJour;
                               } else if (conge.type_conge === 'HEURES_A_RECUPERER') {
-                                // Heures à récupérer = compte comme travail + heures sup positives
-                                nbCongesPayesSemaine += demiJourneesJour;
+                                // Heures à récupérer = heures sup positives (PAS heures travail, PAS congé)
                                 heuresARecupererSemaine += heuresJour;
                               } else if (conge.type_conge === 'HEURES_RECUPEREES') {
-                                // Heures récupérées = négatif heures sup (ne compte pas comme travail)
+                                // Heures récupérées = négatif heures sup (PAS heures travail, PAS congé)
                                 heuresRecupereesSemaine += heuresJour;
+                              } else if (conge.type_conge === 'CONGE_PAYE') {
+                                // Congé payé = heures travail + congé comptabilisé
+                                nbCongesPayesSemaine += demiJourneesJour;
+                                nbCongesComptabilises += demiJourneesJour;
                               } else {
-                                // Autres congés (CONGE_PAYE, RTT, etc.) = comptent comme travail
+                                // MALADIE, CONGE_SANS_SOLDE = heures travail SEULEMENT (pas congé)
                                 nbCongesPayesSemaine += demiJourneesJour;
                               }
                             });
