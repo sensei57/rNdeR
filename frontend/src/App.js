@@ -2288,32 +2288,26 @@ const PersonnelManager = () => {
                       )}
                     </div>
                   </div>
+                  
+                  {user?.role === 'Directeur' && (
+                    <div className="flex justify-center gap-2 mt-4 pt-4 border-t border-gray-100">
+                      <Button
                         size="sm"
-                        variant="ghost"
+                        variant="outline"
                         onClick={() => handleEditPersonnel(assistant)}
-                        className="h-8 w-8 p-0"
+                        className="gap-1"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3 w-3" /> Modifier
                       </Button>
                       <Button
                         size="sm"
-                        variant="ghost"
+                        variant="outline"
                         onClick={() => handleDeletePersonnel(assistant.id, `${assistant.prenom} ${assistant.nom}`)}
-                        className="h-8 w-8 p-0 text-red-600 hover:text-red-800 hover:bg-red-50"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600">
-                    <strong>Téléphone:</strong> {assistant.telephone || 'Non renseigné'}
-                  </p>
-                  {assistant.date_naissance && (
-                    <p className="text-sm text-gray-600 mt-1">
-                      <strong>Né(e) le:</strong> {new Date(assistant.date_naissance + 'T12:00:00').toLocaleDateString('fr-FR')}
-                    </p>
                   )}
                 </CardContent>
               </Card>
@@ -2322,32 +2316,74 @@ const PersonnelManager = () => {
         </TabsContent>
 
         <TabsContent value="secretaires">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {getUsersByRole('Secrétaire').map(secretaire => (
-              <Card key={secretaire.id}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-12 w-12">
-                      {secretaire.photo_url && <AvatarImage src={getPhotoUrl(secretaire.photo_url)} alt={`${secretaire.prenom} ${secretaire.nom}`} />}
-                      <AvatarFallback className="bg-purple-500 text-white">
-                        {secretaire.prenom?.[0]}{secretaire.nom?.[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <CardTitle className="text-lg">
-                        {secretaire.prenom} {secretaire.nom}
-                      </CardTitle>
-                      <CardDescription>{secretaire.email}</CardDescription>
+              <Card key={secretaire.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 border-0 shadow-md">
+                <div className="relative">
+                  {/* Photo de couverture ou gradient */}
+                  <div className="h-24 bg-gradient-to-br from-purple-500 to-purple-700"></div>
+                  
+                  {/* Avatar centré qui chevauche */}
+                  <div className="absolute left-1/2 -translate-x-1/2 -bottom-12">
+                    <div className="relative">
+                      {secretaire.photo_url ? (
+                        <img 
+                          src={getPhotoUrl(secretaire.photo_url)} 
+                          alt={`${secretaire.prenom} ${secretaire.nom}`}
+                          className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                        />
+                      ) : (
+                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 border-4 border-white shadow-lg flex items-center justify-center text-white text-2xl font-bold">
+                          {secretaire.prenom?.[0]}{secretaire.nom?.[0]}
+                        </div>
+                      )}
+                      <div className="absolute bottom-1 right-1 w-5 h-5 bg-purple-500 rounded-full border-2 border-white"></div>
                     </div>
+                  </div>
+                </div>
+                
+                <CardContent className="pt-14 pb-4 text-center">
+                  <h3 className="text-lg font-bold text-gray-900">{secretaire.prenom} {secretaire.nom}</h3>
+                  <p className="text-sm text-gray-500 mt-1">{secretaire.email}</p>
+                  
+                  <div className="mt-4 pt-4 border-t border-gray-100 space-y-2 text-left">
+                    <p className="text-sm text-gray-600 flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-gray-400" />
+                      {secretaire.telephone || 'Non renseigné'}
+                    </p>
+                    {secretaire.date_naissance && (
+                      <p className="text-sm text-gray-600 flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-gray-400" />
+                        {new Date(secretaire.date_naissance + 'T12:00:00').toLocaleDateString('fr-FR')}
+                      </p>
+                    )}
                   </div>
                   
                   {user?.role === 'Directeur' && (
-                    <div className="flex space-x-1">
+                    <div className="flex justify-center gap-2 mt-4 pt-4 border-t border-gray-100">
                       <Button
                         size="sm"
-                        variant="ghost"
+                        variant="outline"
                         onClick={() => handleEditPersonnel(secretaire)}
-                        className="h-8 w-8 p-0"
+                        className="gap-1"
+                      >
+                        <Edit className="h-3 w-3" /> Modifier
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDeletePersonnel(secretaire.id, `${secretaire.prenom} ${secretaire.nom}`)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
