@@ -3807,11 +3807,12 @@ const PlanningManager = () => {
       }
       
       // Comptabiliser les congés (approuvés uniquement)
-      // - REPOS : non comptabilisé nulle part
-      // - HEURES_A_RECUPERER : comptabilisé dans heures de travail + heures supplémentaires
-      // - HEURES_RECUPEREES : négatif dans les heures supplémentaires
-      // - Autres (CONGE_PAYE, RTT, etc.) : comptabilisé dans heures de travail et congés
-      const typesCongesNonComptabilises = ['REPOS', 'ABSENT'];
+      // - REPOS : non comptabilisé nulle part (aucun effet)
+      // - HEURES_A_RECUPERER : comptabilisé comme heures supplémentaires positives (pas comme congé)
+      // - HEURES_RECUPEREES : comptabilisé comme heures supplémentaires négatives (pas comme congé)
+      // - CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE : comptabilisé dans la colonne "Congés"
+      const typesCongesNonComptabilises = ['REPOS'];
+      const typesNonCongés = ['REPOS', 'HEURES_A_RECUPERER', 'HEURES_RECUPEREES']; // Ces types ne comptent PAS comme congés
       const congesJour = congesApprouves?.filter(c => 
         c.utilisateur_id === employe.id && 
         dateStr >= c.date_debut && dateStr <= c.date_fin &&
@@ -3825,8 +3826,8 @@ const PlanningManager = () => {
         const heuresTotal = heuresConge * nbDemiJournees;
         
         if (conge.type_conge === 'HEURES_RECUPEREES') {
-          // Heures récupérées = négatif dans heures sup (ne compte PAS comme travail)
-          // On ne l'ajoute pas aux heuresConges
+          // Heures récupérées = négatif dans heures sup (ne compte PAS comme travail ni congé)
+          // On ne l'ajoute pas aux heuresConges ni congesCount
         } else if (conge.type_conge === 'HEURES_A_RECUPERER') {
           // Heures à récupérer = compte comme travail ET heures sup positives
           heuresConges += heuresTotal;
