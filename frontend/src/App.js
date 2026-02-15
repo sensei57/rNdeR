@@ -1592,30 +1592,8 @@ const ActualitesManager = () => {
                           }}
                         >
                           {occupation && <div className="room-card-indicator"></div>}
-                          {occupation && hasPhoto ? (
-                            <>
-                              <img 
-                                src={getPhotoUrl(occupation.employe.photo_url)} 
-                                alt={occupation.employe?.prenom}
-                                className="room-photo-full"
-                              />
-                              <div className="room-photo-overlay"></div>
-                              <div className="room-info-overlay">
-                                <div className="room-card-name">{salle.nom}</div>
-                                <div className="room-card-employee-name">{occupation.employe?.prenom}</div>
-                              </div>
-                            </>
-                          ) : occupation ? (
-                            <>
-                              <div className="room-card-name">{salle.nom}</div>
-                              <div className={`room-card-initials-full ${
-                                occupation.employe?.role === 'Médecin' ? 'medecin' :
-                                occupation.employe?.role === 'Assistant' ? 'assistant' : ''
-                              }`}>
-                                {occupation.employe?.prenom?.[0]}{occupation.employe?.nom?.[0]}
-                              </div>
-                              <div className="room-card-employee-name">{occupation.employe?.prenom?.substring(0, 7)}</div>
-                            </>
+                          {occupation ? (
+                            <RoomCardContent salle={salle} occupation={occupation} />
                           ) : (
                             <>
                               <div className="room-card-name">{salle.nom}</div>
