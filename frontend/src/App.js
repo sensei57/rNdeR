@@ -969,82 +969,101 @@ const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab 
 
   const getRoleColor = (role) => {
     switch (role) {
-      case 'Directeur': return 'bg-red-500';
-      case 'Médecin': return 'bg-blue-500';
-      case 'Assistant': return 'bg-green-500';
-      case 'Secrétaire': return 'bg-purple-500';
-      default: return 'bg-gray-500';
+      case 'Directeur': return 'bg-gradient-to-br from-red-500 to-red-600';
+      case 'Médecin': return 'bg-gradient-to-br from-[#0091B9] to-[#007494]';
+      case 'Assistant': return 'bg-gradient-to-br from-[#19CD91] to-[#14A474]';
+      case 'Secrétaire': return 'bg-gradient-to-br from-purple-500 to-purple-600';
+      default: return 'bg-gradient-to-br from-gray-400 to-gray-500';
     }
   };
 
   return (
-    <nav className="bg-white shadow-lg border-b relative">
+    <nav className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50" data-testid="main-navbar">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center space-x-4">
             {/* Bouton Menu Hamburger */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-2.5 rounded-xl text-gray-500 hover:text-[#0091B9] hover:bg-[#E6F4F8] transition-all duration-200"
               aria-label="Menu"
+              data-testid="menu-toggle-btn"
             >
-              <Menu className="h-6 w-6" />
+              <Menu className="h-5 w-5" />
             </button>
-            <h1 className="text-xl font-bold text-gray-800">
-              Gestion Personnel Médical
-            </h1>
+            
+            {/* Logo et Titre */}
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-gradient-to-br from-[#0091B9] to-[#19CD91] rounded-xl flex items-center justify-center shadow-sm">
+                <Eye className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-lg font-bold text-gray-800 hidden sm:block">
+                OphtaGestion
+              </h1>
+            </div>
           </div>
-          <div className="flex items-center space-x-4">
+          
+          <div className="flex items-center space-x-3">
             <NotificationBadge setActiveTab={setActiveTab} />
             
-            <div className="flex items-center space-x-2">
-              <Avatar>
-                <AvatarFallback className={getRoleColor(user?.role)}>
+            <div className="h-8 w-px bg-gray-200 hidden sm:block"></div>
+            
+            <div className="flex items-center space-x-3">
+              <Avatar className="h-10 w-10 ring-2 ring-white shadow-md">
+                <AvatarFallback className={`${getRoleColor(user?.role)} text-white text-sm font-semibold`}>
                   {getInitials(user?.nom, user?.prenom)}
                 </AvatarFallback>
               </Avatar>
-              <div className="text-sm">
-                <p className="font-medium text-gray-700">
+              <div className="text-sm hidden md:block">
+                <p className="font-semibold text-gray-800">
                   {user?.prenom} {user?.nom}
                 </p>
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-xs font-medium bg-gray-100 text-gray-600 border-0">
                   {user?.role}
                 </Badge>
               </div>
             </div>
+            
             <div className="flex items-center space-x-2">
               {localStorage.getItem('isImpersonating') === 'true' && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleStopImpersonation}
-                  className="flex items-center space-x-1 bg-orange-50 border-orange-500 text-orange-700 hover:bg-orange-100"
+                  className="flex items-center space-x-1.5 bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100 rounded-xl"
+                  data-testid="stop-impersonation-btn"
                 >
                   <Users className="h-4 w-4" />
-                  <span>Retour Directeur</span>
+                  <span className="hidden sm:inline">Retour Directeur</span>
                 </Button>
               )}
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={logout}
-                className="flex items-center space-x-1"
+                className="flex items-center space-x-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                data-testid="logout-btn"
               >
                 <LogOut className="h-4 w-4" />
-                <span>Déconnexion</span>
+                <span className="hidden sm:inline">Déconnexion</span>
               </Button>
             </div>
           </div>
         </div>
       </div>
       
-      {/* Menu déroulant */}
+      {/* Menu déroulant modernisé */}
       {menuOpen && (
-        <div className="absolute left-4 top-16 w-64 bg-white shadow-xl rounded-lg border border-gray-200 z-50">
-          <div className="p-2">
+        <div className="absolute left-4 top-[72px] w-72 bg-white/95 backdrop-blur-md shadow-2xl rounded-2xl border border-gray-100 z-50 animate-scale-in overflow-hidden">
+          <div className="p-3">
+            {/* En-tête du menu */}
+            <div className="px-3 py-2 mb-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Navigation</p>
+            </div>
             <nav className="space-y-1">
               {menuItems.map(item => {
                 const Icon = item.icon;
+                const isActive = activeTab === item.id;
                 return (
                   <button
                     key={item.id}
@@ -1052,13 +1071,16 @@ const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab 
                       setActiveTab(item.id);
                       setMenuOpen(false);
                     }}
-                    className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      activeTab === item.id
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    data-testid={`nav-item-${item.id}`}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                      isActive
+                        ? 'bg-gradient-to-r from-[#0091B9] to-[#007494] text-white shadow-md shadow-[#0091B9]/25'
+                        : 'text-gray-600 hover:text-[#0091B9] hover:bg-[#E6F4F8]'
                     }`}
                   >
-                    <Icon className="h-5 w-5" />
+                    <div className={`p-2 rounded-lg ${isActive ? 'bg-white/20' : 'bg-gray-100'}`}>
+                      <Icon className={`h-4 w-4 ${isActive ? 'text-white' : 'text-gray-500'}`} />
+                    </div>
                     <span>{item.label}</span>
                   </button>
                 );
