@@ -3128,3 +3128,175 @@ p {
     height: 10px;
   }
 }
+
+/* ============================================
+   PLAN DU CABINET - SCROLL HORIZONTAL MOBILE
+   ============================================ */
+
+/* Container de scroll pour le plan */
+.cabinet-plan-scroll-container {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.cabinet-plan-scroll-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.cabinet-plan-scroll-container::-webkit-scrollbar-track {
+  background: var(--gray-100);
+  border-radius: 3px;
+}
+
+.cabinet-plan-scroll-container::-webkit-scrollbar-thumb {
+  background: var(--primary-300);
+  border-radius: 3px;
+}
+
+/* Indication pour appuyer */
+.cabinet-plan-tap-hint {
+  text-align: center;
+  padding: 8px;
+  font-size: 0.7rem;
+  color: var(--gray-500);
+  background: linear-gradient(to top, var(--gray-50), transparent);
+  margin-top: -20px;
+  position: relative;
+  z-index: 5;
+}
+
+/* ============================================
+   PLAN DU CABINET - MODAL PLEIN ÉCRAN
+   ============================================ */
+
+.cabinet-plan-fullscreen-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cabinet-plan-fullscreen-content {
+  background: white;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .cabinet-plan-fullscreen-content {
+    width: 95%;
+    height: 95%;
+    border-radius: 16px;
+    max-width: 1200px;
+    max-height: 900px;
+  }
+}
+
+.cabinet-plan-fullscreen-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--gray-100);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cabinet-plan-fullscreen-close:hover {
+  background: var(--gray-200);
+}
+
+.cabinet-plan-fullscreen-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.cabinet-plan-fullscreen-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+
+.cabinet-plan-fullscreen-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.cabinet-plan-fullscreen-tabs .tab-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 2px solid var(--gray-200);
+  background: white;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cabinet-plan-fullscreen-tabs .tab-btn.active {
+  background: var(--primary-500);
+  color: white;
+  border-color: var(--primary-500);
+}
+
+.cabinet-plan-fullscreen-tabs .tab-btn:not(.active):hover {
+  background: var(--gray-50);
+}
+
+.cabinet-plan-fullscreen-scroll {
+  flex: 1;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 20px;
+}
+
+.cabinet-plan-fullscreen-scroll .cabinet-plan-period {
+  padding: 0 !important;
+}
+
+.cabinet-plan-fullscreen-scroll .cabinet-plan-scroll-container {
+  cursor: default;
+  overflow: visible;
+}
+
+.fullscreen-legend {
+  border-top: 1px solid var(--gray-200);
+  padding: 12px 20px !important;
+  margin: 0 !important;
+  background: var(--gray-50);
+}
+
+/* Masquer le hint dans la modal */
+.cabinet-plan-fullscreen-scroll .cabinet-plan-tap-hint {
+  display: none;
+}
