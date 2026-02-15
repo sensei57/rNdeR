@@ -4143,7 +4143,7 @@ const PlanningManager = () => {
           supSemaine: Math.round(heuresSupSemaine * 10) / 10,
           supMois: getHeuresSupMois(employe.id),
           supAnnee: getHeuresSupAnnee(employe.id),
-          conges: congesCount  // Nombre de demi-journées de vrais congés (CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE)
+          conges: congesCount  // Nombre de demi-journées de congés (CONGE_PAYE uniquement)
         };
       };
       
