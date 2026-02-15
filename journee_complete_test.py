@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 class JourneeCompleteDebugger:
     def __init__(self):
         # Use the correct backend URL from frontend/.env
-        self.api_url = "https://ophtal-desk.preview.emergentagent.com/api"
+        self.api_url = "https://ophtalmology-app.preview.emergentagent.com/api"
         
     def run_test(self, description, method, endpoint, expected_status, data=None, token=None):
         """Run a single API test"""
