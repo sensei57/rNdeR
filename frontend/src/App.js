@@ -350,39 +350,29 @@ const PWAInstallBanner = () => {
 
   return (
     <>
-      <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 animate-fade-in">
-        <Card className="bg-gradient-to-r from-cyan-500 to-blue-600 border-0 shadow-xl">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-white/20 rounded-full">
-                  <Smartphone className="h-6 w-6 text-white" />
-                </div>
-                <div className="text-white">
-                  <p className="font-semibold text-sm">Installer l'application</p>
-                  <p className="text-xs text-white/80">Accès rapide depuis votre écran</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button 
-                  onClick={handleInstall}
-                  className="bg-white text-blue-600 hover:bg-white/90 text-sm px-4"
-                  size="sm"
-                >
-                  Installer
-                </Button>
-                <Button 
-                  onClick={() => setShowBanner(false)}
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:bg-white/20 p-1"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Bannière compacte en haut */}
+      <div className="pwa-top-banner">
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 bg-white/20 rounded-lg">
+            <Smartphone className="h-4 w-4 text-white" />
+          </div>
+          <span className="text-white text-sm font-medium hidden sm:inline">Installer l'app</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button 
+            onClick={handleInstall}
+            className="bg-white text-primary-600 hover:bg-white/90 text-xs px-3 py-1 h-7"
+            size="sm"
+          >
+            Installer
+          </Button>
+          <button 
+            onClick={() => setShowBanner(false)}
+            className="text-white/70 hover:text-white p-1"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {/* Modal iOS avec instructions */}
