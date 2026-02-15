@@ -7,7 +7,7 @@ import requests
 import json
 
 def reactivate_marie():
-    base_url = "https://clinic-debug-hub.preview.emergentagent.com"
+    base_url = "https://ophthalmo-planning.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     # Login as directeur first
