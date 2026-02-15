@@ -1390,7 +1390,7 @@ const ActualitesManager = () => {
             // Le directeur voit toutes les actualités ciblées groupées
             <div className="space-y-4">
               {['Médecin', 'Assistant', 'Secrétaire'].map(role => {
-                const actusRole = actualites.filter(a => a.groupe_cible === role);
+                const actusRole = (actualites || []).filter(a => a.groupe_cible === role);
                 if (actusRole.length === 0) return null;
                 return (
                   <div key={role}>
