@@ -6860,20 +6860,21 @@ const PlanningManager = () => {
     return joursConges;
   };
 
-  // Calculer uniquement les congés COMPTABILISÉS (exclut REPOS et ABSENT)
+  // Calculer uniquement les congés COMPTABILISÉS (uniquement CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE)
   const calculateCongesComptabilises = (employeId, dates) => {
     if (!congesApprouves || congesApprouves.length === 0) return 0;
     
-    const typesNonComptabilises = ['REPOS', 'ABSENT'];
+    // Seuls CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE comptent comme "congés"
+    const vraisConges = ['CONGE_PAYE', 'CONGE_SANS_SOLDE', 'MALADIE'];
     let demiJourneesConges = 0;
     
     dates.forEach(date => {
-      // Chercher les congés approuvés pour cet employé à cette date (hors repos)
+      // Chercher les congés approuvés pour cet employé à cette date (uniquement vrais congés)
       const congesJour = congesApprouves.filter(c => 
         c.utilisateur_id === employeId && 
         c.date_debut <= date && 
         c.date_fin >= date &&
-        !typesNonComptabilises.includes(c.type_conge)
+        vraisConges.includes(c.type_conge)
       );
       
       congesJour.forEach(conge => {
