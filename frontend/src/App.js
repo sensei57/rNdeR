@@ -1180,10 +1180,10 @@ const ActualitesManager = () => {
   };
 
   // Filtrer les actualités générales (pour tout le monde)
-  const actualitesGenerales = actualites.filter(a => a.groupe_cible === 'tous' || !a.groupe_cible);
+  const actualitesGenerales = (actualites || []).filter(a => a.groupe_cible === 'tous' || !a.groupe_cible);
 
   // Filtrer les actualités pour le groupe de l'utilisateur connecté
-  const actualitesPourMonGroupe = actualites.filter(a => a.groupe_cible === user?.role);
+  const actualitesPourMonGroupe = (actualites || []).filter(a => a.groupe_cible === user?.role);
 
   const handleCreateActualite = async (e) => {
     e.preventDefault();
