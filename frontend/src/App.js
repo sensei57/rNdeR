@@ -849,13 +849,13 @@ const NotificationBadge = ({ setActiveTab }) => {
           {user?.role === 'Directeur' && (
             <>
               {/* Demandes de congés */}
-              {demandesConges.length > 0 && (
+              {(demandesConges || []).length > 0 && (
                 <div className="p-4 border-b">
                   <h4 className="font-semibold text-sm text-gray-700 mb-2">
-                    Demandes de Congés ({demandesConges.length})
+                    Demandes de Congés ({(demandesConges || []).length})
                   </h4>
                   <div className="space-y-2">
-                    {demandesConges.map(demande => (
+                    {(demandesConges || []).map(demande => (
                       <div 
                         key={demande.id} 
                         className="text-sm bg-yellow-50 p-2 rounded border border-yellow-200 cursor-pointer hover:bg-yellow-100 transition-colors"
