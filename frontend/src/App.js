@@ -2359,10 +2359,11 @@ const CongeManager = () => {
   };
 
   // Types de congés pour le sélecteur avec règles de comptabilisation
-  // - CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE: comptabilisé dans heures de travail et congés
-  // - REPOS: non comptabilisé nulle part
-  // - HEURES_A_RECUPERER: comptabilisé dans heures de travail + heures supplémentaires (positif)
-  // - HEURES_RECUPEREES: négatif dans les heures supplémentaires
+  // - CONGE_PAYE: comptabilisé en heures effectuées ET en congés (colonne Cg)
+  // - CONGE_SANS_SOLDE, MALADIE: comptabilisé en heures effectuées SEULEMENT (pas en congés)
+  // - REPOS: non comptabilisé nulle part (aucun effet)
+  // - HEURES_A_RECUPERER: heures supplémentaires positives (pas en heures effectuées)
+  // - HEURES_RECUPEREES: heures supplémentaires négatives (pas en heures effectuées)
   const typesConge = [
     { value: 'CONGE_PAYE', label: 'Congé payé' },
     { value: 'CONGE_SANS_SOLDE', label: 'Congé sans solde' },
