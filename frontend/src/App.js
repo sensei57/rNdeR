@@ -3842,6 +3842,10 @@ const PlanningManager = () => {
           // CONGE_PAYE = compte comme heures effectuées ET comme congé
           heuresConges += heuresTotal;
           congesCount += nbDemiJournees;
+        } else {
+          // CONGE_SANS_SOLDE, MALADIE = compte comme heures effectuées SEULEMENT (pas en congés)
+          heuresConges += heuresTotal;
+          // Ne pas incrémenter congesCount
         }
       });
     }
