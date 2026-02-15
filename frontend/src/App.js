@@ -3161,7 +3161,7 @@ const SallesManager = () => {
 
 // Planning Component
 // Composant compact du Plan du Cabinet pour le Planning - Affiche MATIN et APRÈS-MIDI
-const PlanCabinetCompact = ({ selectedDate, isDirector }) => {
+const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh }) => {
   const [planMatin, setPlanMatin] = useState(null);
   const [planApresMidi, setPlanApresMidi] = useState(null);
   const [loading, setLoading] = useState(true);
