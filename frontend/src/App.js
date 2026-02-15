@@ -18660,6 +18660,7 @@ function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <Toaster />
+          <PWAInstallBanner />
         </AuthProvider>
       </BrowserRouter>
     </div>
