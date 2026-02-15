@@ -687,13 +687,18 @@ const NotificationBadge = ({ setActiveTab }) => {
         axios.get(`${API}/demandes-travail`)
       ]);
 
-      const congesEnAttente = congesRes.data.filter(d => d.statut === 'EN_ATTENTE');
-      const travailEnAttente = travailRes.data.filter(d => d.statut === 'EN_ATTENTE');
+      const congesData = Array.isArray(congesRes.data) ? congesRes.data : [];
+      const travailData = Array.isArray(travailRes.data) ? travailRes.data : [];
+      
+      const congesEnAttente = congesData.filter(d => d.statut === 'EN_ATTENTE');
+      const travailEnAttente = travailData.filter(d => d.statut === 'EN_ATTENTE');
 
       setDemandesConges(congesEnAttente);
       setDemandesTravail(travailEnAttente);
     } catch (error) {
       console.error('Erreur lors du chargement des notifications');
+      setDemandesConges([]);
+      setDemandesTravail([]);
     }
   };
 
