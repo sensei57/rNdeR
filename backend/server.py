@@ -934,7 +934,7 @@ async def subscribe_to_notifications(
     subscription_data: dict,
     current_user: User = Depends(get_current_user)
 ):
-    """Enregistre le token FCM d'un utilisateur avec les informations de l'appareil"""
+    """Enregistre le token FCM d'un utilisateur avec les informations de l'appareil (multi-appareils supporté)"""
     try:
         fcm_token = subscription_data.get("token")
         device_info = subscription_data.get("device_info", {})
@@ -942,23 +942,51 @@ async def subscribe_to_notifications(
         if not fcm_token:
             raise HTTPException(status_code=400, detail="Token FCM manquant")
         
+        # Générer un ID unique pour cet appareil
+        import hashlib
+        device_id = hashlib.md5(fcm_token.encode()).hexdigest()[:12]
+        
         # Construire les infos appareil
         device_data = {
+            "device_id": device_id,
+            "fcm_token": fcm_token,
             "user_agent": device_info.get("userAgent", "Inconnu"),
             "platform": device_info.get("platform", "Inconnu"),
             "device_name": device_info.get("deviceName", "Appareil inconnu"),
             "browser": device_info.get("browser", "Inconnu"),
             "os": device_info.get("os", "Inconnu"),
-            "registered_at": datetime.now(timezone.utc)
+            "registered_at": datetime.now(timezone.utc).isoformat(),
+            "last_used": datetime.now(timezone.utc).isoformat()
         }
         
-        # Enregistrer le token et les infos appareil
+        # Récupérer l'utilisateur actuel
+        user = await db.users.find_one({"id": current_user.id})
+        existing_devices = user.get("fcm_devices", []) if user else []
+        
+        # Vérifier si cet appareil existe déjà (même token)
+        device_exists = False
+        for i, dev in enumerate(existing_devices):
+            if dev.get("fcm_token") == fcm_token:
+                # Mettre à jour l'appareil existant
+                existing_devices[i] = device_data
+                device_exists = True
+                break
+        
+        if not device_exists:
+            # Ajouter le nouvel appareil (max 5 appareils)
+            existing_devices.append(device_data)
+            if len(existing_devices) > 5:
+                # Supprimer le plus ancien
+                existing_devices = existing_devices[-5:]
+        
+        # Mettre à jour l'utilisateur
         await db.users.update_one(
             {"id": current_user.id},
             {"$set": {
-                "fcm_token": fcm_token, 
+                "fcm_devices": existing_devices,
+                "fcm_token": fcm_token,  # Garder le dernier token pour compatibilité
                 "fcm_updated_at": datetime.now(timezone.utc),
-                "device_info": device_data
+                "device_info": device_data  # Garder pour compatibilité
             }}
         )
         
@@ -967,7 +995,8 @@ async def subscribe_to_notifications(
         return {
             "message": "Token FCM enregistré avec succès", 
             "user_id": current_user.id,
-            "device_info": device_data
+            "device_info": device_data,
+            "total_devices": len(existing_devices)
         }
         
     except HTTPException:
@@ -975,6 +1004,66 @@ async def subscribe_to_notifications(
     except Exception as e:
         print(f"❌ Erreur lors de l'enregistrement du token: {e}")
         raise HTTPException(status_code=500, detail="Erreur lors de l'enregistrement")
+
+@api_router.get("/notifications/devices")
+async def get_user_devices(current_user: User = Depends(get_current_user)):
+    """Récupère la liste des appareils enregistrés pour les notifications"""
+    try:
+        user = await db.users.find_one({"id": current_user.id}, {"fcm_devices": 1, "device_info": 1, "fcm_token": 1})
+        
+        if not user:
+            return {"devices": []}
+        
+        # Support ancien format (un seul appareil)
+        devices = user.get("fcm_devices", [])
+        if not devices and user.get("fcm_token"):
+            # Migration: convertir ancien format en nouveau
+            old_device = user.get("device_info", {})
+            old_device["fcm_token"] = user.get("fcm_token")
+            old_device["device_id"] = "legacy"
+            devices = [old_device]
+        
+        return {"devices": devices}
+    except Exception as e:
+        print(f"Erreur: {e}")
+        raise HTTPException(status_code=500, detail="Erreur lors de la récupération")
+
+@api_router.delete("/notifications/devices/{device_id}")
+async def remove_device(device_id: str, current_user: User = Depends(get_current_user)):
+    """Supprime un appareil de la liste des notifications"""
+    try:
+        user = await db.users.find_one({"id": current_user.id})
+        if not user:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+        
+        devices = user.get("fcm_devices", [])
+        new_devices = [d for d in devices if d.get("device_id") != device_id]
+        
+        if len(new_devices) == len(devices):
+            raise HTTPException(status_code=404, detail="Appareil non trouvé")
+        
+        # Mettre à jour
+        update_data = {"fcm_devices": new_devices}
+        
+        # Si on supprime le dernier appareil, supprimer aussi fcm_token
+        if len(new_devices) == 0:
+            update_data["fcm_token"] = None
+            update_data["device_info"] = None
+        else:
+            # Mettre à jour fcm_token avec le dernier appareil
+            update_data["fcm_token"] = new_devices[-1].get("fcm_token")
+        
+        await db.users.update_one(
+            {"id": current_user.id},
+            {"$set": update_data}
+        )
+        
+        return {"message": "Appareil supprimé", "remaining_devices": len(new_devices)}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur: {e}")
+        raise HTTPException(status_code=500, detail="Erreur lors de la suppression")
 
 # Endpoint de diagnostic (GET - pour debug)
 @api_router.get("/debug-users")
