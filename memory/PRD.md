@@ -23,6 +23,10 @@ Application de gestion pour cabinet d'ophtalmologie avec :
 ### Session 15/02/2026
 - ✅ Correction erreur JavaScript `Phone is not defined` - Import manquant ajouté
 - ✅ Transformation de la bannière PWA en bouton discret centré
+- ✅ Gestion d'erreur d'image avec fallback vers initiales :
+  - Composants `MedecinCard`, `AssistantCard`, `SecretaireCard` pour la gestion du personnel
+  - Composant `RoomCardContent` pour le Plan du Cabinet
+  - Affichage automatique des initiales si l'image ne charge pas
 
 ### Sessions précédentes
 - ✅ Refonte de la page de connexion moderne
@@ -53,7 +57,7 @@ Application de gestion pour cabinet d'ophtalmologie avec :
 - Appliquer le nouveau style aux autres sections: Planning/Calendrier, formulaires, modales
 
 ## Fichiers clés
-- `/app/frontend/src/App.js` - Monolithe principal
+- `/app/frontend/src/App.js` - Monolithe principal (nouveaux composants ajoutés: MedecinCard, AssistantCard, SecretaireCard, RoomCardContent)
 - `/app/frontend/src/App.css` - Styles avec thème ophtalmologie
 - `/app/backend/server.py` - API FastAPI
 
