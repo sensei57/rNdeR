@@ -32,7 +32,9 @@ client = AsyncIOMotorClient(
 db = client[os.environ.get('DB_NAME', 'ophtacare')]
 
 # Security
-SECRET_KEY = os.environ['SECRET_KEY']  # Fail fast si non défini
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY environment variable is not set!")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 
