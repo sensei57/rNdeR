@@ -18054,30 +18054,219 @@ const ChatManager = () => {
   };
 
   const formatMessageTime = (date) => {
-    return new Date(date).toLocaleString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const msgDate = new Date(date);
+    const today = new Date();
+    const isToday = msgDate.toDateString() === today.toDateString();
+    
+    if (isToday) {
+      return msgDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    }
+    return msgDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
   };
 
+  // Fonction pour obtenir l'avatar d'un utilisateur
+  const getUserAvatar = (userData) => {
+    if (userData?.photo_url) {
+      return <img src={getPhotoUrl(userData.photo_url)} alt="" className="w-full h-full object-cover" />;
+    }
+    const bgColor = userData?.role === 'Médecin' ? 'bg-gradient-to-br from-blue-400 to-blue-600' :
+                    userData?.role === 'Assistant' ? 'bg-gradient-to-br from-emerald-400 to-emerald-600' :
+                    userData?.role === 'Secrétaire' ? 'bg-gradient-to-br from-purple-400 to-purple-600' :
+                    'bg-gradient-to-br from-gray-400 to-gray-600';
+    return (
+      <div className={`avatar-fallback ${bgColor}`}>
+        {userData?.prenom?.[0]}{userData?.nom?.[0]}
+      </div>
+    );
+  };
+
+  // Déterminer le titre et l'avatar du chat actuel
+  const getCurrentChatInfo = () => {
+    if (chatType === 'GENERAL') {
+      return { name: 'Chat Général', subtitle: 'Tous les employés', icon: '👥' };
+    }
+    if (chatType === 'GROUPE' && selectedGroupe) {
+      return { name: selectedGroupe.nom, subtitle: `${selectedGroupe.membres_details?.length || 0} membres`, icon: '👨‍👩‍👧‍👦' };
+    }
+    if (chatType === 'PRIVE' && selectedUser) {
+      return { name: `${selectedUser.prenom} ${selectedUser.nom}`, subtitle: selectedUser.role, user: selectedUser };
+    }
+    return null;
+  };
+
+  const chatInfo = getCurrentChatInfo();
+
   if (loading) {
-    return <div className="flex justify-center p-8">Chargement...</div>;
+    return <div className="flex justify-center p-8"><div className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full"></div></div>;
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Messagerie Interne</h2>
+    <div className="dashboard-container" style={{ padding: '20px' }}>
+      <div className="chat-container">
+        {/* Sidebar - Liste des conversations */}
+        <div className="chat-sidebar">
+          <div className="chat-sidebar-header">
+            <div className="chat-sidebar-title">
+              <MessageSquare className="h-6 w-6" />
+              <span>Messages</span>
+            </div>
+            <div className="chat-tabs">
+              <button 
+                className={`chat-tab ${chatType === 'GENERAL' ? 'active' : ''}`}
+                onClick={() => { setChatType('GENERAL'); setSelectedUser(null); setSelectedGroupe(null); }}
+              >
+                Général
+              </button>
+              <button 
+                className={`chat-tab ${chatType === 'PRIVE' ? 'active' : ''}`}
+                onClick={() => { setChatType('PRIVE'); setSelectedGroupe(null); }}
+              >
+                Privé
+              </button>
+              <button 
+                className={`chat-tab ${chatType === 'GROUPE' ? 'active' : ''}`}
+                onClick={() => { setChatType('GROUPE'); setSelectedUser(null); }}
+              >
+                Groupes
+              </button>
+            </div>
+          </div>
+          
+          <div className="chat-list">
+            {chatType === 'GENERAL' && (
+              <div className="chat-list-item active">
+                <div className="chat-list-avatar">
+                  <div className="avatar-fallback bg-gradient-to-br from-primary-400 to-primary-600">👥</div>
+                </div>
+                <div className="chat-list-info">
+                  <div className="chat-list-name">Chat Général</div>
+                  <div className="chat-list-preview">Tous les employés du cabinet</div>
+                </div>
+              </div>
+            )}
+            
+            {chatType === 'PRIVE' && users.map(u => (
+              <div 
+                key={u.id} 
+                className={`chat-list-item ${selectedUser?.id === u.id ? 'active' : ''}`}
+                onClick={() => setSelectedUser(u)}
+              >
+                <div className="chat-list-avatar">
+                  {getUserAvatar(u)}
+                  {u.actif && <div className="online-indicator"></div>}
+                </div>
+                <div className="chat-list-info">
+                  <div className="chat-list-name">{u.prenom} {u.nom}</div>
+                  <div className="chat-list-preview">{u.role}</div>
+                </div>
+              </div>
+            ))}
+            
+            {chatType === 'GROUPE' && (
+              <>
+                {groupes.map(g => (
+                  <div 
+                    key={g.id} 
+                    className={`chat-list-item ${selectedGroupe?.id === g.id ? 'active' : ''}`}
+                    onClick={() => setSelectedGroupe(g)}
+                  >
+                    <div className="chat-list-avatar">
+                      <div className="avatar-fallback bg-gradient-to-br from-accent-400 to-accent-600">👨‍👩‍👧‍👦</div>
+                    </div>
+                    <div className="chat-list-info">
+                      <div className="chat-list-name">{g.nom}</div>
+                      <div className="chat-list-preview">{g.membres_details?.length || 0} membres</div>
+                    </div>
+                  </div>
+                ))}
+                <button 
+                  className="chat-list-item"
+                  onClick={() => setShowGroupModal(true)}
+                  style={{ border: '2px dashed var(--gray-300)', justifyContent: 'center' }}
+                >
+                  <Plus className="h-5 w-5 text-gray-400" />
+                  <span className="text-gray-500 font-medium">Créer un groupe</span>
+                </button>
+              </>
+            )}
+          </div>
+        </div>
         
-        <div className="flex items-center space-x-4">
-          <div className="flex space-x-2">
-            <Button
-              variant={chatType === 'GENERAL' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => {
-                setChatType('GENERAL');
+        {/* Zone principale du chat */}
+        <div className="chat-main">
+          {chatInfo ? (
+            <>
+              {/* Header du chat */}
+              <div className="chat-header">
+                <div className="chat-header-avatar">
+                  {chatInfo.user ? getUserAvatar(chatInfo.user) : (
+                    <div className="avatar-fallback bg-gradient-to-br from-primary-400 to-primary-600">{chatInfo.icon}</div>
+                  )}
+                </div>
+                <div className="chat-header-info">
+                  <div className="chat-header-name">{chatInfo.name}</div>
+                  <div className="chat-header-status">{chatInfo.subtitle}</div>
+                </div>
+              </div>
+              
+              {/* Messages */}
+              <div className="chat-messages">
+                {messages.map(message => {
+                  const isSent = message.expediteur.id === user.id;
+                  return (
+                    <div key={message.id} className={`message-bubble-wrapper ${isSent ? 'sent' : 'received'}`}>
+                      {!isSent && (
+                        <div className="message-avatar">
+                          {getUserAvatar(message.expediteur)}
+                        </div>
+                      )}
+                      <div className={`message-bubble ${isSent ? 'sent' : 'received'}`}>
+                        {!isSent && chatType !== 'PRIVE' && (
+                          <div className="message-sender">{message.expediteur.prenom} {message.expediteur.nom}</div>
+                        )}
+                        <div className="message-content">{message.contenu}</div>
+                        <div className="message-time">{formatMessageTime(message.date_envoi)}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                {messages.length === 0 && (
+                  <div className="chat-empty">
+                    <div className="chat-empty-icon">💬</div>
+                    <div className="chat-empty-title">Aucun message</div>
+                    <div className="chat-empty-text">Soyez le premier à envoyer un message !</div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Zone de saisie */}
+              <form onSubmit={sendMessage} className="chat-input-area">
+                <input
+                  type="text"
+                  className="chat-input"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder={`Message ${chatInfo.name}...`}
+                />
+                <button 
+                  type="submit" 
+                  className="chat-send-btn"
+                  disabled={!newMessage.trim()}
+                >
+                  <Send className="h-5 w-5" />
+                </button>
+              </form>
+            </>
+          ) : (
+            <div className="chat-empty">
+              <div className="chat-empty-icon">👈</div>
+              <div className="chat-empty-title">Sélectionnez une conversation</div>
+              <div className="chat-empty-text">Choisissez un collègue ou un groupe pour commencer</div>
+            </div>
+          )}
+        </div>
+      </div>
                 setSelectedUser(null);
                 setSelectedGroupe(null);
               }}
