@@ -1056,7 +1056,7 @@ async def init_admin_simple():
             "nom": "LEBLOND",
             "prenom": "Francis",
             "role": ROLES["DIRECTEUR"],
-            "password_hash": bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
+            "password_hash": get_password_hash("admin123"),
             "actif": True,
             "date_creation": datetime.now(timezone.utc)
         }
