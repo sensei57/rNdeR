@@ -2384,34 +2384,6 @@ const PersonnelManager = () => {
             ))}
           </div>
         </TabsContent>
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleDeletePersonnel(secretaire.id, `${secretaire.prenom} ${secretaire.nom}`)}
-                        className="h-8 w-8 p-0 text-red-600 hover:text-red-800 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600">
-                    <strong>Téléphone:</strong> {secretaire.telephone || 'Non renseigné'}
-                  </p>
-                  {secretaire.date_naissance && (
-                    <p className="text-sm text-gray-600 mt-1">
-                      <strong>Né(e) le:</strong> {new Date(secretaire.date_naissance + 'T12:00:00').toLocaleDateString('fr-FR')}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
 
         <TabsContent value="assignations">
           <div className="space-y-4">
