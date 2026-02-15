@@ -2962,3 +2962,169 @@ p {
     bottom: 0;
   }
 }
+
+/* ============================================
+   PLAN DU CABINET - VERSION MOBILE
+   ============================================ */
+
+/* Grille mobile pour le plan du cabinet */
+.cabinet-plan-mobile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 8px 0;
+}
+
+/* Carte de salle en version mobile */
+.room-card-mobile {
+  background: white;
+  border-radius: 12px;
+  padding: 10px 6px;
+  text-align: center;
+  border: 2px solid var(--gray-200);
+  transition: all var(--transition-fast);
+  position: relative;
+  min-height: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.room-card-mobile.medecin {
+  border-color: var(--primary-400);
+  background: linear-gradient(135deg, var(--primary-50) 0%, white 100%);
+}
+
+.room-card-mobile.assistant {
+  border-color: var(--accent-400);
+  background: linear-gradient(135deg, var(--accent-50) 0%, white 100%);
+}
+
+.room-card-mobile.attente {
+  border-color: var(--warm-400);
+  background: linear-gradient(135deg, var(--warm-50) 0%, white 100%);
+}
+
+.room-card-mobile.libre {
+  border-color: var(--gray-200);
+  background: var(--gray-50);
+}
+
+.room-card-mobile .room-card-name {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+}
+
+.room-card-mobile .room-card-status {
+  font-size: 0.6rem;
+  color: var(--gray-400);
+  text-transform: uppercase;
+}
+
+.room-card-mobile .room-card-initials-full {
+  width: 32px;
+  height: 32px;
+  font-size: 0.7rem;
+  margin: 4px auto;
+}
+
+.room-card-mobile .room-card-employee-name {
+  font-size: 0.6rem;
+  margin-top: 2px;
+}
+
+/* Indicateur de présence en mobile */
+.room-card-indicator-mobile {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-500);
+  border: 1px solid white;
+}
+
+/* Photo en mode mobile */
+.room-card-mobile .room-photo-full {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 4px auto;
+}
+
+.room-card-mobile .room-info-overlay {
+  position: static;
+  background: transparent;
+  padding: 0;
+}
+
+.room-card-mobile .room-photo-overlay {
+  display: none;
+}
+
+/* Très petits écrans - 2 colonnes */
+@media (max-width: 360px) {
+  .cabinet-plan-mobile-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+  
+  .room-card-mobile {
+    min-height: 60px;
+    padding: 8px 4px;
+  }
+  
+  .room-card-mobile .room-card-name {
+    font-size: 0.6rem;
+  }
+}
+
+/* Header du plan du cabinet responsive */
+@media (max-width: 768px) {
+  .cabinet-plan-header {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px !important;
+  }
+  
+  .cabinet-plan-title {
+    font-size: 1rem;
+  }
+  
+  .cabinet-plan-date {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+  }
+  
+  .cabinet-plan-period {
+    padding: 8px !important;
+  }
+  
+  .cabinet-plan-period-title {
+    font-size: 0.9rem;
+  }
+  
+  .cabinet-legend {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px;
+    justify-content: center;
+  }
+  
+  .cabinet-legend-item {
+    font-size: 0.7rem;
+    gap: 4px;
+  }
+  
+  .cabinet-legend-dot {
+    width: 10px;
+    height: 10px;
+  }
+}
