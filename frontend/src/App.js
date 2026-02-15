@@ -2340,18 +2340,21 @@ const CongeManager = () => {
   const fetchUsers = async () => {
     try {
       const response = await axios.get(`${API}/users`);
-      setUsers(response.data.filter(u => u.actif));
+      const data = Array.isArray(response.data) ? response.data : [];
+      setUsers(data.filter(u => u.actif));
     } catch (error) {
       console.error('Erreur lors du chargement des utilisateurs');
+      setUsers([]);
     }
   };
 
   const fetchDemandes = async () => {
     try {
       const response = await axios.get(`${API}/conges`);
-      setDemandes(response.data);
+      setDemandes(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       toast.error('Erreur lors du chargement des demandes');
+      setDemandes([]);
     } finally {
       setLoading(false);
     }
