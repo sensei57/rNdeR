@@ -1443,7 +1443,7 @@ const ActualitesManager = () => {
         </div>
       </div>
 
-      {/* Plan du Cabinet du jour - Design moderne */}
+      {/* Plan du Cabinet du jour - Design moderne avec disposition spatiale */}
       <div className="cabinet-plan-container">
         <div className="cabinet-plan-header">
           <div className="cabinet-plan-title">
@@ -1462,15 +1462,17 @@ const ActualitesManager = () => {
             <div className="cabinet-plan-grid-wrapper">
               {/* Plan Matin */}
               {planMatin?.salles?.length > 0 && (
-                <div className="cabinet-plan-period">
+                <div className="cabinet-plan-period" style={{ padding: '20px' }}>
                   <div className="cabinet-plan-period-header">
                     <h3 className="cabinet-plan-period-title morning">
                       <span>☀️</span> Matin
                     </h3>
                   </div>
-                  <div className="rooms-grid">
+                  <div className="relative" style={{ height: '450px', width: '100%', minWidth: '400px' }}>
                     {planMatin.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => {
                       const occupation = salle.occupation;
+                      const adjustedX = salle.position_x > 0 ? salle.position_x - 1 : 0;
+                      
                       let statusClass = 'libre';
                       if (occupation) {
                         if (salle.type_salle === 'MEDECIN') statusClass = 'medecin';
@@ -1479,15 +1481,39 @@ const ActualitesManager = () => {
                       }
                       
                       return (
-                        <div key={salle.id} className={`room-card ${statusClass}`}>
+                        <div
+                          key={salle.id}
+                          className={`room-card-positioned ${statusClass}`}
+                          style={{
+                            position: 'absolute',
+                            left: `${adjustedX * 85}px`,
+                            top: `${salle.position_y * 95}px`,
+                            width: '78px',
+                            height: '88px'
+                          }}
+                        >
                           {occupation && <div className="room-card-indicator"></div>}
                           <div className="room-card-name">{salle.nom}</div>
                           {occupation ? (
-                            <>
-                              <div className="room-card-employee">
-                                {occupation.employe?.prenom?.substring(0, 8)}
+                            <div className="room-card-photo-container">
+                              {occupation.employe?.photo_url ? (
+                                <img 
+                                  src={getPhotoUrl(occupation.employe.photo_url)} 
+                                  alt={occupation.employe?.prenom}
+                                  className="room-card-photo"
+                                />
+                              ) : (
+                                <div className={`room-card-initials ${
+                                  occupation.employe?.role === 'Médecin' ? 'medecin' :
+                                  occupation.employe?.role === 'Assistant' ? 'assistant' : ''
+                                }`}>
+                                  {occupation.employe?.prenom?.[0]}{occupation.employe?.nom?.[0]}
+                                </div>
+                              )}
+                              <div className="room-card-employee-name">
+                                {occupation.employe?.prenom?.substring(0, 7)}
                               </div>
-                            </>
+                            </div>
                           ) : (
                             <div className="room-card-status">Libre</div>
                           )}
@@ -1500,15 +1526,17 @@ const ActualitesManager = () => {
               
               {/* Plan Après-midi */}
               {planApresMidi?.salles?.length > 0 && (
-                <div className="cabinet-plan-period">
+                <div className="cabinet-plan-period" style={{ padding: '20px' }}>
                   <div className="cabinet-plan-period-header">
                     <h3 className="cabinet-plan-period-title afternoon">
                       <span>🌙</span> Après-midi
                     </h3>
                   </div>
-                  <div className="rooms-grid">
+                  <div className="relative" style={{ height: '450px', width: '100%', minWidth: '400px' }}>
                     {planApresMidi.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => {
                       const occupation = salle.occupation;
+                      const adjustedX = salle.position_x > 0 ? salle.position_x - 1 : 0;
+                      
                       let statusClass = 'libre';
                       if (occupation) {
                         if (salle.type_salle === 'MEDECIN') statusClass = 'medecin';
@@ -1517,15 +1545,39 @@ const ActualitesManager = () => {
                       }
                       
                       return (
-                        <div key={salle.id} className={`room-card ${statusClass}`}>
+                        <div
+                          key={salle.id}
+                          className={`room-card-positioned ${statusClass}`}
+                          style={{
+                            position: 'absolute',
+                            left: `${adjustedX * 85}px`,
+                            top: `${salle.position_y * 95}px`,
+                            width: '78px',
+                            height: '88px'
+                          }}
+                        >
                           {occupation && <div className="room-card-indicator"></div>}
                           <div className="room-card-name">{salle.nom}</div>
                           {occupation ? (
-                            <>
-                              <div className="room-card-employee">
-                                {occupation.employe?.prenom?.substring(0, 8)}
+                            <div className="room-card-photo-container">
+                              {occupation.employe?.photo_url ? (
+                                <img 
+                                  src={getPhotoUrl(occupation.employe.photo_url)} 
+                                  alt={occupation.employe?.prenom}
+                                  className="room-card-photo"
+                                />
+                              ) : (
+                                <div className={`room-card-initials ${
+                                  occupation.employe?.role === 'Médecin' ? 'medecin' :
+                                  occupation.employe?.role === 'Assistant' ? 'assistant' : ''
+                                }`}>
+                                  {occupation.employe?.prenom?.[0]}{occupation.employe?.nom?.[0]}
+                                </div>
+                              )}
+                              <div className="room-card-employee-name">
+                                {occupation.employe?.prenom?.substring(0, 7)}
                               </div>
-                            </>
+                            </div>
                           ) : (
                             <div className="room-card-status">Libre</div>
                           )}
