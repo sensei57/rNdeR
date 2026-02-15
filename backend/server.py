@@ -44,6 +44,20 @@ security = HTTPBearer()
 # Create the main app without a prefix
 app = FastAPI(title="Gestion Personnel Médical")
 
+# Health check endpoint (sans /api pour test rapide)
+@app.get("/")
+async def root():
+    return {"status": "ok", "message": "OphtaCare Backend is running"}
+
+@app.get("/health")
+async def health_check():
+    try:
+        # Test de connexion MongoDB
+        await client.admin.command('ping')
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
+
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
