@@ -1706,8 +1706,8 @@ const PersonnelManager = () => {
         axios.get(`${API}/users`),
         axios.get(`${API}/assignations`)
       ]);
-      setUsers(usersRes.data);
-      setAssignations(assignationsRes.data);
+      setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
+      setAssignations(Array.isArray(assignationsRes.data) ? assignationsRes.data : []);
     } catch (error) {
       toast.error('Erreur lors du chargement des données');
     } finally {
