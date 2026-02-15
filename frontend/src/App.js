@@ -5772,16 +5772,16 @@ const PlanningManager = () => {
     }
   };
 
-  // Changer le type d'un congé (congé payé <-> absent non comptabilisé)
+  // Changer le type d'un congé (basculer entre congé payé et repos)
   const handleChangerTypeCongeRapide = async (conge) => {
     if (!canModifyPlanning()) {
       toast.error('Vous n\'avez pas la permission de modifier le planning');
       return;
     }
-    // Si c'est ABSENT ou REPOS -> passer en CONGE_PAYE, sinon passer en REPOS
-    const estReposOuAbsent = conge.type_conge === 'ABSENT' || conge.type_conge === 'REPOS';
-    const nouveauType = estReposOuAbsent ? 'CONGE_PAYE' : 'REPOS';
-    const label = nouveauType === 'REPOS' ? 'Repos/Absent (non comptabilisé)' : 'Congé payé';
+    // Si c'est REPOS -> passer en CONGE_PAYE, sinon passer en REPOS
+    const estRepos = conge.type_conge === 'REPOS';
+    const nouveauType = estRepos ? 'CONGE_PAYE' : 'REPOS';
+    const label = nouveauType === 'REPOS' ? 'Repos (non comptabilisé)' : 'Congé payé';
     
     if (!window.confirm(`Changer en "${label}" ?`)) return;
     
