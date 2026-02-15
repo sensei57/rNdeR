@@ -20,13 +20,37 @@ import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 import usePWA from './hooks/usePWA';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
+// Configuration automatique de l'URL backend pour Render.com
+const getBackendUrl = () => {
+  // Si REACT_APP_BACKEND_URL est défini, l'utiliser
+  if (process.env.REACT_APP_BACKEND_URL) {
+    return process.env.REACT_APP_BACKEND_URL;
+  }
+  
+  // Détection automatique pour Render.com
+  const currentHost = window.location.hostname;
+  
+  // Si on est sur Render (*.onrender.com)
+  if (currentHost.includes('.onrender.com')) {
+    // Remplacer le nom du service frontend par celui du backend
+    // Ex: ope-francis-app-test.onrender.com -> ope-francis-api-test.onrender.com
+    const backendHost = currentHost.replace('-app-', '-api-');
+    return `https://${backendHost}`;
+  }
+  
+  // En local ou autre environnement
+  return '';
+};
+
+const BACKEND_URL = getBackendUrl();
 
 const API = `${BACKEND_URL}/api`;
 
 // Log pour debug
 console.log(`%c 🚀 Backend URL: ${BACKEND_URL} `, 
             `background: #4caf50; color: #000; font-weight: bold;`);
+console.log(`%c 🔗 API URL: ${API} `, 
+            `background: #2196f3; color: #fff; font-weight: bold;`);
 
 // Fonction utilitaire pour obtenir l'URL complète d'une photo
 const getPhotoUrl = (photoUrl) => {
