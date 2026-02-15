@@ -2423,3 +2423,147 @@ p {
   border-radius: var(--radius-full);
   flex-shrink: 0;
 }
+
+/* ============================================
+   CARTE DE SALLE POSITIONNÉE (avec disposition spatiale)
+   ============================================ */
+
+.room-card-positioned {
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 8px 6px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  border: 2px solid transparent;
+  overflow: hidden;
+}
+
+.room-card-positioned:hover {
+  transform: scale(1.08);
+  z-index: 10;
+  box-shadow: var(--shadow-lg);
+}
+
+/* États des salles positionnées */
+.room-card-positioned.libre {
+  background: white;
+  border-color: var(--gray-200);
+  color: var(--gray-400);
+}
+
+.room-card-positioned.medecin {
+  background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
+  border-color: var(--primary-300);
+  color: var(--primary-700);
+}
+
+.room-card-positioned.assistant {
+  background: linear-gradient(135deg, var(--accent-50) 0%, var(--accent-100) 100%);
+  border-color: var(--accent-300);
+  color: var(--accent-700);
+}
+
+.room-card-positioned.attente {
+  background: linear-gradient(135deg, var(--warning-50) 0%, var(--warning-100) 100%);
+  border-color: var(--warning-300);
+  color: var(--warning-700);
+}
+
+.room-card-positioned .room-card-name {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-align: center;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.room-card-positioned .room-card-status {
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  opacity: 0.6;
+  margin-top: auto;
+}
+
+/* Conteneur photo employé */
+.room-card-photo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.room-card-photo {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.room-card-initials {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, var(--gray-400), var(--gray-500));
+}
+
+.room-card-initials.medecin {
+  background: linear-gradient(135deg, var(--primary-400), var(--primary-600));
+}
+
+.room-card-initials.assistant {
+  background: linear-gradient(135deg, var(--accent-400), var(--accent-600));
+}
+
+.room-card-employee-name {
+  font-size: 9px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Indicateur de statut pour cartes positionnées */
+.room-card-positioned .room-card-indicator {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  border: 2px solid white;
+  box-shadow: var(--shadow-xs);
+}
+
+.room-card-positioned.medecin .room-card-indicator {
+  background: var(--primary-500);
+}
+
+.room-card-positioned.assistant .room-card-indicator {
+  background: var(--accent-500);
+}
+
+.room-card-positioned.attente .room-card-indicator {
+  background: var(--warning-500);
+  animation: pulse 2s ease-in-out infinite;
+}
