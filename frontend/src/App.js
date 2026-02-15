@@ -18917,14 +18917,25 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation menuOpen={menuOpen} setMenuOpen={setMenuOpen} menuItems={getMenuItems()} activeTab={activeTab} setActiveTab={setActiveTab} />
+    <div className="min-h-screen relative">
+      {/* Fond Ophtalmologie */}
+      <div className="ophta-background">
+        <div className="ophta-decoration ophta-decoration-1"></div>
+        <div className="ophta-decoration ophta-decoration-2"></div>
+        <div className="ophta-decoration ophta-decoration-3"></div>
+        <div className="ophta-eye-pattern"></div>
+        <div className="ophta-eye-pattern-2"></div>
+      </div>
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Main Content - Full width sans sidebar */}
-        <div className="w-full">
-          <NotificationToday />
-          {renderContent()}
+      <div className="app-content-wrapper">
+        <Navigation menuOpen={menuOpen} setMenuOpen={setMenuOpen} menuItems={getMenuItems()} activeTab={activeTab} setActiveTab={setActiveTab} />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Main Content - Full width sans sidebar */}
+          <div className="w-full">
+            <NotificationToday />
+            {renderContent()}
+          </div>
         </div>
       </div>
     </div>
