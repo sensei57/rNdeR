@@ -10724,7 +10724,7 @@ const PlanningManager = () => {
                                   </>
                                 );
                               })()}
-                              <td className={`border p-1 text-center text-xs font-bold ${(nbCongesPayesSemaine + nbReposSemaine) > 0 ? 'bg-green-200 text-green-800' : 'bg-green-50'}`}>{(nbCongesPayesSemaine + nbReposSemaine) > 0 ? `${nbCongesPayesSemaine + nbReposSemaine}½j` : '0'}</td>
+                              <td className={`border p-1 text-center text-xs font-bold ${nbCongesComptabilises > 0 ? 'bg-green-200 text-green-800' : 'bg-green-50'}`}>{nbCongesComptabilises > 0 ? `${nbCongesComptabilises}½j` : '0'}</td>
                             </>
                           );
                         })()}
