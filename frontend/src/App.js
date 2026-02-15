@@ -10632,8 +10632,9 @@ const PlanningManager = () => {
                           const heuresContrat = assistant.heures_semaine_fixe || (demiJourneesSemaine * 4);
                           
                           // Calculer les demi-journées de congés pour cette semaine
-                          let nbCongesPayesSemaine = 0; // Congés payés = comptent comme travail (en demi-journées)
+                          let nbCongesPayesSemaine = 0; // Congés = comptent comme travail (en demi-journées)
                           let nbReposSemaine = 0; // Repos = ne comptent pas (en demi-journées)
+                          let nbCongesComptabilises = 0; // Seulement CONGE_PAYE compte comme congé
                           let heuresARecupererSemaine = 0; // Heures à récupérer
                           let heuresRecupereesSemaine = 0; // Heures récupérées
                           const congesDejaComptes = new Set(); // Éviter de compter le même congé plusieurs fois
