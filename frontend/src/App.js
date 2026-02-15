@@ -3344,6 +3344,8 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh }) => {
       }
       
       fetchPlans();
+      // Rafraîchir le planning principal
+      if (onRefresh) onRefresh();
     } catch (error) {
       console.error('Erreur copie assignations:', error);
       toast.error(`Erreur: ${error.response?.data?.detail || error.message || 'Erreur inconnue'}`);
