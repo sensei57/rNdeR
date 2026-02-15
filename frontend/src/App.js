@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./components/ui/avatar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
 import { Textarea } from "./components/ui/textarea";
-import { Calendar, Users, Clock, FileText, MessageSquare, Settings, LogOut, Plus, Check, X, CalendarDays, Send, Trash2, Edit, ChevronLeft, ChevronRight, MapPin, Building2, AlertTriangle, AlertCircle, Package, Eye, Link, Upload, Bell, Menu, Copy, Download, FileDown, Smartphone } from "lucide-react";
+import { Calendar, Users, Clock, FileText, MessageSquare, Settings, LogOut, Plus, Check, X, CalendarDays, Send, Trash2, Edit, ChevronLeft, ChevronRight, MapPin, Building2, AlertTriangle, AlertCircle, Package, Eye, Link, Upload, Bell, Menu, Copy, Download, FileDown, Smartphone, Phone } from "lucide-react";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner";
 import jsPDF from 'jspdf';
@@ -350,30 +350,21 @@ const PWAInstallBanner = () => {
 
   return (
     <>
-      {/* Bannière compacte en haut */}
-      <div className="pwa-top-banner">
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 bg-white/20 rounded-lg">
-            <Smartphone className="h-4 w-4 text-white" />
-          </div>
-          <span className="text-white text-sm font-medium hidden sm:inline">Installer l'app</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            onClick={handleInstall}
-            className="bg-white text-primary-600 hover:bg-white/90 text-xs px-3 py-1 h-7"
-            size="sm"
-          >
-            Installer
-          </Button>
-          <button 
-            onClick={() => setShowBanner(false)}
-            className="text-white/70 hover:text-white p-1"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
+      {/* Petit bouton d'installation discret */}
+      <button 
+        onClick={handleInstall}
+        className="pwa-install-floating-btn"
+        title="Installer l'application"
+      >
+        <Download className="h-4 w-4" />
+        <span>Installer</span>
+        <button 
+          onClick={(e) => { e.stopPropagation(); setShowBanner(false); }}
+          className="pwa-close-btn"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      </button>
 
       {/* Modal iOS avec instructions */}
       <Dialog open={showIOSModal} onOpenChange={setShowIOSModal}>
