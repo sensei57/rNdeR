@@ -185,7 +185,6 @@ const LoginPage = () => {
     try {
       const success = await login(email, password);
       if (success) {
-        // Redirect to dashboard after successful login
         navigate('/');
       }
     } catch (error) {
@@ -197,51 +196,125 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-3xl font-bold text-blue-600">
-            Gestion Médicale
-          </CardTitle>
-          <CardDescription>
-            Système de gestion du personnel médical
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="votre@email.fr"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-              />
+    <div className="min-h-screen flex" data-testid="login-page">
+      {/* Panneau gauche - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#0091B9] via-[#007494] to-[#19CD91] p-12 flex-col justify-between relative overflow-hidden">
+        {/* Formes décoratives */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2"></div>
+        
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+              <Eye className="w-7 h-7 text-white" />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
+            <span className="text-2xl font-bold text-white">OphtaGestion</span>
+          </div>
+        </div>
+        
+        <div className="relative z-10 space-y-6">
+          <h1 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
+            Gestion simplifiée<br />de votre cabinet
+          </h1>
+          <p className="text-white/80 text-lg max-w-md">
+            Planning, congés, équipes - tout en un seul endroit. Concentrez-vous sur vos patients.
+          </p>
+          
+          {/* Stats */}
+          <div className="flex gap-8 pt-8">
+            <div>
+              <div className="text-3xl font-bold text-white">98%</div>
+              <div className="text-white/60 text-sm">Temps gagné</div>
             </div>
-            <Button 
-              type="submit" 
-              className="w-full bg-blue-600 hover:bg-blue-700" 
-              disabled={loading}
-            >
-              {loading ? 'Connexion...' : 'Se connecter'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+            <div>
+              <div className="text-3xl font-bold text-white">24/7</div>
+              <div className="text-white/60 text-sm">Accessibilité</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-white">100%</div>
+              <div className="text-white/60 text-sm">Sécurisé</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="relative z-10 text-white/40 text-sm">
+          © 2025 OphtaGestion - Tous droits réservés
+        </div>
+      </div>
+      
+      {/* Panneau droit - Formulaire */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
+        <div className="w-full max-w-md space-y-8">
+          {/* Logo mobile */}
+          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#0091B9] to-[#19CD91] rounded-xl flex items-center justify-center">
+              <Eye className="w-7 h-7 text-white" />
+            </div>
+            <span className="text-2xl font-bold text-gray-800">OphtaGestion</span>
+          </div>
+          
+          <div className="text-center lg:text-left">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Bienvenue</h2>
+            <p className="text-gray-500">Connectez-vous à votre espace</p>
+          </div>
+          
+          <Card className="border-0 shadow-xl bg-white rounded-2xl">
+            <CardContent className="p-8">
+              <form onSubmit={handleSubmit} className="space-y-6" data-testid="login-form">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
+                    Adresse email
+                  </Label>
+                  <Input
+                    id="email"
+                    data-testid="email-input"
+                    type="email"
+                    placeholder="votre@email.fr"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                    className="h-12 rounded-xl border-2 border-gray-200 focus:border-[#0091B9] focus:ring-[#0091B9]/20"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-semibold text-gray-700">
+                    Mot de passe
+                  </Label>
+                  <Input
+                    id="password"
+                    data-testid="password-input"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    className="h-12 rounded-xl border-2 border-gray-200 focus:border-[#0091B9] focus:ring-[#0091B9]/20"
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  data-testid="login-submit-btn"
+                  className="w-full h-12 rounded-xl bg-gradient-to-r from-[#0091B9] to-[#007494] hover:from-[#007494] hover:to-[#00576F] text-white font-semibold shadow-lg shadow-[#0091B9]/25 transition-all duration-200" 
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                      Connexion...
+                    </span>
+                  ) : 'Se connecter'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+          
+          <p className="text-center text-sm text-gray-400">
+            Problème de connexion ? Contactez votre administrateur
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
