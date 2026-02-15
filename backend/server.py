@@ -18,10 +18,18 @@ import bcrypt
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# MongoDB connection avec timeout pour éviter les blocages
+mongo_url = os.environ.get('MONGO_URL')
+if not mongo_url:
+    raise ValueError("MONGO_URL environment variable is not set!")
+    
+client = AsyncIOMotorClient(
+    mongo_url,
+    serverSelectionTimeoutMS=5000,  # Timeout de 5 secondes
+    connectTimeoutMS=5000,
+    socketTimeoutMS=5000
+)
+db = client[os.environ.get('DB_NAME', 'ophtacare')]
 
 # Security
 SECRET_KEY = os.environ['SECRET_KEY']  # Fail fast si non défini
