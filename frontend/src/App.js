@@ -8800,6 +8800,7 @@ const PlanningManager = () => {
         <PlanCabinetCompact 
           selectedDate={selectedDate} 
           isDirector={hasDirectorView()}
+          onRefresh={() => fetchPlanningByDate(selectedDate)}
         />
         </>
         )}
