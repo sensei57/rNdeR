@@ -1480,10 +1480,12 @@ const ActualitesManager = () => {
                         else if (salle.type_salle === 'ATTENTE') statusClass = 'attente';
                       }
                       
+                      const hasPhoto = occupation?.employe?.photo_url;
+                      
                       return (
                         <div
                           key={salle.id}
-                          className={`room-card-positioned ${statusClass}`}
+                          className={`room-card-positioned ${statusClass} ${hasPhoto ? 'has-photo' : ''}`}
                           style={{
                             position: 'absolute',
                             left: `${adjustedX * 85}px`,
@@ -1493,29 +1495,35 @@ const ActualitesManager = () => {
                           }}
                         >
                           {occupation && <div className="room-card-indicator"></div>}
-                          <div className="room-card-name">{salle.nom}</div>
-                          {occupation ? (
-                            <div className="room-card-photo-container">
-                              {occupation.employe?.photo_url ? (
-                                <img 
-                                  src={getPhotoUrl(occupation.employe.photo_url)} 
-                                  alt={occupation.employe?.prenom}
-                                  className="room-card-photo"
-                                />
-                              ) : (
-                                <div className={`room-card-initials ${
-                                  occupation.employe?.role === 'Médecin' ? 'medecin' :
-                                  occupation.employe?.role === 'Assistant' ? 'assistant' : ''
-                                }`}>
-                                  {occupation.employe?.prenom?.[0]}{occupation.employe?.nom?.[0]}
-                                </div>
-                              )}
-                              <div className="room-card-employee-name">
-                                {occupation.employe?.prenom?.substring(0, 7)}
+                          {occupation && hasPhoto ? (
+                            <>
+                              <img 
+                                src={getPhotoUrl(occupation.employe.photo_url)} 
+                                alt={occupation.employe?.prenom}
+                                className="room-photo-full"
+                              />
+                              <div className="room-photo-overlay"></div>
+                              <div className="room-info-overlay">
+                                <div className="room-card-name">{salle.nom}</div>
+                                <div className="room-card-employee-name">{occupation.employe?.prenom}</div>
                               </div>
-                            </div>
+                            </>
+                          ) : occupation ? (
+                            <>
+                              <div className="room-card-name">{salle.nom}</div>
+                              <div className={`room-card-initials-full ${
+                                occupation.employe?.role === 'Médecin' ? 'medecin' :
+                                occupation.employe?.role === 'Assistant' ? 'assistant' : ''
+                              }`}>
+                                {occupation.employe?.prenom?.[0]}{occupation.employe?.nom?.[0]}
+                              </div>
+                              <div className="room-card-employee-name">{occupation.employe?.prenom?.substring(0, 7)}</div>
+                            </>
                           ) : (
-                            <div className="room-card-status">Libre</div>
+                            <>
+                              <div className="room-card-name">{salle.nom}</div>
+                              <div className="room-card-status">Libre</div>
+                            </>
                           )}
                         </div>
                       );
