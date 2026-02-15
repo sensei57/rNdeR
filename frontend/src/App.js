@@ -12270,9 +12270,11 @@ const PlanningManager = () => {
                         }}
                       >
                         <option value="CONGE_PAYE">Congé payé (CP)</option>
-                        <option value="RTT">RTT</option>
+                        <option value="CONGE_SANS_SOLDE">Congé sans solde</option>
                         <option value="MALADIE">Maladie</option>
-                        <option value="REPOS">Repos/Absent (non comptabilisé)</option>
+                        <option value="HEURES_A_RECUPERER">Heures à récupérer (+H sup)</option>
+                        <option value="HEURES_RECUPEREES">Heures récupérées (-H sup)</option>
+                        <option value="REPOS">Repos (non comptabilisé)</option>
                       </select>
                     )}
                   </div>
@@ -12318,9 +12320,11 @@ const PlanningManager = () => {
                         }}
                       >
                         <option value="CONGE_PAYE">Congé payé (CP)</option>
-                        <option value="RTT">RTT</option>
+                        <option value="CONGE_SANS_SOLDE">Congé sans solde</option>
                         <option value="MALADIE">Maladie</option>
-                        <option value="REPOS">Repos/Absent (non comptabilisé)</option>
+                        <option value="HEURES_A_RECUPERER">Heures à récupérer (+H sup)</option>
+                        <option value="HEURES_RECUPEREES">Heures récupérées (-H sup)</option>
+                        <option value="REPOS">Repos (non comptabilisé)</option>
                       </select>
                     )}
                   </div>
