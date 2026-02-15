@@ -5963,13 +5963,18 @@ const PlanningManager = () => {
       return isBackground 
         ? 'bg-purple-200 hover:bg-purple-300' 
         : 'text-purple-800';
-    } else if (isCongeComptabilise(typeConge)) {
+    } else if (typeConge === 'CONGE_PAYE') {
       // Congés payés (seul type comptabilisé en congés) -> ROUGE
       return isBackground 
         ? 'bg-red-200 hover:bg-red-300' 
         : 'text-red-800';
+    } else if (typeConge === 'MALADIE' || typeConge === 'CONGE_SANS_SOLDE') {
+      // Maladie/Sans solde = heures effectuées mais PAS congés -> ROSE
+      return isBackground 
+        ? 'bg-pink-200 hover:bg-pink-300' 
+        : 'text-pink-800';
     } else {
-      // Repos/Absent non comptabilisé -> ORANGE
+      // Repos non comptabilisé -> ORANGE
       return isBackground 
         ? 'bg-orange-200 hover:bg-orange-300' 
         : 'text-orange-800';
