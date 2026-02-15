@@ -1,80 +1,99 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 /* ============================================
-   THEME OPHTALMOLOGIE MODERNE - Style KEAP
+   THEME OPHTALMOLOGIE MODERNE - Inspiré KEAP
    ============================================ */
 
 :root {
-  /* Couleurs principales - Thème Ophtalmologie */
-  --primary-50: #eff6ff;
-  --primary-100: #dbeafe;
-  --primary-200: #bfdbfe;
-  --primary-300: #93c5fd;
-  --primary-400: #60a5fa;
-  --primary-500: #3b82f6;
-  --primary-600: #2563eb;
-  --primary-700: #1d4ed8;
-  --primary-800: #1e40af;
-  --primary-900: #1e3a8a;
+  /* Couleurs principales - Palette Ophtalmologie Moderne */
+  --primary-50: #E6F4F8;
+  --primary-100: #CCE9F1;
+  --primary-200: #99D3E3;
+  --primary-300: #66BDD5;
+  --primary-400: #33A7C7;
+  --primary-500: #0091B9;
+  --primary-600: #007494;
+  --primary-700: #00576F;
+  --primary-800: #003A4A;
+  --primary-900: #001D25;
   
-  /* Couleur accent - Turquoise médical */
-  --accent-50: #ecfeff;
-  --accent-100: #cffafe;
-  --accent-200: #a5f3fc;
-  --accent-300: #67e8f9;
-  --accent-400: #22d3ee;
-  --accent-500: #06b6d4;
-  --accent-600: #0891b2;
-  --accent-700: #0e7490;
-  --accent-800: #155e75;
-  --accent-900: #164e63;
+  /* Couleur accent - Vert Émeraude Médical */
+  --accent-50: #E8FAF4;
+  --accent-100: #D1F5E9;
+  --accent-200: #A3EBD3;
+  --accent-300: #75E1BD;
+  --accent-400: #47D7A7;
+  --accent-500: #19CD91;
+  --accent-600: #14A474;
+  --accent-700: #0F7B57;
+  --accent-800: #0A523A;
+  --accent-900: #05291D;
+  
+  /* Couleurs chaudes - Orange/Corail */
+  --warm-50: #FFF4ED;
+  --warm-100: #FFE9DB;
+  --warm-200: #FFD3B7;
+  --warm-300: #FFBD93;
+  --warm-400: #FFA76F;
+  --warm-500: #FF914B;
+  --warm-600: #CC743C;
+  --warm-700: #99572D;
+  --warm-800: #663A1E;
+  --warm-900: #331D0F;
   
   /* Couleurs de succès */
-  --success-50: #f0fdf4;
-  --success-500: #22c55e;
-  --success-600: #16a34a;
+  --success-50: #ECFDF5;
+  --success-100: #D1FAE5;
+  --success-500: #10B981;
+  --success-600: #059669;
   
   /* Couleurs d'alerte */
-  --warning-50: #fffbeb;
-  --warning-500: #f59e0b;
-  --warning-600: #d97706;
+  --warning-50: #FFFBEB;
+  --warning-100: #FEF3C7;
+  --warning-500: #F59E0B;
+  --warning-600: #D97706;
   
   /* Couleurs d'erreur */
-  --error-50: #fef2f2;
-  --error-500: #ef4444;
-  --error-600: #dc2626;
+  --error-50: #FEF2F2;
+  --error-100: #FEE2E2;
+  --error-500: #EF4444;
+  --error-600: #DC2626;
   
-  /* Neutres */
-  --gray-50: #f8fafc;
-  --gray-100: #f1f5f9;
-  --gray-200: #e2e8f0;
-  --gray-300: #cbd5e1;
-  --gray-400: #94a3b8;
-  --gray-500: #64748b;
-  --gray-600: #475569;
-  --gray-700: #334155;
-  --gray-800: #1e293b;
-  --gray-900: #0f172a;
+  /* Neutres modernes */
+  --gray-50: #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-300: #D1D5DB;
+  --gray-400: #9CA3AF;
+  --gray-500: #6B7280;
+  --gray-600: #4B5563;
+  --gray-700: #374151;
+  --gray-800: #1F2937;
+  --gray-900: #111827;
   
-  /* Ombres */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  /* Nouvelles ombres douces style KEAP */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.16);
+  --shadow-glow: 0 0 40px rgba(0, 145, 185, 0.15);
   
-  /* Rayons de bordure */
-  --radius-sm: 0.375rem;
-  --radius: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
+  /* Rayons de bordure modernes */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-2xl: 36px;
   --radius-full: 9999px;
   
-  /* Transitions */
+  /* Transitions fluides */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 500ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 * {
@@ -84,13 +103,13 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, var(--gray-50) 0%, var(--primary-50) 100%);
+  background: var(--gray-50);
   color: var(--gray-800);
   min-height: 100vh;
+  line-height: 1.6;
 }
 
 .App {
@@ -98,29 +117,32 @@ body {
 }
 
 /* ============================================
-   SCROLLBAR MODERNE
+   SCROLLBAR MODERNE KEAP-STYLE
    ============================================ */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--gray-100);
-  border-radius: var(--radius-full);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--primary-300) 0%, var(--primary-400) 100%);
+  background: var(--gray-300);
   border-radius: var(--radius-full);
+  border: 3px solid transparent;
+  background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, var(--primary-400) 0%, var(--primary-500) 100%);
+  background: var(--gray-400);
+  border: 3px solid transparent;
+  background-clip: content-box;
 }
 
 /* ============================================
-   ANIMATIONS
+   ANIMATIONS FLUIDES
    ============================================ */
 @keyframes spin {
   from { transform: rotate(0deg); }
@@ -128,23 +150,28 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateX(-20px); }
+  from { opacity: 0; transform: translateX(-16px); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  50% { opacity: 0.6; }
 }
 
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  50% { transform: translateY(-6px); }
 }
 
 @keyframes shimmer {
@@ -152,19 +179,32 @@ body {
   100% { background-position: 200% 0; }
 }
 
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
 .animate-spin { animation: spin 1s linear infinite; }
-.animate-fade-in { animation: fadeIn 0.3s ease-out; }
-.animate-slide-in { animation: slideIn 0.3s ease-out; }
+.animate-fade-in { animation: fadeIn 0.4s ease-out; }
+.animate-slide-in { animation: slideIn 0.4s ease-out; }
+.animate-slide-up { animation: slideUp 0.4s ease-out; }
 .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.animate-bounce { animation: bounce 1s ease-in-out infinite; }
+.animate-bounce { animation: bounce 1.2s ease-in-out infinite; }
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-scale-in { animation: scaleIn 0.3s ease-out; }
 
 /* ============================================
-   CARTES MODERNES
+   CARTES MODERNES KEAP-STYLE
    ============================================ */
 .card-modern {
   background: white;
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow);
   border: 1px solid var(--gray-100);
   transition: all var(--transition-normal);
   overflow: hidden;
@@ -172,8 +212,8 @@ body {
 
 .card-modern:hover {
   transform: translateY(-4px);
-  box-shadow: var(--shadow-xl);
-  border-color: var(--primary-200);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-100);
 }
 
 .card-hover {
@@ -182,15 +222,36 @@ body {
 
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
+}
+
+/* Carte avec accent coloré style KEAP */
+.card-accent {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--gray-100);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-accent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-500), var(--accent-500));
 }
 
 /* ============================================
-   BOUTONS MODERNES
+   BOUTONS MODERNES KEAP-STYLE
    ============================================ */
 button {
   transition: all var(--transition-fast);
-  font-weight: 500;
+  font-weight: 600;
+  font-family: inherit;
 }
 
 button:hover:not(:disabled) {
@@ -198,44 +259,61 @@ button:hover:not(:disabled) {
 }
 
 button:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.98);
 }
 
 button:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* Bouton primaire gradient */
-.btn-primary-gradient {
-  background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+/* Bouton primaire moderne */
+.btn-primary {
+  background: var(--primary-500);
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--radius);
+  padding: 12px 24px;
+  border-radius: var(--radius-full);
   font-weight: 600;
-  box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39);
+  box-shadow: 0 4px 14px rgba(0, 145, 185, 0.35);
+  transition: all var(--transition-fast);
 }
 
-.btn-primary-gradient:hover {
-  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
-  box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.5);
+.btn-primary:hover {
+  background: var(--primary-600);
+  box-shadow: 0 6px 20px rgba(0, 145, 185, 0.45);
+  transform: translateY(-2px);
 }
 
-/* Bouton accent */
+/* Bouton accent moderne */
 .btn-accent {
-  background: linear-gradient(135deg, var(--accent-500) 0%, var(--accent-600) 100%);
+  background: var(--accent-500);
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--radius);
+  padding: 12px 24px;
+  border-radius: var(--radius-full);
   font-weight: 600;
-  box-shadow: 0 4px 14px 0 rgba(6, 182, 212, 0.39);
+  box-shadow: 0 4px 14px rgba(25, 205, 145, 0.35);
 }
 
 .btn-accent:hover {
-  background: linear-gradient(135deg, var(--accent-600) 0%, var(--accent-700) 100%);
-  box-shadow: 0 6px 20px 0 rgba(6, 182, 212, 0.5);
+  background: var(--accent-600);
+  box-shadow: 0 6px 20px rgba(25, 205, 145, 0.45);
+}
+
+/* Bouton outline moderne */
+.btn-outline {
+  background: transparent;
+  color: var(--primary-600);
+  border: 2px solid var(--primary-200);
+  padding: 10px 22px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+}
+
+.btn-outline:hover {
+  background: var(--primary-50);
+  border-color: var(--primary-400);
 }
 
 /* ============================================
@@ -246,32 +324,40 @@ textarea:focus,
 select:focus {
   outline: none;
   border-color: var(--primary-400);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 4px rgba(0, 145, 185, 0.12);
 }
 
 input, textarea, select {
   transition: all var(--transition-fast);
   border-radius: var(--radius);
+  border: 2px solid var(--gray-200);
+  font-family: inherit;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--gray-400);
 }
 
 /* ============================================
-   NAVIGATION MODERNE
+   NAVIGATION MODERNE KEAP-STYLE
    ============================================ */
 .nav-modern {
-  background: linear-gradient(180deg, white 0%, var(--gray-50) 100%);
-  border-right: 1px solid var(--gray-200);
+  background: white;
+  border-right: 1px solid var(--gray-100);
   box-shadow: var(--shadow);
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  padding: 0.875rem 1.25rem;
+  padding: 14px 20px;
   border-radius: var(--radius-md);
-  margin: 0.25rem 0.75rem;
+  margin: 4px 12px;
   transition: all var(--transition-fast);
   font-weight: 500;
   color: var(--gray-600);
+  gap: 12px;
 }
 
 .nav-item:hover {
@@ -281,48 +367,56 @@ input, textarea, select {
 
 .nav-item.active,
 .nav-active {
-  background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+  background: var(--primary-500);
   color: white;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 145, 185, 0.3);
 }
 
 .nav-active:hover {
-  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+  background: var(--primary-600);
 }
 
 /* ============================================
-   BADGES MODERNES
+   BADGES MODERNES KEAP-STYLE
    ============================================ */
 .badge {
   transition: all var(--transition-fast);
   font-weight: 600;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.75rem;
+  font-size: 12px;
+  padding: 6px 14px;
   border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .badge:hover {
-  transform: scale(1.05);
+  transform: scale(1.02);
 }
 
 .badge-primary {
-  background: linear-gradient(135deg, var(--primary-100) 0%, var(--primary-200) 100%);
+  background: var(--primary-100);
   color: var(--primary-700);
 }
 
 .badge-success {
-  background: linear-gradient(135deg, var(--success-50) 0%, #dcfce7 100%);
+  background: var(--success-100);
   color: var(--success-600);
 }
 
 .badge-warning {
-  background: linear-gradient(135deg, var(--warning-50) 0%, #fef3c7 100%);
+  background: var(--warning-100);
   color: var(--warning-600);
 }
 
 .badge-error {
-  background: linear-gradient(135deg, var(--error-50) 0%, #fee2e2 100%);
+  background: var(--error-100);
   color: var(--error-600);
+}
+
+.badge-accent {
+  background: var(--accent-100);
+  color: var(--accent-700);
 }
 
 /* ============================================
@@ -339,33 +433,33 @@ input, textarea, select {
   right: 2px;
   width: 12px;
   height: 12px;
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  background: var(--success-500);
   border: 2px solid white;
   border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(34, 197, 94, 0.4);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.4);
 }
 
 /* ============================================
-   RÔLES AVEC COULEURS
+   RÔLES AVEC COULEURS MODERNES
    ============================================ */
 .role-directeur {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 
 .role-medecin {
   background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 145, 185, 0.3);
 }
 
 .role-assistant {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
+  background: linear-gradient(135deg, var(--accent-500) 0%, var(--accent-700) 100%);
+  box-shadow: 0 4px 12px rgba(25, 205, 145, 0.3);
 }
 
 .role-secretaire {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
 
 /* ============================================
@@ -373,13 +467,14 @@ input, textarea, select {
    ============================================ */
 .personnel-grid {
   display: grid;
-  gap: 1.5rem;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
 }
 
 @media (max-width: 640px) {
   .personnel-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 }
 
@@ -389,14 +484,14 @@ input, textarea, select {
 .calendar-header {
   background: linear-gradient(135deg, var(--primary-50) 0%, white 100%);
   border-bottom: 1px solid var(--primary-100);
-  padding: 1rem;
+  padding: 16px;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .calendar-day {
   transition: all var(--transition-fast);
   border-radius: var(--radius);
-  padding: 0.5rem;
+  padding: 8px;
 }
 
 .calendar-day:hover {
@@ -405,9 +500,9 @@ input, textarea, select {
 }
 
 .calendar-day.selected {
-  background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+  background: var(--primary-500);
   color: white;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 145, 185, 0.3);
 }
 
 .calendar-day.today {
@@ -415,12 +510,12 @@ input, textarea, select {
 }
 
 /* ============================================
-   MESSAGES / CHAT
+   MESSAGES / CHAT MODERNE
    ============================================ */
 .message-item {
   transition: all var(--transition-fast);
   border-radius: var(--radius);
-  padding: 0.75rem;
+  padding: 12px;
 }
 
 .message-item:hover {
@@ -429,27 +524,27 @@ input, textarea, select {
 
 .message-bubble {
   border-radius: 20px;
-  padding: 12px 18px;
+  padding: 14px 20px;
   max-width: 75%;
   line-height: 1.5;
 }
 
 .message-bubble.sent {
-  background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+  background: var(--primary-500);
   color: white;
   margin-left: auto;
-  border-bottom-right-radius: 4px;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+  border-bottom-right-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 145, 185, 0.25);
 }
 
 .message-bubble.received {
   background: var(--gray-100);
   color: var(--gray-800);
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius: 6px;
 }
 
 /* ============================================
-   PLANNING / CRÉNEAUX
+   PLANNING / CRÉNEAUX MODERNE
    ============================================ */
 .schedule-slot {
   transition: all var(--transition-fast);
@@ -465,68 +560,73 @@ input, textarea, select {
 }
 
 .schedule-slot.occupied {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  color: #92400e;
-  border-color: #fcd34d;
+  background: var(--warning-100);
+  color: var(--warning-600);
+  border-color: var(--warning-500);
 }
 
 .schedule-slot.selected {
-  background: linear-gradient(135deg, var(--primary-100) 0%, var(--primary-200) 100%);
+  background: var(--primary-100);
   color: var(--primary-800);
   border: 2px solid var(--primary-400);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 145, 185, 0.2);
 }
 
 /* ============================================
    INDICATEURS DE SALLE
    ============================================ */
 .room-indicator {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius);
   margin-right: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  font-weight: 700;
+  font-size: 12px;
 }
 
 .room-indicator.medical {
-  background: linear-gradient(135deg, var(--primary-400) 0%, var(--primary-600) 100%);
+  background: var(--primary-100);
+  color: var(--primary-700);
 }
 
 .room-indicator.assistant {
-  background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+  background: var(--accent-100);
+  color: var(--accent-700);
 }
 
 /* ============================================
-   STATUTS DE CONGÉS
+   STATUTS DE CONGÉS MODERNE
    ============================================ */
 .leave-status {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.875rem;
+  gap: 6px;
+  padding: 8px 16px;
   border-radius: var(--radius-full);
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.025em;
+  letter-spacing: 0.03em;
 }
 
 .leave-status.pending {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  color: #92400e;
+  background: var(--warning-100);
+  color: var(--warning-600);
   box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
 }
 
 .leave-status.approved {
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-  color: #065f46;
-  box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
+  background: var(--success-100);
+  color: var(--success-600);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
 }
 
 .leave-status.rejected {
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  color: #991b1b;
+  background: var(--error-100);
+  color: var(--error-600);
   box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
 }
 
@@ -537,132 +637,147 @@ input, textarea, select {
   transition: all var(--transition-fast);
   border-left: 4px solid transparent;
   border-radius: var(--radius);
-  padding: 1rem;
+  padding: 16px;
+  background: white;
 }
 
 .document-item:hover {
   border-left-color: var(--primary-500);
-  background: linear-gradient(90deg, var(--primary-50) 0%, white 100%);
+  background: var(--primary-50);
   box-shadow: var(--shadow);
 }
 
 /* ============================================
-   HEADER MODERNE
+   HEADER MODERNE KEAP-STYLE
    ============================================ */
 .header-modern {
-  background: linear-gradient(135deg, white 0%, var(--gray-50) 100%);
-  border-bottom: 1px solid var(--gray-200);
+  background: white;
+  border-bottom: 1px solid var(--gray-100);
   box-shadow: var(--shadow-sm);
   position: sticky;
   top: 0;
   z-index: 40;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 /* ============================================
    SIDEBAR MODERNE
    ============================================ */
 .sidebar-modern {
-  background: linear-gradient(180deg, white 0%, var(--gray-50) 100%);
-  border-right: 1px solid var(--gray-200);
+  background: white;
+  border-right: 1px solid var(--gray-100);
   box-shadow: var(--shadow);
 }
 
 /* ============================================
-   TABLES MODERNES
+   TABLES MODERNES KEAP-STYLE
    ============================================ */
 .table-modern {
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow);
+  background: white;
 }
 
 .table-modern thead {
-  background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+  background: var(--gray-50);
 }
 
 .table-modern th {
   font-weight: 600;
   text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  color: var(--gray-600);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--gray-500);
+  padding: 14px 16px;
 }
 
 .table-modern tbody tr {
   transition: all var(--transition-fast);
+  border-bottom: 1px solid var(--gray-100);
 }
 
 .table-modern tbody tr:hover {
   background: var(--primary-50);
 }
 
-/* ============================================
-   ICÔNE OPHTALMOLOGIE
-   ============================================ */
-.ophtalmo-icon {
-  background: linear-gradient(135deg, var(--accent-400) 0%, var(--primary-500) 100%);
-  color: white;
-  border-radius: var(--radius-lg);
-  padding: 0.75rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.35);
+.table-modern tbody tr:last-child {
+  border-bottom: none;
+}
+
+.table-modern td {
+  padding: 14px 16px;
 }
 
 /* ============================================
-   STATS CARDS
+   STATS CARDS KEAP-STYLE
    ============================================ */
 .stat-card {
   background: white;
   border-radius: var(--radius-lg);
-  padding: 1.5rem;
+  padding: 24px;
   border: 1px solid var(--gray-100);
   transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
-  border-color: var(--primary-200);
+  border-color: var(--primary-100);
 }
 
 .stat-card .stat-icon {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1rem;
+  margin-bottom: 16px;
 }
 
 .stat-card .stat-icon.primary {
-  background: linear-gradient(135deg, var(--primary-100) 0%, var(--primary-200) 100%);
+  background: var(--primary-100);
   color: var(--primary-600);
 }
 
 .stat-card .stat-icon.accent {
-  background: linear-gradient(135deg, var(--accent-100) 0%, var(--accent-200) 100%);
+  background: var(--accent-100);
   color: var(--accent-600);
 }
 
 .stat-card .stat-icon.success {
-  background: linear-gradient(135deg, var(--success-50) 0%, #dcfce7 100%);
+  background: var(--success-100);
   color: var(--success-600);
 }
 
 .stat-card .stat-icon.warning {
-  background: linear-gradient(135deg, var(--warning-50) 0%, #fef3c7 100%);
+  background: var(--warning-100);
   color: var(--warning-600);
+}
+
+.stat-card .stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--gray-900);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.stat-card .stat-label {
+  font-size: 14px;
+  color: var(--gray-500);
+  font-weight: 500;
 }
 
 /* ============================================
    TOAST PERSONNALISÉ
    ============================================ */
 .sonner-toast {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   border-radius: var(--radius-md) !important;
   box-shadow: var(--shadow-lg) !important;
 }
@@ -722,64 +837,67 @@ input, textarea, select {
 }
 
 /* ============================================
-   GLASS MORPHISM
+   GLASS MORPHISM MODERNE
    ============================================ */
 .glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 /* ============================================
    PWA INSTALL BUTTON
    ============================================ */
 .pwa-install-btn {
-  background: linear-gradient(135deg, var(--accent-500) 0%, var(--primary-500) 100%);
+  background: linear-gradient(135deg, var(--primary-500) 0%, var(--accent-500) 100%);
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
+  padding: 14px 28px;
   border-radius: var(--radius-full);
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 4px 14px rgba(6, 182, 212, 0.4);
+  gap: 10px;
+  box-shadow: 0 4px 14px rgba(0, 145, 185, 0.35);
   transition: all var(--transition-fast);
 }
 
 .pwa-install-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(6, 182, 212, 0.5);
+  box-shadow: 0 6px 20px rgba(0, 145, 185, 0.45);
 }
 
 /* ============================================
-   TYPOGRAPHIE FRANÇAISE
+   TYPOGRAPHIE MODERNE
    ============================================ */
-.fr-typography h1,
-.fr-typography h2,
-.fr-typography h3 {
+h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   line-height: 1.2;
   color: var(--gray-900);
 }
 
-.fr-typography h1 {
-  font-size: 2rem;
-  letter-spacing: -0.025em;
+h1 {
+  font-size: 2.25rem;
+  letter-spacing: -0.03em;
 }
 
-.fr-typography h2 {
-  font-size: 1.5rem;
-  letter-spacing: -0.025em;
+h2 {
+  font-size: 1.75rem;
+  letter-spacing: -0.02em;
 }
 
-.fr-typography p {
+h3 {
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+p {
   line-height: 1.7;
   color: var(--gray-600);
 }
 
 /* ============================================
-   OPHTALMO THEME ELEMENTS
+   OPHTALMO THEME ELEMENTS MODERNES
    ============================================ */
 .ophtalmo-gradient-bg {
   background: linear-gradient(135deg, var(--primary-50) 0%, var(--accent-50) 50%, white 100%);
@@ -787,12 +905,12 @@ input, textarea, select {
 
 .ophtalmo-card-border {
   border-left: 4px solid;
-  border-image: linear-gradient(180deg, var(--accent-400), var(--primary-500)) 1;
+  border-image: linear-gradient(180deg, var(--primary-500), var(--accent-500)) 1;
 }
 
-/* Eye icon pulse animation for ophthalmology theme */
+/* Eye icon animation moderne */
 .eye-pulse {
-  animation: eyePulse 2s ease-in-out infinite;
+  animation: eyePulse 2.5s ease-in-out infinite;
 }
 
 @keyframes eyePulse {
@@ -801,7 +919,290 @@ input, textarea, select {
     opacity: 1;
   }
   50% { 
-    transform: scale(1.1); 
-    opacity: 0.8;
+    transform: scale(1.08); 
+    opacity: 0.85;
   }
+}
+
+/* ============================================
+   GRADIENT BACKGROUNDS KEAP-STYLE
+   ============================================ */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);
+}
+
+.bg-gradient-accent {
+  background: linear-gradient(135deg, var(--accent-500) 0%, var(--accent-700) 100%);
+}
+
+.bg-gradient-warm {
+  background: linear-gradient(135deg, var(--warm-400) 0%, var(--warm-600) 100%);
+}
+
+.bg-gradient-mixed {
+  background: linear-gradient(135deg, var(--primary-500) 0%, var(--accent-500) 100%);
+}
+
+/* Fond subtil pour sections */
+.bg-section-primary {
+  background: var(--primary-50);
+}
+
+.bg-section-accent {
+  background: var(--accent-50);
+}
+
+.bg-section-warm {
+  background: var(--warm-50);
+}
+
+/* ============================================
+   AVATAR MODERNE
+   ============================================ */
+.avatar-modern {
+  border-radius: var(--radius-lg);
+  border: 3px solid white;
+  box-shadow: var(--shadow);
+}
+
+.avatar-modern.large {
+  width: 80px;
+  height: 80px;
+}
+
+.avatar-modern.medium {
+  width: 48px;
+  height: 48px;
+}
+
+.avatar-modern.small {
+  width: 36px;
+  height: 36px;
+}
+
+/* ============================================
+   INPUT GROUPS MODERNES
+   ============================================ */
+.input-group {
+  position: relative;
+}
+
+.input-group label {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--gray-700);
+  margin-bottom: 8px;
+}
+
+.input-group input,
+.input-group select,
+.input-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius);
+  font-size: 15px;
+  background: white;
+}
+
+.input-group input:focus,
+.input-group select:focus,
+.input-group textarea:focus {
+  border-color: var(--primary-400);
+  box-shadow: 0 0 0 4px rgba(0, 145, 185, 0.1);
+}
+
+/* ============================================
+   DIVIDERS MODERNES
+   ============================================ */
+.divider {
+  height: 1px;
+  background: var(--gray-200);
+  margin: 24px 0;
+}
+
+.divider-vertical {
+  width: 1px;
+  background: var(--gray-200);
+  margin: 0 16px;
+}
+
+/* ============================================
+   EMPTY STATE MODERNE
+   ============================================ */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--gray-500);
+}
+
+.empty-state-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  background: var(--gray-100);
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-400);
+}
+
+.empty-state-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 8px;
+}
+
+.empty-state-description {
+  font-size: 14px;
+  color: var(--gray-500);
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+/* ============================================
+   QUICK ACTIONS KEAP-STYLE
+   ============================================ */
+.quick-action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: white;
+  border: 1px solid var(--gray-100);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.quick-action:hover {
+  background: var(--primary-50);
+  border-color: var(--primary-200);
+  transform: translateX(4px);
+}
+
+.quick-action-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.quick-action-content {
+  flex: 1;
+}
+
+.quick-action-title {
+  font-weight: 600;
+  color: var(--gray-800);
+  font-size: 14px;
+}
+
+.quick-action-subtitle {
+  font-size: 13px;
+  color: var(--gray-500);
+}
+
+/* ============================================
+   NOTIFICATION DOT
+   ============================================ */
+.notification-dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  background: var(--error-500);
+  border: 2px solid white;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============================================
+   PROGRESS BAR MODERNE
+   ============================================ */
+.progress-bar {
+  height: 8px;
+  background: var(--gray-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-500), var(--accent-500));
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+}
+
+/* ============================================
+   TOOLTIP MODERNE
+   ============================================ */
+.tooltip-modern {
+  position: absolute;
+  background: var(--gray-900);
+  color: white;
+  padding: 8px 14px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-lg);
+}
+
+.tooltip-trigger:hover .tooltip-modern {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ============================================
+   DROPDOWN MENU MODERNE
+   ============================================ */
+.dropdown-modern {
+  position: absolute;
+  background: white;
+  border: 1px solid var(--gray-100);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  padding: 8px;
+  min-width: 200px;
+  z-index: 50;
+}
+
+.dropdown-modern-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-weight: 500;
+  color: var(--gray-700);
+}
+
+.dropdown-modern-item:hover {
+  background: var(--primary-50);
+  color: var(--primary-700);
+}
+
+.dropdown-modern-divider {
+  height: 1px;
+  background: var(--gray-100);
+  margin: 8px 0;
 }
