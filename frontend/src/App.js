@@ -5832,12 +5832,11 @@ const PlanningManager = () => {
     return types[type] || type?.substring(0, 3) || '?';
   };
 
-  // Déterminer si un congé est "comptabilisé" (CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE)
-  // ou "non comptabilisé" (REPOS, HEURES_A_RECUPERER, HEURES_RECUPEREES)
+  // Déterminer si un congé est "comptabilisé" comme CONGÉ (uniquement CONGE_PAYE)
+  // CONGE_SANS_SOLDE et MALADIE comptent en heures effectuées mais PAS comme congés
   const isCongeComptabilise = (typeConge) => {
-    // Seuls CONGE_PAYE, CONGE_SANS_SOLDE, MALADIE comptent comme "congés"
-    const vraisConges = ['CONGE_PAYE', 'CONGE_SANS_SOLDE', 'MALADIE'];
-    return vraisConges.includes(typeConge);
+    // Seul CONGE_PAYE compte comme "congé" dans la colonne Congés
+    return typeConge === 'CONGE_PAYE';
   };
 
   // Obtenir les classes CSS pour un congé selon son type
