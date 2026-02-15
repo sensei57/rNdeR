@@ -1302,60 +1302,63 @@ const ActualitesManager = () => {
   const anniversairesAffiches = getAnniversairesAffiches();
 
   return (
-    <div className="space-y-6">
-      {/* En-tête */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <Bell className="h-8 w-8 text-teal-600" />
-          <h1 className="text-2xl font-bold text-gray-900">Actualités</h1>
+    <div className="dashboard-container">
+      {/* En-tête moderne */}
+      <div className="page-header">
+        <div className="page-header-left">
+          <div className="page-header-icon">
+            <Bell className="h-6 w-6" />
+          </div>
+          <div>
+            <h1 className="page-header-title">Actualités</h1>
+            <p className="page-header-subtitle">Restez informé des dernières nouvelles du cabinet</p>
+          </div>
         </div>
         {user?.role === 'Directeur' && (
-          <Button onClick={() => { resetForm(); setShowModal(true); }}>
-            <Plus className="h-4 w-4 mr-2" />
+          <button className="btn-modern btn-modern-primary" onClick={() => { resetForm(); setShowModal(true); }}>
+            <Plus className="h-5 w-5" />
             Nouvelle Actualité
-          </Button>
+          </button>
         )}
       </div>
 
-      {/* Section Anniversaires - Centré en haut */}
+      {/* Bannière Anniversaires modernisée */}
       {anniversairesAffiches.length > 0 && (
-        <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
-          <CardContent className="py-4">
-            <div className="flex items-center justify-center space-x-6 flex-wrap gap-4">
-              <span className="text-3xl">🎂</span>
-              {anniversairesAffiches.map((anniv) => (
-                <div key={anniv.id} className="flex items-center space-x-3 bg-white rounded-lg px-4 py-2 shadow-sm">
-                  <Avatar className="h-10 w-10">
-                    {anniv.photo_url && <AvatarImage src={getPhotoUrl(anniv.photo_url)} />}
-                    <AvatarFallback className={
-                      anniv.role === 'Médecin' ? 'bg-blue-500 text-white' :
-                      anniv.role === 'Assistant' ? 'bg-green-500 text-white' :
-                      anniv.role === 'Secrétaire' ? 'bg-purple-500 text-white' :
-                      'bg-gray-500 text-white'
-                    }>
-                      {anniv.prenom?.[0]}{anniv.nom?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium text-sm">
-                      {anniv.prenom} {anniv.nom}
-                      {anniv.jours_restants === 0 && <span className="ml-1">🎉</span>}
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      {anniv.jours_restants === 0 ? (
-                        <span className="text-yellow-700 font-bold">Aujourd'hui ! ({anniv.age} ans)</span>
-                      ) : anniv.jours_restants === 1 ? (
-                        <span className="text-orange-600 font-medium">Demain ({anniv.age} ans)</span>
-                      ) : (
-                        <span>Dans {anniv.jours_restants} jours • {new Date(anniv.prochain_anniversaire + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
-                      )}
-                    </p>
-                  </div>
+        <div className="birthday-banner">
+          <span className="birthday-banner-icon">🎂</span>
+          <div className="flex items-center gap-4 flex-wrap flex-1">
+            {anniversairesAffiches.map((anniv) => (
+              <div key={anniv.id} className="flex items-center gap-3 bg-white rounded-2xl px-5 py-3 shadow-md border border-pink-100 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <Avatar className="h-12 w-12 ring-2 ring-pink-200 ring-offset-2">
+                  {anniv.photo_url && <AvatarImage src={getPhotoUrl(anniv.photo_url)} />}
+                  <AvatarFallback className={`font-bold ${
+                    anniv.role === 'Médecin' ? 'bg-gradient-to-br from-blue-400 to-blue-600 text-white' :
+                    anniv.role === 'Assistant' ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-white' :
+                    anniv.role === 'Secrétaire' ? 'bg-gradient-to-br from-purple-400 to-purple-600 text-white' :
+                    'bg-gradient-to-br from-gray-400 to-gray-600 text-white'
+                  }`}>
+                    {anniv.prenom?.[0]}{anniv.nom?.[0]}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-bold text-gray-900 text-sm">
+                    {anniv.prenom} {anniv.nom}
+                    {anniv.jours_restants === 0 && <span className="ml-2 animate-bounce inline-block">🎉</span>}
+                  </p>
+                  <p className="text-xs font-medium">
+                    {anniv.jours_restants === 0 ? (
+                      <span className="text-pink-600 font-bold">🎈 Aujourd'hui ! ({anniv.age} ans)</span>
+                    ) : anniv.jours_restants === 1 ? (
+                      <span className="text-orange-600">Demain ({anniv.age} ans)</span>
+                    ) : (
+                      <span className="text-gray-500">Dans {anniv.jours_restants} jours • {new Date(anniv.prochain_anniversaire + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                    )}
+                  </p>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* 2 Colonnes : Actualités Générales | Actualités Mon Groupe */}
