@@ -2158,26 +2158,17 @@ const PersonnelManager = () => {
         <TabsContent value="medecins">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {getUsersByRole('Médecin').map(medecin => (
-              <Card key={medecin.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 border-0 shadow-md">
-                <div className="relative">
-                  {/* Photo de couverture ou gradient */}
-                  <div className="h-24 bg-gradient-to-br from-blue-500 to-blue-700"></div>
-                  
-                  {/* Avatar centré qui chevauche */}
-                  <div className="absolute left-1/2 -translate-x-1/2 -bottom-12">
-                    <div className="relative">
-                      {medecin.photo_url ? (
-                        <img 
-                          src={getPhotoUrl(medecin.photo_url)} 
-                          alt={`${medecin.prenom} ${medecin.nom}`}
-                          className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
-                        />
-                      ) : (
-                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border-4 border-white shadow-lg flex items-center justify-center text-white text-2xl font-bold">
-                          {medecin.prenom?.[0]}{medecin.nom?.[0]}
-                        </div>
-                      )}
-                      <div className="absolute bottom-1 right-1 w-5 h-5 bg-blue-500 rounded-full border-2 border-white"></div>
+              <PersonnelCardWithPhoto 
+                key={medecin.id} 
+                person={medecin} 
+                roleColor="blue"
+                user={user}
+                handleEditPersonnel={handleEditPersonnel}
+                handleDeletePersonnel={handleDeletePersonnel}
+                getAssignedAssistants={getAssignedAssistants}
+                rolePrefix="Dr."
+              />
+            ))}
                     </div>
                   </div>
                 </div>
