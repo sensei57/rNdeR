@@ -246,6 +246,111 @@ const LoginPage = () => {
   );
 };
 
+// PWA Install Banner Component
+const PWAInstallBanner = () => {
+  const { isInstallable, isInstalled, isIOS, installApp, iOSInstructions } = usePWA();
+  const [showBanner, setShowBanner] = useState(true);
+  const [showIOSModal, setShowIOSModal] = useState(false);
+
+  // Ne pas afficher si déjà installé ou si l'utilisateur a fermé le banner
+  if (isInstalled || !showBanner) return null;
+
+  const handleInstall = async () => {
+    if (isIOS) {
+      setShowIOSModal(true);
+    } else {
+      const success = await installApp();
+      if (success) {
+        toast.success('Application installée avec succès !');
+        setShowBanner(false);
+      }
+    }
+  };
+
+  // Afficher seulement si installable (Chrome/Edge) ou iOS
+  if (!isInstallable && !isIOS) return null;
+
+  return (
+    <>
+      <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 animate-fade-in">
+        <Card className="bg-gradient-to-r from-cyan-500 to-blue-600 border-0 shadow-xl">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-white/20 rounded-full">
+                  <Smartphone className="h-6 w-6 text-white" />
+                </div>
+                <div className="text-white">
+                  <p className="font-semibold text-sm">Installer l'application</p>
+                  <p className="text-xs text-white/80">Accès rapide depuis votre écran</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  onClick={handleInstall}
+                  className="bg-white text-blue-600 hover:bg-white/90 text-sm px-4"
+                  size="sm"
+                >
+                  Installer
+                </Button>
+                <Button 
+                  onClick={() => setShowBanner(false)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/20 p-1"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Modal iOS avec instructions */}
+      <Dialog open={showIOSModal} onOpenChange={setShowIOSModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Smartphone className="h-5 w-5 text-blue-600" />
+              Installer sur iPhone/iPad
+            </DialogTitle>
+            <DialogDescription>
+              Suivez ces étapes pour ajouter l'application à votre écran d'accueil
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">1</div>
+              <div>
+                <p className="font-medium">Appuyez sur le bouton Partager</p>
+                <p className="text-sm text-gray-500">Le bouton avec une flèche vers le haut (⬆️) en bas de Safari</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">2</div>
+              <div>
+                <p className="font-medium">Sélectionnez "Sur l'écran d'accueil"</p>
+                <p className="text-sm text-gray-500">Faites défiler vers le bas si nécessaire</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">3</div>
+              <div>
+                <p className="font-medium">Appuyez sur "Ajouter"</p>
+                <p className="text-sm text-gray-500">L'icône OphtaCare apparaîtra sur votre écran d'accueil</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={() => setShowIOSModal(false)}>J'ai compris</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
 // Notification Component
 const NotificationToday = () => {
   const [notification, setNotification] = useState(null);
@@ -269,7 +374,7 @@ const NotificationToday = () => {
   if (loading || !notification) return null;
 
   return (
-    <Card className="mb-6 border-blue-200 bg-blue-50">
+    <Card className="mb-6 border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50">
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium text-blue-800 flex items-center space-x-2">
           <CalendarDays className="h-4 w-4" />
