@@ -2409,7 +2409,7 @@ const PersonnelManager = () => {
                 user={user}
                 handleEditPersonnel={handleEditPersonnel}
                 handleDeletePersonnel={handleDeletePersonnel}
-                personnelList={personnelList}
+                personnelList={users}
               />
             ))}
           </div>
