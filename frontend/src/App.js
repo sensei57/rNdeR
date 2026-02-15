@@ -753,18 +753,18 @@ const NotificationBadge = ({ setActiveTab }) => {
     
     // Pour le directeur : demandes en attente créées après le dernier vu
     if (user?.role === 'Directeur') {
-      demandesConges.forEach(d => {
+      (demandesConges || []).forEach(d => {
         const createdAt = new Date(d.created_at || d.date_creation || 0).getTime();
         if (createdAt > lastSeenTimestamp) count++;
       });
-      demandesTravail.forEach(d => {
+      (demandesTravail || []).forEach(d => {
         const createdAt = new Date(d.created_at || d.date_creation || 0).getTime();
         if (createdAt > lastSeenTimestamp) count++;
       });
     }
     
     // Pour tous : notifications personnelles créées après le dernier vu
-    userNotifications.forEach(n => {
+    (userNotifications || []).forEach(n => {
       const sentAt = new Date(n.sent_at || 0).getTime();
       if (sentAt > lastSeenTimestamp) count++;
     });
@@ -775,7 +775,7 @@ const NotificationBadge = ({ setActiveTab }) => {
   const totalNewNotifications = countNewNotifications();
 
   // Compter le total réel de notifications dans les données (pour savoir si on affiche la cloche)
-  const totalRealNotifications = userNotifications.length + demandesConges.length + demandesTravail.length;
+  const totalRealNotifications = (userNotifications || []).length + (demandesConges || []).length + (demandesTravail || []).length;
 
   // Afficher la cloche si : il y a des notifications OU le panneau est ouvert
   const showBell = totalRealNotifications > 0 || showPanel;
