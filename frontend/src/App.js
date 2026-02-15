@@ -9703,7 +9703,12 @@ const PlanningManager = () => {
                           
                           if (hasConge) {
                             const conge = congesJour[0];
-                            cellContent = conge.type_conge === 'CONGE_PAYE' ? 'CP' : conge.type_conge === 'RTT' ? 'RTT' : conge.type_conge === 'REPOS' ? 'R' : 'C';
+                            cellContent = conge.type_conge === 'CONGE_PAYE' ? 'CP' : 
+                                          conge.type_conge === 'CONGE_SANS_SOLDE' ? 'CSS' : 
+                                          conge.type_conge === 'MALADIE' ? 'M' :
+                                          conge.type_conge === 'REPOS' ? 'R' : 
+                                          conge.type_conge === 'HEURES_A_RECUPERER' ? 'H+' :
+                                          conge.type_conge === 'HEURES_RECUPEREES' ? 'H-' : 'C';
                             cellClass = 'bg-red-100 text-red-700';
                           } else if (creneauMatin && creneauAM) {
                             cellContent = 'J';
