@@ -803,18 +803,18 @@ const NotificationBadge = ({ setActiveTab }) => {
           <div className="p-4 border-b bg-gray-50">
             <h3 className="font-bold text-gray-800 flex items-center">
               <Bell className="h-5 w-5 mr-2" />
-              Notifications ({userNotifications.length + demandesConges.length + demandesTravail.length})
+              Notifications ({(userNotifications || []).length + (demandesConges || []).length + (demandesTravail || []).length})
             </h3>
           </div>
 
           {/* Notifications personnelles */}
-          {userNotifications.length > 0 && (
+          {(userNotifications || []).length > 0 && (
             <div className="p-4 border-b">
               <h4 className="font-semibold text-sm text-gray-700 mb-2">
-                Mes notifications ({userNotifications.length})
+                Mes notifications ({(userNotifications || []).length})
               </h4>
               <div className="space-y-2">
-                {userNotifications.slice(0, 5).map(notif => (
+                {(userNotifications || []).slice(0, 5).map(notif => (
                   <div 
                     key={notif.id} 
                     className="text-sm bg-blue-50 p-2 rounded border border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors"
