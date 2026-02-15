@@ -1166,7 +1166,7 @@ const ActualitesManager = () => {
 
   // Filtrer les anniversaires : prochain ou ceux dans la même semaine
   const getAnniversairesAffiches = () => {
-    if (anniversaires.length === 0) return [];
+    if (!anniversaires || anniversaires.length === 0) return [];
     
     // Prendre ceux qui sont dans les 7 prochains jours ou le prochain si aucun cette semaine
     const dansLaSemaine = anniversaires.filter(a => a.jours_restants <= 7);
