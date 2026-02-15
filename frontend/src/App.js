@@ -886,13 +886,13 @@ const NotificationBadge = ({ setActiveTab }) => {
               )}
 
               {/* Demandes de travail */}
-              {demandesTravail.length > 0 && (
+              {(demandesTravail || []).length > 0 && (
                 <div className="p-4">
                   <h4 className="font-semibold text-sm text-gray-700 mb-2">
-                    Demandes de Travail ({demandesTravail.length})
+                    Demandes de Travail ({(demandesTravail || []).length})
                   </h4>
                   <div className="space-y-2">
-                    {demandesTravail.map(demande => (
+                    {(demandesTravail || []).map(demande => (
                       <div 
                         key={demande.id} 
                         className="text-sm bg-blue-50 p-2 rounded border border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors"
