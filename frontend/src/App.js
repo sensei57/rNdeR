@@ -5964,7 +5964,7 @@ const PlanningManager = () => {
         ? 'bg-purple-200 hover:bg-purple-300' 
         : 'text-purple-800';
     } else if (isCongeComptabilise(typeConge)) {
-      // Congés comptabilisés (CP, RTT, Maladie, etc.) -> ROUGE
+      // Congés payés (seul type comptabilisé en congés) -> ROUGE
       return isBackground 
         ? 'bg-red-200 hover:bg-red-300' 
         : 'text-red-800';
