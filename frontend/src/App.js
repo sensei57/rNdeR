@@ -15999,6 +15999,7 @@ const AdminManager = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  const [showTestNotificationModal, setShowTestNotificationModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [newEmail, setNewEmail] = useState('');
@@ -16006,6 +16007,13 @@ const AdminManager = () => {
   const [notificationMessage, setNotificationMessage] = useState('');
   const [editUserData, setEditUserData] = useState({ nom: '', prenom: '', email: '', role: '', password: '' });
   const [loading, setLoading] = useState(false);
+  
+  // États pour les notifications de test en masse
+  const [employeesForTest, setEmployeesForTest] = useState([]);
+  const [selectedEmployeesForTest, setSelectedEmployeesForTest] = useState([]);
+  const [testNotificationTitle, setTestNotificationTitle] = useState('');
+  const [testNotificationMessage, setTestNotificationMessage] = useState('');
+  const [sendingTestNotification, setSendingTestNotification] = useState(false);
 
   useEffect(() => {
     fetchAllUsers();
