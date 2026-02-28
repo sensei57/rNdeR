@@ -514,6 +514,7 @@ class Salle(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     nom: str
     type_salle: str  # "MEDECIN", "ASSISTANT", "ATTENTE"
+    centre_id: Optional[str] = None  # Centre auquel appartient cette salle
     position_x: int  # Position sur le plan
     position_y: int
     couleur: str = "#3B82F6"  # Couleur par défaut
@@ -523,6 +524,7 @@ class Salle(BaseModel):
 class SalleCreate(BaseModel):
     nom: str
     type_salle: str
+    centre_id: Optional[str] = None
     position_x: int
     position_y: int
     couleur: str = "#3B82F6"
@@ -530,6 +532,7 @@ class SalleCreate(BaseModel):
 class SalleUpdate(BaseModel):
     nom: Optional[str] = None
     type_salle: Optional[str] = None
+    centre_id: Optional[str] = None
     position_x: Optional[int] = None
     position_y: Optional[int] = None
     couleur: Optional[str] = None
