@@ -2719,35 +2719,6 @@ const PersonnelManager = () => {
             ))}
           </div>
         </TabsContent>
-
-        <TabsContent value="assignations">
-          <div className="space-y-4">
-            {assignations.filter(a => a.actif).map(assignation => (
-              <Card key={assignation.id}>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <p className="font-medium">
-                        Dr. {assignation.medecin?.prenom} {assignation.medecin?.nom}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Assistant: {assignation.assistant?.prenom} {assignation.assistant?.nom}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Assigné le: {new Date(assignation.date_assignation).toLocaleDateString('fr-FR')}
-                      </p>
-                    </div>
-                    {user?.role === 'Directeur' && (
-                      <Button variant="outline" size="sm">
-                        Modifier
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
       </Tabs>
 
       {/* Modal de confirmation de suppression */}
