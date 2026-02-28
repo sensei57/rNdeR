@@ -4899,11 +4899,44 @@ async def get_plan_cabinet(
     creneau: str = "MATIN",  # ou "APRES_MIDI"
     current_user: User = Depends(get_current_user)
 ):
-    # Récupérer toutes les salles
-    salles = await db.salles.find({"actif": True}).to_list(1000)
+    # Déterminer le centre actif de l'utilisateur
+    centre_actif = getattr(current_user, 'centre_actif_id', None)
+    if not centre_actif:
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        centre_actif = user_centres[0] if user_centres else None
     
-    # Récupérer le planning pour cette date/créneau
-    planning = await db.planning.find({"date": date, "creneau": creneau}).to_list(1000)
+    # Récupérer les salles du centre actif
+    salles_query = {"actif": True}
+    if centre_actif:
+        salles_query["$or"] = [
+            {"centre_id": centre_actif},
+            {"centre_id": None},
+            {"centre_id": {"$exists": False}}
+        ]
+    salles = await db.salles.find(salles_query).to_list(1000)
+    
+    # Récupérer le planning pour cette date/créneau (filtré par centre)
+    planning_query = {"date": date, "creneau": creneau}
+    if centre_actif:
+        planning_query["$or"] = [
+            {"centre_id": centre_actif},
+            {"centre_id": None},
+            {"centre_id": {"$exists": False}}
+        ]
+        # Combiner avec la condition date/creneau
+        planning_query = {
+            "$and": [
+                {"date": date, "creneau": creneau},
+                {"$or": [
+                    {"centre_id": centre_actif},
+                    {"centre_id": None},
+                    {"centre_id": {"$exists": False}}
+                ]}
+            ]
+        }
+    planning = await db.planning.find(planning_query).to_list(1000)
     
     # Créer un mapping salle -> employé
     occupation_salles = {}
