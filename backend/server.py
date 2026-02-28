@@ -1693,6 +1693,346 @@ async def login(user_login: UserLogin):
         centres=centres_list
     )
 
+# ===== GESTION DES CENTRES =====
+
+def require_super_admin():
+    """Vérifie que l'utilisateur est Super-Admin"""
+    async def checker(current_user: User = Depends(get_current_user)):
+        if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+            raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+        return current_user
+    return Depends(checker)
+
+@api_router.get("/centres")
+async def get_centres(current_user: User = Depends(get_current_user)):
+    """Récupère la liste des centres accessibles à l'utilisateur"""
+    is_super_admin = current_user.role in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]
+    
+    if is_super_admin:
+        # Super-Admin voit tous les centres
+        centres = await db.centres.find({}, {"_id": 0}).to_list(100)
+    else:
+        # Autres utilisateurs voient uniquement leur centre
+        if current_user.centre_id:
+            centre = await db.centres.find_one({"id": current_user.centre_id}, {"_id": 0})
+            centres = [centre] if centre else []
+        else:
+            centres = []
+    
+    return {"centres": centres}
+
+@api_router.post("/centres")
+async def create_centre(
+    centre_data: CentreCreate,
+    current_user: User = Depends(get_current_user)
+):
+    """Créer un nouveau centre (Super-Admin uniquement)"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    # Vérifier que le nom n'existe pas déjà
+    existing = await db.centres.find_one({"nom": centre_data.nom})
+    if existing:
+        raise HTTPException(status_code=400, detail="Un centre avec ce nom existe déjà")
+    
+    centre = Centre(**centre_data.dict(), cree_par=current_user.id)
+    await db.centres.insert_one(centre.dict())
+    
+    return {"message": "Centre créé avec succès", "centre": centre.dict()}
+
+@api_router.put("/centres/{centre_id}")
+async def update_centre(
+    centre_id: str,
+    centre_data: CentreUpdate,
+    current_user: User = Depends(get_current_user)
+):
+    """Modifier un centre (Super-Admin uniquement)"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    centre = await db.centres.find_one({"id": centre_id})
+    if not centre:
+        raise HTTPException(status_code=404, detail="Centre non trouvé")
+    
+    update_dict = {k: v for k, v in centre_data.dict().items() if v is not None}
+    if update_dict:
+        await db.centres.update_one({"id": centre_id}, {"$set": update_dict})
+    
+    return {"message": "Centre mis à jour avec succès"}
+
+@api_router.delete("/centres/{centre_id}")
+async def delete_centre(
+    centre_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Supprimer un centre (Super-Admin uniquement) - désactive le centre"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    centre = await db.centres.find_one({"id": centre_id})
+    if not centre:
+        raise HTTPException(status_code=404, detail="Centre non trouvé")
+    
+    # Vérifier s'il y a des employés dans ce centre
+    employees_count = await db.users.count_documents({"centre_id": centre_id, "actif": True})
+    if employees_count > 0:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Impossible de supprimer: {employees_count} employé(s) actif(s) dans ce centre"
+        )
+    
+    # Désactiver plutôt que supprimer
+    await db.centres.update_one({"id": centre_id}, {"$set": {"actif": False}})
+    
+    return {"message": "Centre désactivé avec succès"}
+
+@api_router.post("/centres/{centre_id}/switch")
+async def switch_centre(
+    centre_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Changer de centre actif (Super-Admin uniquement)"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    centre = await db.centres.find_one({"id": centre_id, "actif": True})
+    if not centre:
+        raise HTTPException(status_code=404, detail="Centre non trouvé ou inactif")
+    
+    # Mettre à jour le centre actif de l'utilisateur
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$set": {"centre_actif_id": centre_id}}
+    )
+    
+    return {"message": f"Vous êtes maintenant sur le centre: {centre['nom']}", "centre": {"id": centre["id"], "nom": centre["nom"]}}
+
+# ===== GESTION DES INSCRIPTIONS =====
+
+@api_router.post("/inscriptions")
+async def create_inscription(inscription_data: InscriptionRequest):
+    """Créer une demande d'inscription (accès public)"""
+    # Vérifier que le centre existe
+    centre = await db.centres.find_one({"id": inscription_data.centre_id, "actif": True})
+    if not centre:
+        raise HTTPException(status_code=404, detail="Centre non trouvé")
+    
+    # Vérifier que l'email n'est pas déjà utilisé
+    existing_user = await db.users.find_one({"email": inscription_data.email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Cet email est déjà associé à un compte")
+    
+    # Vérifier qu'une demande n'est pas déjà en cours
+    existing_request = await db.inscriptions.find_one({
+        "email": inscription_data.email,
+        "statut": "EN_ATTENTE"
+    })
+    if existing_request:
+        raise HTTPException(status_code=400, detail="Une demande d'inscription est déjà en cours pour cet email")
+    
+    # Vérifier le rôle souhaité
+    valid_roles = [ROLES["MEDECIN"], ROLES["ASSISTANT"], ROLES["SECRETAIRE"]]
+    if inscription_data.role_souhaite not in valid_roles:
+        raise HTTPException(status_code=400, detail=f"Rôle invalide. Choisissez parmi: {', '.join(valid_roles)}")
+    
+    inscription = Inscription(**inscription_data.dict())
+    await db.inscriptions.insert_one(inscription.dict())
+    
+    # Notifier le Super-Admin (si notifications configurées)
+    try:
+        directors = await db.users.find({
+            "role": {"$in": [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]},
+            "actif": True
+        }).to_list(10)
+        
+        for director in directors:
+            await send_notification_to_user(
+                director["id"],
+                "📝 Nouvelle demande d'inscription",
+                f"{inscription_data.prenom} {inscription_data.nom} souhaite rejoindre {centre['nom']} en tant que {inscription_data.role_souhaite}",
+                {"type": "inscription_request", "inscription_id": inscription.id}
+            )
+    except Exception as e:
+        print(f"Erreur notification inscription: {e}")
+    
+    return {
+        "message": "Demande d'inscription envoyée avec succès. Vous recevrez une réponse par email.",
+        "inscription_id": inscription.id
+    }
+
+@api_router.get("/inscriptions")
+async def get_inscriptions(
+    statut: Optional[str] = None,
+    current_user: User = Depends(get_current_user)
+):
+    """Récupérer les demandes d'inscription (Super-Admin uniquement)"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    query = {}
+    if statut:
+        query["statut"] = statut
+    
+    inscriptions = await db.inscriptions.find(query, {"_id": 0}).sort("date_demande", -1).to_list(100)
+    
+    # Enrichir avec les noms des centres
+    for inscription in inscriptions:
+        centre = await db.centres.find_one({"id": inscription.get("centre_id")}, {"_id": 0, "nom": 1})
+        inscription["centre_nom"] = centre["nom"] if centre else "Centre inconnu"
+    
+    return {"inscriptions": inscriptions}
+
+@api_router.put("/inscriptions/{inscription_id}/approve")
+async def approve_inscription(
+    inscription_id: str,
+    password: str,  # Mot de passe initial pour le nouveau compte
+    current_user: User = Depends(get_current_user)
+):
+    """Approuver une demande d'inscription et créer le compte (Super-Admin uniquement)"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    inscription = await db.inscriptions.find_one({"id": inscription_id})
+    if not inscription:
+        raise HTTPException(status_code=404, detail="Demande non trouvée")
+    
+    if inscription["statut"] != "EN_ATTENTE":
+        raise HTTPException(status_code=400, detail="Cette demande a déjà été traitée")
+    
+    # Créer le compte utilisateur
+    user_data = {
+        "id": str(uuid.uuid4()),
+        "email": inscription["email"],
+        "nom": inscription["nom"],
+        "prenom": inscription["prenom"],
+        "telephone": inscription.get("telephone"),
+        "role": inscription["role_souhaite"],
+        "centre_id": inscription["centre_id"],
+        "password_hash": get_password_hash(password),
+        "actif": True,
+        "date_creation": datetime.now(timezone.utc),
+        "vue_planning_complete": False,
+        "peut_modifier_planning": False
+    }
+    
+    await db.users.insert_one(user_data)
+    
+    # Mettre à jour l'inscription
+    await db.inscriptions.update_one(
+        {"id": inscription_id},
+        {"$set": {
+            "statut": "APPROUVE",
+            "traite_par": current_user.id,
+            "date_traitement": datetime.now(timezone.utc)
+        }}
+    )
+    
+    return {
+        "message": f"Compte créé pour {inscription['prenom']} {inscription['nom']}",
+        "user_id": user_data["id"],
+        "email": inscription["email"]
+    }
+
+@api_router.put("/inscriptions/{inscription_id}/reject")
+async def reject_inscription(
+    inscription_id: str,
+    commentaire: Optional[str] = None,
+    current_user: User = Depends(get_current_user)
+):
+    """Rejeter une demande d'inscription (Super-Admin uniquement)"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    inscription = await db.inscriptions.find_one({"id": inscription_id})
+    if not inscription:
+        raise HTTPException(status_code=404, detail="Demande non trouvée")
+    
+    if inscription["statut"] != "EN_ATTENTE":
+        raise HTTPException(status_code=400, detail="Cette demande a déjà été traitée")
+    
+    await db.inscriptions.update_one(
+        {"id": inscription_id},
+        {"$set": {
+            "statut": "REJETE",
+            "traite_par": current_user.id,
+            "date_traitement": datetime.now(timezone.utc),
+            "commentaire_admin": commentaire
+        }}
+    )
+    
+    return {"message": "Demande d'inscription rejetée"}
+
+# ===== MIGRATION DES DONNÉES EXISTANTES =====
+
+@api_router.post("/admin/migrate-to-multicentre")
+async def migrate_to_multicentre(current_user: User = Depends(get_current_user)):
+    """Migration des données vers le système multi-centres (Super-Admin uniquement, à exécuter une seule fois)"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    # Vérifier si la migration a déjà été faite
+    existing_centre = await db.centres.find_one({"nom": "Place de l'Étoile"})
+    if existing_centre:
+        return {"message": "Migration déjà effectuée", "centre_id": existing_centre["id"]}
+    
+    # Créer le centre par défaut
+    default_centre = Centre(
+        nom="Place de l'Étoile",
+        adresse="Place de l'Étoile, Paris",
+        cree_par=current_user.id
+    )
+    await db.centres.insert_one(default_centre.dict())
+    
+    centre_id = default_centre.id
+    
+    # Migrer tous les utilisateurs (sauf le Super-Admin actuel)
+    result_users = await db.users.update_many(
+        {"centre_id": {"$exists": False}},
+        {"$set": {"centre_id": centre_id}}
+    )
+    
+    # Le Super-Admin n'a pas de centre_id (il gère tous les centres)
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$unset": {"centre_id": ""}, "$set": {"role": ROLES["SUPER_ADMIN"]}}
+    )
+    
+    # Migrer le planning
+    result_planning = await db.planning.update_many(
+        {"centre_id": {"$exists": False}},
+        {"$set": {"centre_id": centre_id}}
+    )
+    
+    # Migrer les salles
+    result_rooms = await db.rooms.update_many(
+        {"centre_id": {"$exists": False}},
+        {"$set": {"centre_id": centre_id}}
+    )
+    
+    # Migrer les demandes de congés
+    result_conges = await db.demandes_conges.update_many(
+        {"centre_id": {"$exists": False}},
+        {"$set": {"centre_id": centre_id}}
+    )
+    
+    # Migrer les messages (groupes par centre)
+    result_messages = await db.messages.update_many(
+        {"centre_id": {"$exists": False}},
+        {"$set": {"centre_id": centre_id}}
+    )
+    
+    return {
+        "message": "Migration effectuée avec succès",
+        "centre": {"id": centre_id, "nom": "Place de l'Étoile"},
+        "stats": {
+            "users_migrated": result_users.modified_count,
+            "planning_migrated": result_planning.modified_count,
+            "rooms_migrated": result_rooms.modified_count,
+            "conges_migrated": result_conges.modified_count,
+            "messages_migrated": result_messages.modified_count
+        }
+    }
+
 # User management routes
 @api_router.get("/users", response_model=List[User])
 async def get_users(current_user: User = Depends(get_current_user)):
