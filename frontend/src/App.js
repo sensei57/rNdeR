@@ -17894,7 +17894,7 @@ const CentresManager = () => {
                                     peut_voir_tous_employes: e.target.checked,
                                     peut_voir_planning_complet: employee.visibility_config?.peut_voir_planning_complet ?? false
                                   });
-                                  fetchCentreDetails(selectedCentre.id);
+                                  fetchData();
                                 } catch (error) {
                                   toast.error('Erreur');
                                 }
@@ -17913,7 +17913,7 @@ const CentresManager = () => {
                                     peut_voir_tous_employes: employee.visibility_config?.peut_voir_tous_employes ?? true,
                                     peut_voir_planning_complet: e.target.checked
                                   });
-                                  fetchCentreDetails(selectedCentre.id);
+                                  fetchData();
                                 } catch (error) {
                                   toast.error('Erreur');
                                 }
@@ -17928,8 +17928,7 @@ const CentresManager = () => {
                   );
                 })}
               </div>
-            </>
-          )}
+            )}
         </TabsContent>
 
         {/* Onglet Inscriptions */}
