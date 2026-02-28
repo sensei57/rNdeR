@@ -653,15 +653,18 @@ const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
-  const fetchCurrentUser = async () => {
+  // Utiliser une ref pour le retry count pour éviter les problèmes d'état asynchrone
+  const retryCountRef = useRef(0);
+  
+  const fetchCurrentUser = async (currentRetry = 0) => {
     try {
-      const response = await axios.get(`${API}/users/me`, { timeout: 10000 });
+      const response = await axios.get(`${API}/users/me`, { timeout: 15000 });
       setUser(response.data);
-      setRetryCount(0); // Reset retry count on success
+      retryCountRef.current = 0; // Reset retry count on success
       
-      // Charger les centres
+      // Charger les centres en parallèle avec un timeout plus long
       try {
-        const centresResponse = await axios.get(`${API}/centres`, { timeout: 10000 });
+        const centresResponse = await axios.get(`${API}/centres`, { timeout: 15000 });
         const allCentres = centresResponse.data.centres || [];
         
         if (response.data.role === 'Super-Admin' || response.data.role === 'Directeur') {
@@ -686,21 +689,34 @@ const AuthProvider = ({ children }) => {
         }
       } catch (centreError) {
         console.warn('Erreur chargement centres, utilisation des données en cache:', centreError);
-      }
-    } catch (error) {
-      console.error('Erreur lors de la récupération de l\'utilisateur:', error);
-      
-      // Retry automatique sur erreur réseau (pas sur 401/403)
-      if (retryCount < maxRetries && (!error.response || error.response.status >= 500)) {
-        setRetryCount(prev => prev + 1);
-        console.log(`Retry fetchCurrentUser (${retryCount + 1}/${maxRetries})`);
-        setTimeout(() => fetchCurrentUser(), 2000 * (retryCount + 1));
-        return;
+        // Ne pas bloquer l'authentification si les centres échouent
       }
       
-      logout();
-    } finally {
       setLoading(false);
+    } catch (error) {
+      console.error(`Erreur récupération utilisateur (tentative ${currentRetry + 1}/${maxRetries}):`, error);
+      
+      // Retry automatique sur erreur réseau ou serveur (pas sur 401/403)
+      const isNetworkOrServerError = !error.response || error.response.status >= 500;
+      const isAuthError = error.response?.status === 401 || error.response?.status === 403;
+      
+      if (!isAuthError && isNetworkOrServerError && currentRetry < maxRetries) {
+        const nextRetry = currentRetry + 1;
+        const delay = 1500 * nextRetry; // 1.5s, 3s, 4.5s
+        console.log(`🔄 Retry ${nextRetry}/${maxRetries} dans ${delay/1000}s...`);
+        
+        // Afficher un toast si c'est le 2ème retry
+        if (nextRetry === 2) {
+          toast.info('Connexion en cours, veuillez patienter...');
+        }
+        
+        setTimeout(() => fetchCurrentUser(nextRetry), delay);
+        return; // Ne pas exécuter le finally ici
+      }
+      
+      // Échec définitif : déconnecter
+      setLoading(false);
+      logout();
     }
   };
 
