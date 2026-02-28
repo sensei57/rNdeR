@@ -173,6 +173,7 @@ class User(UserBase):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+    centre_id: Optional[str] = None  # Centre sélectionné lors de la connexion (optionnel pour Super-Admin)
 
 class Token(BaseModel):
     access_token: str
