@@ -17391,16 +17391,18 @@ const CentresManager = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
+      // Pour la gestion multi-centres, le directeur doit voir TOUS les employés de tous les centres
+      // On utilise le paramètre all_centres=true pour contourner le filtre par centre actif
       const [centresRes, rubriquesRes, inscriptionsRes, usersRes] = await Promise.all([
         axios.get(`${API}/admin/centres/details`),
         axios.get(`${API}/admin/rubriques`),
         axios.get(`${API}/inscriptions?statut=EN_ATTENTE`),
-        axios.get(`${API}/users`)
+        axios.get(`${API}/users?all_centres=true`)  // Charger TOUS les employés de tous les centres
       ]);
       setCentres(centresRes.data.centres || []);
       setRubriquesDisponibles(rubriquesRes.data.rubriques || []);
       setInscriptions(inscriptionsRes.data.inscriptions || []);
-      // Charger tous les employés actifs
+      // Charger tous les employés actifs de TOUS les centres
       const allUsers = Array.isArray(usersRes.data) ? usersRes.data : [];
       setEmployees(allUsers.filter(u => u.actif));
     } catch (error) {
