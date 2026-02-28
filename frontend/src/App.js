@@ -12799,14 +12799,12 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh, centreActif }
     }
     
     // Ajuster position_x pour supprimer colonnes 0 et 6 (décaler de -1 si > 0)
-    // Réduire l'espacement pour s'adapter à la nouvelle largeur (450px pour 5 colonnes = 90px/colonne)
     const adjustedX = salle.position_x > 0 ? salle.position_x - 1 : 0;
     
+    // Style pour utiliser CSS Grid (gridColumn et gridRow)
     const style = {
-      left: `${adjustedX * 85}px`,
-      top: `${salle.position_y * 85}px`,
-      width: '78px',
-      height: '68px',
+      gridColumn: adjustedX + 1,
+      gridRow: salle.position_y + 1,
     };
 
     const getInitiales = (employe) => {
@@ -12819,7 +12817,7 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh, centreActif }
     return (
       <div
         key={salle.id}
-        className={`${baseClasses} ${bgColor} ${textColor} ${cursorClass}`}
+        className={`border-2 rounded-lg p-2 text-xs font-medium transition-all flex flex-col justify-center items-center min-h-[70px] ${bgColor} ${textColor} ${cursorClass}`}
         style={style}
         onClick={() => handleSalleClick(salle, creneau)}
         title={
