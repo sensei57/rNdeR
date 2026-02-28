@@ -20366,17 +20366,26 @@ const Dashboard = () => {
       { id: 'documents', label: 'Mon Coffre-Fort', icon: FileText },
     ];
 
-    // Ajouter demandes de créneaux pour médecins et directeur
-    if (user?.role === 'Médecin' || user?.role === 'Directeur') {
+    // Ajouter demandes de créneaux pour médecins, directeur et super-admin
+    if (user?.role === 'Médecin' || user?.role === 'Directeur' || user?.role === 'Super-Admin') {
       items.splice(5, 0, { id: 'demandes-travail', label: 'Demande de créneaux', icon: CalendarDays });
     }
 
-    // Plan Cabinet visible uniquement au Directeur dans le menu
-    if (user?.role === 'Directeur') {
+    // Plan Cabinet, Salles, Stocks visible pour Directeur, Super-Admin et Manager
+    if (user?.role === 'Directeur' || user?.role === 'Super-Admin' || user?.role === 'Manager') {
       items.push({ id: 'plan-cabinet', label: 'Plan Cabinet', icon: MapPin });
       items.push({ id: 'salles', label: 'Gestion Salles', icon: Building2 });
       items.push({ id: 'stocks', label: 'Gestion Stocks', icon: Package });
+    }
+    
+    // Administration visible pour Directeur, Super-Admin et Manager
+    if (user?.role === 'Directeur' || user?.role === 'Super-Admin' || user?.role === 'Manager') {
       items.push({ id: 'admin', label: 'Administration', icon: Settings });
+    }
+    
+    // Gestion Multi-Centres uniquement pour Super-Admin et Directeur
+    if (user?.role === 'Directeur' || user?.role === 'Super-Admin') {
+      items.push({ id: 'centres', label: 'Gestion Centres', icon: Building2 });
     }
 
     return items;
@@ -20408,6 +20417,8 @@ const Dashboard = () => {
         return <SallesManager />;
       case 'admin':
         return <AdminManager />;
+      case 'centres':
+        return <CentresManager />;
       default:
         return <ActualitesManager />;
     }
