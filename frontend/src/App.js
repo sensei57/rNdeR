@@ -2167,21 +2167,28 @@ const ActualitesManager = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      console.log('Appel API cabinet/plan pour date:', today);
+      
+      // Timeout et retry intégrés pour mobile
+      const fetchWithTimeout = async (url, timeout = 8000) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+        try {
+          const response = await axios.get(url, { signal: controller.signal });
+          clearTimeout(timeoutId);
+          return response;
+        } catch (err) {
+          clearTimeout(timeoutId);
+          throw err;
+        }
+      };
+
       const [actusRes, annivRes, planMatinRes, planAMRes] = await Promise.all([
-        axios.get(`${API}/actualites`),
-        axios.get(`${API}/anniversaires`),
-        axios.get(`${API}/cabinet/plan/${today}?creneau=MATIN`).catch((err) => {
-          console.log('Erreur plan matin:', err.response?.data || err.message);
-          return { data: null };
-        }),
-        axios.get(`${API}/cabinet/plan/${today}?creneau=APRES_MIDI`).catch((err) => {
-          console.log('Erreur plan après-midi:', err.response?.data || err.message);
-          return { data: null };
-        })
+        fetchWithTimeout(`${API}/actualites`).catch(() => ({ data: [] })),
+        fetchWithTimeout(`${API}/anniversaires`).catch(() => ({ data: [] })),
+        fetchWithTimeout(`${API}/cabinet/plan/${today}?creneau=MATIN`).catch(() => ({ data: null })),
+        fetchWithTimeout(`${API}/cabinet/plan/${today}?creneau=APRES_MIDI`).catch(() => ({ data: null }))
       ]);
-      console.log('Plan Matin:', planMatinRes.data);
-      console.log('Plan Après-midi:', planAMRes.data);
+      
       setActualites(Array.isArray(actusRes.data) ? actusRes.data : []);
       setAnniversaires(Array.isArray(annivRes.data) ? annivRes.data : []);
       setPlanMatin(planMatinRes.data);
