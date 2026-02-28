@@ -13,9 +13,14 @@ export { getPhotoUrl, sortEmployeesByRoleThenName, filterEmployeesBySearch, form
 export { PhotoWithFallback, UserAvatar } from './components/common/PhotoWithFallback';
 export { default as ProtectedRoute } from './components/common/ProtectedRoute';
 export { LoadingSpinner, EmptyState } from './components/common/LoadingSpinner';
+export { CardSkeleton, StatsSkeleton, PlanningSkeleton, ListSkeleton, DashboardSkeleton, GlobalLoader } from './components/common/Skeletons';
 
 // Composants de gestion
 export { CongeManager } from './components/conges';
+export { ChatManager } from './components/chat';
 
 // Pages
 export { default as LoginPage } from './pages/LoginPage';
+
+// Hooks optimisés
+export { useCachedFetch, useSmartPolling, useDebounce, useThrottle, useLazyLoad, invalidateCache } from './hooks/useOptimized';
