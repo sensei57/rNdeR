@@ -4146,6 +4146,7 @@ async def create_demande_jour_travail(
         
         demande = DemandeJourTravail(
             medecin_id=medecin_id,
+            centre_id=centre_id,
             date_demandee=demande_data.date_demandee,
             creneau=demande_data.creneau,
             motif=demande_data.motif
