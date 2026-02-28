@@ -3478,106 +3478,152 @@ const CongeManager = () => {
         </Dialog>
       </div>
 
-      {/* Filtres */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold text-gray-700">Filtres</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Filtre par statut */}
-              <div className="space-y-2">
-                <Label>Statut</Label>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant={filterStatut === 'TOUT' ? 'default' : 'outline'}
-                    onClick={() => setFilterStatut('TOUT')}
-                  >
-                    Tout ({demandes.length})
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={filterStatut === 'EN_ATTENTE' ? 'default' : 'outline'}
-                    onClick={() => setFilterStatut('EN_ATTENTE')}
-                    className={filterStatut === 'EN_ATTENTE' ? '' : 'border-yellow-300 text-yellow-700 hover:bg-yellow-50'}
-                  >
-                    En attente ({demandes.filter(d => d.statut === 'EN_ATTENTE').length})
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={filterStatut === 'APPROUVE' ? 'default' : 'outline'}
-                    onClick={() => setFilterStatut('APPROUVE')}
-                    className={filterStatut === 'APPROUVE' ? '' : 'border-green-300 text-green-700 hover:bg-green-50'}
-                  >
-                    Validées ({demandes.filter(d => d.statut === 'APPROUVE').length})
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={filterStatut === 'ANNULE' ? 'default' : 'outline'}
-                    onClick={() => setFilterStatut('ANNULE')}
-                    className={filterStatut === 'ANNULE' ? '' : 'border-red-300 text-red-700 hover:bg-red-50'}
-                  >
-                    Annulées ({demandes.filter(d => d.statut === 'ANNULE').length})
-                  </Button>
-                </div>
+      {/* Statistiques rapides */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-yellow-600 text-sm font-medium">En attente</p>
+                <p className="text-2xl font-bold text-yellow-700">{pendingCount}</p>
               </div>
+              <Clock className="h-8 w-8 text-yellow-400" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-600 text-sm font-medium">Approuvées</p>
+                <p className="text-2xl font-bold text-green-700">{approvedCount}</p>
+              </div>
+              <Check className="h-8 w-8 text-green-400" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-red-600 text-sm font-medium">Refusées</p>
+                <p className="text-2xl font-bold text-red-700">{demandes.filter(d => d.statut === 'REJETE' || d.statut === 'ANNULE').length}</p>
+              </div>
+              <X className="h-8 w-8 text-red-400" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-600 text-sm font-medium">Total</p>
+                <p className="text-2xl font-bold text-blue-700">{demandes.length}</p>
+              </div>
+              <Calendar className="h-8 w-8 text-blue-400" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-              {/* Filtre par employé - Visible uniquement pour le Directeur */}
-              {user?.role === 'Directeur' && (
-                <div className="space-y-2">
-                  <Label>Employé</Label>
-                  <Select value={filterEmploye} onValueChange={setFilterEmploye}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="TOUS">Tous les employés</SelectItem>
-                      {users.map(u => (
-                        <SelectItem key={u.id} value={u.id}>
-                          {u.prenom} {u.nom} - {u.role}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+      {/* Filtres modernisés */}
+      <Card className="border-0 shadow-md">
+        <CardContent className="p-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant={filterStatut === 'TOUT' ? 'default' : 'outline'}
+                onClick={() => setFilterStatut('TOUT')}
+                className={filterStatut === 'TOUT' ? 'bg-[#0091B9]' : ''}
+              >
+                Toutes ({demandes.length})
+              </Button>
+              <Button
+                size="sm"
+                variant={filterStatut === 'EN_ATTENTE' ? 'default' : 'outline'}
+                onClick={() => setFilterStatut('EN_ATTENTE')}
+                className={filterStatut === 'EN_ATTENTE' ? 'bg-yellow-500' : 'border-yellow-300 text-yellow-700 hover:bg-yellow-50'}
+              >
+                En attente ({pendingCount})
+              </Button>
+              <Button
+                size="sm"
+                variant={filterStatut === 'APPROUVE' ? 'default' : 'outline'}
+                onClick={() => setFilterStatut('APPROUVE')}
+                className={filterStatut === 'APPROUVE' ? 'bg-green-500' : 'border-green-300 text-green-700 hover:bg-green-50'}
+              >
+                Validées ({approvedCount})
+              </Button>
             </div>
 
-            <div className="text-sm text-gray-500">
-              {filteredDemandes.length} demande{filteredDemandes.length > 1 ? 's' : ''} affichée{filteredDemandes.length > 1 ? 's' : ''}
-            </div>
+            {/* Filtre par employé */}
+            {(user?.role === 'Directeur' || user?.role === 'Super-Admin') && (
+              <Select value={filterEmploye} onValueChange={setFilterEmploye}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Tous les employés" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="TOUS">Tous les employés</SelectItem>
+                  {users.map(u => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.prenom} {u.nom}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
         </CardContent>
       </Card>
 
+      {/* Liste des demandes avec design moderne */}
       <div className="space-y-4">
-        {filteredDemandes.map(demande => (
-          <Card key={demande.id}>
-            <CardContent className="pt-6">
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <h3 className="font-medium">
-                      {demande.utilisateur?.prenom} {demande.utilisateur?.nom}
-                    </h3>
-                    <Badge className={getStatutColor(demande.statut)}>
-                      {demande.statut.replace('_', ' ')}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    <strong>Période:</strong> {new Date(demande.date_debut).toLocaleDateString('fr-FR')} au {new Date(demande.date_fin).toLocaleDateString('fr-FR')}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <strong>Type:</strong> {getTypeCongeLabel(demande.type_conge)}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <strong>Durée:</strong> {getCreneauLabel(demande.creneau)}
-                  </p>
-                  {demande.motif && (
-                    <p className="text-sm text-gray-600">
-                      <strong>Motif:</strong> {demande.motif}
-                    </p>
+        {filteredDemandes.length === 0 ? (
+          <Card className="border-dashed">
+            <CardContent className="p-8 text-center">
+              <Calendar className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+              <p className="text-gray-500">Aucune demande de congé trouvée</p>
+            </CardContent>
+          </Card>
+        ) : filteredDemandes.map(demande => (
+          <Card key={demande.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+            <div className={`h-1 ${
+              demande.statut === 'EN_ATTENTE' ? 'bg-yellow-400' :
+              demande.statut === 'APPROUVE' ? 'bg-green-400' :
+              demande.statut === 'REJETE' ? 'bg-red-400' : 'bg-gray-400'
+            }`} />
+            <CardContent className="p-5">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback className="bg-gradient-to-br from-[#0091B9] to-[#19CD91] text-white">
+                      {demande.utilisateur?.prenom?.[0]}{demande.utilisateur?.nom?.[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold text-gray-900">
+                        {demande.utilisateur?.prenom} {demande.utilisateur?.nom}
+                      </h3>
+                      <Badge className={getStatutColor(demande.statut)}>
+                        {demande.statut === 'EN_ATTENTE' ? 'En attente' :
+                         demande.statut === 'APPROUVE' ? 'Approuvée' :
+                         demande.statut === 'REJETE' ? 'Refusée' : demande.statut}
+                      </Badge>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4" />
+                        {new Date(demande.date_debut).toLocaleDateString('fr-FR')} → {new Date(demande.date_fin).toLocaleDateString('fr-FR')}
+                      </span>
+                      <span className="px-2 py-0.5 bg-gray-100 rounded-full text-xs">
+                        {getTypeCongeLabel(demande.type_conge)}
+                      </span>
+                    </div>
+                    {demande.motif && (
+                      <p className="text-sm text-gray-500 italic">"{demande.motif}"</p>
+                    )}
                   )}
                   <p className="text-xs text-gray-500">
                     Demandé le: {new Date(demande.date_demande).toLocaleDateString('fr-FR')}
