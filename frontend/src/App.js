@@ -8442,6 +8442,7 @@ const PlanningManager = () => {
           selectedDate={selectedDate} 
           isDirector={hasDirectorView()}
           onRefresh={() => fetchPlanningByDate(selectedDate)}
+          centreActif={centreActif}
         />
         </>
         )}
