@@ -6415,8 +6415,27 @@ async def get_firebase_status_endpoint(current_user: User = Depends(require_role
 
 @api_router.get("/actualites")
 async def get_actualites(current_user: User = Depends(get_current_user)):
-    """Récupérer toutes les actualités actives"""
-    actualites = await db.actualites.find({"actif": True}).sort("priorite", -1).to_list(100)
+    """Récupérer les actualités du centre actif"""
+    # Déterminer le centre actif de l'utilisateur
+    centre_actif = getattr(current_user, 'centre_actif_id', None)
+    if not centre_actif:
+        # Utiliser le premier centre de l'utilisateur
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        centre_actif = user_centres[0] if user_centres else None
+    
+    # Construire la requête - filtrer par centre
+    query = {"actif": True}
+    if centre_actif:
+        # Afficher les actualités du centre actif OU les actualités sans centre (globales)
+        query["$or"] = [
+            {"centre_id": centre_actif},
+            {"centre_id": None},
+            {"centre_id": {"$exists": False}}
+        ]
+    
+    actualites = await db.actualites.find(query).sort("priorite", -1).to_list(100)
     
     # Enrichir avec les informations de l'auteur
     for actu in actualites:
@@ -6435,9 +6454,21 @@ async def get_actualites(current_user: User = Depends(get_current_user)):
 
 @api_router.post("/actualites")
 async def create_actualite(actualite: ActualiteCreate, current_user: User = Depends(get_current_user)):
-    """Créer une nouvelle actualité (Directeur uniquement)"""
-    if current_user.role != "Directeur":
+    """Créer une nouvelle actualité (Directeur/Super-Admin uniquement)"""
+    if current_user.role not in ["Directeur", "Super-Admin"]:
         raise HTTPException(status_code=403, detail="Seul le directeur peut créer des actualités")
+    
+    # Déterminer le centre actif pour associer l'actualité
+    centre_id = actualite.centre_id
+    if not centre_id:
+        centre_actif = getattr(current_user, 'centre_actif_id', None)
+        if centre_actif:
+            centre_id = centre_actif
+        else:
+            user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+            if current_user.centre_id and current_user.centre_id not in user_centres:
+                user_centres.append(current_user.centre_id)
+            centre_id = user_centres[0] if user_centres else None
     
     nouvelle_actualite = Actualite(
         titre=actualite.titre,
@@ -6446,6 +6477,7 @@ async def create_actualite(actualite: ActualiteCreate, current_user: User = Depe
         fichier_url=actualite.fichier_url,
         fichier_nom=actualite.fichier_nom,
         groupe_cible=actualite.groupe_cible,
+        centre_id=centre_id,
         auteur_id=current_user.id,
         priorite=actualite.priorite
     )
@@ -6455,8 +6487,8 @@ async def create_actualite(actualite: ActualiteCreate, current_user: User = Depe
 
 @api_router.put("/actualites/{actualite_id}")
 async def update_actualite(actualite_id: str, actualite: ActualiteUpdate, current_user: User = Depends(get_current_user)):
-    """Modifier une actualité (Directeur uniquement)"""
-    if current_user.role != "Directeur":
+    """Modifier une actualité (Directeur/Super-Admin uniquement)"""
+    if current_user.role not in ["Directeur", "Super-Admin"]:
         raise HTTPException(status_code=403, detail="Seul le directeur peut modifier des actualités")
     
     update_data = {k: v for k, v in actualite.model_dump().items() if v is not None}
