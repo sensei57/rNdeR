@@ -2544,6 +2544,152 @@ p {
 }
 
 /* ============================================
+   CARTE DE SALLE EN GRILLE RESPONSIVE
+   ============================================ */
+
+.room-card-grid {
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  border: 2px solid transparent;
+  overflow: hidden;
+  position: relative;
+  min-height: 75px;
+  padding: 8px 4px;
+}
+
+.room-card-grid:hover {
+  transform: scale(1.05);
+  z-index: 10;
+  box-shadow: var(--shadow-lg);
+}
+
+/* États des salles en grille */
+.room-card-grid.libre {
+  background: white;
+  border-color: var(--gray-200);
+  color: var(--gray-400);
+}
+
+.room-card-grid.medecin {
+  background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
+  border-color: var(--primary-300);
+  color: var(--primary-700);
+}
+
+.room-card-grid.assistant {
+  background: linear-gradient(135deg, var(--accent-50) 0%, var(--accent-100) 100%);
+  border-color: var(--accent-300);
+  color: var(--accent-700);
+}
+
+.room-card-grid.attente {
+  background: linear-gradient(135deg, var(--warning-50) 0%, var(--warning-100) 100%);
+  border-color: var(--warning-300);
+  color: var(--warning-700);
+}
+
+.room-card-grid .room-card-name {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-align: center;
+  line-height: 1.1;
+  z-index: 2;
+}
+
+.room-card-grid .room-card-status {
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  opacity: 0.6;
+  margin-top: 4px;
+}
+
+/* Photo plein format dans la salle en grille */
+.room-card-grid.has-photo {
+  padding: 0;
+}
+
+.room-card-grid .room-photo-full {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.room-card-grid .room-photo-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 50%, transparent 100%);
+  z-index: 2;
+}
+
+.room-card-grid .room-info-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 6px 4px;
+  z-index: 3;
+  text-align: center;
+}
+
+.room-card-grid .room-info-overlay .room-card-name {
+  color: white;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  font-size: 9px;
+}
+
+.room-card-grid .room-info-overlay .room-card-employee-name {
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Indicateur de statut pour cartes en grille */
+.room-card-grid .room-card-indicator {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  border: 2px solid white;
+  box-shadow: var(--shadow-sm);
+  z-index: 4;
+}
+
+.room-card-grid.medecin .room-card-indicator {
+  background: var(--primary-500);
+}
+
+.room-card-grid.assistant .room-card-indicator {
+  background: var(--accent-500);
+}
+
+.room-card-grid.attente .room-card-indicator {
+  background: var(--warning-500);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Container de grille responsive pour le plan */
+.cabinet-plan-grid-responsive {
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  background: var(--gray-50);
+}
+
+/* ============================================
    CARTE DE SALLE POSITIONNÉE (avec disposition spatiale)
    ============================================ */
 
