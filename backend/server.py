@@ -760,6 +760,130 @@ async def notify_colleagues_about_leave(user_name: str, date_debut: str, date_fi
     except Exception as e:
         print(f"❌ Erreur notification collègues congé: {e}")
 
+
+async def handle_assistant_slots_for_leave(user_id: str, date_debut: str, date_fin: str, creneau: str, approve: bool):
+    """
+    Gère les créneaux des assistants lorsqu'un médecin prend un congé.
+    - Si le congé est approuvé : supprime les créneaux des assistants assignés à ce médecin pour les jours de congé
+    - Envoie des notifications aux assistants concernés
+    
+    Args:
+        user_id: ID du médecin en congé
+        date_debut: Date de début du congé (YYYY-MM-DD)
+        date_fin: Date de fin du congé (YYYY-MM-DD)
+        creneau: Type de créneau ("MATIN", "APRES_MIDI", "JOURNEE_COMPLETE")
+        approve: True si le congé est approuvé, False si refusé
+    """
+    from datetime import datetime, timedelta
+    
+    if not approve:
+        return  # Rien à faire si le congé est refusé
+    
+    try:
+        # Vérifier si l'utilisateur est un médecin
+        user = await db.users.find_one({"id": user_id})
+        if not user or user.get("role") != ROLES["MEDECIN"]:
+            return  # Cette logique ne s'applique qu'aux médecins
+        
+        medecin_name = f"Dr. {user['prenom']} {user['nom']}"
+        
+        # Convertir les dates
+        debut = datetime.strptime(date_debut, '%Y-%m-%d')
+        fin = datetime.strptime(date_fin, '%Y-%m-%d')
+        
+        # Déterminer les créneaux à traiter
+        creneaux_a_traiter = []
+        if creneau == "JOURNEE_COMPLETE":
+            creneaux_a_traiter = ["MATIN", "APRES_MIDI"]
+        else:
+            creneaux_a_traiter = [creneau]
+        
+        assistants_notifies = set()
+        creneaux_supprimes = 0
+        
+        # Pour chaque jour du congé
+        current_date = debut
+        while current_date <= fin:
+            date_str = current_date.strftime('%Y-%m-%d')
+            
+            for creneau_type in creneaux_a_traiter:
+                # Trouver les créneaux des assistants assignés à ce médecin pour ce jour/créneau
+                # Un assistant peut être assigné via medecin_attribue_id ou dans la liste medecin_ids
+                assistant_creneaux = await db.planning.find({
+                    "date": date_str,
+                    "creneau": creneau_type,
+                    "employe_role": ROLES["ASSISTANT"],
+                    "$or": [
+                        {"medecin_attribue_id": user_id},
+                        {"medecin_ids": user_id}
+                    ]
+                }).to_list(100)
+                
+                for creneau_assistant in assistant_creneaux:
+                    assistant_id = creneau_assistant["employe_id"]
+                    
+                    # Vérifier si l'assistant a d'autres médecins assignés pour ce créneau
+                    autres_medecins = [m for m in creneau_assistant.get("medecin_ids", []) if m != user_id]
+                    
+                    if autres_medecins:
+                        # L'assistant a d'autres médecins - juste retirer ce médecin de la liste
+                        await db.planning.update_one(
+                            {"id": creneau_assistant["id"]},
+                            {
+                                "$pull": {"medecin_ids": user_id},
+                                "$set": {
+                                    "medecin_attribue_id": autres_medecins[0] if autres_medecins else None,
+                                    "notes": (creneau_assistant.get("notes") or "") + f"\n⚠️ Dr. {user['nom']} en congé - réassigné"
+                                }
+                            }
+                        )
+                        print(f"📝 Créneau assistant {assistant_id} mis à jour - médecin {user_id} retiré")
+                    else:
+                        # L'assistant n'a plus de médecin - supprimer le créneau ou le marquer comme à réassigner
+                        await db.planning.update_one(
+                            {"id": creneau_assistant["id"]},
+                            {
+                                "$set": {
+                                    "medecin_attribue_id": None,
+                                    "medecin_ids": [],
+                                    "notes": (creneau_assistant.get("notes") or "") + f"\n⚠️ {medecin_name} en congé - À RÉASSIGNER",
+                                    "est_repos": True  # Marquer comme repos temporairement
+                                }
+                            }
+                        )
+                        creneaux_supprimes += 1
+                        print(f"⚠️ Créneau assistant {assistant_id} marqué à réassigner - médecin {user_id} en congé")
+                    
+                    # Ajouter l'assistant à la liste pour notification
+                    if assistant_id not in assistants_notifies:
+                        assistants_notifies.add(assistant_id)
+            
+            current_date += timedelta(days=1)
+        
+        # Notifier les assistants concernés
+        for assistant_id in assistants_notifies:
+            dates_text = date_debut if date_debut == date_fin else f"{date_debut} au {date_fin}"
+            creneau_text = "toute la journée" if creneau == "JOURNEE_COMPLETE" else creneau.lower()
+            
+            await send_notification_to_user(
+                assistant_id,
+                "⚠️ Modification de planning",
+                f"{medecin_name} sera en congé le {dates_text} ({creneau_text}). Votre planning a été mis à jour.",
+                {
+                    "type": "planning_update",
+                    "reason": "medecin_leave",
+                    "medecin_id": user_id,
+                    "date_debut": date_debut,
+                    "date_fin": date_fin
+                }
+            )
+        
+        print(f"✅ Gestion des créneaux assistants terminée: {creneaux_supprimes} créneaux modifiés, {len(assistants_notifies)} assistants notifiés")
+        
+    except Exception as e:
+        print(f"❌ Erreur lors de la gestion des créneaux assistants: {e}")
+
+
 async def send_daily_planning_notifications():
     """Envoie le planning quotidien à tous les employés qui travaillent aujourd'hui"""
     from datetime import date
