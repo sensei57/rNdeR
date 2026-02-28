@@ -675,6 +675,7 @@ class SemaineTypeCreate(BaseModel):
 class DemandeJourTravail(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     medecin_id: str
+    centre_id: Optional[str] = None  # Centre auquel appartient cette demande
     date_demandee: str  # YYYY-MM-DD
     creneau: str  # "MATIN", "APRES_MIDI", "JOURNEE_COMPLETE"
     motif: Optional[str] = None
@@ -695,6 +696,7 @@ class DemandeJourTravailCreate(BaseModel):
     date_demandee: Optional[str] = None  # Optionnel si semaine_type_id fourni
     creneau: Optional[str] = None
     motif: Optional[str] = None
+    centre_id: Optional[str] = None  # Centre auquel appartient cette demande
     semaine_type_id: Optional[str] = None  # Pour demande de semaine type
     date_debut_semaine: Optional[str] = None  # YYYY-MM-DD du lundi
     medecin_id: Optional[str] = None  # Pour que le directeur puisse faire une demande pour un médecin
