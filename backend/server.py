@@ -733,6 +733,7 @@ class SalleReservation(BaseModel):
 
 class DemandeCongeCreate(BaseModel):
     utilisateur_id: Optional[str] = None  # Pour que le Directeur puisse créer des demandes pour d'autres
+    centre_id: Optional[str] = None  # Centre auquel appartient cette demande
     date_debut: str  # YYYY-MM-DD
     date_fin: str  # YYYY-MM-DD
     type_conge: str  # "CONGE_PAYE", "CONGE_SANS_SOLDE", "MALADIE", "REPOS", "HEURES_A_RECUPERER", "HEURES_RECUPEREES"
@@ -743,6 +744,7 @@ class DemandeCongeCreate(BaseModel):
 class DemandeConge(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     utilisateur_id: str
+    centre_id: Optional[str] = None  # Centre auquel appartient cette demande
     date_debut: str  # YYYY-MM-DD
     date_fin: str  # YYYY-MM-DD
     type_conge: str  # "CONGE_PAYE", "CONGE_SANS_SOLDE", "MALADIE", "REPOS", "HEURES_A_RECUPERER", "HEURES_RECUPEREES"
