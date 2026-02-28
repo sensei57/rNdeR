@@ -19572,6 +19572,13 @@ const FloatingChatButton = ({ onNavigateToChat }) => {
 function App() {
   return (
     <div className="App">
+      {/* Arrière-plan ophtalmologique moderne */}
+      <div className="app-background">
+        <div className="bg-decoration bg-decoration-1"></div>
+        <div className="bg-decoration bg-decoration-2"></div>
+        <div className="bg-decoration bg-decoration-3"></div>
+      </div>
+      
       <BrowserRouter>
         <AuthProvider>
           <Routes>
