@@ -3255,7 +3255,7 @@ const SallesManager = () => {
 // Planning Component
 // Composant compact du Plan du Cabinet pour le Planning - Affiche MATIN et APRÈS-MIDI
 const PlanningManager = () => {
-  const { user } = useAuth();
+  const { user, centreActif } = useAuth();
   const { planningSelectedDate, setPlanningSelectedDate, planningViewMode, setPlanningViewMode } = usePlanning();
   const [selectedDate, setSelectedDateLocal] = useState(new Date().toISOString().split('T')[0]);
   const [selectedWeek, setSelectedWeek] = useState(new Date().toISOString().split('T')[0]);
