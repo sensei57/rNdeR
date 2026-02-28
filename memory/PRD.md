@@ -23,6 +23,28 @@ Application de gestion pour cabinet d'ophtalmologie avec :
 
 ## Ce qui a été implémenté
 
+### Session 28/02/2026 - Multi-Centres + Améliorations
+
+**1. Problème de rechargement mobile (P1) - RÉSOLU**
+- Ajout d'un intercepteur axios avec retry automatique (2 tentatives sur erreur réseau)
+- Système de retry pour fetchCurrentUser (3 tentatives max avec délai exponentiel)
+- Timeout configuré pour toutes les requêtes API (8-10s)
+- Meilleure gestion des erreurs avec fallbacks gracieux
+
+**2. Notifications automatiques à 7h via cron - IMPLÉMENTÉ**
+- Intégration APScheduler avec timezone Europe/Paris
+- Job planifié à 7h chaque matin pour envoyer les notifications de planning
+- Endpoints de monitoring :
+  - `GET /api/notifications/scheduler-status` : Statut du scheduler
+  - `POST /api/notifications/test-scheduler` : Test immédiat
+
+**3. Modernisation UI - Gestion des Congés**
+- Header gradient moderne avec bouton "Nouvelle Demande"
+- 4 cartes de statistiques colorées (En attente, Approuvées, Refusées, Total)
+- Filtres modernisés avec boutons colorés
+- Cartes de demandes avec barre de couleur selon statut
+- État vide élégant avec icône et message
+
 ### Session 28/02/2026 - Architecture Multi-Centres
 - ✅ **Système multi-centres complet**
   - Nouveau modèle `Centre` avec collection MongoDB
