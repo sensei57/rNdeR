@@ -167,16 +167,40 @@ const RoomCardContent = ({ salle, occupation }) => {
 };
 
 // Composant Plan du Cabinet avec scroll horizontal sur mobile et popup plein écran
-const CabinetPlanWithPopup = ({ planMatin, planApresMidi, user }) => {
+// Ce composant charge ses propres données pour éviter les problèmes de timing
+const CabinetPlanWithPopup = ({ user }) => {
   const [showFullscreen, setShowFullscreen] = useState(false);
-  const [fullscreenPeriod, setFullscreenPeriod] = useState('matin'); // 'matin' ou 'apresmidi'
+  const [fullscreenPeriod, setFullscreenPeriod] = useState('matin');
+  const [planMatin, setPlanMatin] = useState(null);
+  const [planApresMidi, setPlanApresMidi] = useState(null);
+  const [loading, setLoading] = useState(true);
   
-  // Debug: afficher les props reçues
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Charger les données du plan cabinet
   useEffect(() => {
-    console.log('[CabinetPlanWithPopup] planMatin:', planMatin);
-    console.log('[CabinetPlanWithPopup] planApresMidi:', planApresMidi);
-    console.log('[CabinetPlanWithPopup] planMatin?.salles?.length:', planMatin?.salles?.length);
-  }, [planMatin, planApresMidi]);
+    const fetchPlans = async () => {
+      try {
+        setLoading(true);
+        const [matinResponse, apresMidiResponse] = await Promise.all([
+          axios.get(`${API}/cabinet/plan/${today}?creneau=MATIN`),
+          axios.get(`${API}/cabinet/plan/${today}?creneau=APRES_MIDI`)
+        ]);
+        console.log('[CabinetPlanWithPopup] Matin reçu:', matinResponse.data);
+        console.log('[CabinetPlanWithPopup] AM reçu:', apresMidiResponse.data);
+        setPlanMatin(matinResponse.data);
+        setPlanApresMidi(apresMidiResponse.data);
+      } catch (error) {
+        console.error('[CabinetPlanWithPopup] Erreur chargement:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (user) {
+      fetchPlans();
+    }
+  }, [user, today]);
   
   const renderPlanContent = (plan, periodTitle, periodEmoji, isFullscreen = false) => {
     if (!plan?.salles?.length) return null;
