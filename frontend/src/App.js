@@ -18377,28 +18377,47 @@ const StocksManager = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center p-8">Chargement...</div>;
+    return <div className="flex justify-center p-8"><div className="animate-spin h-8 w-8 border-4 border-[#0091B9] border-t-transparent rounded-full"></div></div>;
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Gestion des Stocks</h2>
-        <div className="space-x-2">
-          <Button onClick={() => setShowCategoryModal(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nouvelle Catégorie
-          </Button>
-          <Button onClick={() => setShowArticleModal(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nouvel Article
-          </Button>
-          {user?.role === 'Directeur' && (
-            <Button variant="outline" onClick={() => setShowPermissionModal(true)}>
-              <Settings className="h-4 w-4 mr-2" />
-              Permissions
+    <div className="space-y-6" data-testid="stocks-manager">
+      {/* Header moderne avec gradient */}
+      <div className="bg-gradient-to-r from-[#0091B9] via-[#007494] to-[#19CD91] rounded-2xl p-6 text-white shadow-lg">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <Package className="h-7 w-7" />
+              Gestion des Stocks
+            </h2>
+            <p className="text-white/80 mt-1">Gérez l'inventaire du cabinet</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button 
+              onClick={() => setShowCategoryModal(true)}
+              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Catégorie
             </Button>
-          )}
+            <Button 
+              onClick={() => setShowArticleModal(true)}
+              className="bg-white text-[#0091B9] hover:bg-white/90"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Article
+            </Button>
+            {user?.role === 'Directeur' && (
+              <Button 
+                variant="outline" 
+                onClick={() => setShowPermissionModal(true)}
+                className="bg-white/10 hover:bg-white/20 text-white border-white/30"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Permissions
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
