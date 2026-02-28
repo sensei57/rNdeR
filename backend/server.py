@@ -4010,11 +4010,23 @@ async def create_demande_jour_travail(
     current_user: User = Depends(get_current_user)
 ):
     # Vérifier que l'utilisateur est médecin ou directeur
-    if current_user.role not in [ROLES["MEDECIN"], ROLES["DIRECTEUR"]]:
+    if current_user.role not in [ROLES["MEDECIN"], ROLES["DIRECTEUR"], "Super-Admin"]:
         raise HTTPException(status_code=403, detail="Seuls les médecins peuvent faire des demandes de jours de travail")
     
     # Déterminer l'ID du médecin concerné
-    medecin_id = demande_data.medecin_id if demande_data.medecin_id and current_user.role == ROLES["DIRECTEUR"] else current_user.id
+    medecin_id = demande_data.medecin_id if demande_data.medecin_id and current_user.role in [ROLES["DIRECTEUR"], "Super-Admin"] else current_user.id
+    
+    # Déterminer le centre_id
+    centre_id = demande_data.centre_id if hasattr(demande_data, 'centre_id') and demande_data.centre_id else None
+    if not centre_id:
+        centre_actif = getattr(current_user, 'centre_actif_id', None)
+        if centre_actif:
+            centre_id = centre_actif
+        else:
+            user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+            if current_user.centre_id and current_user.centre_id not in user_centres:
+                user_centres.append(current_user.centre_id)
+            centre_id = user_centres[0] if user_centres else None
     
     demandes_creees = []
     
