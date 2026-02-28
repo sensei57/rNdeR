@@ -5098,12 +5098,47 @@ async def get_planning_semaine(
 ):
     from datetime import datetime, timedelta
     
+    # Déterminer le centre actif de l'utilisateur
+    centre_actif = getattr(current_user, 'centre_actif_id', None)
+    if not centre_actif:
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        centre_actif = user_centres[0] if user_centres else None
+    
+    is_admin = current_user.role in ['Directeur', 'Super-Admin']
+    
     # Calculer les 7 jours de la semaine
     date_start = datetime.strptime(date_debut, '%Y-%m-%d')
     dates_semaine = [(date_start + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(7)]
     
-    # Récupérer le planning pour toute la semaine
-    planning = await db.planning.find({"date": {"$in": dates_semaine}}).sort("date", 1).to_list(1000)
+    # Construire la requête avec filtrage par centre
+    if centre_actif:
+        if is_admin:
+            # Les admins voient aussi les données sans centre_id
+            query = {
+                "$and": [
+                    {"date": {"$in": dates_semaine}},
+                    {"$or": [
+                        {"centre_id": centre_actif},
+                        {"centre_id": None},
+                        {"centre_id": {"$exists": False}}
+                    ]}
+                ]
+            }
+        else:
+            # Les employés ne voient que leur centre
+            query = {
+                "$and": [
+                    {"date": {"$in": dates_semaine}},
+                    {"centre_id": centre_actif}
+                ]
+            }
+    else:
+        query = {"date": {"$in": dates_semaine}}
+    
+    # Récupérer le planning pour toute la semaine avec filtre
+    planning = await db.planning.find(query).sort("date", 1).to_list(1000)
     
     # Organiser par jour
     planning_par_jour = {date: {"MATIN": [], "APRES_MIDI": []} for date in dates_semaine}
