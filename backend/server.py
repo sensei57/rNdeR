@@ -2784,11 +2784,24 @@ async def create_demande_conge(
     # Sinon, utiliser l'ID de l'utilisateur actuel
     utilisateur_id = current_user.id
     if hasattr(demande_data, 'utilisateur_id') and demande_data.utilisateur_id:
-        if current_user.role == ROLES["DIRECTEUR"]:
+        if current_user.role in [ROLES["DIRECTEUR"], "Super-Admin"]:
             utilisateur_id = demande_data.utilisateur_id
+    
+    # Déterminer le centre_id
+    centre_id = demande_data.centre_id if hasattr(demande_data, 'centre_id') and demande_data.centre_id else None
+    if not centre_id:
+        centre_actif = getattr(current_user, 'centre_actif_id', None)
+        if centre_actif:
+            centre_id = centre_actif
+        else:
+            user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+            if current_user.centre_id and current_user.centre_id not in user_centres:
+                user_centres.append(current_user.centre_id)
+            centre_id = user_centres[0] if user_centres else None
     
     demande = DemandeConge(
         utilisateur_id=utilisateur_id,
+        centre_id=centre_id,
         date_debut=demande_data.date_debut,
         date_fin=demande_data.date_fin,
         type_conge=demande_data.type_conge,
