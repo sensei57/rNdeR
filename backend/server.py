@@ -4080,17 +4080,14 @@ async def get_salles(
             user_centres.append(current_user.centre_id)
         centre_actif = user_centres[0] if user_centres else None
     
-    query = {}
+    # Si pas de centre actif, retourner une liste vide
+    if not centre_actif:
+        return []
+    
+    # Construire la requête - filtrer STRICTEMENT par centre actif
+    query = {"centre_id": centre_actif}
     if actif_seulement:
         query["actif"] = True
-    
-    # Filtrer par centre
-    if centre_actif:
-        query["$or"] = [
-            {"centre_id": centre_actif},
-            {"centre_id": None},
-            {"centre_id": {"$exists": False}}
-        ]
     
     salles = await db.salles.find(query).sort("nom", 1).to_list(1000)
     
