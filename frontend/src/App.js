@@ -19211,7 +19211,7 @@ const Dashboard = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'actualites':
-        return <ActualitesManager />;
+        return <ActualitesManager user={user} />;
       case 'profil':
         return <MonProfilManager />;
       case 'personnel':
@@ -19219,11 +19219,11 @@ const Dashboard = () => {
       case 'planning':
         return <PlanningManager />;
       case 'conges':
-        return <CongeManager />;
+        return <CongeManager user={user} />;
       case 'demandes-travail':
         return <DemandesTravailManager />;
       case 'messages':
-        return <ChatManager />;
+        return <ChatManager user={user} />;
       case 'documents':
         return <CoffreFortManager />;
       case 'plan-cabinet':
@@ -19237,7 +19237,7 @@ const Dashboard = () => {
       case 'centres':
         return <CentresManager />;
       default:
-        return <ActualitesManager />;
+        return <ActualitesManager user={user} />;
     }
   };
 
