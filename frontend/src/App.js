@@ -16798,6 +16798,181 @@ const AdminManager = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Section Notifications de Test */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Bell className="h-5 w-5 text-blue-600" />
+            <span>Notifications de Test</span>
+          </CardTitle>
+          <CardDescription>
+            Envoyez des notifications de test personnalisées à un ou plusieurs employés pour vérifier que le système fonctionne correctement
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            <Button 
+              onClick={() => setShowTestNotificationModal(true)}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Envoyer une notification de test
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={async () => {
+                try {
+                  await axios.post(`${API}/notifications/send-daily-planning`);
+                  toast.success('Planning quotidien envoyé à tous les employés qui travaillent aujourd\'hui !');
+                } catch (error) {
+                  toast.error('Erreur lors de l\'envoi du planning quotidien');
+                }
+              }}
+            >
+              <Calendar className="h-4 w-4 mr-2" />
+              Déclencher le planning du jour
+            </Button>
+          </div>
+          
+          <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+            <h4 className="font-medium text-blue-800 mb-2">Statut des notifications push</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {employeesForTest.map(emp => (
+                <div key={emp.id} className="flex items-center space-x-2 text-sm">
+                  <div className={`w-2 h-2 rounded-full ${emp.has_push_enabled ? 'bg-green-500' : 'bg-red-400'}`} />
+                  <span className={emp.has_push_enabled ? 'text-green-700' : 'text-gray-500'}>
+                    {emp.prenom} {emp.nom?.charAt(0)}.
+                  </span>
+                  {emp.devices_count > 0 && (
+                    <span className="text-xs text-gray-400">({emp.devices_count} app.)</span>
+                  )}
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-blue-600 mt-2">
+              Les employés avec un point vert ont activé les notifications push sur au moins un appareil
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Modal de notification de test en masse */}
+      <Dialog open={showTestNotificationModal} onOpenChange={setShowTestNotificationModal}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Send className="h-5 w-5 text-blue-600" />
+              <span>Envoyer une notification de test</span>
+            </DialogTitle>
+            <DialogDescription>
+              Sélectionnez les employés et rédigez votre message de test
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Sélection des employés */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <Label className="text-base font-medium">Destinataires</Label>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={toggleSelectAllEmployees}
+                >
+                  {selectedEmployeesForTest.length === employeesForTest.length ? 'Tout désélectionner' : 'Tout sélectionner'}
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto border rounded-lg p-3">
+                {employeesForTest.map(emp => (
+                  <label 
+                    key={emp.id} 
+                    className={`flex items-center space-x-2 p-2 rounded cursor-pointer hover:bg-gray-50 ${
+                      selectedEmployeesForTest.includes(emp.id) ? 'bg-blue-50 border border-blue-200' : 'border border-transparent'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedEmployeesForTest.includes(emp.id)}
+                      onChange={() => toggleEmployeeForTest(emp.id)}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">
+                        {emp.prenom} {emp.nom}
+                      </div>
+                      <div className="flex items-center space-x-1 text-xs">
+                        <span className="text-gray-500">{emp.role}</span>
+                        {emp.has_push_enabled ? (
+                          <span className="text-green-600">({emp.devices_count} app.)</span>
+                        ) : (
+                          <span className="text-red-400">(pas de push)</span>
+                        )}
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {selectedEmployeesForTest.length} employé(s) sélectionné(s)
+              </p>
+            </div>
+
+            {/* Titre */}
+            <div>
+              <Label>Titre de la notification</Label>
+              <Input
+                value={testNotificationTitle}
+                onChange={(e) => setTestNotificationTitle(e.target.value)}
+                placeholder="Ex: Test de notification"
+                maxLength={50}
+              />
+              <p className="text-xs text-gray-500 mt-1">{testNotificationTitle.length}/50</p>
+            </div>
+
+            {/* Message */}
+            <div>
+              <Label>Message</Label>
+              <Textarea
+                value={testNotificationMessage}
+                onChange={(e) => setTestNotificationMessage(e.target.value)}
+                placeholder="Écrivez votre message de test ici..."
+                className="min-h-[100px]"
+                maxLength={200}
+              />
+              <p className="text-xs text-gray-500 mt-1">{testNotificationMessage.length}/200</p>
+            </div>
+
+            {/* Boutons */}
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowTestNotificationModal(false);
+                  setSelectedEmployeesForTest([]);
+                  setTestNotificationTitle('');
+                  setTestNotificationMessage('');
+                }}
+              >
+                Annuler
+              </Button>
+              <Button 
+                onClick={handleSendTestNotifications}
+                disabled={sendingTestNotification || selectedEmployeesForTest.length === 0}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {sendingTestNotification ? (
+                  <>Envoi en cours...</>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 mr-2" />
+                    Envoyer à {selectedEmployeesForTest.length} employé(s)
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
