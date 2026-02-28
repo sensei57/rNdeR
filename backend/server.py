@@ -568,12 +568,14 @@ class CategorieStock(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     nom: str
     description: Optional[str] = None
+    centre_id: Optional[str] = None  # Centre auquel appartient cette catégorie
     couleur: str = "#3B82F6"
     date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class CategorieStockCreate(BaseModel):
     nom: str
     description: Optional[str] = None
+    centre_id: Optional[str] = None
     couleur: str = "#3B82F6"
 
 class ArticleStock(BaseModel):
@@ -581,6 +583,7 @@ class ArticleStock(BaseModel):
     nom: str
     description: Optional[str] = None
     categorie_id: str
+    centre_id: Optional[str] = None  # Centre auquel appartient cet article
     lieu: Optional[str] = None
     photo_url: Optional[str] = None
     nombre_souhaite: int = 0
@@ -593,6 +596,7 @@ class ArticleStockCreate(BaseModel):
     nom: str
     description: Optional[str] = None
     categorie_id: str
+    centre_id: Optional[str] = None
     lieu: Optional[str] = None
     photo_url: Optional[str] = None
     nombre_souhaite: int = 0
@@ -603,6 +607,7 @@ class ArticleStockUpdate(BaseModel):
     nom: Optional[str] = None
     description: Optional[str] = None
     categorie_id: Optional[str] = None
+    centre_id: Optional[str] = None
     lieu: Optional[str] = None
     photo_url: Optional[str] = None
     nombre_souhaite: Optional[int] = None
