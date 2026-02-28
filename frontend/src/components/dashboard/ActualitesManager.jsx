@@ -37,8 +37,6 @@ const ActualitesManager = ({ user, CabinetPlanWithPopup }) => {
     priorite: 0
   });
 
-  const today = new Date().toISOString().split('T')[0];
-
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
@@ -68,7 +66,7 @@ const ActualitesManager = ({ user, CabinetPlanWithPopup }) => {
     } finally {
       setLoading(false);
     }
-  }, [today]);
+  }, []);
 
   useEffect(() => {
     if (user) {
