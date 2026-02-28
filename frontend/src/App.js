@@ -12798,15 +12798,15 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh }) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col lg:flex-row items-start gap-4 overflow-x-auto">
+        <div className="flex flex-col lg:flex-row items-stretch gap-4 w-full">
           {/* Plan Matin */}
           {planMatin && (
-            <div className="space-y-2 flex-shrink-0">
+            <div className="flex-1 space-y-2">
               <h3 className="text-lg font-semibold text-amber-500 flex items-center justify-center space-x-2">
                 <span>☀️</span>
                 <span>Matin</span>
               </h3>
-              <div className="relative bg-amber-50 rounded-lg p-4 overflow-hidden border border-amber-200" style={{ height: '650px', width: '450px' }}>
+              <div className="relative bg-amber-50 rounded-lg p-4 overflow-hidden border border-amber-200 min-h-[600px]">
                 {planMatin.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => renderSalle(salle, 'MATIN'))}
               </div>
             </div>
@@ -12814,7 +12814,7 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh }) => {
           
           {/* Boutons de copie flèches */}
           {isDirector && planMatin && planApresMidi && (
-            <div className="flex lg:flex-col flex-row items-center justify-center space-x-4 lg:space-x-0 lg:space-y-4 py-4 lg:py-8">
+            <div className="flex lg:flex-col flex-row items-center justify-center space-x-4 lg:space-x-0 lg:space-y-4 py-4 lg:py-8 flex-shrink-0">
               <button
                 onClick={() => copyAssignations('matinToAM')}
                 className="flex items-center justify-center w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg transition-all hover:scale-110"
@@ -12837,12 +12837,12 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh }) => {
           
           {/* Plan Après-midi */}
           {planApresMidi && (
-            <div className="space-y-2 flex-shrink-0">
+            <div className="flex-1 space-y-2">
               <h3 className="text-lg font-semibold text-indigo-600 flex items-center justify-center space-x-2">
                 <span>🌙</span>
                 <span>Après-midi</span>
               </h3>
-              <div className="relative bg-indigo-50 rounded-lg p-4 overflow-hidden border border-indigo-200" style={{ height: '650px', width: '450px' }}>
+              <div className="relative bg-indigo-50 rounded-lg p-4 overflow-hidden border border-indigo-200 min-h-[600px]">
                 {planApresMidi.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => renderSalle(salle, 'APRES_MIDI'))}
               </div>
             </div>
