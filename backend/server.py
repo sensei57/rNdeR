@@ -178,6 +178,8 @@ class UserLogin(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+    user: Optional[Any] = None  # User data
+    centres: Optional[List[Any]] = None  # Liste des centres accessibles (pour Super-Admin)
     user: User
 
 class AssignationAssistant(BaseModel):
