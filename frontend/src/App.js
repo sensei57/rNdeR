@@ -609,7 +609,6 @@ const AuthProvider = ({ children }) => {
   const [centres, setCentres] = useState([]);
   const [centreActif, setCentreActif] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 3;
 
   // Configuration axios avec retry automatique
