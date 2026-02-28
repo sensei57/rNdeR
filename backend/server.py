@@ -5662,7 +5662,7 @@ async def get_articles_stock(current_user: User = Depends(get_current_user)):
                 }
             }
         }
-    ]
+    ])
     
     articles = await db.articles_stock.aggregate(pipeline).to_list(length=None)
     for article in articles:
