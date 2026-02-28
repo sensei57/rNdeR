@@ -898,7 +898,9 @@ const LoginPage = () => {
     setLoading(true);
     
     try {
-      const success = await login(email, password, centreId || null);
+      // Si "all" est sélectionné ou rien, on passe null (pour les Directeurs)
+      const selectedCentreId = (centreId && centreId !== 'all') ? centreId : null;
+      const success = await login(email, password, selectedCentreId);
       if (success) {
         navigate('/');
       }
