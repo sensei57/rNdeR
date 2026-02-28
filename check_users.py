@@ -7,7 +7,7 @@ import requests
 import json
 
 def check_users():
-    base_url = "https://clinic-hub-pro.preview.emergentagent.com"
+    base_url = "https://multi-centre-hub.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     # Login as directeur first

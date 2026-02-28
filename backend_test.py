@@ -4,7 +4,7 @@ from datetime import datetime
 import json
 
 class MedicalStaffAPITester:
-    def __init__(self, base_url="https://clinic-hub-pro.preview.emergentagent.com"):
+    def __init__(self, base_url="https://multi-centre-hub.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tokens = {}
