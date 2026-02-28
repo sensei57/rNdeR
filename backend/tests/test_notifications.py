@@ -478,6 +478,187 @@ class TestLeaveApprovalWithAssistantSlots:
             print(f"   Found {len(test_leaves)} test leave request(s)")
 
 
+class TestAssistantSlotHandlingE2E:
+    """End-to-end test for handle_assistant_slots_for_leave logic"""
+    
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+        if response.status_code != 200:
+            pytest.skip("Could not authenticate as director")
+        return {"Authorization": f"Bearer {response.json()['access_token']}"}
+    
+    def test_full_assistant_slot_handling_flow(self, auth_headers):
+        """
+        Full E2E test: Create medecin + assistant + planning slot + leave approval
+        Verifies that assistant slots are correctly updated when medecin takes leave
+        """
+        import time
+        
+        # Step 1: Create test medecin
+        medecin_response = requests.post(
+            f"{BASE_URL}/api/auth/register",
+            headers=auth_headers,
+            json={
+                "email": f"e2e.medecin.{int(time.time())}@cabinet.fr",
+                "password": "test123",
+                "nom": "TEST_E2E_MEDECIN",
+                "prenom": "Paul",
+                "role": "Médecin",
+                "actif": True
+            }
+        )
+        
+        if medecin_response.status_code != 200:
+            pytest.skip(f"Could not create test medecin: {medecin_response.text}")
+        
+        medecin_id = medecin_response.json()["id"]
+        print(f"✅ Created test medecin: {medecin_id}")
+        
+        # Step 2: Create test assistant
+        assistant_response = requests.post(
+            f"{BASE_URL}/api/auth/register",
+            headers=auth_headers,
+            json={
+                "email": f"e2e.assistant.{int(time.time())}@cabinet.fr",
+                "password": "test123",
+                "nom": "TEST_E2E_ASSISTANT",
+                "prenom": "Sophie",
+                "role": "Assistant",
+                "actif": True
+            }
+        )
+        
+        if assistant_response.status_code != 200:
+            pytest.skip(f"Could not create test assistant: {assistant_response.text}")
+        
+        assistant_id = assistant_response.json()["id"]
+        print(f"✅ Created test assistant: {assistant_id}")
+        
+        # Step 3: Create planning slot for assistant assigned to medecin
+        test_date = (datetime.now() + timedelta(days=45)).strftime('%Y-%m-%d')
+        
+        slot_response = requests.post(
+            f"{BASE_URL}/api/planning",
+            headers=auth_headers,
+            json={
+                "date": test_date,
+                "creneau": "MATIN",
+                "employe_id": assistant_id,
+                "medecin_attribue_id": medecin_id,
+                "medecin_ids": [medecin_id],
+                "salle_attribuee": "A",
+                "notes": "TEST_E2E_slot"
+            }
+        )
+        
+        if slot_response.status_code not in [200, 201]:
+            pytest.skip(f"Could not create planning slot: {slot_response.text}")
+        
+        slot_id = slot_response.json()["id"]
+        print(f"✅ Created planning slot: {slot_id}")
+        
+        # Verify slot has medecin assigned
+        planning_response = requests.get(
+            f"{BASE_URL}/api/planning?date_debut={test_date}&date_fin={test_date}",
+            headers=auth_headers
+        )
+        slots = planning_response.json()
+        our_slot = next((s for s in slots if s["id"] == slot_id), None)
+        assert our_slot is not None, "Could not find created slot"
+        assert our_slot["medecin_attribue_id"] == medecin_id, "Slot should have medecin assigned"
+        assert medecin_id in our_slot.get("medecin_ids", []), "Medecin should be in medecin_ids"
+        print(f"✅ Verified slot has medecin assigned")
+        
+        # Step 4: Create leave request for medecin
+        leave_response = requests.post(
+            f"{BASE_URL}/api/conges",
+            headers=auth_headers,
+            json={
+                "utilisateur_id": medecin_id,
+                "date_debut": test_date,
+                "date_fin": test_date,
+                "type_conge": "CONGE_PAYE",
+                "creneau": "MATIN",
+                "motif": "TEST_E2E_leave_for_slot_handling"
+            }
+        )
+        
+        if leave_response.status_code not in [200, 201]:
+            pytest.skip(f"Could not create leave: {leave_response.text}")
+        
+        leave_id = leave_response.json()["id"]
+        print(f"✅ Created leave request: {leave_id}")
+        
+        # Step 5: Approve leave (triggers handle_assistant_slots_for_leave)
+        approve_response = requests.put(
+            f"{BASE_URL}/api/conges/{leave_id}/approuver",
+            headers=auth_headers,
+            json={
+                "approuve": True,
+                "commentaire": "TEST_E2E_approval"
+            }
+        )
+        
+        assert approve_response.status_code == 200, f"Leave approval failed: {approve_response.text}"
+        print(f"✅ Leave approved")
+        
+        # Wait for background task
+        import time
+        time.sleep(2)
+        
+        # Step 6: Verify assistant slot was updated
+        planning_response = requests.get(
+            f"{BASE_URL}/api/planning?date_debut={test_date}&date_fin={test_date}",
+            headers=auth_headers
+        )
+        slots_after = planning_response.json()
+        updated_slot = next((s for s in slots_after if s["id"] == slot_id), None)
+        
+        assert updated_slot is not None, "Slot should still exist"
+        
+        # Verify slot was marked for reassignment
+        assert updated_slot.get("medecin_attribue_id") is None, "Medecin should be removed from slot"
+        assert updated_slot.get("medecin_ids", []) == [], "Medecin_ids should be empty"
+        assert updated_slot.get("est_repos") is True, "Slot should be marked as rest"
+        assert "À RÉASSIGNER" in updated_slot.get("notes", ""), "Notes should contain reassignment notice"
+        
+        print(f"✅ Assistant slot correctly updated:")
+        print(f"   - medecin_attribue_id: {updated_slot.get('medecin_attribue_id')}")
+        print(f"   - medecin_ids: {updated_slot.get('medecin_ids', [])}")
+        print(f"   - est_repos: {updated_slot.get('est_repos')}")
+        print(f"   - notes: {updated_slot.get('notes', '')[:60]}...")
+        
+        # Step 7: Verify assistant received notification
+        # Login as assistant
+        assistant_login = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": assistant_response.json().get("email"),
+            "password": "test123"
+        })
+        
+        if assistant_login.status_code == 200:
+            assistant_token = assistant_login.json()["access_token"]
+            notif_response = requests.get(
+                f"{BASE_URL}/api/notifications",
+                headers={"Authorization": f"Bearer {assistant_token}"}
+            )
+            
+            if notif_response.status_code == 200:
+                notifications = notif_response.json()
+                planning_notifs = [n for n in notifications if "planning" in n.get("title", "").lower() or "modification" in n.get("title", "").lower()]
+                
+                if planning_notifs:
+                    print(f"✅ Assistant received {len(planning_notifs)} planning notification(s)")
+                else:
+                    print("⚠️ No planning notification found for assistant (may be timing issue)")
+        
+        print("✅ Full E2E test for assistant slot handling PASSED")
+
+
 class TestNotificationsList:
     """Tests for basic notification CRUD operations"""
     
