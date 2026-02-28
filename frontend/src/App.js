@@ -18762,6 +18762,173 @@ const AttributionManager = () => {
 };
 
 
+// Centre Favori Component
+const CentreFavoriManager = ({ user, setUser }) => {
+  const [centres, setCentres] = useState([]);
+  const [selectedCentre, setSelectedCentre] = useState(user?.centre_favori_id || '');
+  const [loading, setLoading] = useState(false);
+  const [migrating, setMigrating] = useState(false);
+  const [migrationResults, setMigrationResults] = useState(null);
+
+  useEffect(() => {
+    fetchCentres();
+  }, []);
+
+  useEffect(() => {
+    setSelectedCentre(user?.centre_favori_id || '');
+  }, [user?.centre_favori_id]);
+
+  const fetchCentres = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/centres/details`);
+      setCentres(response.data.centres || []);
+    } catch (error) {
+      // Si pas admin, récupérer les centres de l'utilisateur
+      const userCentres = user?.centre_ids || (user?.centre_id ? [user.centre_id] : []);
+      if (userCentres.length > 0) {
+        try {
+          const centresData = [];
+          for (const cId of userCentres) {
+            const res = await axios.get(`${API}/centres/${cId}`).catch(() => null);
+            if (res?.data) centresData.push(res.data);
+          }
+          setCentres(centresData);
+        } catch (e) {
+          console.error('Erreur chargement centres:', e);
+        }
+      }
+    }
+  };
+
+  const handleSetCentreFavori = async () => {
+    if (!selectedCentre) {
+      toast.error('Veuillez sélectionner un centre');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.put(`${API}/users/me/centre-favori`, {
+        centre_id: selectedCentre
+      });
+      toast.success(response.data.message);
+      setUser({ ...user, centre_favori_id: selectedCentre });
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la définition du centre favori');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMigrateData = async () => {
+    if (!user?.centre_favori_id) {
+      toast.error('Veuillez d\'abord définir un centre favori');
+      return;
+    }
+
+    setMigrating(true);
+    setMigrationResults(null);
+    try {
+      const response = await axios.post(`${API}/admin/migrate-data-to-centre`, {
+        centre_id: user.centre_favori_id
+      });
+      toast.success(response.data.message);
+      setMigrationResults(response.data);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la migration');
+    } finally {
+      setMigrating(false);
+    }
+  };
+
+  const isDirector = user?.role === 'Directeur' || user?.role === 'Super-Admin';
+  const centreFavori = centres.find(c => c.id === user?.centre_favori_id);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>⭐ Centre Favori</CardTitle>
+        <CardDescription>
+          Définissez votre centre favori pour y associer vos données
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Centre favori actuel */}
+        {user?.centre_favori_id && centreFavori ? (
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-sm text-amber-700">
+              <span className="font-semibold">Centre favori actuel :</span> {centreFavori.nom}
+            </p>
+          </div>
+        ) : (
+          <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+            <p className="text-sm text-gray-600">Aucun centre favori défini</p>
+          </div>
+        )}
+
+        {/* Sélection du centre */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Select value={selectedCentre} onValueChange={setSelectedCentre}>
+            <SelectTrigger className="flex-1">
+              <SelectValue placeholder="Sélectionnez un centre" />
+            </SelectTrigger>
+            <SelectContent>
+              {centres.map(centre => (
+                <SelectItem key={centre.id} value={centre.id}>
+                  {centre.nom}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button 
+            onClick={handleSetCentreFavori} 
+            disabled={loading || !selectedCentre}
+          >
+            {loading ? 'En cours...' : 'Définir comme favori'}
+          </Button>
+        </div>
+
+        {/* Migration des données (Directeur uniquement) */}
+        {isDirector && (
+          <div className="pt-4 border-t">
+            <h4 className="font-medium mb-2">🔄 Migration des données</h4>
+            <p className="text-sm text-gray-600 mb-3">
+              Associer toutes les données existantes (planning, congés, stocks, etc.) 
+              qui n'ont pas de centre défini vers votre centre favori.
+            </p>
+            <Button 
+              onClick={handleMigrateData}
+              disabled={migrating || !user?.centre_favori_id}
+              variant="outline"
+              className="w-full"
+            >
+              {migrating ? '⏳ Migration en cours...' : '🚀 Lancer la migration'}
+            </Button>
+
+            {/* Résultats de la migration */}
+            {migrationResults && (
+              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="font-medium text-green-800 mb-2">{migrationResults.message}</p>
+                <div className="text-sm space-y-1">
+                  {Object.entries(migrationResults.details || {}).map(([key, value]) => (
+                    <div key={key} className="flex justify-between">
+                      <span className="text-gray-600">{value.label}</span>
+                      <Badge variant={value.migrated_count > 0 ? "default" : "secondary"}>
+                        {value.migrated_count} élément(s)
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+
 // Mon Profil Component
 const MonProfilManager = () => {
   const { user, setUser } = useAuth();
