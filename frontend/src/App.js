@@ -20,12 +20,15 @@ import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 import usePWA from './hooks/usePWA';
 
-// Configuration automatique de l'URL backend pour Render.com
-const BACKEND_URL = window.location.hostname.includes('test') 
-  ? 'https://ope-francis-test.onrender.com' 
-  : 'https://ope-francis.onrender.com';
+// Configuration automatique de l'URL backend
+// Utilise d'abord la variable d'environnement, sinon fallback pour Render.com
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || (
+  window.location.hostname.includes('test') 
+    ? 'https://ope-francis-test.onrender.com' 
+    : 'https://ope-francis.onrender.com'
+);
 
-const isTestMode = window.location.hostname.includes('test');
+const isTestMode = window.location.hostname.includes('test') || window.location.hostname.includes('preview');
 
 const API = `${BACKEND_URL}/api`;
 
