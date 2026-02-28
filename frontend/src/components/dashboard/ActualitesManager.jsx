@@ -348,6 +348,7 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
       {CabinetPlanWithPopup && (
         <CabinetPlanWithPopup 
           user={user}
+          centreActif={centreActif}
         />
       )}
 
