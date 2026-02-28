@@ -606,6 +606,8 @@ const useAuth = () => {
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
+  const [centres, setCentres] = useState([]);  // Liste des centres accessibles
+  const [centreActif, setCentreActif] = useState(null);  // Centre actuellement sélectionné
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -621,6 +623,28 @@ const AuthProvider = ({ children }) => {
     try {
       const response = await axios.get(`${API}/users/me`);
       setUser(response.data);
+      
+      // Charger les centres si Super-Admin
+      if (response.data.role === 'Super-Admin' || response.data.role === 'Directeur') {
+        const centresResponse = await axios.get(`${API}/centres`);
+        setCentres(centresResponse.data.centres || []);
+        
+        // Définir le centre actif
+        if (response.data.centre_actif_id) {
+          const actif = centresResponse.data.centres?.find(c => c.id === response.data.centre_actif_id);
+          setCentreActif(actif || null);
+        } else if (centresResponse.data.centres?.length > 0) {
+          setCentreActif(centresResponse.data.centres[0]);
+        }
+      } else if (response.data.centre_id) {
+        // Pour les autres utilisateurs, charger leur centre
+        const centresResponse = await axios.get(`${API}/centres`);
+        const userCentre = centresResponse.data.centres?.find(c => c.id === response.data.centre_id);
+        if (userCentre) {
+          setCentres([userCentre]);
+          setCentreActif(userCentre);
+        }
+      }
     } catch (error) {
       console.error('Erreur lors de la récupération de l\'utilisateur:', error);
       logout();
@@ -629,36 +653,70 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (email, password) => {
+  const login = async (email, password, centreId = null) => {
     try {
-      const response = await axios.post(`${API}/auth/login`, { email, password });
-      const { access_token, user: userData } = response.data;
+      const response = await axios.post(`${API}/auth/login`, { email, password, centre_id: centreId });
+      const { access_token, user: userData, centres: userCentres } = response.data;
       
       setToken(access_token);
       setUser(userData);
+      setCentres(userCentres || []);
+      
+      // Définir le centre actif
+      if (userCentres && userCentres.length > 0) {
+        const actif = centreId 
+          ? userCentres.find(c => c.id === centreId) 
+          : userCentres[0];
+        setCentreActif(actif || userCentres[0]);
+      }
+      
       localStorage.setItem('token', access_token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
       
       toast.success('Connexion réussie !');
       
-      // React Router will handle the redirect automatically via the protected routes
       return true;
     } catch (error) {
-      toast.error('Email ou mot de passe incorrect');
-      return false;
+      const message = error.response?.data?.detail || 'Email ou mot de passe incorrect';
+      toast.error(message);
+      throw error;
+    }
+  };
+
+  const switchCentre = async (centreId) => {
+    try {
+      const response = await axios.post(`${API}/centres/${centreId}/switch`);
+      const newCentre = centres.find(c => c.id === centreId);
+      setCentreActif(newCentre);
+      
+      // Mettre à jour l'utilisateur
+      setUser(prev => ({ ...prev, centre_actif_id: centreId }));
+      
+      toast.success(response.data.message);
+      
+      // Recharger la page pour mettre à jour toutes les données
+      window.location.reload();
+    } catch (error) {
+      toast.error('Erreur lors du changement de centre');
     }
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
+    setCentres([]);
+    setCentreActif(null);
     localStorage.removeItem('token');
     delete axios.defaults.headers.common['Authorization'];
     toast.success('Déconnexion réussie');
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, token, setToken, login, logout, loading }}>
+    <AuthContext.Provider value={{ 
+      user, setUser, token, setToken, 
+      centres, setCentres, centreActif, setCentreActif,
+      login, logout, switchCentre, loading 
+    }}>
       {children}
     </AuthContext.Provider>
   );
