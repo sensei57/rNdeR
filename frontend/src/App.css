@@ -114,6 +114,118 @@ body {
 
 .App {
   min-height: 100vh;
+  position: relative;
+}
+
+/* ============================================
+   ARRIÈRE-PLAN OPHTALMOLOGIQUE MODERNE
+   ============================================ */
+
+.app-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: linear-gradient(135deg, #E6F4F8 0%, #F0F9FC 50%, #E8FAF4 100%);
+}
+
+.app-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3C!-- Motif œil stylisé --%3E%3Cellipse cx='50' cy='50' rx='35' ry='20' fill='none' stroke='%230091B9' stroke-width='0.5' opacity='0.1'/%3E%3Ccircle cx='50' cy='50' r='12' fill='none' stroke='%230091B9' stroke-width='0.5' opacity='0.1'/%3E%3Ccircle cx='50' cy='50' r='5' fill='%230091B9' opacity='0.05'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  opacity: 0.6;
+  animation: float-bg 60s ease-in-out infinite;
+}
+
+.app-background::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: 
+    radial-gradient(ellipse at 20% 30%, rgba(0, 145, 185, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(25, 205, 145, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 20%, rgba(0, 145, 185, 0.05) 0%, transparent 40%);
+  animation: float-gradient 30s ease-in-out infinite;
+}
+
+/* Éléments flottants décoratifs */
+.bg-decoration {
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.bg-decoration-1 {
+  top: 10%;
+  right: 5%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(0, 145, 185, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
+.bg-decoration-2 {
+  bottom: 15%;
+  left: 3%;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(25, 205, 145, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse-slow 10s ease-in-out infinite reverse;
+}
+
+.bg-decoration-3 {
+  top: 60%;
+  right: 15%;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(255, 145, 75, 0.06) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse-slow 6s ease-in-out infinite;
+}
+
+/* Logo du centre en filigrane */
+.centre-watermark {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 120px;
+  height: 120px;
+  opacity: 0.08;
+  z-index: -1;
+  pointer-events: none;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+@keyframes float-bg {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(10px, -10px) rotate(1deg); }
+  50% { transform: translate(-5px, 5px) rotate(-1deg); }
+  75% { transform: translate(-10px, -5px) rotate(0.5deg); }
+}
+
+@keyframes float-gradient {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-2%, -2%) scale(1.02); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
 }
 
 /* ============================================
