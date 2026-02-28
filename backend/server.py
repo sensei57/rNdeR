@@ -929,6 +929,142 @@ async def trigger_daily_planning(
     background_tasks.add_task(send_daily_planning_notifications)
     return {"message": "Envoi du planning quotidien programmé"}
 
+
+# ===== NOTIFICATIONS DE TEST PERSONNALISÉES =====
+
+class NotificationTestRequest(BaseModel):
+    user_ids: List[str]  # Liste des IDs des employés à notifier
+    title: str = "🔔 Notification de test"
+    message: str = "Ceci est une notification de test envoyée par l'administration."
+
+@api_router.post("/notifications/test")
+async def send_test_notifications(
+    request: NotificationTestRequest,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    """Envoie des notifications de test personnalisées à des employés spécifiques (Directeur uniquement)"""
+    if not request.user_ids:
+        raise HTTPException(status_code=400, detail="Au moins un employé doit être sélectionné")
+    
+    # Vérifier que tous les utilisateurs existent
+    users = await db.users.find({"id": {"$in": request.user_ids}}).to_list(100)
+    found_ids = [u["id"] for u in users]
+    
+    if len(found_ids) != len(request.user_ids):
+        missing = set(request.user_ids) - set(found_ids)
+        raise HTTPException(status_code=404, detail=f"Utilisateurs non trouvés: {missing}")
+    
+    # Envoyer les notifications en arrière-plan
+    success_count = 0
+    for user_id in request.user_ids:
+        background_tasks.add_task(
+            send_notification_to_user,
+            user_id,
+            request.title,
+            request.message,
+            {"type": "test_notification", "sent_by": current_user.id}
+        )
+        success_count += 1
+    
+    return {
+        "message": f"Notifications de test envoyées à {success_count} employé(s)",
+        "recipients": [{"id": u["id"], "nom": f"{u['prenom']} {u['nom']}"} for u in users]
+    }
+
+
+@api_router.get("/notifications/employees-for-test")
+async def get_employees_for_notification_test(
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    """Récupère la liste des employés avec leur statut de notification push pour l'interface d'envoi de test"""
+    users = await db.users.find(
+        {"actif": True},
+        {"_id": 0, "id": 1, "prenom": 1, "nom": 1, "role": 1, "email": 1, "fcm_token": 1, "fcm_devices": 1}
+    ).to_list(1000)
+    
+    employees = []
+    for user in users:
+        has_push = bool(user.get("fcm_token")) or bool(user.get("fcm_devices"))
+        devices_count = len(user.get("fcm_devices", [])) if user.get("fcm_devices") else (1 if user.get("fcm_token") else 0)
+        
+        employees.append({
+            "id": user["id"],
+            "prenom": user["prenom"],
+            "nom": user["nom"],
+            "role": user["role"],
+            "email": user["email"],
+            "has_push_enabled": has_push,
+            "devices_count": devices_count
+        })
+    
+    # Trier par rôle puis par nom
+    role_order = {"Directeur": 0, "Médecin": 1, "Assistant": 2, "Secrétaire": 3}
+    employees.sort(key=lambda x: (role_order.get(x["role"], 99), x["nom"]))
+    
+    return {"employees": employees}
+
+
+# ===== RÉPONSE RAPIDE AUX MESSAGES DEPUIS NOTIFICATION =====
+
+class QuickReplyRequest(BaseModel):
+    message_id: str  # ID du message original auquel on répond
+    reply_content: str  # Contenu de la réponse
+
+@api_router.post("/notifications/quick-reply")
+async def quick_reply_to_message(
+    request: QuickReplyRequest,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user)
+):
+    """Permet de répondre rapidement à un message depuis une notification push"""
+    if not request.reply_content or not request.reply_content.strip():
+        raise HTTPException(status_code=400, detail="Le contenu de la réponse ne peut pas être vide")
+    
+    # Récupérer le message original pour connaître l'expéditeur
+    original_message = await db.messages.find_one({"id": request.message_id})
+    if not original_message:
+        raise HTTPException(status_code=404, detail="Message original non trouvé")
+    
+    # L'expéditeur du message original devient le destinataire de la réponse
+    destinataire_id = original_message["expediteur_id"]
+    
+    # Créer le nouveau message
+    nouveau_message = Message(
+        expediteur_id=current_user.id,
+        destinataire_id=destinataire_id,
+        groupe_id=original_message.get("groupe_id"),  # Conserver le groupe si c'est un message de groupe
+        contenu=request.reply_content.strip(),
+        type_message=original_message.get("type_message", "PRIVE")
+    )
+    
+    await db.messages.insert_one(nouveau_message.dict())
+    
+    # Envoyer une notification au destinataire
+    expediteur_name = f"{current_user.prenom} {current_user.nom}"
+    if current_user.role == ROLES["MEDECIN"]:
+        expediteur_name = f"Dr. {expediteur_name}"
+    
+    background_tasks.add_task(
+        send_notification_to_user,
+        destinataire_id,
+        f"💬 {expediteur_name}",
+        request.reply_content.strip()[:100] + ("..." if len(request.reply_content.strip()) > 100 else ""),
+        {
+            "type": "chat_message",
+            "message_id": nouveau_message.id,
+            "sender_id": current_user.id,
+            "sender_name": expediteur_name,
+            "requires_reply": "true"
+        }
+    )
+    
+    return {
+        "message": "Réponse envoyée avec succès",
+        "message_id": nouveau_message.id,
+        "destinataire_id": destinataire_id
+    }
+
 @api_router.post("/notifications/subscribe")
 async def subscribe_to_notifications(
     subscription_data: dict,
