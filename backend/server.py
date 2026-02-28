@@ -5271,32 +5271,14 @@ async def get_plan_cabinet(
     
     salles = await db.salles.find(salles_query).to_list(1000)
     print(f"[DEBUG cabinet/plan] Salles trouvées pour centre {centre_actif}: {len(salles)}")
-                {"$or": [
-                    {"centre_id": centre_actif},
-                    {"centre_id": None},
-                    {"centre_id": {"$exists": False}}
-                ]}
-            ]
-        }
     
-    salles = await db.salles.find(salles_query).to_list(1000)
-    print(f"[DEBUG cabinet/plan] Salles trouvées: {len(salles)}")
-    
-    # Récupérer le planning pour cette date/créneau
-    # Pour les admins ou si pas de centre, récupérer tout le planning de la date
-    if is_admin or not centre_actif:
-        planning_query = {"date": date, "creneau": creneau}
-    else:
-        planning_query = {
-            "$and": [
-                {"date": date, "creneau": creneau},
-                {"$or": [
-                    {"centre_id": centre_actif},
-                    {"centre_id": None},
-                    {"centre_id": {"$exists": False}}
-                ]}
-            ]
-        }
+    # Récupérer le planning pour cette date/créneau - filtré par centre
+    planning_query = {
+        "$and": [
+            {"date": date, "creneau": creneau},
+            {"centre_id": centre_actif}
+        ]
+    }
     planning = await db.planning.find(planning_query).to_list(1000)
     
     # Créer un mapping salle -> employé
