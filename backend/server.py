@@ -2534,8 +2534,15 @@ async def migrate_to_multicentre(current_user: User = Depends(get_current_user))
 
 # User management routes
 @api_router.get("/users", response_model=List[User])
-async def get_users(current_user: User = Depends(get_current_user)):
-    """Tous les utilisateurs authentifiés peuvent voir la liste du personnel de leur(s) centre(s)"""
+async def get_users(
+    current_user: User = Depends(get_current_user),
+    all_centres: bool = False  # Paramètre pour permettre au Directeur de voir tous les centres
+):
+    """Tous les utilisateurs authentifiés peuvent voir la liste du personnel de leur(s) centre(s)
+    
+    Paramètres:
+    - all_centres: Si True et utilisateur est Directeur/Super-Admin, retourne TOUS les employés de tous les centres
+    """
     is_super_admin = current_user.role in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]
     
     # Construire la requête selon le rôle
@@ -2553,8 +2560,11 @@ async def get_users(current_user: User = Depends(get_current_user)):
                 {"centre_id": {"$in": user_centres}},
                 {"centre_ids": {"$elemMatch": {"$in": user_centres}}}
             ]
+    elif is_super_admin and all_centres:
+        # Directeur demande TOUS les employés de tous les centres - pas de filtre par centre
+        pass  # query reste {"actif": True} uniquement
     else:
-        # Super-Admin avec centre actif sélectionné
+        # Super-Admin avec centre actif sélectionné (comportement par défaut)
         centre_actif = getattr(current_user, 'centre_actif_id', None)
         if centre_actif:
             query["$or"] = [
