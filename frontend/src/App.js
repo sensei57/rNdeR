@@ -296,7 +296,11 @@ const CabinetPlanWithPopup = ({ user }) => {
           </span>
         </div>
         
-        {(planMatin?.salles?.length > 0 || planApresMidi?.salles?.length > 0) ? (
+        {loading ? (
+          <div className="flex justify-center p-8">
+            <div className="animate-spin h-8 w-8 border-4 border-[#0091B9] border-t-transparent rounded-full"></div>
+          </div>
+        ) : (planMatin?.salles?.length > 0 || planApresMidi?.salles?.length > 0) ? (
           <>
             <div className="cabinet-plan-grid-wrapper">
               {renderPlanContent(planMatin, 'Matin', '☀️')}
