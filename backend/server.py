@@ -3259,12 +3259,34 @@ async def get_notes_planning(
     date_fin: Optional[str] = None,
     current_user: User = Depends(get_current_user)
 ):
-    """Récupère les notes journalières du planning"""
+    """Récupère les notes journalières du planning du centre actif"""
+    # Déterminer le centre actif de l'utilisateur
+    centre_actif = getattr(current_user, 'centre_actif_id', None)
+    if not centre_actif:
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        centre_actif = user_centres[0] if user_centres else None
+    
     query = {}
     if date_debut and date_fin:
         query["date"] = {"$gte": date_debut, "$lte": date_fin}
     elif date_debut:
         query["date"] = date_debut
+    
+    # Filtrer par centre
+    if centre_actif:
+        centre_filter = {
+            "$or": [
+                {"centre_id": centre_actif},
+                {"centre_id": None},
+                {"centre_id": {"$exists": False}}
+            ]
+        }
+        if query:
+            query = {"$and": [query, centre_filter]}
+        else:
+            query = centre_filter
     
     notes = await db.notes_planning.find(query).to_list(100)
     # Supprimer _id pour JSON serialization
@@ -3280,7 +3302,23 @@ async def save_note_planning(
     current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
 ):
     """Sauvegarde ou met à jour la note pour une date donnée"""
-    existing = await db.notes_planning.find_one({"date": date})
+    # Déterminer le centre_id
+    centre_actif = getattr(current_user, 'centre_actif_id', None)
+    if not centre_actif:
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        centre_actif = user_centres[0] if user_centres else None
+    
+    # Chercher une note existante pour cette date et ce centre
+    existing_query = {"date": date}
+    if centre_actif:
+        existing_query["$or"] = [
+            {"centre_id": centre_actif},
+            {"centre_id": None},
+            {"centre_id": {"$exists": False}}
+        ]
+    existing = await db.notes_planning.find_one(existing_query)
     
     if existing:
         # Mise à jour
