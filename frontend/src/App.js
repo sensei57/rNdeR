@@ -3776,30 +3776,17 @@ const PlanningManager = () => {
     try {
       toast.info('Capture en cours...');
       
-      // Cloner le tableau pour la capture
-      const clone = tableElement.cloneNode(true);
-      clone.style.position = 'absolute';
-      clone.style.left = '-9999px';
-      clone.style.top = '0';
-      clone.style.width = 'auto';
-      clone.style.minWidth = 'max-content';
-      clone.style.background = 'white';
-      document.body.appendChild(clone);
-      
-      // Attendre que le clone soit rendu
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const canvas = await html2canvas(clone, {
+      // Capturer directement l'élément sans le cloner
+      const canvas = await html2canvas(tableElement, {
         scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff',
-        width: clone.scrollWidth,
-        height: clone.scrollHeight
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        windowWidth: tableElement.scrollWidth,
+        windowHeight: tableElement.scrollHeight
       });
-      
-      // Supprimer le clone
-      document.body.removeChild(clone);
       
       // Vérifier que le canvas n'est pas vide
       if (canvas.width === 0 || canvas.height === 0) {
@@ -3807,11 +3794,22 @@ const PlanningManager = () => {
         return;
       }
       
-      const link = document.createElement('a');
-      link.download = `planning_${selectedWeek}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-      toast.success('Image téléchargée !');
+      // Convertir en blob puis télécharger
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          toast.error('Erreur: impossible de créer l\'image');
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = `planning_${selectedWeek}.png`;
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        toast.success('Image téléchargée !');
+      }, 'image/png');
     } catch (error) {
       console.error('Erreur capture:', error);
       toast.error('Erreur lors de la capture: ' + (error.message || 'Erreur inconnue'));
