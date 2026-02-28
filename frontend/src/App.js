@@ -17256,6 +17256,734 @@ const AdminManager = () => {
     </div>
   );
 };
+
+// ===== GESTIONNAIRE MULTI-CENTRES =====
+const CentresManager = () => {
+  const { user, centres: authCentres } = useAuth();
+  const [centres, setCentres] = useState([]);
+  const [selectedCentre, setSelectedCentre] = useState(null);
+  const [employees, setEmployees] = useState([]);
+  const [managers, setManagers] = useState([]);
+  const [inscriptions, setInscriptions] = useState([]);
+  const [rubriquesDisponibles, setRubriquesDisponibles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('centres');
+  
+  // Modals
+  const [showCentreModal, setShowCentreModal] = useState(false);
+  const [showManagerModal, setShowManagerModal] = useState(false);
+  const [showEmployeeConfigModal, setShowEmployeeConfigModal] = useState(false);
+  const [editingCentre, setEditingCentre] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  
+  // Forms
+  const [centreForm, setCentreForm] = useState({ nom: '', adresse: '', telephone: '', email: '' });
+  const [managerForm, setManagerForm] = useState({ 
+    email: '', nom: '', prenom: '', telephone: '', password: '',
+    permissions: {
+      rubriques_visibles: ['dashboard', 'planning', 'conges', 'personnel', 'chat', 'cabinet'],
+      peut_modifier_planning: true,
+      peut_approuver_conges: true,
+      peut_gerer_personnel: false,
+      peut_voir_statistiques: true,
+      peut_envoyer_notifications: true,
+      peut_gerer_salles: false,
+      peut_gerer_stocks: false
+    }
+  });
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [centresRes, rubriquesRes, inscriptionsRes] = await Promise.all([
+        axios.get(`${API}/admin/centres/details`),
+        axios.get(`${API}/admin/rubriques`),
+        axios.get(`${API}/inscriptions?statut=EN_ATTENTE`)
+      ]);
+      setCentres(centresRes.data.centres || []);
+      setRubriquesDisponibles(rubriquesRes.data.rubriques || []);
+      setInscriptions(inscriptionsRes.data.inscriptions || []);
+    } catch (error) {
+      console.error('Erreur chargement données:', error);
+      toast.error('Erreur lors du chargement');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCentreDetails = async (centreId) => {
+    try {
+      const [employeesRes, managersRes] = await Promise.all([
+        axios.get(`${API}/admin/centres/${centreId}/employees`),
+        axios.get(`${API}/admin/managers/${centreId}`)
+      ]);
+      setEmployees(employeesRes.data.employees || []);
+      setManagers(managersRes.data.managers || []);
+    } catch (error) {
+      toast.error('Erreur lors du chargement du centre');
+    }
+  };
+
+  const handleSelectCentre = (centre) => {
+    setSelectedCentre(centre);
+    fetchCentreDetails(centre.id);
+  };
+
+  const handleCreateCentre = async () => {
+    try {
+      const response = await axios.post(`${API}/centres`, centreForm);
+      toast.success('Centre créé avec succès');
+      setShowCentreModal(false);
+      setCentreForm({ nom: '', adresse: '', telephone: '', email: '' });
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la création');
+    }
+  };
+
+  const handleUpdateCentre = async () => {
+    try {
+      await axios.put(`${API}/centres/${editingCentre.id}`, centreForm);
+      toast.success('Centre mis à jour');
+      setShowCentreModal(false);
+      setEditingCentre(null);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la mise à jour');
+    }
+  };
+
+  const handleCreateManager = async () => {
+    if (!selectedCentre) {
+      toast.error('Sélectionnez d\'abord un centre');
+      return;
+    }
+    try {
+      await axios.post(`${API}/admin/managers`, {
+        ...managerForm,
+        centre_id: selectedCentre.id
+      });
+      toast.success('Manager créé avec succès');
+      setShowManagerModal(false);
+      setManagerForm({ 
+        email: '', nom: '', prenom: '', telephone: '', password: '',
+        permissions: managerForm.permissions 
+      });
+      fetchCentreDetails(selectedCentre.id);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la création');
+    }
+  };
+
+  const handleUpdateManagerPermissions = async (managerId, permissions) => {
+    try {
+      await axios.put(`${API}/admin/managers/${managerId}/permissions`, permissions);
+      toast.success('Permissions mises à jour');
+      fetchCentreDetails(selectedCentre.id);
+    } catch (error) {
+      toast.error('Erreur lors de la mise à jour');
+    }
+  };
+
+  const handleUpdateCentreConfig = async (centreId, config) => {
+    try {
+      await axios.put(`${API}/admin/centres/${centreId}/config`, config);
+      toast.success('Configuration mise à jour');
+      fetchData();
+    } catch (error) {
+      toast.error('Erreur lors de la mise à jour');
+    }
+  };
+
+  const handleApproveInscription = async (inscriptionId) => {
+    const password = prompt('Définissez un mot de passe pour le nouvel employé:');
+    if (!password) return;
+    
+    try {
+      await axios.put(`${API}/inscriptions/${inscriptionId}/approve?password=${encodeURIComponent(password)}`);
+      toast.success('Inscription approuvée');
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de l\'approbation');
+    }
+  };
+
+  const handleRejectInscription = async (inscriptionId) => {
+    const commentaire = prompt('Raison du refus (optionnel):');
+    try {
+      await axios.put(`${API}/inscriptions/${inscriptionId}/reject?commentaire=${encodeURIComponent(commentaire || '')}`);
+      toast.success('Inscription refusée');
+      fetchData();
+    } catch (error) {
+      toast.error('Erreur lors du refus');
+    }
+  };
+
+  const getRoleColor = (role) => {
+    switch (role) {
+      case 'Manager': return 'bg-orange-100 text-orange-800';
+      case 'Médecin': return 'bg-blue-100 text-blue-800';
+      case 'Assistant': return 'bg-green-100 text-green-800';
+      case 'Secrétaire': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0091B9]"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6" data-testid="centres-manager">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Gestion Multi-Centres</h2>
+          <p className="text-gray-500">Gérez vos centres, managers et employés</p>
+        </div>
+        {inscriptions.length > 0 && (
+          <Badge className="bg-orange-500 text-white">
+            {inscriptions.length} inscription(s) en attente
+          </Badge>
+        )}
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="centres" className="flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
+            Centres
+          </TabsTrigger>
+          <TabsTrigger value="managers" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Managers
+          </TabsTrigger>
+          <TabsTrigger value="employees" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Employés
+          </TabsTrigger>
+          <TabsTrigger value="inscriptions" className="flex items-center gap-2">
+            <UserPlus className="h-4 w-4" />
+            Inscriptions
+            {inscriptions.length > 0 && (
+              <span className="ml-1 bg-orange-500 text-white rounded-full px-2 py-0.5 text-xs">
+                {inscriptions.length}
+              </span>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Onglet Centres */}
+        <TabsContent value="centres" className="space-y-4">
+          <div className="flex justify-end">
+            <Button onClick={() => { setEditingCentre(null); setCentreForm({ nom: '', adresse: '', telephone: '', email: '' }); setShowCentreModal(true); }}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nouveau Centre
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {centres.map((centre) => (
+              <Card 
+                key={centre.id} 
+                className={`cursor-pointer transition-all hover:shadow-lg ${selectedCentre?.id === centre.id ? 'ring-2 ring-[#0091B9]' : ''}`}
+                onClick={() => handleSelectCentre(centre)}
+              >
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">{centre.nom}</CardTitle>
+                    <Badge variant={centre.actif ? 'default' : 'secondary'}>
+                      {centre.actif ? 'Actif' : 'Inactif'}
+                    </Badge>
+                  </div>
+                  {centre.adresse && (
+                    <CardDescription className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {centre.adresse}
+                    </CardDescription>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-4 gap-2 text-center text-xs">
+                    <div className="bg-blue-50 p-2 rounded">
+                      <div className="font-bold text-blue-600">{centre.stats?.medecins || 0}</div>
+                      <div className="text-gray-500">Médecins</div>
+                    </div>
+                    <div className="bg-green-50 p-2 rounded">
+                      <div className="font-bold text-green-600">{centre.stats?.assistants || 0}</div>
+                      <div className="text-gray-500">Assistants</div>
+                    </div>
+                    <div className="bg-purple-50 p-2 rounded">
+                      <div className="font-bold text-purple-600">{centre.stats?.secretaires || 0}</div>
+                      <div className="text-gray-500">Secrétaires</div>
+                    </div>
+                    <div className="bg-orange-50 p-2 rounded">
+                      <div className="font-bold text-orange-600">{centre.stats?.managers || 0}</div>
+                      <div className="text-gray-500">Managers</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={(e) => { e.stopPropagation(); setEditingCentre(centre); setCentreForm(centre); setShowCentreModal(true); }}
+                    >
+                      <Edit className="h-3 w-3 mr-1" />
+                      Modifier
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Configuration des rubriques du centre sélectionné */}
+          {selectedCentre && (
+            <Card className="mt-4">
+              <CardHeader>
+                <CardTitle className="text-lg">Configuration de {selectedCentre.nom}</CardTitle>
+                <CardDescription>Sélectionnez les rubriques visibles pour ce centre</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {rubriquesDisponibles.map((rubrique) => {
+                    const isActive = selectedCentre.config?.rubriques_actives?.includes(rubrique.id) ?? true;
+                    return (
+                      <label 
+                        key={rubrique.id}
+                        className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all ${
+                          isActive ? 'bg-[#E6F4F8] border-[#0091B9]' : 'bg-gray-50 border-gray-200'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isActive}
+                          onChange={(e) => {
+                            const newRubriques = e.target.checked
+                              ? [...(selectedCentre.config?.rubriques_actives || []), rubrique.id]
+                              : (selectedCentre.config?.rubriques_actives || []).filter(r => r !== rubrique.id);
+                            handleUpdateCentreConfig(selectedCentre.id, { rubriques_actives: newRubriques });
+                            setSelectedCentre({
+                              ...selectedCentre,
+                              config: { ...selectedCentre.config, rubriques_actives: newRubriques }
+                            });
+                          }}
+                          className="w-4 h-4 text-[#0091B9]"
+                        />
+                        <div>
+                          <div className="font-medium text-sm">{rubrique.nom}</div>
+                          <div className="text-xs text-gray-500">{rubrique.description}</div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* Onglet Managers */}
+        <TabsContent value="managers" className="space-y-4">
+          {!selectedCentre ? (
+            <Card className="p-8 text-center">
+              <Building2 className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+              <p className="text-gray-500">Sélectionnez un centre dans l'onglet "Centres" pour gérer ses managers</p>
+            </Card>
+          ) : (
+            <>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Managers de {selectedCentre.nom}</h3>
+                <Button onClick={() => setShowManagerModal(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nouveau Manager
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                {managers.length === 0 ? (
+                  <Card className="p-8 text-center">
+                    <Users className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+                    <p className="text-gray-500">Aucun manager pour ce centre</p>
+                  </Card>
+                ) : managers.map((manager) => (
+                  <Card key={manager.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-12 w-12">
+                            <AvatarFallback className="bg-orange-500 text-white">
+                              {manager.prenom?.[0]}{manager.nom?.[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-semibold">{manager.prenom} {manager.nom}</div>
+                            <div className="text-sm text-gray-500">{manager.email}</div>
+                          </div>
+                        </div>
+                        <Badge className="bg-orange-100 text-orange-800">Manager</Badge>
+                      </div>
+                      
+                      <div className="mt-4 pt-4 border-t">
+                        <h4 className="text-sm font-semibold mb-3">Permissions</h4>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                          {[
+                            { key: 'peut_modifier_planning', label: 'Modifier planning' },
+                            { key: 'peut_approuver_conges', label: 'Approuver congés' },
+                            { key: 'peut_gerer_personnel', label: 'Gérer personnel' },
+                            { key: 'peut_voir_statistiques', label: 'Voir statistiques' },
+                            { key: 'peut_envoyer_notifications', label: 'Envoyer notifications' },
+                            { key: 'peut_gerer_salles', label: 'Gérer salles' },
+                            { key: 'peut_gerer_stocks', label: 'Gérer stocks' }
+                          ].map(({ key, label }) => (
+                            <label key={key} className="flex items-center gap-2 text-sm">
+                              <input
+                                type="checkbox"
+                                checked={manager.manager_permissions?.[key] ?? false}
+                                onChange={(e) => {
+                                  handleUpdateManagerPermissions(manager.id, {
+                                    ...manager.manager_permissions,
+                                    [key]: e.target.checked
+                                  });
+                                }}
+                                className="w-4 h-4 text-[#0091B9]"
+                              />
+                              {label}
+                            </label>
+                          ))}
+                        </div>
+                        
+                        <div className="mt-4">
+                          <h4 className="text-sm font-semibold mb-2">Rubriques visibles</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {rubriquesDisponibles.map((rubrique) => {
+                              const isVisible = manager.manager_permissions?.rubriques_visibles?.includes(rubrique.id) ?? true;
+                              return (
+                                <label 
+                                  key={rubrique.id}
+                                  className={`px-3 py-1 rounded-full text-xs cursor-pointer transition-all ${
+                                    isVisible ? 'bg-[#0091B9] text-white' : 'bg-gray-200 text-gray-600'
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isVisible}
+                                    onChange={(e) => {
+                                      const newRubriques = e.target.checked
+                                        ? [...(manager.manager_permissions?.rubriques_visibles || []), rubrique.id]
+                                        : (manager.manager_permissions?.rubriques_visibles || []).filter(r => r !== rubrique.id);
+                                      handleUpdateManagerPermissions(manager.id, {
+                                        ...manager.manager_permissions,
+                                        rubriques_visibles: newRubriques
+                                      });
+                                    }}
+                                    className="sr-only"
+                                  />
+                                  {rubrique.nom}
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </>
+          )}
+        </TabsContent>
+
+        {/* Onglet Employés */}
+        <TabsContent value="employees" className="space-y-4">
+          {!selectedCentre ? (
+            <Card className="p-8 text-center">
+              <Building2 className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+              <p className="text-gray-500">Sélectionnez un centre dans l'onglet "Centres" pour gérer ses employés</p>
+            </Card>
+          ) : (
+            <>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Employés de {selectedCentre.nom}</h3>
+                <Badge>{employees.length} employé(s)</Badge>
+              </div>
+              
+              <div className="grid gap-3">
+                {employees.filter(e => e.role !== 'Manager' && e.role !== 'Super-Admin' && e.role !== 'Directeur').map((employee) => (
+                  <Card key={employee.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarFallback className={getRoleColor(employee.role)}>
+                              {employee.prenom?.[0]}{employee.nom?.[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-semibold">{employee.prenom} {employee.nom}</div>
+                            <div className="text-sm text-gray-500">{employee.email}</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={getRoleColor(employee.role)}>{employee.role}</Badge>
+                          <Select
+                            defaultValue={employee.centre_id}
+                            onValueChange={async (newCentreId) => {
+                              try {
+                                await axios.put(`${API}/admin/employees/${employee.id}/centre?new_centre_id=${newCentreId}`);
+                                toast.success('Employé déplacé');
+                                fetchCentreDetails(selectedCentre.id);
+                              } catch (error) {
+                                toast.error('Erreur lors du déplacement');
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="w-[150px] h-8 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {centres.map((c) => (
+                                <SelectItem key={c.id} value={c.id}>{c.nom}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-3 pt-3 border-t flex items-center gap-4 text-sm">
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={employee.visibility_config?.peut_voir_tous_employes ?? true}
+                            onChange={async (e) => {
+                              try {
+                                await axios.put(`${API}/admin/employees/${employee.id}/visibility`, {
+                                  peut_voir_tous_employes: e.target.checked,
+                                  peut_voir_planning_complet: employee.visibility_config?.peut_voir_planning_complet ?? false
+                                });
+                                fetchCentreDetails(selectedCentre.id);
+                              } catch (error) {
+                                toast.error('Erreur');
+                              }
+                            }}
+                            className="w-4 h-4"
+                          />
+                          Peut voir tous les employés
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={employee.visibility_config?.peut_voir_planning_complet ?? false}
+                            onChange={async (e) => {
+                              try {
+                                await axios.put(`${API}/admin/employees/${employee.id}/visibility`, {
+                                  peut_voir_tous_employes: employee.visibility_config?.peut_voir_tous_employes ?? true,
+                                  peut_voir_planning_complet: e.target.checked
+                                });
+                                fetchCentreDetails(selectedCentre.id);
+                              } catch (error) {
+                                toast.error('Erreur');
+                              }
+                            }}
+                            className="w-4 h-4"
+                          />
+                          Peut voir le planning complet
+                        </label>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </>
+          )}
+        </TabsContent>
+
+        {/* Onglet Inscriptions */}
+        <TabsContent value="inscriptions" className="space-y-4">
+          <h3 className="text-lg font-semibold">Demandes d'inscription en attente</h3>
+          
+          {inscriptions.length === 0 ? (
+            <Card className="p-8 text-center">
+              <Check className="h-12 w-12 mx-auto text-green-500 mb-4" />
+              <p className="text-gray-500">Aucune demande en attente</p>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {inscriptions.map((inscription) => (
+                <Card key={inscription.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarFallback className="bg-gray-200">
+                            {inscription.prenom?.[0]}{inscription.nom?.[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-semibold">{inscription.prenom} {inscription.nom}</div>
+                          <div className="text-sm text-gray-500">{inscription.email}</div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline">{inscription.role_souhaite}</Badge>
+                            <span className="text-xs text-gray-400">→</span>
+                            <Badge variant="secondary">{inscription.centre_nom}</Badge>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="text-red-600 hover:bg-red-50"
+                          onClick={() => handleRejectInscription(inscription.id)}
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Refuser
+                        </Button>
+                        <Button 
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700"
+                          onClick={() => handleApproveInscription(inscription.id)}
+                        >
+                          <Check className="h-4 w-4 mr-1" />
+                          Approuver
+                        </Button>
+                      </div>
+                    </div>
+                    {inscription.message && (
+                      <div className="mt-3 p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
+                        <strong>Message:</strong> {inscription.message}
+                      </div>
+                    )}
+                    <div className="mt-2 text-xs text-gray-400">
+                      Demandé le {new Date(inscription.date_demande).toLocaleDateString('fr-FR')}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Modal Création/Édition Centre */}
+      <Dialog open={showCentreModal} onOpenChange={setShowCentreModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingCentre ? 'Modifier le centre' : 'Nouveau centre'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Nom du centre *</Label>
+              <Input
+                value={centreForm.nom}
+                onChange={(e) => setCentreForm({...centreForm, nom: e.target.value})}
+                placeholder="Ex: Centre Ophtalmologie Lyon"
+              />
+            </div>
+            <div>
+              <Label>Adresse</Label>
+              <Input
+                value={centreForm.adresse}
+                onChange={(e) => setCentreForm({...centreForm, adresse: e.target.value})}
+                placeholder="Adresse complète"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Téléphone</Label>
+                <Input
+                  value={centreForm.telephone}
+                  onChange={(e) => setCentreForm({...centreForm, telephone: e.target.value})}
+                  placeholder="01 23 45 67 89"
+                />
+              </div>
+              <div>
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  value={centreForm.email}
+                  onChange={(e) => setCentreForm({...centreForm, email: e.target.value})}
+                  placeholder="contact@centre.fr"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setShowCentreModal(false)}>Annuler</Button>
+              <Button onClick={editingCentre ? handleUpdateCentre : handleCreateCentre}>
+                {editingCentre ? 'Mettre à jour' : 'Créer'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Création Manager */}
+      <Dialog open={showManagerModal} onOpenChange={setShowManagerModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Nouveau Manager pour {selectedCentre?.nom}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Prénom *</Label>
+                <Input
+                  value={managerForm.prenom}
+                  onChange={(e) => setManagerForm({...managerForm, prenom: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label>Nom *</Label>
+                <Input
+                  value={managerForm.nom}
+                  onChange={(e) => setManagerForm({...managerForm, nom: e.target.value})}
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Email *</Label>
+              <Input
+                type="email"
+                value={managerForm.email}
+                onChange={(e) => setManagerForm({...managerForm, email: e.target.value})}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Téléphone</Label>
+                <Input
+                  value={managerForm.telephone}
+                  onChange={(e) => setManagerForm({...managerForm, telephone: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label>Mot de passe *</Label>
+                <Input
+                  type="password"
+                  value={managerForm.password}
+                  onChange={(e) => setManagerForm({...managerForm, password: e.target.value})}
+                  placeholder="Mot de passe initial"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setShowManagerModal(false)}>Annuler</Button>
+              <Button onClick={handleCreateManager}>Créer le Manager</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
 // Coffre-Fort Component
 const StocksManager = () => {
   const { user } = useAuth();
