@@ -10307,12 +10307,12 @@ const PlanningManager = () => {
                     return (
                       <tr key={medecin.id} className="hover:bg-blue-50">
                         <td 
-                          className="border p-1 font-medium text-xs whitespace-nowrap"
+                          className="border p-1 font-medium text-xs max-w-[100px] overflow-hidden"
                         >
                           <span 
-                            className="cursor-pointer hover:bg-blue-200 px-1 rounded"
+                            className="cursor-pointer hover:bg-blue-200 px-1 rounded block truncate"
                             onClick={() => openSemaineABCModal({ type: 'employe', employe: medecin })}
-                            title="Cliquer pour appliquer Semaine A, B ou Congés"
+                            title={`Dr. ${medecin.prenom} ${medecin.nom} - Cliquer pour appliquer Semaine A, B ou Congés`}
                           >
                             Dr. {abbreviateName(medecin.prenom, medecin.nom)}
                           </span>
