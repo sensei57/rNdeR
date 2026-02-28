@@ -2715,6 +2715,121 @@ async def update_my_profile(
     return {"message": "Profil mis à jour avec succès", "prenom": prenom, "nom": nom}
 
 
+@api_router.put("/users/me/centre-favori")
+async def set_centre_favori(
+    data: Dict[str, str],
+    current_user: User = Depends(get_current_user)
+):
+    """Définir le centre favori de l'utilisateur"""
+    centre_id = data.get('centre_id')
+    
+    if not centre_id:
+        raise HTTPException(status_code=400, detail="L'ID du centre est requis")
+    
+    # Vérifier que le centre existe
+    centre = await db.centres.find_one({"id": centre_id})
+    if not centre:
+        raise HTTPException(status_code=404, detail="Centre non trouvé")
+    
+    # Vérifier que l'utilisateur a accès à ce centre
+    user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+    if current_user.centre_id and current_user.centre_id not in user_centres:
+        user_centres.append(current_user.centre_id)
+    
+    is_super_admin = current_user.role in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]
+    if not is_super_admin and centre_id not in user_centres:
+        raise HTTPException(status_code=403, detail="Vous n'avez pas accès à ce centre")
+    
+    # Mettre à jour le centre favori
+    await db.users.update_one(
+        {"id": current_user.id},
+        {"$set": {"centre_favori_id": centre_id}}
+    )
+    
+    return {"message": "Centre favori défini avec succès", "centre_favori_id": centre_id, "centre_nom": centre.get("nom")}
+
+
+@api_router.post("/admin/migrate-data-to-centre")
+async def migrate_data_to_centre(
+    data: Dict[str, str],
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+):
+    """
+    Migrer toutes les données sans centre_id vers le centre favori de l'utilisateur
+    ou vers un centre spécifié
+    """
+    centre_id = data.get('centre_id')
+    
+    # Si pas de centre spécifié, utiliser le centre favori ou actif
+    if not centre_id:
+        centre_id = getattr(current_user, 'centre_favori_id', None)
+    if not centre_id:
+        centre_id = getattr(current_user, 'centre_actif_id', None)
+    if not centre_id:
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        centre_id = user_centres[0] if user_centres else None
+    
+    if not centre_id:
+        raise HTTPException(status_code=400, detail="Aucun centre disponible pour la migration")
+    
+    # Vérifier que le centre existe
+    centre = await db.centres.find_one({"id": centre_id})
+    if not centre:
+        raise HTTPException(status_code=404, detail="Centre non trouvé")
+    
+    results = {}
+    
+    # Collections à migrer
+    collections_to_migrate = [
+        ("planning", "Créneaux planning"),
+        ("demandes_conges", "Demandes de congés"),
+        ("demandes_travail", "Demandes de créneaux"),
+        ("actualites", "Actualités"),
+        ("salles", "Salles"),
+        ("categories_stock", "Catégories de stock"),
+        ("articles_stock", "Articles de stock"),
+        ("notes_generales", "Notes générales"),
+        ("notes_planning", "Notes du planning"),
+        ("reservations_salles", "Réservations de salles")
+    ]
+    
+    for collection_name, label in collections_to_migrate:
+        collection = db[collection_name]
+        # Trouver les documents sans centre_id
+        query = {
+            "$or": [
+                {"centre_id": None},
+                {"centre_id": {"$exists": False}}
+            ]
+        }
+        
+        # Compter avant migration
+        count_before = await collection.count_documents(query)
+        
+        if count_before > 0:
+            # Migrer les documents
+            await collection.update_many(
+                query,
+                {"$set": {"centre_id": centre_id}}
+            )
+        
+        results[collection_name] = {
+            "label": label,
+            "migrated_count": count_before
+        }
+    
+    total_migrated = sum(r["migrated_count"] for r in results.values())
+    
+    return {
+        "message": f"Migration terminée: {total_migrated} éléments migrés vers {centre.get('nom')}",
+        "centre_id": centre_id,
+        "centre_nom": centre.get("nom"),
+        "details": results
+    }
+
+
 @api_router.put("/users/{user_id}", response_model=User)
 async def update_user(
     user_id: str,
