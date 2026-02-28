@@ -453,6 +453,7 @@ class Actualite(BaseModel):
     fichier_url: Optional[str] = None
     fichier_nom: Optional[str] = None
     groupe_cible: str = "tous"  # "tous", "Médecin", "Assistant", "Secrétaire"
+    centre_id: Optional[str] = None  # Centre auquel appartient cette actualité
     auteur_id: str
     date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     date_modification: Optional[datetime] = None
@@ -466,6 +467,7 @@ class ActualiteCreate(BaseModel):
     fichier_url: Optional[str] = None
     fichier_nom: Optional[str] = None
     groupe_cible: str = "tous"
+    centre_id: Optional[str] = None  # Centre auquel appartient cette actualité
     priorite: int = 0
 
 class ActualiteUpdate(BaseModel):
@@ -475,6 +477,7 @@ class ActualiteUpdate(BaseModel):
     fichier_url: Optional[str] = None
     fichier_nom: Optional[str] = None
     groupe_cible: Optional[str] = None
+    centre_id: Optional[str] = None
     priorite: Optional[int] = None
     actif: Optional[bool] = None
 
