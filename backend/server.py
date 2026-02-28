@@ -770,6 +770,7 @@ class NoteGenerale(BaseModel):
     titre: str
     contenu: str
     auteur_id: str
+    centre_id: Optional[str] = None  # Centre auquel appartient cette note
     date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     visible: bool = True
 
