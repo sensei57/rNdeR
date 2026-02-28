@@ -17716,88 +17716,125 @@ const CentresManager = () => {
               </div>
               
               <div className="grid gap-3">
-                {employees.filter(e => e.role !== 'Manager' && e.role !== 'Super-Admin' && e.role !== 'Directeur').map((employee) => (
-                  <Card key={employee.id}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarFallback className={getRoleColor(employee.role)}>
-                              {employee.prenom?.[0]}{employee.nom?.[0]}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-semibold">{employee.prenom} {employee.nom}</div>
-                            <div className="text-sm text-gray-500">{employee.email}</div>
+                {employees.filter(e => e.role !== 'Manager' && e.role !== 'Super-Admin' && e.role !== 'Directeur').map((employee) => {
+                  // Récupérer les centres de l'employé (multi-centres)
+                  const employeeCentres = employee.centre_ids || (employee.centre_id ? [employee.centre_id] : []);
+                  
+                  return (
+                    <Card key={employee.id}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarFallback className={getRoleColor(employee.role)}>
+                                {employee.prenom?.[0]}{employee.nom?.[0]}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="font-semibold">{employee.prenom} {employee.nom}</div>
+                              <div className="text-sm text-gray-500">{employee.email}</div>
+                            </div>
+                          </div>
+                          <Badge className={getRoleColor(employee.role)}>{employee.role}</Badge>
+                        </div>
+                        
+                        {/* Gestion multi-centres */}
+                        <div className="mt-3 pt-3 border-t">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-gray-700">Centres assignés :</span>
+                            <span className="text-xs text-gray-500">{employeeCentres.length} centre(s)</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {centres.map((c) => {
+                              const isAssigned = employeeCentres.includes(c.id);
+                              return (
+                                <label 
+                                  key={c.id}
+                                  className={`px-3 py-1.5 rounded-full text-xs cursor-pointer transition-all flex items-center gap-1 ${
+                                    isAssigned 
+                                      ? 'bg-[#0091B9] text-white' 
+                                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isAssigned}
+                                    onChange={async (e) => {
+                                      try {
+                                        if (e.target.checked) {
+                                          // Ajouter le centre
+                                          await axios.put(`${API}/admin/employees/${employee.id}/centre?new_centre_id=${c.id}`);
+                                          toast.success(`${c.nom} ajouté`);
+                                        } else {
+                                          // Retirer le centre
+                                          if (employeeCentres.length <= 1) {
+                                            toast.error('L\'employé doit avoir au moins un centre');
+                                            return;
+                                          }
+                                          await axios.delete(`${API}/admin/employees/${employee.id}/centres/${c.id}`);
+                                          toast.success(`${c.nom} retiré`);
+                                        }
+                                        fetchCentreDetails(selectedCentre.id);
+                                      } catch (error) {
+                                        toast.error(error.response?.data?.detail || 'Erreur');
+                                      }
+                                    }}
+                                    className="sr-only"
+                                  />
+                                  <Building2 className="h-3 w-3" />
+                                  {c.nom}
+                                  {isAssigned && <Check className="h-3 w-3 ml-1" />}
+                                </label>
+                              );
+                            })}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge className={getRoleColor(employee.role)}>{employee.role}</Badge>
-                          <Select
-                            defaultValue={employee.centre_id}
-                            onValueChange={async (newCentreId) => {
-                              try {
-                                await axios.put(`${API}/admin/employees/${employee.id}/centre?new_centre_id=${newCentreId}`);
-                                toast.success('Employé déplacé');
-                                fetchCentreDetails(selectedCentre.id);
-                              } catch (error) {
-                                toast.error('Erreur lors du déplacement');
-                              }
-                            }}
-                          >
-                            <SelectTrigger className="w-[150px] h-8 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {centres.map((c) => (
-                                <SelectItem key={c.id} value={c.id}>{c.nom}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                        
+                        {/* Paramètres de visibilité */}
+                        <div className="mt-3 pt-3 border-t flex items-center gap-4 text-sm">
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={employee.visibility_config?.peut_voir_tous_employes ?? true}
+                              onChange={async (e) => {
+                                try {
+                                  await axios.put(`${API}/admin/employees/${employee.id}/visibility`, {
+                                    peut_voir_tous_employes: e.target.checked,
+                                    peut_voir_planning_complet: employee.visibility_config?.peut_voir_planning_complet ?? false
+                                  });
+                                  fetchCentreDetails(selectedCentre.id);
+                                } catch (error) {
+                                  toast.error('Erreur');
+                                }
+                              }}
+                              className="w-4 h-4"
+                            />
+                            Peut voir tous les employés
+                          </label>
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={employee.visibility_config?.peut_voir_planning_complet ?? false}
+                              onChange={async (e) => {
+                                try {
+                                  await axios.put(`${API}/admin/employees/${employee.id}/visibility`, {
+                                    peut_voir_tous_employes: employee.visibility_config?.peut_voir_tous_employes ?? true,
+                                    peut_voir_planning_complet: e.target.checked
+                                  });
+                                  fetchCentreDetails(selectedCentre.id);
+                                } catch (error) {
+                                  toast.error('Erreur');
+                                }
+                              }}
+                              className="w-4 h-4"
+                            />
+                            Peut voir le planning complet
+                          </label>
                         </div>
-                      </div>
-                      
-                      <div className="mt-3 pt-3 border-t flex items-center gap-4 text-sm">
-                        <label className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={employee.visibility_config?.peut_voir_tous_employes ?? true}
-                            onChange={async (e) => {
-                              try {
-                                await axios.put(`${API}/admin/employees/${employee.id}/visibility`, {
-                                  peut_voir_tous_employes: e.target.checked,
-                                  peut_voir_planning_complet: employee.visibility_config?.peut_voir_planning_complet ?? false
-                                });
-                                fetchCentreDetails(selectedCentre.id);
-                              } catch (error) {
-                                toast.error('Erreur');
-                              }
-                            }}
-                            className="w-4 h-4"
-                          />
-                          Peut voir tous les employés
-                        </label>
-                        <label className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={employee.visibility_config?.peut_voir_planning_complet ?? false}
-                            onChange={async (e) => {
-                              try {
-                                await axios.put(`${API}/admin/employees/${employee.id}/visibility`, {
-                                  peut_voir_tous_employes: employee.visibility_config?.peut_voir_tous_employes ?? true,
-                                  peut_voir_planning_complet: e.target.checked
-                                });
-                                fetchCentreDetails(selectedCentre.id);
-                              } catch (error) {
-                                toast.error('Erreur');
-                              }
-                            }}
-                            className="w-4 h-4"
-                          />
-                          Peut voir le planning complet
-                        </label>
-                      </div>
-                    </CardContent>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
                   </Card>
                 ))}
               </div>
