@@ -634,6 +634,7 @@ class PermissionStockCreate(BaseModel):
 class NotePlanningJour(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     date: str  # Format YYYY-MM-DD
+    centre_id: Optional[str] = None  # Centre auquel appartient cette note
     note: str = ""
     date_modification: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     modifie_par: Optional[str] = None
