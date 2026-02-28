@@ -18949,6 +18949,9 @@ const MonProfilManager = () => {
         </CardContent>
       </Card>
 
+      {/* Centre Favori */}
+      <CentreFavoriManager user={user} setUser={setUser} />
+
       {/* Gestion des notifications push */}
       <Card>
         <CardHeader>
