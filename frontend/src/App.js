@@ -19452,7 +19452,7 @@ const Dashboard = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'actualites':
-        return <ActualitesManager user={user} CabinetPlanWithPopup={CabinetPlanWithPopup} />;
+        return <ActualitesManager user={user} centreActif={centreActif} CabinetPlanWithPopup={CabinetPlanWithPopup} />;
       case 'profil':
         return <MonProfilManager />;
       case 'personnel':
@@ -19478,7 +19478,7 @@ const Dashboard = () => {
       case 'centres':
         return <CentresManager />;
       default:
-        return <ActualitesManager user={user} CabinetPlanWithPopup={CabinetPlanWithPopup} />;
+        return <ActualitesManager user={user} centreActif={centreActif} CabinetPlanWithPopup={CabinetPlanWithPopup} />;
     }
   };
 
