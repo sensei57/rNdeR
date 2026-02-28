@@ -2135,7 +2135,7 @@ const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab 
       
       {/* Menu déroulant modernisé */}
       {menuOpen && (
-        <div className="absolute left-4 top-[72px] w-72 bg-white/95 backdrop-blur-md shadow-2xl rounded-2xl border border-gray-100 z-50 animate-scale-in overflow-hidden">
+        <div className="absolute left-4 top-[72px] w-72 bg-white/95 backdrop-blur-md shadow-2xl rounded-2xl border border-gray-100 z-50 animate-scale-in max-h-[calc(100vh-100px)] overflow-y-auto">
           <div className="p-3">
             {/* En-tête du menu */}
             <div className="px-3 py-2 mb-2">
