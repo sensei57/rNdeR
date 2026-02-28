@@ -3476,6 +3476,7 @@ const CongeManager = () => {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Statistiques rapides */}
