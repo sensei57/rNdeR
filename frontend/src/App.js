@@ -2220,12 +2220,30 @@ const ActualitesManager = () => {
     if (user) {
       fetchData();
       
-      // Polling automatique pour les actualités (toutes les 30 secondes)
-      const interval = setInterval(() => {
-        fetchData();
-      }, 30000);
+      // Polling intelligent : s'arrête quand l'onglet est caché
+      let interval;
+      const startPolling = () => {
+        interval = setInterval(() => {
+          if (document.visibilityState === 'visible') {
+            fetchData();
+          }
+        }, 60000); // 60 secondes au lieu de 30
+      };
       
-      return () => clearInterval(interval);
+      startPolling();
+      
+      // Refresh au retour sur l'onglet
+      const handleVisibility = () => {
+        if (document.visibilityState === 'visible') {
+          fetchData();
+        }
+      };
+      document.addEventListener('visibilitychange', handleVisibility);
+      
+      return () => {
+        clearInterval(interval);
+        document.removeEventListener('visibilitychange', handleVisibility);
+      };
     }
   }, [user]);
 
