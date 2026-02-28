@@ -2011,9 +2011,11 @@ const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab 
     }
   };
 
-  // Limiter les items affichés dans la barre horizontale desktop
-  const mainMenuItems = menuItems.slice(0, 7); // Afficher les 7 premiers items
-  const moreMenuItems = menuItems.slice(7); // Le reste dans "Plus"
+  // Séparer les items en deux catégories : items généraux (visibles dans la barre) et items admin (dans "Plus")
+  // Les items admin sont : Administration et Gestion Centres
+  const adminItemIds = ['admin', 'centres'];
+  const mainMenuItems = menuItems.filter(item => !adminItemIds.includes(item.id));
+  const moreMenuItems = menuItems.filter(item => adminItemIds.includes(item.id));
 
   return (
     <>
