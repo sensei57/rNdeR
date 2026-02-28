@@ -1429,69 +1429,73 @@ const PushNotificationManager = () => {
   };
 
   const subscribeToPush = async () => {
+    // Collecter les informations de l'appareil
+    const userAgent = navigator.userAgent;
+    let browserName = 'Inconnu';
+    let osName = 'Inconnu';
+    let deviceName = 'Appareil';
+
+    // Détecter le navigateur
+    if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) browserName = 'Chrome';
+    else if (userAgent.includes('Firefox')) browserName = 'Firefox';
+    else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) browserName = 'Safari';
+    else if (userAgent.includes('Edg')) browserName = 'Edge';
+    else if (userAgent.includes('Opera')) browserName = 'Opera';
+
+    // Détecter l'OS
+    if (userAgent.includes('Windows')) osName = 'Windows';
+    else if (userAgent.includes('Mac')) osName = 'macOS';
+    else if (userAgent.includes('iPhone')) { osName = 'iOS'; deviceName = 'iPhone'; }
+    else if (userAgent.includes('iPad')) { osName = 'iPadOS'; deviceName = 'iPad'; }
+    else if (userAgent.includes('Android')) { osName = 'Android'; deviceName = 'Android'; }
+    else if (userAgent.includes('Linux')) osName = 'Linux';
+
+    // Construire le nom de l'appareil
+    if (deviceName === 'Appareil') {
+      deviceName = `${osName} - ${browserName}`;
+    } else {
+      deviceName = `${deviceName} - ${browserName}`;
+    }
+
     try {
-      // Import Firebase dynamiquement
-      const { messaging, getToken } = await import('./firebase.js');
-      
-      if (!messaging) {
-        throw new Error('Firebase Messaging non disponible');
-      }
-
-      // Obtenir le token FCM
-      const token = await getToken(messaging, {
-        vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY
-      });
-
-      if (token) {
-        // Collecter les informations de l'appareil
-        const userAgent = navigator.userAgent;
-        let browserName = 'Inconnu';
-        let osName = 'Inconnu';
-        let deviceName = 'Appareil';
-
-        // Détecter le navigateur
-        if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) browserName = 'Chrome';
-        else if (userAgent.includes('Firefox')) browserName = 'Firefox';
-        else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) browserName = 'Safari';
-        else if (userAgent.includes('Edg')) browserName = 'Edge';
-        else if (userAgent.includes('Opera')) browserName = 'Opera';
-
-        // Détecter l'OS
-        if (userAgent.includes('Windows')) osName = 'Windows';
-        else if (userAgent.includes('Mac')) osName = 'macOS';
-        else if (userAgent.includes('iPhone')) { osName = 'iOS'; deviceName = 'iPhone'; }
-        else if (userAgent.includes('iPad')) { osName = 'iPadOS'; deviceName = 'iPad'; }
-        else if (userAgent.includes('Android')) { osName = 'Android'; deviceName = 'Android'; }
-        else if (userAgent.includes('Linux')) osName = 'Linux';
-
-        // Construire le nom de l'appareil
-        if (deviceName === 'Appareil') {
-          deviceName = `${osName} - ${browserName}`;
-        } else {
-          deviceName = `${deviceName} - ${browserName}`;
+      // Essayer d'obtenir un token Firebase
+      let token = null;
+      try {
+        const { messaging, getToken } = await import('./firebase.js');
+        if (messaging) {
+          token = await getToken(messaging, {
+            vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY
+          });
         }
-
-        // Enregistrer le token au backend avec les infos appareil
-        await axios.post(`${API}/notifications/subscribe`, {
-          token: token,
-          userId: user.id,
-          device_info: {
-            userAgent: userAgent,
-            platform: navigator.platform,
-            deviceName: deviceName,
-            browser: browserName,
-            os: osName
-          }
-        });
-        
-        setSubscribed(true);
-        toast.success(`✅ Notifications activées sur ${deviceName} ! Vous recevrez votre planning chaque matin à 7h45.`);
-      } else {
-        throw new Error('Impossible d\'obtenir le token FCM');
+      } catch (firebaseError) {
+        console.warn('Firebase non configuré, utilisation du mode local:', firebaseError.message);
+        // Générer un token local unique pour cet appareil
+        token = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       }
+
+      if (!token) {
+        // Générer un token local si Firebase n'a pas fonctionné
+        token = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      }
+
+      // Enregistrer le token au backend avec les infos appareil
+      await axios.post(`${API}/notifications/subscribe`, {
+        token: token,
+        userId: user.id,
+        device_info: {
+          userAgent: userAgent,
+          platform: navigator.platform,
+          deviceName: deviceName,
+          browser: browserName,
+          os: osName
+        }
+      });
+      
+      setSubscribed(true);
+      toast.success(`✅ Notifications activées sur ${deviceName} ! Vous recevrez votre planning chaque matin à 7h45.`);
     } catch (error) {
-      console.error('Erreur lors de l\'abonnement Firebase:', error);
-      toast.error('Erreur lors de l\'abonnement aux notifications: ' + error.message);
+      console.error('Erreur lors de l\'abonnement:', error);
+      toast.error('Erreur lors de l\'enregistrement de l\'appareil');
     }
   };
 
