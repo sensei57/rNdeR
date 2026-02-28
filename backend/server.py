@@ -3335,9 +3335,10 @@ async def save_note_planning(
             del updated['_id']
         return updated
     else:
-        # Création
+        # Création avec centre_id
         note = NotePlanningJour(
             date=date,
+            centre_id=centre_actif,
             note=note_data.note,
             modifie_par=current_user.id
         )
