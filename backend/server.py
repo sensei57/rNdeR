@@ -5174,15 +5174,23 @@ async def get_plan_cabinet(
             user_centres.append(current_user.centre_id)
         centre_actif = user_centres[0] if user_centres else None
     
-    # Récupérer les salles du centre actif
+    print(f"[DEBUG cabinet/plan] centre_actif: {centre_actif}, user: {current_user.email}")
+    
+    # Récupérer les salles - inclure celles sans centre_id pour la rétrocompatibilité
     salles_query = {"actif": True}
     if centre_actif:
-        salles_query["$or"] = [
-            {"centre_id": centre_actif},
-            {"centre_id": None},
-            {"centre_id": {"$exists": False}}
-        ]
+        salles_query = {
+            "$and": [
+                {"actif": True},
+                {"$or": [
+                    {"centre_id": centre_actif},
+                    {"centre_id": None},
+                    {"centre_id": {"$exists": False}}
+                ]}
+            ]
+        }
     salles = await db.salles.find(salles_query).to_list(1000)
+    print(f"[DEBUG cabinet/plan] Salles trouvées: {len(salles)}")
     
     # Récupérer le planning pour cette date/créneau (filtré par centre)
     planning_query = {"date": date, "creneau": creneau}
