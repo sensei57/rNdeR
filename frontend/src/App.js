@@ -2019,7 +2019,7 @@ const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab 
     <>
       {/* Navbar principale */}
       <nav className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50" data-testid="main-navbar">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-12">
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-4">
               {/* Bouton Menu Hamburger - MOBILE ONLY */}
@@ -2145,7 +2145,7 @@ const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab 
 
       {/* Barre de navigation horizontale - DESKTOP ONLY */}
       <div className="hidden lg:block bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-16 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-12">
           <div className="flex items-center justify-between h-12">
             <div className="flex items-center space-x-1">
               {mainMenuItems.map(item => {
@@ -19498,7 +19498,7 @@ const Dashboard = () => {
       <div className="app-content-wrapper">
         <Navigation menuOpen={menuOpen} setMenuOpen={setMenuOpen} menuItems={getMenuItems()} activeTab={activeTab} setActiveTab={setActiveTab} />
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-12 py-8">
           {/* Main Content - Full width sans sidebar */}
           <div className="w-full">
             <NotificationToday />
