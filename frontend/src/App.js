@@ -17844,8 +17844,6 @@ const CentresManager = () => {
                     </Card>
                   );
                 })}
-                  </Card>
-                ))}
               </div>
             </>
           )}
