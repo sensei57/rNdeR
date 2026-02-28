@@ -146,6 +146,8 @@ class UserUpdate(BaseModel):
     date_naissance: Optional[str] = None
     photo_url: Optional[str] = None
     actif: Optional[bool] = None
+    centre_id: Optional[str] = None  # Pour changer de centre
+    manager_permissions: Optional[Dict[str, bool]] = None  # Permissions manager
     vue_planning_complete: Optional[bool] = None
     peut_modifier_planning: Optional[bool] = None
     heures_par_jour: Optional[float] = None
