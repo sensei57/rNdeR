@@ -1929,6 +1929,16 @@ async def approuver_demande_conge(
                 demande.get('creneau', 'JOURNEE_COMPLETE'),
                 demande["utilisateur_id"]
             )
+        
+        # 3. NOUVEAU: Gérer les créneaux des assistants assignés au médecin en congé
+        background_tasks.add_task(
+            handle_assistant_slots_for_leave,
+            demande["utilisateur_id"],
+            demande['date_debut'],
+            demande['date_fin'],
+            demande.get('creneau', 'JOURNEE_COMPLETE'),
+            True  # approve=True
+        )
     
     return {"message": f"Demande {statut.lower()}e avec succès"}
 
