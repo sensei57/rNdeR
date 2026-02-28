@@ -3624,25 +3624,17 @@ const CongeManager = () => {
                     {demande.motif && (
                       <p className="text-sm text-gray-500 italic">"{demande.motif}"</p>
                     )}
-                  )}
-                  <p className="text-xs text-gray-500">
-                    Demandé le: {new Date(demande.date_demande).toLocaleDateString('fr-FR')}
-                  </p>
-                  {demande.commentaire_approbation && (
-                    <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
-                      <strong>Commentaire:</strong> {demande.commentaire_approbation}
-                    </p>
-                  )}
+                  </div>
                 </div>
-                <div className="flex flex-col space-y-2">
-                  {/* Boutons d'approbation pour les demandes en attente */}
-                  {user?.role === 'Directeur' && demande.statut === 'EN_ATTENTE' && (
-                    <div className="flex space-x-2">
+                
+                {/* Actions */}
+                <div className="flex flex-col gap-2">
+                  {(user?.role === 'Directeur' || user?.role === 'Super-Admin') && demande.statut === 'EN_ATTENTE' && (
+                    <div className="flex gap-2">
                       <Button
                         size="sm"
                         onClick={() => handleApprobation(demande.id, true)}
                         className="bg-green-600 hover:bg-green-700"
-                        title="Approuver"
                       >
                         <Check className="h-4 w-4" />
                       </Button>
@@ -3650,61 +3642,27 @@ const CongeManager = () => {
                         size="sm"
                         variant="destructive"
                         onClick={() => handleApprobation(demande.id, false)}
-                        title="Rejeter"
                       >
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
                   )}
                   
-                  {/* Boutons pour modifier ou annuler un congé approuvé */}
-                  {user?.role === 'Directeur' && demande.statut === 'APPROUVE' && (
-                    <div className="flex flex-col space-y-2">
-                      {/* Modifier le type */}
-                      <select
-                        className="text-xs p-1 border rounded"
-                        value={demande.type_conge}
-                        onChange={(e) => handleModifierTypeConge(demande.id, e.target.value)}
-                        title="Modifier le type"
-                      >
-                        {typesConge.map(type => (
-                          <option key={type.value} value={type.value}>{type.label}</option>
-                        ))}
-                      </select>
-                      
-                      {/* Bouton Annuler */}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleAnnulerConge(demande.id)}
-                        className="text-red-600 border-red-300 hover:bg-red-50"
-                        title="Annuler ce congé"
-                      >
-                        <X className="h-3 w-3 mr-1" /> Annuler
-                      </Button>
-                    </div>
-                  )}
-                  
-                  {/* Badge annulé */}
-                  {demande.statut === 'ANNULE' && (
-                    <span className="text-xs text-gray-500 italic">Annulé</span>
+                  {(user?.role === 'Directeur' || user?.role === 'Super-Admin') && demande.statut === 'APPROUVE' && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleAnnulerConge(demande.id)}
+                      className="text-red-600 border-red-300 hover:bg-red-50"
+                    >
+                      Annuler
+                    </Button>
                   )}
                 </div>
               </div>
             </CardContent>
           </Card>
         ))}
-        {demandes.length === 0 && (
-          <Card>
-            <CardContent className="text-center py-8">
-              <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">Aucune demande de congé trouvée</p>
-              <p className="text-sm text-gray-400 mt-2">
-                Cliquez sur "Nouvelle Demande" pour créer votre première demande
-              </p>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );
