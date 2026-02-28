@@ -16,34 +16,65 @@ Application de gestion pour cabinet d'ophtalmologie avec :
 ## Architecture technique
 - **Frontend:** React + Tailwind CSS + Shadcn/UI
 - **Backend:** FastAPI + MongoDB
+- **Notifications:** Firebase Admin SDK (push notifications)
 - **Déploiement cible:** Render.com (production de l'utilisateur)
 
 ## Ce qui a été implémenté
 
+### Session 28/02/2026
+- ✅ **Système de notifications de test depuis l'administration**
+  - Nouvel endpoint GET `/api/notifications/employees-for-test` : Liste des employés avec statut push
+  - Nouvel endpoint POST `/api/notifications/test` : Envoi de notifications personnalisées à plusieurs employés
+  - Interface dans AdminManager pour sélectionner les employés et envoyer des notifications
+  - Affichage du statut push (actif/inactif) pour chaque employé
+
+- ✅ **Notification matinale du planning (déclenchement à 7h)**
+  - Endpoint POST `/api/notifications/send-daily-planning` : Déclenche manuellement l'envoi
+  - Message détaillé avec salle et équipe du jour
+
+- ✅ **Réponse rapide aux messages depuis notifications**
+  - Nouvel endpoint POST `/api/notifications/quick-reply` : Permet de répondre directement
+  - Push notifications avec actions de réponse (Répondre / Ouvrir)
+
+- ✅ **Correction bug créneaux assistants après approbation congé médecin**
+  - Nouvelle fonction `handle_assistant_slots_for_leave` dans server.py
+  - Quand un médecin prend un congé approuvé :
+    - Les créneaux des assistants assignés à ce médecin sont mis à jour
+    - Le médecin est retiré de la liste medecin_ids
+    - Les créneaux sont marqués `est_repos=True` avec note "À RÉASSIGNER"
+    - Les assistants concernés reçoivent une notification
+  - Logique ajoutée à l'endpoint PUT `/api/conges/{demande_id}/approuver`
+
+- ✅ **Correction configuration URL backend**
+  - Frontend utilise maintenant `process.env.REACT_APP_BACKEND_URL` en priorité
+  - Fallback vers URL Render.com si non configuré
+
 ### Session 15/02/2026
-- ✅ Correction erreur JavaScript `Phone is not defined` - Import manquant ajouté
-- ✅ Transformation de la bannière PWA en bouton discret centré
-- ✅ Gestion d'erreur d'image avec fallback vers initiales (composants MedecinCard, AssistantCard, SecretaireCard, RoomCardContent)
-- ✅ Correction bug `personnelList is not defined` - remplacé par `users`
-- ✅ **OPTIMISATION MOBILE MAJEURE** : Vue Mois passe de 30+ requêtes à 1 seule requête
-  - Nouvel endpoint backend `GET /api/planning/mois/{mois}`
-  - Styles CSS responsive pour mobile
-  - Touch targets optimisés pour écrans tactiles
+- ✅ Correction erreur JavaScript `Phone is not defined`
+- ✅ Transformation de la bannière PWA en bouton discret
+- ✅ Gestion d'erreur d'image avec fallback vers initiales
+- ✅ Correction bug `personnelList is not defined`
+- ✅ **OPTIMISATION MOBILE** : Vue Mois passe de 30+ requêtes à 1 seule
+- ✅ Gestion multi-appareils pour les notifications push
 
 ### Sessions précédentes
 - ✅ Refonte de la page de connexion moderne
-- ✅ Refonte du tableau de bord (Plan du Cabinet, Actualités)
-- ✅ Interface de chat style WhatsApp avec photos
-- ✅ Bulle de chat flottante avec compteur de messages non lus
-- ✅ Refonte des cartes d'employés dans la gestion du personnel
+- ✅ Refonte du tableau de bord
+- ✅ Interface de chat style WhatsApp
+- ✅ Bulle de chat flottante avec compteur
+- ✅ Refonte des cartes d'employés
 - ✅ Arrière-plan thématique ophtalmologie
-- ✅ Icônes PWA personnalisées avec le logo utilisateur
+- ✅ Icônes PWA personnalisées
 
 ## Bugs en attente
 
-### P2 - Création créneaux assistants
-- **Description:** L'approbation d'un congé pour un médecin ne crée pas les créneaux pour les assistants remplaçants
-- **Status:** Non investigué
+### P1 - Problème de rechargement persistant sur mobile
+- **Description:** L'utilisateur signale devoir recharger la page plusieurs fois
+- **Status:** À investiguer - possible race condition dans les useEffect
+
+### P2 - Vues "Mois" et "Planning" sur mobile
+- **Description:** Affichage potentiellement mal adapté sur petits écrans
+- **Status:** Partiellement traité avec optimisation endpoint
 
 ### P3 - Gestion des erreurs
 - **Description:** Utilisation de `alert()` génériques - à remplacer par des toasts
@@ -52,17 +83,44 @@ Application de gestion pour cabinet d'ophtalmologie avec :
 ## Tâches à venir
 
 ### P0 - Refactorisation critique
-- **`frontend/src/App.js`** - Fichier monolithique de +20,000 lignes
+- **`frontend/src/App.js`** - Fichier monolithique de +19,500 lignes
 - À découper en composants: Dashboard, Chat, PersonnelList, CabinetPlan, etc.
+- Structure suggérée: `src/components/`, `src/pages/`, `src/hooks/`, `src/utils/`
 
 ### P1 - Modernisation UI
-- Appliquer le nouveau style aux autres sections: Planning/Calendrier, formulaires, modales
+- Appliquer le nouveau style aux sections restantes
+
+### P2 - Validation
+- Validation du calcul des heures supplémentaires
 
 ## Fichiers clés
 - `/app/frontend/src/App.js` - Monolithe principal
-- `/app/frontend/src/App.css` - Styles avec thème ophtalmologie + styles mobile
-- `/app/backend/server.py` - API FastAPI (nouvel endpoint /planning/mois/)
+- `/app/frontend/src/App.css` - Styles
+- `/app/backend/server.py` - API FastAPI
+- `/app/backend/push_notifications.py` - Gestion Firebase
+
+## Endpoints API clés
+
+### Notifications
+- `GET /api/notifications` - Liste notifications utilisateur
+- `GET /api/notifications/employees-for-test` - Liste employés pour test (Directeur)
+- `POST /api/notifications/test` - Envoyer notification de test (Directeur)
+- `POST /api/notifications/send-daily-planning` - Déclencher planning quotidien (Directeur)
+- `POST /api/notifications/quick-reply` - Répondre depuis notification
+- `POST /api/notifications/subscribe` - S'abonner aux push
+- `GET /api/notifications/devices` - Liste appareils enregistrés
+- `DELETE /api/notifications/devices/{id}` - Supprimer appareil
+
+### Congés
+- `POST /api/conges` - Créer demande de congé
+- `GET /api/conges` - Liste des congés
+- `PUT /api/conges/{id}/approuver` - Approuver/Rejeter (déclenche gestion assistants)
 
 ## Credentials de test
 - Email: `directeur@cabinet.fr`
 - Mot de passe: `admin123`
+
+## Tests
+- Fichier de tests: `/app/backend/tests/test_notifications.py`
+- Rapport: `/app/test_reports/iteration_2.json`
+- Taux de réussite: 95% (21/22 tests passés, 1 ignoré)
