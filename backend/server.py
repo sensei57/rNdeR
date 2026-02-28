@@ -2781,7 +2781,46 @@ async def migrate_data_to_centre(
     
     results = {}
     
-    # Collections à migrer
+    # 1. Migration des employés sans centre
+    # Trouver les utilisateurs sans centre_id et sans centre_ids (sauf le directeur actuel)
+    users_query = {
+        "$and": [
+            {"id": {"$ne": current_user.id}},  # Exclure le directeur qui fait la migration
+            {"role": {"$nin": ["Super-Admin", "Directeur"]}},  # Exclure les admins
+            {"$or": [
+                {"centre_id": None},
+                {"centre_id": {"$exists": False}},
+                {"centre_id": ""}
+            ]},
+            {"$or": [
+                {"centre_ids": None},
+                {"centre_ids": {"$exists": False}},
+                {"centre_ids": []},
+                {"centre_ids": {"$size": 0}}
+            ]}
+        ]
+    }
+    
+    users_count = await db.users.count_documents(users_query)
+    
+    if users_count > 0:
+        # Migrer les employés : ajouter le centre à centre_id et centre_ids
+        await db.users.update_many(
+            users_query,
+            {
+                "$set": {
+                    "centre_id": centre_id,
+                    "centre_ids": [centre_id]
+                }
+            }
+        )
+    
+    results["users"] = {
+        "label": "Employés sans centre",
+        "migrated_count": users_count
+    }
+    
+    # 2. Collections de données à migrer
     collections_to_migrate = [
         ("planning", "Créneaux planning"),
         ("demandes_conges", "Demandes de congés"),
