@@ -981,10 +981,10 @@ const LoginPage = () => {
           <Card className="border-0 shadow-xl bg-white rounded-2xl">
             <CardContent className="p-8">
               <form onSubmit={handleSubmit} className="space-y-5" data-testid="login-form">
-                {/* Sélection du centre */}
+                {/* Sélection du centre - Optionnel pour les Directeurs */}
                 <div className="space-y-2">
                   <Label htmlFor="centre" className="text-sm font-semibold text-gray-700">
-                    Centre médical
+                    Centre médical <span className="text-gray-400 font-normal">(optionnel pour Directeur)</span>
                   </Label>
                   <Select 
                     value={centreId} 
@@ -996,9 +996,12 @@ const LoginPage = () => {
                       data-testid="centre-select"
                       className="h-12 rounded-xl border-2 border-gray-200 focus:border-[#0091B9]"
                     >
-                      <SelectValue placeholder={loadingCentres ? "Chargement..." : "Sélectionnez votre centre"} />
+                      <SelectValue placeholder={loadingCentres ? "Chargement..." : "Tous les centres (Directeur)"} />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="all">
+                        <span className="font-medium">Tous les centres (Directeur)</span>
+                      </SelectItem>
                       {centres.map((centre) => (
                         <SelectItem key={centre.id} value={centre.id}>
                           {centre.nom}
