@@ -17415,11 +17415,13 @@ const CentresManager = () => {
 
   const fetchCentreDetails = async (centreId) => {
     try {
-      const [employeesRes, managersRes] = await Promise.all([
-        axios.get(`${API}/admin/centres/${centreId}/employees`),
+      // Recharger TOUS les employés (pour l'onglet Employés global) + les managers du centre sélectionné
+      const [usersRes, managersRes] = await Promise.all([
+        axios.get(`${API}/users?all_centres=true`),  // Toujours charger TOUS les employés
         axios.get(`${API}/admin/managers/${centreId}`)
       ]);
-      setEmployees(employeesRes.data.employees || []);
+      const allUsers = Array.isArray(usersRes.data) ? usersRes.data : [];
+      setEmployees(allUsers.filter(u => u.actif));
       setManagers(managersRes.data.managers || []);
     } catch (error) {
       toast.error('Erreur lors du chargement du centre');
