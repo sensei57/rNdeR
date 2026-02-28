@@ -17361,6 +17361,11 @@ const CentresManager = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('centres');
   
+  // Filtres pour l'onglet Employés
+  const [employeeRoleFilter, setEmployeeRoleFilter] = useState('all'); // 'all', 'Médecin', 'Assistant', 'Secrétaire'
+  const [employeeCentreFilter, setEmployeeCentreFilter] = useState('all'); // 'all' ou ID du centre
+  const [employeeSearchTerm, setEmployeeSearchTerm] = useState('');
+  
   // Modals
   const [showCentreModal, setShowCentreModal] = useState(false);
   const [showManagerModal, setShowManagerModal] = useState(false);
