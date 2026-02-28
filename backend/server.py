@@ -2073,7 +2073,7 @@ async def change_employee_centre(
     new_centre_id: str,
     current_user: User = Depends(get_current_user)
 ):
-    """Déplace un employé vers un autre centre"""
+    """Ajoute un centre à un employé (multi-centres)"""
     if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
         raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
     
@@ -2083,14 +2083,101 @@ async def change_employee_centre(
     
     new_centre = await db.centres.find_one({"id": new_centre_id, "actif": True})
     if not new_centre:
-        raise HTTPException(status_code=404, detail="Centre de destination non trouvé")
+        raise HTTPException(status_code=404, detail="Centre non trouvé")
+    
+    # Ajouter le centre à la liste (multi-centres)
+    current_centres = employee.get('centre_ids', [])
+    if employee.get('centre_id') and employee['centre_id'] not in current_centres:
+        current_centres.append(employee['centre_id'])
+    
+    if new_centre_id not in current_centres:
+        current_centres.append(new_centre_id)
     
     await db.users.update_one(
         {"id": employee_id},
-        {"$set": {"centre_id": new_centre_id}}
+        {"$set": {
+            "centre_ids": current_centres,
+            "centre_id": current_centres[0] if current_centres else None  # Garder compatibilité
+        }}
     )
     
-    return {"message": f"Employé déplacé vers {new_centre['nom']}"}
+    return {"message": f"Centre {new_centre['nom']} ajouté à l'employé", "centre_ids": current_centres}
+
+
+@api_router.put("/admin/employees/{employee_id}/centres")
+async def update_employee_centres(
+    employee_id: str,
+    centre_ids: List[str],
+    current_user: User = Depends(get_current_user)
+):
+    """Met à jour la liste complète des centres d'un employé"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    employee = await db.users.find_one({"id": employee_id})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employé non trouvé")
+    
+    if not centre_ids:
+        raise HTTPException(status_code=400, detail="Au moins un centre est requis")
+    
+    # Vérifier que tous les centres existent
+    valid_centres = await db.centres.find(
+        {"id": {"$in": centre_ids}, "actif": True}
+    ).to_list(100)
+    
+    valid_ids = [c["id"] for c in valid_centres]
+    invalid_ids = set(centre_ids) - set(valid_ids)
+    if invalid_ids:
+        raise HTTPException(status_code=404, detail=f"Centres non trouvés: {invalid_ids}")
+    
+    await db.users.update_one(
+        {"id": employee_id},
+        {"$set": {
+            "centre_ids": centre_ids,
+            "centre_id": centre_ids[0]  # Premier centre comme centre principal
+        }}
+    )
+    
+    centres_names = [c["nom"] for c in valid_centres]
+    return {"message": f"Centres mis à jour: {', '.join(centres_names)}", "centre_ids": centre_ids}
+
+
+@api_router.delete("/admin/employees/{employee_id}/centres/{centre_id}")
+async def remove_employee_from_centre(
+    employee_id: str,
+    centre_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Retire un employé d'un centre"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    employee = await db.users.find_one({"id": employee_id})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employé non trouvé")
+    
+    current_centres = employee.get('centre_ids', [])
+    if employee.get('centre_id') and employee['centre_id'] not in current_centres:
+        current_centres.append(employee['centre_id'])
+    
+    if centre_id not in current_centres:
+        raise HTTPException(status_code=400, detail="L'employé n'appartient pas à ce centre")
+    
+    if len(current_centres) <= 1:
+        raise HTTPException(status_code=400, detail="L'employé doit appartenir à au moins un centre")
+    
+    current_centres.remove(centre_id)
+    
+    await db.users.update_one(
+        {"id": employee_id},
+        {"$set": {
+            "centre_ids": current_centres,
+            "centre_id": current_centres[0]  # Nouveau centre principal
+        }}
+    )
+    
+    return {"message": "Employé retiré du centre", "centre_ids": current_centres}
 
 # ===== GESTION DES INSCRIPTIONS =====
 
