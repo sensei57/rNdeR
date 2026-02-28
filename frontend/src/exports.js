@@ -18,6 +18,7 @@ export { CardSkeleton, StatsSkeleton, PlanningSkeleton, ListSkeleton, DashboardS
 // Composants de gestion
 export { CongeManager } from './components/conges';
 export { ChatManager } from './components/chat';
+export { ActualitesManager } from './components/dashboard';
 
 // Pages
 export { default as LoginPage } from './pages/LoginPage';
