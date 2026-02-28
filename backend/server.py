@@ -1244,11 +1244,45 @@ async def delete_notification(
 @api_router.post("/notifications/send-daily-planning")
 async def trigger_daily_planning(
     background_tasks: BackgroundTasks,
-    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"], ROLES["SUPER_ADMIN"]]))
 ):
     """Déclenche manuellement l'envoi du planning quotidien (TEST)"""
-    background_tasks.add_task(send_daily_planning_notifications)
+    background_tasks.add_task(send_morning_planning_notifications)
     return {"message": "Envoi du planning quotidien programmé"}
+
+
+@api_router.get("/notifications/scheduler-status")
+async def get_scheduler_status(
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"], ROLES["SUPER_ADMIN"]]))
+):
+    """Récupère le statut du scheduler de notifications"""
+    jobs = scheduler.get_jobs()
+    
+    job_info = []
+    for job in jobs:
+        next_run = job.next_run_time
+        job_info.append({
+            "id": job.id,
+            "name": job.name or job.id,
+            "next_run": next_run.isoformat() if next_run else None,
+            "trigger": str(job.trigger)
+        })
+    
+    return {
+        "scheduler_running": scheduler.running,
+        "timezone": "Europe/Paris",
+        "jobs": job_info,
+        "daily_notification_time": "07:00"
+    }
+
+
+@api_router.post("/notifications/test-scheduler")
+async def test_scheduler_notification(
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"], ROLES["SUPER_ADMIN"]]))
+):
+    """Exécute immédiatement la tâche de notification pour tester"""
+    await send_morning_planning_notifications()
+    return {"message": "Notifications de planning envoyées (test)"}
 
 
 # ===== NOTIFICATIONS DE TEST PERSONNALISÉES =====
