@@ -20,6 +20,10 @@ import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 import usePWA from './hooks/usePWA';
 
+// Import des composants extraits
+import PlanningHeader from './components/planning/PlanningHeader';
+import PlanningFilters from './components/planning/PlanningFilters';
+
 // Configuration automatique de l'URL backend
 // Utilise d'abord la variable d'environnement, sinon fallback pour Render.com
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || (
