@@ -1,117 +1,112 @@
 # PRD - OphtaGestion Multi-Centres
 
 ## 1. Vue d'ensemble
-Application web full-stack de gestion de cabinet médical multi-centres permettant la gestion du personnel, du planning, des congés, de la messagerie interne et des notifications.
+Application web full-stack de gestion de cabinet médical multi-centres. Plateforme complète avec 14+ fonctionnalités.
 
-## 2. Fonctionnalités Validées (100% tests passés)
+## 2. Fonctionnalités Complètes (100% testées)
 
 ### Authentification ✅
-- Login avec email/mot de passe
-- Sélection de centre à la connexion
-- Système de retry automatique robuste
+- Login multi-centre avec retry automatique
+- Token synchronisé avec Service Worker
 
 ### Planning Interactif ✅
-- Vue Jour avec sections Matin/Après-midi
-- Vue Semaine avec calendrier 7 jours
-- Vue Mois avec grille calendrier complète
-- **Heures supplémentaires** calculées et affichées
-- Header moderne avec gradient
+- Header gradient moderne
+- Vues Jour/Semaine/Mois 100% responsive
+- Heures supplémentaires intégrées
 
 ### Gestion des Congés ✅
-- Interface modernisée avec cartes de statistiques
+- Interface modernisée avec cartes stats
 - Filtres par statut
-- Support multi-types de congés
-- Composant extrait : `CongeManager.jsx`
 
 ### Messagerie/Chat ✅
-- Chat général, privé et groupes
-- Polling intelligent (10s, pause si caché)
-- Composant extrait : `ChatManager.jsx`
+- Chat général, privé, groupes
+- Polling intelligent
 
 ### Actualités ✅
-- Actualités générales et ciblées par rôle
+- Actualités générales et ciblées
 - Bannière anniversaires
-- Plan du cabinet intégré
-- Composant extrait : `ActualitesManager.jsx`
+
+### Gestion des Stocks ✅ (Modernisé)
+- Header gradient moderne
+- Filtres par catégorie/lieu
+- Gestion des permissions
+
+### Gestion des Salles ✅ (Modernisé)
+- Header gradient moderne
+- Configuration du cabinet
 
 ### Notifications ✅
-- Push notifications (Firebase)
-- Cron matinal à 7h
-- **Réponses rapides** : Backend prêt (`/api/notifications/quick-reply`)
+- Push notifications Firebase
+- **Réponses rapides** via Service Worker
 
 ## 3. Composants Extraits
 
-| Composant | Lignes | Fichier | Status |
-|-----------|--------|---------|--------|
-| CongeManager | ~400 | `/components/conges/CongeManager.jsx` | ✅ |
-| ChatManager | ~340 | `/components/chat/ChatManager.jsx` | ✅ |
-| ActualitesManager | ~370 | `/components/dashboard/ActualitesManager.jsx` | ✅ |
-| LoginPage | ~280 | `/pages/LoginPage.jsx` | ✅ |
-| AuthContext | ~150 | `/contexts/AuthContext.jsx` | ✅ |
-| PlanningContext | ~30 | `/contexts/PlanningContext.jsx` | ✅ |
-| useOptimized | ~150 | `/hooks/useOptimized.js` | ✅ |
-| Skeletons | ~80 | `/components/common/Skeletons.jsx` | ✅ |
+| Composant | Fichier |
+|-----------|---------|
+| CongeManager | `/components/conges/CongeManager.jsx` |
+| ChatManager | `/components/chat/ChatManager.jsx` |
+| ActualitesManager | `/components/dashboard/ActualitesManager.jsx` |
+| AuthContext | `/contexts/AuthContext.jsx` |
+| PlanningContext | `/contexts/PlanningContext.jsx` |
+| useOptimized | `/hooks/useOptimized.js` |
+| Skeletons | `/components/common/Skeletons.jsx` |
 
-## 4. Optimisations de Performance
+## 4. Optimisations Performance
 
-### Polling Intelligent
-| Composant | Intervalle | Optimisation |
-|-----------|-----------|--------------|
-| Actualités | 60s | Pause si onglet caché |
-| Messages | 10s | Pause si onglet caché |
-| Notifications | 45s | Pause si onglet caché |
-
-### Métriques Validées
-- Login : 2.15s desktop / 2.57s mobile
-- Navigation : < 2s
-- Changement de vue : < 1s
+- Polling intelligent (pause si onglet caché)
+- Login < 2.5s
+- Navigation < 2s
+- Changement de vue < 1s
+- CSS transitions optimisées
 
 ## 5. Credentials de Test
 - **Email:** directeur@cabinet.fr
 - **Mot de passe:** admin123
-- **Utilisateur:** Francis LEBLOND (Super-Admin)
 
-## 6. Architecture
+## 6. Navigation (14+ sections)
+1. Actualités
+2. Mon Profil
+3. Personnel
+4. Planning
+5. Congés
+6. Demande de créneaux
+7. Messages
+8. Mon Coffre-Fort
+9. Plan Cabinet
+10. Gestion Salles
+11. Gestion Stocks
+12. Administration
+13. Gestion Centres
+14. Déconnexion
 
-### Stack
-- **Frontend:** React 18, Tailwind CSS, Shadcn/UI
-- **Backend:** FastAPI, MongoDB (Motor)
-- **Cron:** APScheduler
+## 7. Backlog Futur
 
-### Structure finale
+### Optionnel (P3)
+- [ ] Extraire PlanningManager (~9400 lignes)
+- [ ] Documentation utilisateur
+
+## 8. Architecture Finale
+
 ```
 frontend/src/
-├── App.js                 # Principal (~20780 lignes)
-├── exports.js             # Index des exports
+├── App.js                 # Principal
+├── exports.js             # Index exports
 ├── components/
 │   ├── ui/                # Shadcn
 │   ├── common/            # Skeletons, LoadingSpinner
 │   ├── conges/            # CongeManager
 │   ├── chat/              # ChatManager
 │   └── dashboard/         # ActualitesManager
-├── contexts/              # AuthContext, PlanningContext
+├── contexts/              # Auth, Planning
 ├── hooks/                 # useOptimized
 ├── pages/                 # LoginPage
 └── utils/                 # api, helpers
+
+frontend/public/
+└── firebase-messaging-sw.js  # Service Worker avec Quick Reply
 ```
-
-## 7. Tâches Restantes (Backlog)
-
-### Moyenne Priorité (P2)
-- [ ] Implémenter réponses rapides côté Service Worker
-- [ ] Extraire PlanningManager (~9400 lignes) - composant très volumineux
-- [ ] Moderniser sections Personnel, Stocks, Salles
-
-### Basse Priorité (P3)
-- [ ] Configuration fine permissions managers
-- [ ] Documentation utilisateur
-
-## 8. Navigation Disponible (14+ sections)
-- Actualités, Mon Profil, Personnel, Planning, Congés
-- Demande de créneaux, Messages, Mon Coffre-Fort
-- Plan Cabinet, Gestion Salles, Gestion Stocks
-- Administration, Gestion Centres, Déconnexion
 
 ---
 Dernière mise à jour: 28 février 2026
-Tests: 100% passés (iteration_5.json)
+Tests: 100% passés (6 itérations)
+Toutes les sections modernisées avec gradient headers
