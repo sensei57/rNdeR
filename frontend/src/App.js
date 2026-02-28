@@ -174,15 +174,15 @@ const CabinetPlanWithPopup = ({ planMatin, planApresMidi, user }) => {
   const renderPlanContent = (plan, periodTitle, periodEmoji, isFullscreen = false) => {
     if (!plan?.salles?.length) return null;
     
-    const scale = isFullscreen ? 1 : 0.85;
-    const cardWidth = isFullscreen ? 85 : 78;
-    const cardHeight = isFullscreen ? 95 : 88;
+    // Filtrer les salles valides
+    const validSalles = plan.salles.filter(s => s.position_x > 0 && s.position_x < 6);
+    if (validSalles.length === 0) return null;
     
-    // Calculer les dimensions du container
-    const maxX = Math.max(...plan.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(s => s.position_x));
-    const maxY = Math.max(...plan.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(s => s.position_y));
-    const containerWidth = (maxX) * (cardWidth + 7) + cardWidth + 20;
-    const containerHeight = (maxY + 1) * (cardHeight + 7) + 20;
+    // Calculer les dimensions de la grille
+    const maxX = Math.max(...validSalles.map(s => s.position_x));
+    const maxY = Math.max(...validSalles.map(s => s.position_y));
+    const numCols = maxX; // nombre de colonnes (1-5 = 5 colonnes max)
+    const numRows = maxY + 1; // nombre de lignes
     
     return (
       <div className={`cabinet-plan-period ${isFullscreen ? 'fullscreen-period' : ''}`}>
@@ -192,60 +192,54 @@ const CabinetPlanWithPopup = ({ planMatin, planApresMidi, user }) => {
           </h3>
         </div>
         <div 
-          className={`cabinet-plan-scroll-container ${isFullscreen ? 'fullscreen-scroll' : ''}`}
+          className={`cabinet-plan-grid-responsive ${isFullscreen ? 'fullscreen-scroll' : ''}`}
           onClick={() => {
             if (!isFullscreen) {
               setFullscreenPeriod(periodTitle === 'Matin' ? 'matin' : 'apresmidi');
               setShowFullscreen(true);
             }
           }}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${numCols}, minmax(70px, 1fr))`,
+            gap: '8px',
+            cursor: isFullscreen ? 'default' : 'pointer'
+          }}
         >
-          <div 
-            className="relative"
-            style={{ 
-              width: `${containerWidth}px`, 
-              height: `${containerHeight}px`,
-              minWidth: `${containerWidth}px`
-            }}
-          >
-            {plan.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => {
-              const occupation = salle.occupation;
-              const adjustedX = salle.position_x > 0 ? salle.position_x - 1 : 0;
-              
-              let statusClass = 'libre';
-              if (occupation) {
-                if (salle.type_salle === 'MEDECIN') statusClass = 'medecin';
-                else if (salle.type_salle === 'ASSISTANT') statusClass = 'assistant';
-                else if (salle.type_salle === 'ATTENTE') statusClass = 'attente';
-              }
-              
-              const hasPhoto = occupation?.employe?.photo_url;
-              
-              return (
-                <div
-                  key={salle.id}
-                  className={`room-card-positioned ${statusClass} ${hasPhoto ? 'has-photo' : ''}`}
-                  style={{
-                    position: 'absolute',
-                    left: `${adjustedX * (cardWidth + 7)}px`,
-                    top: `${salle.position_y * (cardHeight + 7)}px`,
-                    width: `${cardWidth}px`,
-                    height: `${cardHeight}px`
-                  }}
-                >
-                  {occupation && <div className="room-card-indicator"></div>}
-                  {occupation ? (
-                    <RoomCardContent salle={salle} occupation={occupation} />
-                  ) : (
-                    <>
-                      <div className="room-card-name">{salle.nom}</div>
-                      <div className="room-card-status">Libre</div>
-                    </>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          {validSalles.map(salle => {
+            const occupation = salle.occupation;
+            const adjustedX = salle.position_x > 0 ? salle.position_x - 1 : 0;
+            
+            let statusClass = 'libre';
+            if (occupation) {
+              if (salle.type_salle === 'MEDECIN') statusClass = 'medecin';
+              else if (salle.type_salle === 'ASSISTANT') statusClass = 'assistant';
+              else if (salle.type_salle === 'ATTENTE') statusClass = 'attente';
+            }
+            
+            const hasPhoto = occupation?.employe?.photo_url;
+            
+            return (
+              <div
+                key={salle.id}
+                className={`room-card-grid ${statusClass} ${hasPhoto ? 'has-photo' : ''}`}
+                style={{
+                  gridColumn: adjustedX + 1,
+                  gridRow: salle.position_y + 1
+                }}
+              >
+                {occupation && <div className="room-card-indicator"></div>}
+                {occupation ? (
+                  <RoomCardContent salle={salle} occupation={occupation} />
+                ) : (
+                  <>
+                    <div className="room-card-name">{salle.nom}</div>
+                    <div className="room-card-status">Libre</div>
+                  </>
+                )}
+              </div>
+            );
+          })}
         </div>
         {!isFullscreen && (
           <div className="cabinet-plan-tap-hint md:hidden">
