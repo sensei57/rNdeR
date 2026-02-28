@@ -1,19 +1,23 @@
-# PRD - OphtaGestion Multi-Centres v2.5
+# PRD - OphtaGestion Multi-Centres v2.6
 
 ## 1. Vue d'ensemble
-Application web full-stack de gestion de cabinets médicaux multi-centres. **Version 2.5 avec tous les modules indépendants par centre.**
+Application web full-stack de gestion de cabinets médicaux multi-centres. **Version 2.6 - Refactorisation finalisée.**
 
-## 2. Nouveautés v2.5 (28 février 2026)
+## 2. Nouveautés v2.6 (28 février 2026)
 
-### Tous les modules maintenant indépendants par centre
-Ajout du filtrage par centre pour :
-- ✅ **Salles** : Chaque centre a ses propres salles
-- ✅ **Stocks** (catégories et articles) : Inventaire indépendant par centre
-- ✅ **Notes générales** : Notes visibles par centre
-- ✅ **Notes du planning** : Notes journalières par centre
-- ✅ **Réservations de salles** : Réservations filtrées par centre
+### Refactorisation terminée
+- ✅ **App.js** réduit de 20902 à 19429 lignes (-1473 lignes)
+- ✅ **ChatManager** extrait → `/components/chat/ChatManager.jsx`
+- ✅ **ActualitesManager** extrait → `/components/dashboard/ActualitesManager.jsx`
+- ✅ **CongeManager** extrait → `/components/conges/CongeManager.jsx`
+- ✅ **PlanningHeader** extrait → `/components/planning/PlanningHeader.jsx`
+- ✅ **PlanningFilters** extrait → `/components/planning/PlanningFilters.jsx`
 
-## 3. Récapitulatif complet des modules filtrés par centre
+### Correction bug Plan Cabinet
+- ✅ Le Plan du Cabinet ne déborde plus sur la droite
+- ✅ Layout responsive avec tailles réduites (450x650px)
+
+## 3. Modules filtrés par centre
 
 | Module | Endpoint | Filtrage |
 |--------|----------|----------|
@@ -23,44 +27,26 @@ Ajout du filtrage par centre pour :
 | **Demandes créneaux** | `/api/demandes-travail` | ✅ Par centre |
 | **Plan cabinet** | `/api/cabinet/plan/{date}` | ✅ Par centre |
 | **Salles** | `/api/salles` | ✅ Par centre |
-| **Stocks catégories** | `/api/stocks/categories` | ✅ Par centre |
-| **Stocks articles** | `/api/stocks/articles` | ✅ Par centre |
-| **Notes générales** | `/api/notes` | ✅ Par centre |
-| **Notes planning** | `/api/planning/notes` | ✅ Par centre |
+| **Stocks** | `/api/stocks/*` | ✅ Par centre |
+| **Notes** | `/api/notes`, `/api/planning/notes` | ✅ Par centre |
 
-## 4. Logique d'isolation des données
-
-### Création de données
-- Le `centre_id` est automatiquement assigné au centre actif de l'utilisateur
-- Si aucun centre actif, utilise le premier centre de l'utilisateur
-
-### Lecture des données
-- Les données du centre actif sont retournées
-- Les données sans `centre_id` (legacy) restent visibles pour rétrocompatibilité
-
-### Vue globale (Directeur uniquement)
-- `/api/users?all_centres=true` : Tous les employés de tous les centres
-
-## 5. Credentials de Test
+## 4. Credentials de Test
 - **Email:** directeur@cabinet.fr
 - **Mot de passe:** admin123
 
-## 6. Prochaines étapes (Backlog)
-
-### P1 - Haute priorité
-- [ ] Refactorisation du `PlanningManager` (~9000 lignes)
-- [ ] Problème de rechargement mobile (investigation)
+## 5. Backlog restant
 
 ### P2 - Moyenne priorité
 - [ ] Tests e2e des réponses rapides aux notifications
 - [ ] Validation du calcul des heures supplémentaires
+- [ ] Problème de rechargement mobile (investigation)
 
 ### P3 - Basse priorité
 - [ ] Interface de gestion fine des permissions des managers
+- [ ] Extraction du PlanningManager (~9000 lignes restantes)
 
 ---
-**Version:** 2.5  
+**Version:** 2.6  
 **Date:** 28 février 2026  
 **Status:** ✅ PRODUCTION READY  
-**Mobile:** ✅ Responsive complet  
-**Multi-centres:** ✅ Isolation complète des données
+**Refactorisation:** ✅ Composants principaux extraits
