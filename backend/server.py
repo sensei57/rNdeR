@@ -5183,6 +5183,16 @@ async def get_planning_mois(
     from datetime import datetime
     import calendar
     
+    # Déterminer le centre actif de l'utilisateur
+    centre_actif = getattr(current_user, 'centre_actif_id', None)
+    if not centre_actif:
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        centre_actif = user_centres[0] if user_centres else None
+    
+    is_admin = current_user.role in ['Directeur', 'Super-Admin']
+    
     # Parser le mois
     year, month = map(int, mois.split('-'))
     last_day = calendar.monthrange(year, month)[1]
@@ -5190,8 +5200,31 @@ async def get_planning_mois(
     # Générer toutes les dates du mois
     dates_mois = [f"{year}-{str(month).zfill(2)}-{str(day).zfill(2)}" for day in range(1, last_day + 1)]
     
+    # Construire la requête avec filtrage par centre
+    if centre_actif:
+        if is_admin:
+            query = {
+                "$and": [
+                    {"date": {"$in": dates_mois}},
+                    {"$or": [
+                        {"centre_id": centre_actif},
+                        {"centre_id": None},
+                        {"centre_id": {"$exists": False}}
+                    ]}
+                ]
+            }
+        else:
+            query = {
+                "$and": [
+                    {"date": {"$in": dates_mois}},
+                    {"centre_id": centre_actif}
+                ]
+            }
+    else:
+        query = {"date": {"$in": dates_mois}}
+    
     # Récupérer tout le planning du mois en une seule requête
-    planning = await db.planning.find({"date": {"$in": dates_mois}}).sort("date", 1).to_list(5000)
+    planning = await db.planning.find(query).sort("date", 1).to_list(5000)
     
     # Supprimer _id et enrichir avec le rôle de l'employé
     result = []
