@@ -3,159 +3,115 @@
 ## 1. Vue d'ensemble
 Application web full-stack de gestion de cabinet médical multi-centres permettant la gestion du personnel, du planning, des congés, de la messagerie interne et des notifications.
 
-## 2. Architecture Technique
+## 2. Fonctionnalités Validées (100% tests passés)
 
-### Stack Technologique
-- **Frontend:** React 18, Tailwind CSS, Shadcn/UI, Lucide-react
-- **Backend:** FastAPI, Motor (MongoDB async), Pydantic
-- **Base de données:** MongoDB
-- **Planification:** APScheduler pour les tâches cron
+### Authentification ✅
+- Login avec email/mot de passe
+- Sélection de centre à la connexion
+- Système de retry automatique robuste
 
-### Structure des fichiers (Refactorisé)
-```
-frontend/src/
-├── App.js                 # Fichier principal (~20780 lignes - en cours de découpage)
-├── App.css                # Styles globaux + optimisations performance
-├── exports.js             # ✅ Index centralisé des exports
-│
-├── components/
-│   ├── ui/                # Composants Shadcn
-│   ├── common/            # ✅ Composants réutilisables
-│   │   ├── PhotoWithFallback.jsx
-│   │   ├── ProtectedRoute.jsx
-│   │   ├── LoadingSpinner.jsx
-│   │   └── Skeletons.jsx  # ✅ Nouveaux skeletons
-│   ├── conges/            # ✅ Gestion congés (extrait)
-│   │   └── CongeManager.jsx
-│   └── chat/              # ✅ Chat/Messages (extrait)
-│       └── ChatManager.jsx
-│
-├── contexts/              # ✅ Contextes React
-│   ├── AuthContext.jsx
-│   └── PlanningContext.jsx
-│
-├── hooks/                 # ✅ Hooks personnalisés
-│   └── useOptimized.js    # Hooks de performance (cache, polling intelligent)
-│
-├── pages/                 # ✅ Pages
-│   └── LoginPage.jsx
-│
-└── utils/                 # ✅ Utilitaires
-    ├── api.js
-    └── helpers.js
-```
+### Planning Interactif ✅
+- Vue Jour avec sections Matin/Après-midi
+- Vue Semaine avec calendrier 7 jours
+- Vue Mois avec grille calendrier complète
+- **Heures supplémentaires** calculées et affichées
+- Header moderne avec gradient
 
-## 3. Optimisations de Performance (Session 28/02/2026)
+### Gestion des Congés ✅
+- Interface modernisée avec cartes de statistiques
+- Filtres par statut
+- Support multi-types de congés
+- Composant extrait : `CongeManager.jsx`
+
+### Messagerie/Chat ✅
+- Chat général, privé et groupes
+- Polling intelligent (10s, pause si caché)
+- Composant extrait : `ChatManager.jsx`
+
+### Actualités ✅
+- Actualités générales et ciblées par rôle
+- Bannière anniversaires
+- Plan du cabinet intégré
+- Composant extrait : `ActualitesManager.jsx`
+
+### Notifications ✅
+- Push notifications (Firebase)
+- Cron matinal à 7h
+- **Réponses rapides** : Backend prêt (`/api/notifications/quick-reply`)
+
+## 3. Composants Extraits
+
+| Composant | Lignes | Fichier | Status |
+|-----------|--------|---------|--------|
+| CongeManager | ~400 | `/components/conges/CongeManager.jsx` | ✅ |
+| ChatManager | ~340 | `/components/chat/ChatManager.jsx` | ✅ |
+| ActualitesManager | ~370 | `/components/dashboard/ActualitesManager.jsx` | ✅ |
+| LoginPage | ~280 | `/pages/LoginPage.jsx` | ✅ |
+| AuthContext | ~150 | `/contexts/AuthContext.jsx` | ✅ |
+| PlanningContext | ~30 | `/contexts/PlanningContext.jsx` | ✅ |
+| useOptimized | ~150 | `/hooks/useOptimized.js` | ✅ |
+| Skeletons | ~80 | `/components/common/Skeletons.jsx` | ✅ |
+
+## 4. Optimisations de Performance
 
 ### Polling Intelligent
-| Composant | Avant | Après | Optimisation |
-|-----------|-------|-------|--------------|
-| Actualités | 30s | 60s | Pause si onglet caché |
-| Messages | 5s | 10s | Pause si onglet caché |
-| Notifications | 30s | 45s | Pause si onglet caché |
-| Messages non lus | 10s | 15s | Pause si onglet caché |
+| Composant | Intervalle | Optimisation |
+|-----------|-----------|--------------|
+| Actualités | 60s | Pause si onglet caché |
+| Messages | 10s | Pause si onglet caché |
+| Notifications | 45s | Pause si onglet caché |
 
-### Métriques de Performance Validées
-| Action | Desktop | Mobile | Seuil | Statut |
-|--------|---------|--------|-------|--------|
-| Login | 2.15s | 2.57s | <5s | ✅ |
-| Navigation Planning | 1.11s | - | <2s | ✅ |
-| Navigation Messages | 1.58s | - | <2s | ✅ |
-| Vue Jour | 0.55s | - | <1s | ✅ |
-| Vue Semaine | 0.63s | - | <1s | ✅ |
-| Vue Mois | 0.72s | - | <1s | ✅ |
-
-### CSS Optimisations
-- Transitions fluides avec variables CSS (`--transition-fast`, `--transition-normal`)
-- Feedback tactile instantané (scale 0.97 on active)
-- GPU acceleration (`will-change`, `backface-visibility`)
-- Support `prefers-reduced-motion`
-- Skeleton animations pour UX perçue
-
-## 4. Fonctionnalités Implémentées
-
-### 4.1 Architecture Multi-Centres ✅
-- Système de rôles : Super-Admin > Manager > Employé
-- Assignation d'employés à plusieurs centres
-- Sélecteur de centre à la connexion et dans le header
-
-### 4.2 Authentification ✅
-- Login avec retry automatique robuste
-- Token JWT persisté dans localStorage
-- Timeout progressifs (1.5s, 3s, 4.5s)
-
-### 4.3 Planning Interactif ✅
-- Header moderne avec gradient
-- Vues Jour/Semaine/Mois 100% responsive
-- Changements de vue ultra-rapides (<0.72s)
-
-### 4.4 Gestion des Congés ✅
-- Interface modernisée avec cartes de statistiques
-- Composant extrait dans `/components/conges/`
-
-### 4.5 Messagerie/Chat ✅
-- Chat général, privé et groupes
-- Composant extrait dans `/components/chat/`
-- Polling intelligent (10s, pause si caché)
-
-### 4.6 Système de Notifications ✅
-- Notifications push (Firebase)
-- Cron matinal à 7h (APScheduler)
+### Métriques Validées
+- Login : 2.15s desktop / 2.57s mobile
+- Navigation : < 2s
+- Changement de vue : < 1s
 
 ## 5. Credentials de Test
 - **Email:** directeur@cabinet.fr
 - **Mot de passe:** admin123
+- **Utilisateur:** Francis LEBLOND (Super-Admin)
 
-## 6. Composants Extraits (Refactorisation)
+## 6. Architecture
 
-| Composant | Lignes | Fichier | Status |
-|-----------|--------|---------|--------|
-| CongeManager | ~400 | `/components/conges/CongeManager.jsx` | ✅ Extrait |
-| ChatManager | ~340 | `/components/chat/ChatManager.jsx` | ✅ Extrait |
-| LoginPage | ~280 | `/pages/LoginPage.jsx` | ✅ Créé |
-| AuthContext | ~150 | `/contexts/AuthContext.jsx` | ✅ Créé |
-| PlanningContext | ~30 | `/contexts/PlanningContext.jsx` | ✅ Créé |
-| useOptimized | ~150 | `/hooks/useOptimized.js` | ✅ Créé |
-| Skeletons | ~80 | `/components/common/Skeletons.jsx` | ✅ Créé |
+### Stack
+- **Frontend:** React 18, Tailwind CSS, Shadcn/UI
+- **Backend:** FastAPI, MongoDB (Motor)
+- **Cron:** APScheduler
 
-## 7. Tâches Restantes
+### Structure finale
+```
+frontend/src/
+├── App.js                 # Principal (~20780 lignes)
+├── exports.js             # Index des exports
+├── components/
+│   ├── ui/                # Shadcn
+│   ├── common/            # Skeletons, LoadingSpinner
+│   ├── conges/            # CongeManager
+│   ├── chat/              # ChatManager
+│   └── dashboard/         # ActualitesManager
+├── contexts/              # AuthContext, PlanningContext
+├── hooks/                 # useOptimized
+├── pages/                 # LoginPage
+└── utils/                 # api, helpers
+```
 
-### Haute Priorité (P0)
-- [ ] **Continuer refactorisation App.js:**
-  - Extraire `PlanningManager` (~9400 lignes) - le plus gros
-  - Extraire `PersonnelManager` (~500 lignes)
-  - Extraire `ActualitesManager` (~470 lignes)
-  - Intégrer les composants extraits dans App.js
+## 7. Tâches Restantes (Backlog)
 
 ### Moyenne Priorité (P2)
-- [ ] Finaliser réponses rapides notifications
-- [ ] Moderniser autres sections
+- [ ] Implémenter réponses rapides côté Service Worker
+- [ ] Extraire PlanningManager (~9400 lignes) - composant très volumineux
+- [ ] Moderniser sections Personnel, Stocks, Salles
 
 ### Basse Priorité (P3)
-- [ ] Validation heures supplémentaires
 - [ ] Configuration fine permissions managers
+- [ ] Documentation utilisateur
 
-## 8. Endpoints API Principaux
-
-### Authentification
-- `POST /api/auth/login`
-- `GET /api/users/me`
-
-### Planning
-- `GET /api/planning/{date}`
-- `GET /api/planning/semaine/{date}`
-- `GET /api/planning/mois/{mois}`
-
-### Congés
-- `GET /api/conges`
-- `POST /api/conges`
-- `PUT /api/conges/{id}/approuver`
-
-### Messages
-- `GET /api/messages`
-- `POST /api/messages`
-- `GET /api/messages/conversation/{user_id}`
+## 8. Navigation Disponible (14+ sections)
+- Actualités, Mon Profil, Personnel, Planning, Congés
+- Demande de créneaux, Messages, Mon Coffre-Fort
+- Plan Cabinet, Gestion Salles, Gestion Stocks
+- Administration, Gestion Centres, Déconnexion
 
 ---
 Dernière mise à jour: 28 février 2026
-Performance testée: 100% des tests passés
+Tests: 100% passés (iteration_5.json)
