@@ -17578,76 +17578,178 @@ const CentresManager = () => {
 
         {/* Onglet Centres */}
         <TabsContent value="centres" className="space-y-4">
-          <div className="flex justify-end">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <h3 className="text-lg font-semibold">Vue globale des centres</h3>
+              <Badge className="bg-[#0091B9]">{centres.length} centre(s)</Badge>
+            </div>
             <Button onClick={() => { setEditingCentre(null); setCentreForm({ nom: '', adresse: '', telephone: '', email: '' }); setShowCentreModal(true); }}>
               <Plus className="h-4 w-4 mr-2" />
               Nouveau Centre
             </Button>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {centres.map((centre) => (
-              <Card 
-                key={centre.id} 
-                className={`cursor-pointer transition-all hover:shadow-lg ${selectedCentre?.id === centre.id ? 'ring-2 ring-[#0091B9]' : ''}`}
-                onClick={() => handleSelectCentre(centre)}
-              >
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{centre.nom}</CardTitle>
-                    <Badge variant={centre.actif ? 'default' : 'secondary'}>
-                      {centre.actif ? 'Actif' : 'Inactif'}
-                    </Badge>
-                  </div>
-                  {centre.adresse && (
-                    <CardDescription className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {centre.adresse}
-                    </CardDescription>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                    <div className="bg-blue-50 p-2 rounded">
-                      <div className="font-bold text-blue-600">{centre.stats?.medecins || 0}</div>
-                      <div className="text-gray-500">Médecins</div>
-                    </div>
-                    <div className="bg-green-50 p-2 rounded">
-                      <div className="font-bold text-green-600">{centre.stats?.assistants || 0}</div>
-                      <div className="text-gray-500">Assistants</div>
-                    </div>
-                    <div className="bg-purple-50 p-2 rounded">
-                      <div className="font-bold text-purple-600">{centre.stats?.secretaires || 0}</div>
-                      <div className="text-gray-500">Secrétaires</div>
-                    </div>
-                    <div className="bg-orange-50 p-2 rounded">
-                      <div className="font-bold text-orange-600">{centre.stats?.managers || 0}</div>
-                      <div className="text-gray-500">Managers</div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-4">
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={(e) => { e.stopPropagation(); setEditingCentre(centre); setCentreForm(centre); setShowCentreModal(true); }}
-                    >
-                      <Edit className="h-3 w-3 mr-1" />
-                      Modifier
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          {/* Statistiques globales */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <Card className="bg-gradient-to-br from-[#0091B9]/10 to-[#0091B9]/5 border-[#0091B9]/20">
+              <CardContent className="p-4 text-center">
+                <div className="text-3xl font-bold text-[#0091B9]">{centres.length}</div>
+                <div className="text-sm text-gray-600">Centres</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 border-blue-200">
+              <CardContent className="p-4 text-center">
+                <div className="text-3xl font-bold text-blue-600">
+                  {employees.filter(e => e.role === 'Médecin').length}
+                </div>
+                <div className="text-sm text-gray-600">Médecins</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-green-50 to-green-100/50 border-green-200">
+              <CardContent className="p-4 text-center">
+                <div className="text-3xl font-bold text-green-600">
+                  {employees.filter(e => e.role === 'Assistant').length}
+                </div>
+                <div className="text-sm text-gray-600">Assistants</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-purple-50 to-purple-100/50 border-purple-200">
+              <CardContent className="p-4 text-center">
+                <div className="text-3xl font-bold text-purple-600">
+                  {employees.filter(e => e.role === 'Secrétaire').length}
+                </div>
+                <div className="text-sm text-gray-600">Secrétaires</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-gray-50 to-gray-100/50 border-gray-200">
+              <CardContent className="p-4 text-center">
+                <div className="text-3xl font-bold text-gray-600">
+                  {employees.filter(e => e.actif).length}
+                </div>
+                <div className="text-sm text-gray-600">Total Actifs</div>
+              </CardContent>
+            </Card>
           </div>
-
-          {/* Configuration des rubriques du centre sélectionné */}
-          {selectedCentre && (
-            <Card className="mt-4">
-              <CardHeader>
-                <CardTitle className="text-lg">Configuration de {selectedCentre.nom}</CardTitle>
-                <CardDescription>Sélectionnez les rubriques visibles pour ce centre</CardDescription>
-              </CardHeader>
-              <CardContent>
+          
+          {/* Liste des centres avec employés */}
+          <div className="space-y-4">
+            {centres.map((centre) => {
+              // Filtrer les employés de ce centre
+              const centreEmployees = employees.filter(e => 
+                (e.centre_ids && e.centre_ids.includes(centre.id)) || 
+                e.centre_id === centre.id
+              );
+              const centreMedecins = centreEmployees.filter(e => e.role === 'Médecin');
+              const centreAssistants = centreEmployees.filter(e => e.role === 'Assistant');
+              const centreSecretaires = centreEmployees.filter(e => e.role === 'Secrétaire');
+              
+              return (
+                <Card key={centre.id} className="overflow-hidden">
+                  <div className="bg-gradient-to-r from-[#0091B9] to-[#19CD91] p-4 text-white">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-xl font-bold">{centre.nom}</h3>
+                        {centre.adresse && (
+                          <p className="text-white/80 text-sm flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {centre.adresse}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-white/20 text-white">
+                          {centreEmployees.length} employé(s)
+                        </Badge>
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          className="text-white hover:bg-white/20"
+                          onClick={() => { setEditingCentre(centre); setCentreForm(centre); setShowCentreModal(true); }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <CardContent className="p-4">
+                    {centreEmployees.length === 0 ? (
+                      <p className="text-gray-500 text-center py-4">Aucun employé assigné à ce centre</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {/* Médecins */}
+                        {centreMedecins.length > 0 && (
+                          <div>
+                            <h4 className="text-sm font-semibold text-blue-600 mb-2 flex items-center gap-2">
+                              <span className="w-3 h-3 bg-blue-500 rounded-full"></span>
+                              Médecins ({centreMedecins.length})
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                              {centreMedecins.map(emp => (
+                                <div key={emp.id} className="flex items-center gap-2 bg-blue-50 rounded-full px-3 py-1">
+                                  <Avatar className="h-6 w-6">
+                                    <AvatarFallback className="bg-blue-500 text-white text-xs">
+                                      {emp.prenom?.[0]}{emp.nom?.[0]}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-sm">{emp.prenom} {emp.nom}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Assistants */}
+                        {centreAssistants.length > 0 && (
+                          <div>
+                            <h4 className="text-sm font-semibold text-green-600 mb-2 flex items-center gap-2">
+                              <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+                              Assistants ({centreAssistants.length})
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                              {centreAssistants.map(emp => (
+                                <div key={emp.id} className="flex items-center gap-2 bg-green-50 rounded-full px-3 py-1">
+                                  <Avatar className="h-6 w-6">
+                                    <AvatarFallback className="bg-green-500 text-white text-xs">
+                                      {emp.prenom?.[0]}{emp.nom?.[0]}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-sm">{emp.prenom} {emp.nom}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Secrétaires */}
+                        {centreSecretaires.length > 0 && (
+                          <div>
+                            <h4 className="text-sm font-semibold text-purple-600 mb-2 flex items-center gap-2">
+                              <span className="w-3 h-3 bg-purple-500 rounded-full"></span>
+                              Secrétaires ({centreSecretaires.length})
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                              {centreSecretaires.map(emp => (
+                                <div key={emp.id} className="flex items-center gap-2 bg-purple-50 rounded-full px-3 py-1">
+                                  <Avatar className="h-6 w-6">
+                                    <AvatarFallback className="bg-purple-500 text-white text-xs">
+                                      {emp.prenom?.[0]}{emp.nom?.[0]}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-sm">{emp.prenom} {emp.nom}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </TabsContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {rubriquesDisponibles.map((rubrique) => {
                     const isActive = selectedCentre.config?.rubriques_actives?.includes(rubrique.id) ?? true;
