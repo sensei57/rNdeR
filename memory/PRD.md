@@ -6,12 +6,14 @@ Application de gestion pour cabinet d'ophtalmologie avec :
 - Messagerie interne style WhatsApp
 - Plan du cabinet avec disposition des salles
 - Interface PWA installable
+- **NOUVEAU** : Support multi-centres avec gestion hiérarchique
 
 ## Utilisateurs cibles
-- Directeur de cabinet (admin)
-- Médecins
-- Assistants
-- Secrétaires
+- **Super-Admin (Directeur)** : Gère TOUS les centres, crée centres/managers, valide inscriptions
+- **Manager** : Gère UN centre avec droits limités (à définir par Super-Admin)
+- Médecins : Appartient à UN centre
+- Assistants : Appartient à UN centre
+- Secrétaires : Appartient à UN centre
 
 ## Architecture technique
 - **Frontend:** React + Tailwind CSS + Shadcn/UI
@@ -21,7 +23,39 @@ Application de gestion pour cabinet d'ophtalmologie avec :
 
 ## Ce qui a été implémenté
 
-### Session 28/02/2026
+### Session 28/02/2026 - Architecture Multi-Centres
+- ✅ **Système multi-centres complet**
+  - Nouveau modèle `Centre` avec collection MongoDB
+  - Migration des données existantes vers le centre "Place de l'Étoile"
+  - Isolation des données par centre (users, planning, salles, messages, congés)
+  
+- ✅ **Nouveaux rôles**
+  - `Super-Admin` : Gère tous les centres, droits complets
+  - `Manager` : Gère un centre avec droits personnalisables
+  - Les anciens "Directeur" sont convertis en "Super-Admin"
+
+- ✅ **Page de connexion améliorée**
+  - Sélecteur de centre médical
+  - Bouton "Demander un accès" pour les inscriptions
+  - Formulaire d'inscription complet avec choix du centre et du poste
+
+- ✅ **Gestion des inscriptions**
+  - Nouvel endpoint POST `/api/inscriptions` (public)
+  - Endpoints GET/PUT pour approuver/rejeter les demandes
+  - Notification au Super-Admin pour chaque nouvelle demande
+
+- ✅ **Navigation multi-centres pour Super-Admin**
+  - Sélecteur de centre dans le header
+  - Changement de centre en temps réel (rechargement automatique)
+  - Filtrage des données selon le centre actif
+
+- ✅ **Endpoints API multi-centres**
+  - `GET /api/centres/public` : Liste des centres (sans auth)
+  - `GET /api/centres` : Liste des centres accessibles
+  - `POST /api/centres` : Créer un centre (Super-Admin)
+  - `PUT /api/centres/{id}` : Modifier un centre
+  - `POST /api/centres/{id}/switch` : Changer de centre actif
+  - `POST /api/admin/migrate-to-multicentre` : Migration des données
 - ✅ **Système de notifications de test depuis l'administration**
   - Nouvel endpoint GET `/api/notifications/employees-for-test` : Liste des employés avec statut push
   - Nouvel endpoint POST `/api/notifications/test` : Envoi de notifications personnalisées à plusieurs employés
