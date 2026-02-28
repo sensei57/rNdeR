@@ -1722,6 +1722,12 @@ async def get_centres(current_user: User = Depends(get_current_user)):
     
     return {"centres": centres}
 
+@api_router.get("/centres/public")
+async def get_centres_public():
+    """Récupère la liste des centres actifs (sans authentification - pour la page de connexion)"""
+    centres = await db.centres.find({"actif": True}, {"_id": 0, "id": 1, "nom": 1}).to_list(100)
+    return {"centres": centres}
+
 @api_router.post("/centres")
 async def create_centre(
     centre_data: CentreCreate,
