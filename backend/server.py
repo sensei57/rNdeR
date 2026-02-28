@@ -245,6 +245,7 @@ class UserBase(BaseModel):
     centre_ids: Optional[List[str]] = []  # Liste des centres auxquels l'employé appartient
     centre_id: Optional[str] = None  # Centre principal (legacy/compatibilité)
     centre_actif_id: Optional[str] = None  # Centre actuellement sélectionné (pour Super-Admin)
+    centre_favori_id: Optional[str] = None  # Centre favori de l'utilisateur (pour migration données)
     telephone: Optional[str] = None
     date_naissance: Optional[str] = None  # Date de naissance (YYYY-MM-DD)
     photo_url: Optional[str] = None  # URL de la photo de profil
