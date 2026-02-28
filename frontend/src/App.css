@@ -3300,3 +3300,115 @@ p {
 .cabinet-plan-fullscreen-scroll .cabinet-plan-tap-hint {
   display: none;
 }
+
+
+/* ============================================
+   OPTIMISATIONS DE PERFORMANCE ET RÉACTIVITÉ
+   ============================================ */
+
+/* Transitions optimisées pour tous les éléments interactifs */
+button, a, .clickable, [role="button"] {
+  transition: transform var(--transition-fast), 
+              background-color var(--transition-fast),
+              box-shadow var(--transition-fast),
+              opacity var(--transition-fast);
+  will-change: transform;
+}
+
+/* Feedback tactile instantané */
+button:active, a:active, .clickable:active, [role="button"]:active {
+  transform: scale(0.97);
+}
+
+/* Cards avec transition optimisée */
+.card, [class*="Card"] {
+  transition: transform var(--transition-normal), 
+              box-shadow var(--transition-normal);
+}
+
+.card:hover, [class*="Card"]:hover {
+  transform: translateY(-2px);
+}
+
+/* Skeleton animations fluides */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, 
+    var(--gray-100) 25%, 
+    var(--gray-50) 50%, 
+    var(--gray-100) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Optimisation GPU pour animations */
+.animate-spin, .animate-pulse, [class*="animate-"] {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Input focus transitions fluides */
+input, textarea, select, [class*="Input"], [class*="Select"] {
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast),
+              background-color var(--transition-fast);
+}
+
+/* Menu transitions */
+nav, aside, .sidebar, .menu {
+  transition: transform var(--transition-normal),
+              opacity var(--transition-normal);
+}
+
+/* Page transitions */
+.page-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--transition-normal),
+              transform var(--transition-normal);
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Optimisation mobile */
+@media (max-width: 768px) {
+  /* Désactiver hover sur mobile pour éviter les états bloqués */
+  .card:hover, [class*="Card"]:hover {
+    transform: none;
+  }
+  
+  /* Tap highlight optimisé */
+  button, a, .clickable {
+    -webkit-tap-highlight-color: rgba(0, 145, 185, 0.1);
+  }
+}
+
+/* Loading overlay avec blur */
+.loading-overlay {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Toast notifications animations */
+[data-sonner-toast] {
+  transition: transform var(--transition-spring),
+              opacity var(--transition-normal) !important;
+}
