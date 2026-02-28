@@ -14,6 +14,12 @@ from datetime import datetime, timezone, timedelta
 import jwt
 from passlib.context import CryptContext
 import bcrypt
+from contextlib import asynccontextmanager
+import asyncio
+
+# Scheduler pour les notifications automatiques
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -31,8 +37,95 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 security = HTTPBearer()
 
-# Create the main app without a prefix
-app = FastAPI(title="Gestion Personnel Médical")
+# Scheduler global
+scheduler = AsyncIOScheduler(timezone="Europe/Paris")
+
+# Fonction de notification automatique à 7h
+async def send_morning_planning_notifications():
+    """Envoie les notifications de planning à 7h du matin à tous les employés qui travaillent aujourd'hui"""
+    from push_notifications import send_push_notification
+    
+    try:
+        today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+        print(f"🔔 [CRON 7h] Envoi des notifications de planning pour {today}")
+        
+        # Récupérer tous les créneaux du jour
+        creneaux = await db.planning.find({"date": today, "est_repos": {"$ne": True}}).to_list(1000)
+        
+        # Grouper par employé
+        employees_planning = {}
+        for creneau in creneaux:
+            emp_id = creneau.get("employe_id")
+            if emp_id not in employees_planning:
+                employees_planning[emp_id] = []
+            employees_planning[emp_id].append(creneau)
+        
+        notifications_sent = 0
+        
+        for emp_id, emp_creneaux in employees_planning.items():
+            # Récupérer l'utilisateur
+            user = await db.users.find_one({"id": emp_id, "actif": True})
+            if not user:
+                continue
+            
+            # Construire le message
+            creneaux_text = []
+            for c in emp_creneaux:
+                salle = c.get("salle_nom") or c.get("salle_id") or "Non assigné"
+                creneau_type = "Matin" if c.get("creneau") == "MATIN" else "Après-midi"
+                creneaux_text.append(f"{creneau_type}: Salle {salle}")
+            
+            # Récupérer le centre
+            centre_id = user.get("centre_id") or (user.get("centre_ids", [None])[0])
+            centre = await db.centres.find_one({"id": centre_id}) if centre_id else None
+            centre_nom = centre.get("nom", "") if centre else ""
+            
+            message = f"Votre planning du jour:\n" + "\n".join(creneaux_text)
+            if centre_nom:
+                message = f"📍 {centre_nom}\n" + message
+            
+            # Envoyer la notification
+            fcm_token = user.get("fcm_token")
+            fcm_devices = user.get("fcm_devices", [])
+            
+            if fcm_token:
+                await send_push_notification(fcm_token, "📅 Votre planning du jour", message, {"type": "daily_planning"})
+                notifications_sent += 1
+            
+            for device in fcm_devices:
+                if device.get("token"):
+                    await send_push_notification(device["token"], "📅 Votre planning du jour", message, {"type": "daily_planning"})
+                    notifications_sent += 1
+        
+        print(f"✅ [CRON 7h] {notifications_sent} notifications envoyées à {len(employees_planning)} employés")
+        
+    except Exception as e:
+        print(f"❌ [CRON 7h] Erreur: {e}")
+
+# Lifecycle events
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    print("🚀 Démarrage du serveur...")
+    
+    # Configurer le scheduler pour 7h du matin (heure de Paris)
+    scheduler.add_job(
+        send_morning_planning_notifications,
+        CronTrigger(hour=7, minute=0, timezone="Europe/Paris"),
+        id="daily_planning_notification",
+        replace_existing=True
+    )
+    scheduler.start()
+    print("⏰ Scheduler activé - Notifications de planning à 7h chaque jour")
+    
+    yield
+    
+    # Shutdown
+    scheduler.shutdown()
+    print("🛑 Serveur arrêté")
+
+# Create the main app with lifespan
+app = FastAPI(title="Gestion Personnel Médical", lifespan=lifespan)
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
