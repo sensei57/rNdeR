@@ -171,6 +171,13 @@ const CabinetPlanWithPopup = ({ planMatin, planApresMidi, user }) => {
   const [showFullscreen, setShowFullscreen] = useState(false);
   const [fullscreenPeriod, setFullscreenPeriod] = useState('matin'); // 'matin' ou 'apresmidi'
   
+  // Debug: afficher les props reçues
+  useEffect(() => {
+    console.log('[CabinetPlanWithPopup] planMatin:', planMatin);
+    console.log('[CabinetPlanWithPopup] planApresMidi:', planApresMidi);
+    console.log('[CabinetPlanWithPopup] planMatin?.salles?.length:', planMatin?.salles?.length);
+  }, [planMatin, planApresMidi]);
+  
   const renderPlanContent = (plan, periodTitle, periodEmoji, isFullscreen = false) => {
     if (!plan?.salles?.length) return null;
     
