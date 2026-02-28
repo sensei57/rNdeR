@@ -150,7 +150,7 @@ SECRET_KEY=cabinet-medical-super-secret-key-2025-prod-leblond-francis-secure
 **Cause**: URL backend mal configurée.
 **Solution**: Vérifier que `/app/frontend/.env` contient:
 ```
-REACT_APP_BACKEND_URL=https://ophtalmology-app.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://medical-scheduling-2.preview.emergentagent.com
 ```
 
 ---
