@@ -4516,15 +4516,15 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh }) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex items-start gap-4">
+        <div className="flex flex-col lg:flex-row items-start gap-4 overflow-x-auto">
           {/* Plan Matin */}
           {planMatin && (
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-blue-600 flex items-center space-x-2">
-                <CalendarDays className="h-5 w-5" />
+            <div className="space-y-2 flex-shrink-0">
+              <h3 className="text-lg font-semibold text-amber-500 flex items-center justify-center space-x-2">
+                <span>☀️</span>
                 <span>Matin</span>
               </h3>
-              <div className="relative bg-blue-50 rounded-lg p-4 overflow-hidden border border-blue-200" style={{ height: '750px', width: '550px' }}>
+              <div className="relative bg-amber-50 rounded-lg p-4 overflow-hidden border border-amber-200" style={{ height: '650px', width: '450px' }}>
                 {planMatin.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => renderSalle(salle, 'MATIN'))}
               </div>
             </div>
@@ -4532,35 +4532,35 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh }) => {
           
           {/* Boutons de copie flèches */}
           {isDirector && planMatin && planApresMidi && (
-            <div className="flex flex-col items-center justify-center space-y-4 py-8">
+            <div className="flex lg:flex-col flex-row items-center justify-center space-x-4 lg:space-x-0 lg:space-y-4 py-4 lg:py-8">
               <button
                 onClick={() => copyAssignations('matinToAM')}
-                className="flex items-center justify-center w-12 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg transition-all hover:scale-110"
+                className="flex items-center justify-center w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg transition-all hover:scale-110"
                 title="Copier le Matin vers l'Après-midi"
               >
-                <span className="text-xl">→</span>
+                <span className="text-lg">→</span>
               </button>
-              <div className="text-xs text-gray-500 text-center">
+              <div className="text-xs text-gray-500 text-center hidden lg:block">
                 Copier<br/>salles
               </div>
               <button
                 onClick={() => copyAssignations('amToMatin')}
-                className="flex items-center justify-center w-12 h-12 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-lg transition-all hover:scale-110"
+                className="flex items-center justify-center w-10 h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-lg transition-all hover:scale-110"
                 title="Copier l'Après-midi vers le Matin"
               >
-                <span className="text-xl">←</span>
+                <span className="text-lg">←</span>
               </button>
             </div>
           )}
           
           {/* Plan Après-midi */}
           {planApresMidi && (
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-orange-600 flex items-center space-x-2">
-                <CalendarDays className="h-5 w-5" />
+            <div className="space-y-2 flex-shrink-0">
+              <h3 className="text-lg font-semibold text-indigo-600 flex items-center justify-center space-x-2">
+                <span>🌙</span>
                 <span>Après-midi</span>
               </h3>
-              <div className="relative bg-orange-50 rounded-lg p-4 overflow-hidden border border-orange-200" style={{ height: '750px', width: '550px' }}>
+              <div className="relative bg-indigo-50 rounded-lg p-4 overflow-hidden border border-indigo-200" style={{ height: '650px', width: '450px' }}>
                 {planApresMidi.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => renderSalle(salle, 'APRES_MIDI'))}
               </div>
             </div>
