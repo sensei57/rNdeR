@@ -49,6 +49,12 @@ Application de gestion pour cabinet d'ophtalmologie avec :
   - Frontend utilise maintenant `process.env.REACT_APP_BACKEND_URL` en priorité
   - Fallback vers URL Render.com si non configuré
 
+- ✅ **Nettoyage des éléments obsolètes**
+  - Suppression de l'ancien bouton "Notification" individuel dans la liste des utilisateurs
+  - Suppression de l'ancienne modale d'envoi de notification individuelle
+  - Suppression des états et fonctions associés (`showNotificationModal`, `notificationMessage`, `handleSendNotification`)
+  - L'envoi de notifications se fait maintenant via la nouvelle section "Notifications de Test"
+
 ### Session 15/02/2026
 - ✅ Correction erreur JavaScript `Phone is not defined`
 - ✅ Transformation de la bannière PWA en bouton discret
