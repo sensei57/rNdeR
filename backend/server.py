@@ -63,12 +63,29 @@ CRENEAU_TYPES = ["MATIN", "APRES_MIDI"]
 
 # ===== MODÈLES CENTRES =====
 
+# Rubriques disponibles dans l'application
+RUBRIQUES_DISPONIBLES = [
+    {"id": "dashboard", "nom": "Tableau de bord", "description": "Vue d'ensemble du centre"},
+    {"id": "planning", "nom": "Planning", "description": "Gestion des créneaux et plannings"},
+    {"id": "conges", "nom": "Congés", "description": "Demandes et gestion des congés"},
+    {"id": "personnel", "nom": "Personnel", "description": "Liste et gestion du personnel"},
+    {"id": "chat", "nom": "Messagerie", "description": "Chat interne"},
+    {"id": "cabinet", "nom": "Plan du Cabinet", "description": "Disposition des salles"},
+    {"id": "stocks", "nom": "Stocks", "description": "Gestion des stocks"},
+    {"id": "statistiques", "nom": "Statistiques", "description": "Rapports et analyses"},
+]
+
+class CentreConfig(BaseModel):
+    """Configuration des rubriques visibles pour un centre"""
+    rubriques_actives: List[str] = ["dashboard", "planning", "conges", "personnel", "chat", "cabinet"]
+
 class CentreBase(BaseModel):
     nom: str
     adresse: Optional[str] = None
     telephone: Optional[str] = None
     email: Optional[str] = None
     actif: bool = True
+    config: Optional[CentreConfig] = None  # Configuration des rubriques
 
 class CentreCreate(CentreBase):
     pass
@@ -84,6 +101,28 @@ class CentreUpdate(BaseModel):
     telephone: Optional[str] = None
     email: Optional[str] = None
     actif: Optional[bool] = None
+    config: Optional[CentreConfig] = None
+
+# Permissions détaillées pour les managers
+class ManagerPermissions(BaseModel):
+    # Rubriques accessibles
+    rubriques_visibles: List[str] = ["dashboard", "planning", "conges", "personnel", "chat", "cabinet"]
+    
+    # Droits de modification
+    peut_modifier_planning: bool = True
+    peut_approuver_conges: bool = True
+    peut_gerer_personnel: bool = False  # Créer/modifier des employés
+    peut_voir_statistiques: bool = True
+    peut_envoyer_notifications: bool = True
+    peut_gerer_salles: bool = False
+    peut_gerer_stocks: bool = False
+
+# Configuration de visibilité pour un employé
+class EmployeeVisibility(BaseModel):
+    """Définit ce qu'un employé peut voir"""
+    peut_voir_tous_employes: bool = True  # Voir tous les employés du centre
+    peut_voir_planning_complet: bool = False  # Voir le planning de tous
+    employes_visibles: Optional[List[str]] = None  # Liste spécifique d'IDs d'employés visibles (si pas tous)
 
 # ===== MODÈLE DEMANDE D'INSCRIPTION =====
 
