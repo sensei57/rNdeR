@@ -4078,6 +4078,7 @@ async def create_demande_jour_travail(
                 if not conflit:
                     demande = DemandeJourTravail(
                         medecin_id=medecin_id,
+                        centre_id=centre_id,
                         date_demandee=date_jour,
                         creneau=creneau,
                         motif=f"Semaine type: {semaine_type['nom']}"
