@@ -12848,6 +12848,14 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh, centreActif }
   if (loading) {
     return null;
   }
+  
+  // Ne pas afficher si aucune salle dans les deux plans
+  const hasSallesMatin = planMatin?.salles?.length > 0;
+  const hasSallesAM = planApresMidi?.salles?.length > 0;
+  
+  if (!hasSallesMatin && !hasSallesAM) {
+    return null; // Pas de plan à afficher pour ce centre
+  }
 
   return (
     <>
