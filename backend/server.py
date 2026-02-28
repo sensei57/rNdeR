@@ -4163,17 +4163,38 @@ async def get_demandes_jour_travail(
 ):
     query = {}
     
-    if current_user.role == ROLES["DIRECTEUR"]:
-        # Le directeur voit toutes les demandes
-        pass
+    # Déterminer le centre actif de l'utilisateur
+    centre_actif = getattr(current_user, 'centre_actif_id', None)
+    if not centre_actif:
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        centre_actif = user_centres[0] if user_centres else None
+    
+    if current_user.role in [ROLES["DIRECTEUR"], "Super-Admin"]:
+        # Le directeur voit les demandes du centre actif
+        if centre_actif:
+            query["$or"] = [
+                {"centre_id": centre_actif},
+                {"centre_id": None},
+                {"centre_id": {"$exists": False}}
+            ]
     else:
         # Les médecins voient seulement leurs demandes
         query["medecin_id"] = current_user.id
     
     if date_debut and date_fin:
-        query["date_demandee"] = {"$gte": date_debut, "$lte": date_fin}
+        if "$or" in query or "medecin_id" in query:
+            base_query = dict(query)
+            query = {"$and": [base_query, {"date_demandee": {"$gte": date_debut, "$lte": date_fin}}]}
+        else:
+            query["date_demandee"] = {"$gte": date_debut, "$lte": date_fin}
     elif date_debut:
-        query["date_demandee"] = {"$gte": date_debut}
+        if "$or" in query or "medecin_id" in query:
+            base_query = dict(query)
+            query = {"$and": [base_query, {"date_demandee": {"$gte": date_debut}}]}
+        else:
+            query["date_demandee"] = {"$gte": date_debut}
     
     demandes = await db.demandes_travail.find(query).sort("date_demandee", 1).to_list(1000)
     
