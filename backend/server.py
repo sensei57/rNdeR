@@ -1853,6 +1853,231 @@ async def switch_centre(
     
     return {"message": f"Vous êtes maintenant sur le centre: {centre['nom']}", "centre": {"id": centre["id"], "nom": centre["nom"]}}
 
+
+# ===== GESTION AVANCÉE DES CENTRES =====
+
+@api_router.get("/admin/centres/details")
+async def get_centres_with_details(current_user: User = Depends(get_current_user)):
+    """Récupère tous les centres avec leurs statistiques (Super-Admin uniquement)"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    centres = await db.centres.find({}, {"_id": 0}).to_list(100)
+    
+    # Enrichir avec les stats
+    for centre in centres:
+        # Compter les employés par rôle
+        employees = await db.users.find({"centre_id": centre["id"], "actif": True}).to_list(1000)
+        centre["stats"] = {
+            "total_employes": len(employees),
+            "medecins": len([e for e in employees if e.get("role") == ROLES["MEDECIN"]]),
+            "assistants": len([e for e in employees if e.get("role") == ROLES["ASSISTANT"]]),
+            "secretaires": len([e for e in employees if e.get("role") == ROLES["SECRETAIRE"]]),
+            "managers": len([e for e in employees if e.get("role") == ROLES["MANAGER"]])
+        }
+        
+        # Récupérer les managers du centre
+        centre["managers"] = [
+            {"id": e["id"], "nom": e["nom"], "prenom": e["prenom"], "email": e["email"]}
+            for e in employees if e.get("role") == ROLES["MANAGER"]
+        ]
+    
+    return {"centres": centres}
+
+
+@api_router.get("/admin/centres/{centre_id}/employees")
+async def get_centre_employees(
+    centre_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Récupère tous les employés d'un centre avec leurs configurations (Super-Admin uniquement)"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    centre = await db.centres.find_one({"id": centre_id})
+    if not centre:
+        raise HTTPException(status_code=404, detail="Centre non trouvé")
+    
+    employees = await db.users.find(
+        {"centre_id": centre_id},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(1000)
+    
+    return {
+        "centre": {"id": centre["id"], "nom": centre["nom"]},
+        "employees": employees
+    }
+
+
+@api_router.put("/admin/centres/{centre_id}/config")
+async def update_centre_config(
+    centre_id: str,
+    config: CentreConfig,
+    current_user: User = Depends(get_current_user)
+):
+    """Met à jour la configuration d'un centre (rubriques actives)"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    centre = await db.centres.find_one({"id": centre_id})
+    if not centre:
+        raise HTTPException(status_code=404, detail="Centre non trouvé")
+    
+    await db.centres.update_one(
+        {"id": centre_id},
+        {"$set": {"config": config.dict()}}
+    )
+    
+    return {"message": "Configuration du centre mise à jour"}
+
+
+@api_router.get("/admin/rubriques")
+async def get_available_rubriques(current_user: User = Depends(get_current_user)):
+    """Récupère la liste des rubriques disponibles"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    return {"rubriques": RUBRIQUES_DISPONIBLES}
+
+
+# ===== GESTION DES MANAGERS =====
+
+@api_router.post("/admin/managers")
+async def create_manager(
+    user_data: Dict[str, Any],
+    current_user: User = Depends(get_current_user)
+):
+    """Créer un nouveau manager pour un centre"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    # Vérifier le centre
+    centre_id = user_data.get("centre_id")
+    if not centre_id:
+        raise HTTPException(status_code=400, detail="centre_id requis")
+    
+    centre = await db.centres.find_one({"id": centre_id, "actif": True})
+    if not centre:
+        raise HTTPException(status_code=404, detail="Centre non trouvé")
+    
+    # Vérifier que l'email n'existe pas
+    existing = await db.users.find_one({"email": user_data.get("email")})
+    if existing:
+        raise HTTPException(status_code=400, detail="Cet email est déjà utilisé")
+    
+    # Créer le manager avec permissions par défaut
+    new_manager = {
+        "id": str(uuid.uuid4()),
+        "email": user_data["email"],
+        "nom": user_data["nom"],
+        "prenom": user_data["prenom"],
+        "telephone": user_data.get("telephone"),
+        "role": ROLES["MANAGER"],
+        "centre_id": centre_id,
+        "password_hash": get_password_hash(user_data.get("password", "manager123")),
+        "actif": True,
+        "date_creation": datetime.now(timezone.utc),
+        "manager_permissions": user_data.get("permissions", MANAGER_PERMISSIONS),
+        "vue_planning_complete": True,
+        "peut_modifier_planning": True
+    }
+    
+    await db.users.insert_one(new_manager)
+    
+    # Retourner sans le password_hash
+    del new_manager["password_hash"]
+    
+    return {"message": f"Manager créé pour {centre['nom']}", "manager": new_manager}
+
+
+@api_router.put("/admin/managers/{manager_id}/permissions")
+async def update_manager_permissions(
+    manager_id: str,
+    permissions: Dict[str, Any],
+    current_user: User = Depends(get_current_user)
+):
+    """Met à jour les permissions d'un manager"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    manager = await db.users.find_one({"id": manager_id, "role": ROLES["MANAGER"]})
+    if not manager:
+        raise HTTPException(status_code=404, detail="Manager non trouvé")
+    
+    await db.users.update_one(
+        {"id": manager_id},
+        {"$set": {"manager_permissions": permissions}}
+    )
+    
+    return {"message": "Permissions du manager mises à jour"}
+
+
+@api_router.get("/admin/managers/{centre_id}")
+async def get_centre_managers(
+    centre_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Récupère tous les managers d'un centre avec leurs permissions"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    managers = await db.users.find(
+        {"centre_id": centre_id, "role": ROLES["MANAGER"]},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(100)
+    
+    return {"managers": managers}
+
+
+# ===== GESTION DE LA VISIBILITÉ DES EMPLOYÉS =====
+
+@api_router.put("/admin/employees/{employee_id}/visibility")
+async def update_employee_visibility(
+    employee_id: str,
+    visibility: EmployeeVisibility,
+    current_user: User = Depends(get_current_user)
+):
+    """Met à jour les paramètres de visibilité d'un employé"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    employee = await db.users.find_one({"id": employee_id})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employé non trouvé")
+    
+    await db.users.update_one(
+        {"id": employee_id},
+        {"$set": {"visibility_config": visibility.dict()}}
+    )
+    
+    return {"message": "Configuration de visibilité mise à jour"}
+
+
+@api_router.put("/admin/employees/{employee_id}/centre")
+async def change_employee_centre(
+    employee_id: str,
+    new_centre_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Déplace un employé vers un autre centre"""
+    if current_user.role not in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]:
+        raise HTTPException(status_code=403, detail="Accès réservé au Super-Admin")
+    
+    employee = await db.users.find_one({"id": employee_id})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employé non trouvé")
+    
+    new_centre = await db.centres.find_one({"id": new_centre_id, "actif": True})
+    if not new_centre:
+        raise HTTPException(status_code=404, detail="Centre de destination non trouvé")
+    
+    await db.users.update_one(
+        {"id": employee_id},
+        {"$set": {"centre_id": new_centre_id}}
+    )
+    
+    return {"message": f"Employé déplacé vers {new_centre['nom']}"}
+
 # ===== GESTION DES INSCRIPTIONS =====
 
 @api_router.post("/inscriptions")
