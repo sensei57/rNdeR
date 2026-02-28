@@ -3305,23 +3305,34 @@ const CongeManager = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center p-8">Chargement...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0091B9]"></div>
+      </div>
+    );
   }
 
   const filteredDemandes = getFilteredDemandes();
+  const pendingCount = demandes.filter(d => d.statut === 'EN_ATTENTE').length;
+  const approvedCount = demandes.filter(d => d.statut === 'APPROUVE').length;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Gestion des Congés</h2>
-        
-        <Dialog open={showNewDemandeModal} onOpenChange={setShowNewDemandeModal}>
-          <DialogTrigger asChild>
-            <Button className="flex items-center space-x-2">
-              <Plus className="h-4 w-4" />
-              <span>Nouvelle Demande</span>
-            </Button>
-          </DialogTrigger>
+    <div className="space-y-6" data-testid="conge-manager">
+      {/* Header moderne */}
+      <div className="bg-gradient-to-r from-[#0091B9] to-[#19CD91] rounded-2xl p-6 text-white">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold">Gestion des Congés</h2>
+            <p className="text-white/80 mt-1">Gérez vos demandes de congés et absences</p>
+          </div>
+          
+          <Dialog open={showNewDemandeModal} onOpenChange={setShowNewDemandeModal}>
+            <DialogTrigger asChild>
+              <Button className="bg-white text-[#0091B9] hover:bg-white/90 shadow-lg">
+                <Plus className="h-4 w-4 mr-2" />
+                Nouvelle Demande
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Nouvelle Demande de Congé</DialogTitle>
