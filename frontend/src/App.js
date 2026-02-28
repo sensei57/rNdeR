@@ -17391,14 +17391,18 @@ const CentresManager = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [centresRes, rubriquesRes, inscriptionsRes] = await Promise.all([
+      const [centresRes, rubriquesRes, inscriptionsRes, usersRes] = await Promise.all([
         axios.get(`${API}/admin/centres/details`),
         axios.get(`${API}/admin/rubriques`),
-        axios.get(`${API}/inscriptions?statut=EN_ATTENTE`)
+        axios.get(`${API}/inscriptions?statut=EN_ATTENTE`),
+        axios.get(`${API}/users`)
       ]);
       setCentres(centresRes.data.centres || []);
       setRubriquesDisponibles(rubriquesRes.data.rubriques || []);
       setInscriptions(inscriptionsRes.data.inscriptions || []);
+      // Charger tous les employés actifs
+      const allUsers = Array.isArray(usersRes.data) ? usersRes.data : [];
+      setEmployees(allUsers.filter(u => u.actif));
     } catch (error) {
       console.error('Erreur chargement données:', error);
       toast.error('Erreur lors du chargement');
