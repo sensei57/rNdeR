@@ -1,16 +1,22 @@
-# PRD - OphtaGestion Multi-Centres v2.7
+# PRD - OphtaGestion Multi-Centres v2.8
 
 ## 1. Vue d'ensemble
-Application web full-stack de gestion de cabinets médicaux multi-centres. **Version 2.7 - Centre Favori et Migration.**
+Application web full-stack de gestion de cabinets médicaux multi-centres. **Version 2.8 - Layout Plein Écran.**
 
-## 2. Nouveautés v2.7 (28 février 2026)
+## 2. Nouveautés v2.8 (28 février 2026)
 
-### Centre Favori
+### Layout Plein Écran PC
+- ✅ Suppression des contraintes `max-w-7xl` sur la navbar, la barre de navigation horizontale et le contenu principal
+- ✅ Utilisation de padding adaptatif (`px-4 sm:px-6 lg:px-10 xl:px-12`) pour les marges latérales
+- ✅ CSS `dashboard-container` : max-width passé à 100% (avec limite à 1800px sur écrans > 1920px)
+- ✅ Correction import icônes Lucide : ajout de `MoreHorizontal` et `ChevronDown`
+
+### Centre Favori (v2.7)
 - ✅ Nouveau champ `centre_favori_id` pour chaque utilisateur
 - ✅ Interface dans "Mon Profil" pour définir son centre favori
 - ✅ Endpoint `PUT /api/users/me/centre-favori`
 
-### Migration des données
+### Migration des données (v2.7)
 - ✅ Endpoint `POST /api/admin/migrate-data-to-centre` (Directeur/Super-Admin)
 - ✅ Migration automatique des données sans `centre_id` vers le centre favori
 - ✅ Collections migrées : planning, congés, demandes travail, actualités, salles, stocks, notes
