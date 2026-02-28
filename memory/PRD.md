@@ -1,45 +1,37 @@
-# PRD - OphtaGestion Multi-Centres v2.6
+# PRD - OphtaGestion Multi-Centres v2.7
 
 ## 1. Vue d'ensemble
-Application web full-stack de gestion de cabinets médicaux multi-centres. **Version 2.6 - Stable et Production Ready.**
+Application web full-stack de gestion de cabinets médicaux multi-centres. **Version 2.7 - Centre Favori et Migration.**
 
-## 2. Travail effectué (28 février 2026)
+## 2. Nouveautés v2.7 (28 février 2026)
 
-### Refactorisation partielle
-- ✅ **ChatManager** extrait → `/components/chat/ChatManager.jsx`
-- ✅ **ActualitesManager** extrait → `/components/dashboard/ActualitesManager.jsx`
-- ✅ **CongeManager** extrait → `/components/conges/CongeManager.jsx`
-- ✅ **PlanningHeader** extrait → `/components/planning/PlanningHeader.jsx`
-- ⚠️ **PlanningManager** : Non extrait (dépendances complexes avec PlanCabinetCompact)
+### Centre Favori
+- ✅ Nouveau champ `centre_favori_id` pour chaque utilisateur
+- ✅ Interface dans "Mon Profil" pour définir son centre favori
+- ✅ Endpoint `PUT /api/users/me/centre-favori`
 
-### Isolation des données par centre
-Tous ces modules sont maintenant indépendants par centre :
-- ✅ Actualités, Planning, Congés, Demandes créneaux
-- ✅ Salles, Stocks, Notes générales, Notes planning
+### Migration des données
+- ✅ Endpoint `POST /api/admin/migrate-data-to-centre` (Directeur/Super-Admin)
+- ✅ Migration automatique des données sans `centre_id` vers le centre favori
+- ✅ Collections migrées : planning, congés, demandes travail, actualités, salles, stocks, notes
 
-### Tests validés
-- ✅ **Notifications** : Testés dans iteration_2.json (endpoints fonctionnels)
-- ✅ **Heures supplémentaires** : 5 tests pytest passés (`test_heures_supplementaires.py`)
+## 3. Modules filtrés par centre
 
-### Corrections
-- ✅ Plan du Cabinet ne déborde plus (layout responsive 450x650px)
-- ✅ Gestion Multi-Centres : vue globale employés avec filtres
+| Module | Endpoint | Filtrage |
+|--------|----------|----------|
+| Actualités | `/api/actualites` | ✅ Par centre |
+| Planning | `/api/planning` | ✅ Par centre |
+| Congés | `/api/conges` | ✅ Par centre |
+| Demandes créneaux | `/api/demandes-travail` | ✅ Par centre |
+| Salles | `/api/salles` | ✅ Par centre |
+| Stocks | `/api/stocks/*` | ✅ Par centre |
+| Notes | `/api/notes` | ✅ Par centre |
 
-## 3. Credentials de Test
+## 4. Credentials de Test
 - **Email:** directeur@cabinet.fr
 - **Mot de passe:** admin123
 
-## 4. Architecture
-```
-App.js: ~19430 lignes (contient encore PlanningManager)
-/components/
-  ├── chat/ChatManager.jsx
-  ├── dashboard/ActualitesManager.jsx
-  ├── conges/CongeManager.jsx
-  └── planning/PlanningHeader.jsx, PlanningFilters.jsx
-```
-
 ---
-**Version:** 2.6  
+**Version:** 2.7  
 **Date:** 28 février 2026  
 **Status:** ✅ PRODUCTION READY
