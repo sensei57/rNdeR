@@ -3809,12 +3809,29 @@ async def create_salle(
     salle_data: SalleCreate,
     current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
 ):
-    # Vérifier si une salle avec ce nom existe déjà
-    existing = await db.salles.find_one({"nom": salle_data.nom, "actif": True})
-    if existing:
-        raise HTTPException(status_code=400, detail="Une salle avec ce nom existe déjà")
+    # Déterminer le centre_id
+    centre_id = salle_data.centre_id if hasattr(salle_data, 'centre_id') and salle_data.centre_id else None
+    if not centre_id:
+        centre_actif = getattr(current_user, 'centre_actif_id', None)
+        if centre_actif:
+            centre_id = centre_actif
+        else:
+            user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+            if current_user.centre_id and current_user.centre_id not in user_centres:
+                user_centres.append(current_user.centre_id)
+            centre_id = user_centres[0] if user_centres else None
     
-    salle = Salle(**salle_data.dict())
+    # Vérifier si une salle avec ce nom existe déjà dans ce centre
+    existing_query = {"nom": salle_data.nom, "actif": True}
+    if centre_id:
+        existing_query["centre_id"] = centre_id
+    existing = await db.salles.find_one(existing_query)
+    if existing:
+        raise HTTPException(status_code=400, detail="Une salle avec ce nom existe déjà dans ce centre")
+    
+    salle_dict = salle_data.dict()
+    salle_dict['centre_id'] = centre_id
+    salle = Salle(**salle_dict)
     await db.salles.insert_one(salle.dict())
     return salle
 
@@ -3823,7 +3840,26 @@ async def get_salles(
     actif_seulement: bool = True,
     current_user: User = Depends(get_current_user)
 ):
-    query = {"actif": True} if actif_seulement else {}
+    # Déterminer le centre actif de l'utilisateur
+    centre_actif = getattr(current_user, 'centre_actif_id', None)
+    if not centre_actif:
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        centre_actif = user_centres[0] if user_centres else None
+    
+    query = {}
+    if actif_seulement:
+        query["actif"] = True
+    
+    # Filtrer par centre
+    if centre_actif:
+        query["$or"] = [
+            {"centre_id": centre_actif},
+            {"centre_id": None},
+            {"centre_id": {"$exists": False}}
+        ]
+    
     salles = await db.salles.find(query).sort("nom", 1).to_list(1000)
     
     cleaned_salles = []
