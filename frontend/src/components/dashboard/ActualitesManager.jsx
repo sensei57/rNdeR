@@ -56,20 +56,13 @@ const ActualitesManager = ({ user, CabinetPlanWithPopup }) => {
         }
       };
 
-      const [actusRes, annivRes, planMatinRes, planAMRes] = await Promise.all([
+      const [actusRes, annivRes] = await Promise.all([
         fetchWithTimeout(`${API}/actualites`).catch((err) => { console.log('Erreur actualites:', err); return { data: [] }; }),
-        fetchWithTimeout(`${API}/anniversaires`).catch((err) => { console.log('Erreur anniversaires:', err); return { data: [] }; }),
-        fetchWithTimeout(`${API}/cabinet/plan/${today}?creneau=MATIN`).catch((err) => { console.log('Erreur plan matin:', err); return { data: { salles: [] } }; }),
-        fetchWithTimeout(`${API}/cabinet/plan/${today}?creneau=APRES_MIDI`).catch((err) => { console.log('Erreur plan AM:', err); return { data: { salles: [] } }; })
+        fetchWithTimeout(`${API}/anniversaires`).catch((err) => { console.log('Erreur anniversaires:', err); return { data: [] }; })
       ]);
-      
-      console.log('Plan Matin reçu:', planMatinRes.data);
-      console.log('Plan AM reçu:', planAMRes.data);
       
       setActualites(Array.isArray(actusRes.data) ? actusRes.data : []);
       setAnniversaires(Array.isArray(annivRes.data) ? annivRes.data : []);
-      setPlanMatin(planMatinRes.data);
-      setPlanApresMidi(planAMRes.data);
     } catch (error) {
       console.error('Erreur chargement actualités:', error);
     } finally {
