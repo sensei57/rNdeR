@@ -18040,7 +18040,8 @@ const CentresManager = () => {
                                           await axios.delete(`${API}/admin/employees/${employee.id}/centres/${c.id}`);
                                           toast.success(`${c.nom} retiré`);
                                         }
-                                        fetchCentreDetails(selectedCentre.id);
+                                        // Recharger tous les employés (pas besoin de centre sélectionné)
+                                        fetchData();
                                       } catch (error) {
                                         toast.error(error.response?.data?.detail || 'Erreur');
                                       }
