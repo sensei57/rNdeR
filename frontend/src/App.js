@@ -23,6 +23,9 @@ import usePWA from './hooks/usePWA';
 // Import des composants extraits
 import PlanningHeader from './components/planning/PlanningHeader';
 import PlanningFilters from './components/planning/PlanningFilters';
+import ChatManager from './components/chat/ChatManager';
+import ActualitesManager from './components/dashboard/ActualitesManager';
+import CongeManager from './components/conges/CongeManager';
 
 // Configuration automatique de l'URL backend
 // Utilise d'abord la variable d'environnement, sinon fallback pour Render.com
