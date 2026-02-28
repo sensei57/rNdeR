@@ -40,7 +40,7 @@ export const useCachedFetch = (url, options = {}) => {
 
     try {
       setLoading(true);
-      const response = await axios.get(`${API}${url}`, { timeout: 10000 });
+      const response = await axios.get(`${API}${url}`, { timeout: 60000 });
       const transformedData = transform(response.data);
       
       // Mettre en cache

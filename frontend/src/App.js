@@ -692,13 +692,13 @@ const AuthProvider = ({ children }) => {
   
   const fetchCurrentUser = async (currentRetry = 0) => {
     try {
-      const response = await axios.get(`${API}/users/me`, { timeout: 15000 });
+      const response = await axios.get(`${API}/users/me`, { timeout: 60000 });
       setUser(response.data);
       retryCountRef.current = 0; // Reset retry count on success
       
       // Charger les centres en parallèle avec un timeout plus long
       try {
-        const centresResponse = await axios.get(`${API}/centres`, { timeout: 15000 });
+        const centresResponse = await axios.get(`${API}/centres`, { timeout: 60000 });
         const allCentres = centresResponse.data.centres || [];
         
         if (response.data.role === 'Super-Admin' || response.data.role === 'Directeur') {

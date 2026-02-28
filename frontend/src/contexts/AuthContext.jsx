@@ -65,13 +65,13 @@ export const AuthProvider = ({ children }) => {
 
   const fetchCurrentUser = async () => {
     try {
-      const response = await axios.get(`${API}/users/me`, { timeout: 10000 });
+      const response = await axios.get(`${API}/users/me`, { timeout: 60000 });
       setUser(response.data);
       setRetryCount(0); // Reset retry count on success
       
       // Charger les centres
       try {
-        const centresResponse = await axios.get(`${API}/centres`, { timeout: 10000 });
+        const centresResponse = await axios.get(`${API}/centres`, { timeout: 60000 });
         const allCentres = centresResponse.data.centres || [];
         
         if (response.data.role === 'Super-Admin' || response.data.role === 'Directeur') {
