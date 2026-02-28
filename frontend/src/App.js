@@ -168,7 +168,7 @@ const RoomCardContent = ({ salle, occupation }) => {
 
 // Composant Plan du Cabinet avec scroll horizontal sur mobile et popup plein écran
 // Ce composant charge ses propres données pour éviter les problèmes de timing
-const CabinetPlanWithPopup = ({ user }) => {
+const CabinetPlanWithPopup = ({ user, centreActif }) => {
   const [showFullscreen, setShowFullscreen] = useState(false);
   const [fullscreenPeriod, setFullscreenPeriod] = useState('matin');
   const [planMatin, setPlanMatin] = useState(null);
@@ -177,7 +177,7 @@ const CabinetPlanWithPopup = ({ user }) => {
   
   const today = new Date().toISOString().split('T')[0];
   
-  // Charger les données du plan cabinet
+  // Charger les données du plan cabinet - se recharge quand le centre change
   useEffect(() => {
     const fetchPlans = async () => {
       try {
@@ -186,8 +186,7 @@ const CabinetPlanWithPopup = ({ user }) => {
           axios.get(`${API}/cabinet/plan/${today}?creneau=MATIN`),
           axios.get(`${API}/cabinet/plan/${today}?creneau=APRES_MIDI`)
         ]);
-        console.log('[CabinetPlanWithPopup] Matin reçu:', matinResponse.data);
-        console.log('[CabinetPlanWithPopup] AM reçu:', apresMidiResponse.data);
+        console.log('[CabinetPlanWithPopup] Centre:', centreActif?.nom, 'Matin:', matinResponse.data?.salles?.length, 'salles');
         setPlanMatin(matinResponse.data);
         setPlanApresMidi(apresMidiResponse.data);
       } catch (error) {
@@ -200,7 +199,7 @@ const CabinetPlanWithPopup = ({ user }) => {
     if (user) {
       fetchPlans();
     }
-  }, [user, today]);
+  }, [user, today, centreActif?.id]); // Recharger quand le centre change
   
   const renderPlanContent = (plan, periodTitle, periodEmoji, isFullscreen = false) => {
     if (!plan?.salles?.length) return null;
