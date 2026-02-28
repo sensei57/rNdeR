@@ -20,6 +20,10 @@ export { CongeManager } from './components/conges';
 export { ChatManager } from './components/chat';
 export { ActualitesManager } from './components/dashboard';
 
+// Planning
+export { PlanningHeader, PlanningFilters } from './components/planning';
+export { usePlanningData, usePlanningFilters, usePlanningNavigation, useCreneaux } from './hooks/usePlanningHooks';
+
 // Pages
 export { default as LoginPage } from './pages/LoginPage';
 
