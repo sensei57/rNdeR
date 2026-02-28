@@ -1619,16 +1619,79 @@ async def login(user_login: UserLogin):
             detail="Email ou mot de passe incorrect"
         )
     
-    # Update last login
-    await db.users.update_one(
-        {"id": user['id']}, 
-        {"$set": {"derniere_connexion": datetime.now(timezone.utc)}}
-    )
+    # Vérifier si l'utilisateur est actif
+    if not user.get('actif', True):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Compte désactivé. Contactez l'administrateur."
+        )
+    
+    # Gérer les rôles legacy (Directeur -> Super-Admin)
+    user_role = user.get('role')
+    is_super_admin = user_role in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]
+    is_manager = user_role == ROLES["MANAGER"]
+    
+    # Pour les Super-Admins : récupérer tous les centres
+    centres_list = None
+    selected_centre = None
+    
+    if is_super_admin:
+        # Super-Admin peut voir tous les centres
+        centres = await db.centres.find({"actif": True}, {"_id": 0}).to_list(100)
+        centres_list = centres
+        
+        # Si un centre est spécifié, le valider
+        if user_login.centre_id:
+            centre = await db.centres.find_one({"id": user_login.centre_id, "actif": True})
+            if centre:
+                selected_centre = user_login.centre_id
+    else:
+        # Pour les autres utilisateurs : vérifier le centre
+        user_centre_id = user.get('centre_id')
+        
+        if not user_centre_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Aucun centre assigné à votre compte. Contactez l'administrateur."
+            )
+        
+        # Vérifier que le centre existe et est actif
+        centre = await db.centres.find_one({"id": user_centre_id, "actif": True})
+        if not centre:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Votre centre n'est plus actif. Contactez l'administrateur."
+            )
+        
+        # Si l'utilisateur a spécifié un centre différent du sien, refuser
+        if user_login.centre_id and user_login.centre_id != user_centre_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Vous n'avez pas accès à ce centre."
+            )
+        
+        selected_centre = user_centre_id
+        centres_list = [{"id": centre["id"], "nom": centre["nom"]}]
+    
+    # Update last login et centre sélectionné
+    update_data = {"derniere_connexion": datetime.now(timezone.utc)}
+    if selected_centre:
+        update_data["centre_actif_id"] = selected_centre
+    
+    await db.users.update_one({"id": user['id']}, {"$set": update_data})
+    
+    # Recharger l'utilisateur pour avoir les données à jour
+    user = await db.users.find_one({"id": user['id']}, {"_id": 0, "password_hash": 0})
     
     access_token = create_access_token(data={"sub": user['id']})
     user_obj = User(**user)
     
-    return Token(access_token=access_token, token_type="bearer", user=user_obj)
+    return Token(
+        access_token=access_token, 
+        token_type="bearer", 
+        user=user_obj,
+        centres=centres_list
+    )
 
 # User management routes
 @api_router.get("/users", response_model=List[User])
