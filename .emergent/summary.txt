@@ -1,204 +1,1689 @@
 <analysis>**original_problem_statement:**
-L'utilisateur a demandé une révision complète de son application pour corriger les problèmes de déploiement, moderniser l'interface utilisateur, et améliorer les fonctionnalités existantes.
-
-**Demandes initiales :**
-*   Corriger les bugs, notamment le calcul des heures supplémentaires et la création de créneaux pour les assistants.
-*   Moderniser le design en s'inspirant de KEAP, mais adapté à l'ophtalmologie.
-*   Refactoriser le fichier monolithique .
-*   Rendre l'application fonctionnelle sur son environnement de déploiement Render.com.
-
-**Demandes ajoutées pendant la session :**
-*   Refonte de l'interface de chat dans un style WhatsApp.
-*   Affichage des photos des employés au lieu des initiales.
-*   Ajout d'une bulle de notification flottante pour les messages non lus.
-*   Modification de la disposition du Plan du cabinet pour le rendre responsive sur mobile (scroll horizontal + popup plein écran).
-*   Amélioration du design des cartes dans la section Gestion du personnel.
-*   Ajout d'un arrière-plan thématique sur le tableau de bord.
-*   Remplacement de la bannière PWA par un simple bouton.
-*   Utilisation d'un logo personnalisé pour l'icône de l'application PWA.
-*   Résolution des problèmes de performance et de chargement sur mobile.
-*   Amélioration du système de notifications push pour gérer plusieurs appareils.
-*   Implémentation d'un nouveau système de notifications détaillé : notifications de planning du matin, notifications de test, et réponses rapides aux messages depuis les notifications.
+L'utilisateur a initié une refonte majeure de son application de gestion de cabinet médical. Les objectifs de cette session étaient variés :
+1.  **Permissions & Vues :** Différencier la vue du Directeur (globale, tous centres) de celle des employés (limitée au centre actif), notamment dans Gestion Multi-Centres et Gestion du Personnel.
+2.  **Isolation des Données :** Rendre les modules clés (Actualités, Planning, Congés, Stocks, Salles, etc.) indépendants pour chaque centre.
+3.  **Migration des Données :** Créer une fonctionnalité pour que le directeur puisse assigner les données existantes (créneaux, congés, employés, etc.) sans centre défini à un centre favori.
+4.  **Refactorisation :** Poursuivre la refactorisation du monolithe  en extrayant les composants majeurs.
+5.  **Amélioration de l'UI/UX :**
+    *   Corriger les bugs visuels (débordement du plan de cabinet, sidebar non scrollable).
+    *   Moderniser l'apparence avec un nouvel arrière-plan dynamique.
+    *   Implémenter une barre de navigation horizontale pour la version ordinateur.
 
 **User's preferred language**: Français. L'agent suivant DOIT répondre en français uniquement.
 
 **what currently exists?**
-Une application full-stack (React/FastAPI/MongoDB) qui est fonctionnelle sur l'environnement Render.com de l'utilisateur. Une refonte visuelle majeure a été effectuée sur plusieurs sections clés : page de connexion, tableau de bord, gestion du personnel et messagerie. Des optimisations significatives ont été apportées pour l'affichage mobile, notamment pour le Plan du Cabinet (maintenant avec scroll horizontal et popup) et la vue Planning Mois (via un nouvel endpoint backend pour réduire les requêtes). Le système de notifications push a été amélioré pour supporter plusieurs appareils par utilisateur, avec une interface de gestion. Cependant, la logique frontend reste centralisée dans un fichier monolithique  qui a dépassé les 20 000 lignes, rendant la maintenance et l'évolution très difficiles.
+L'application est une plateforme full-stack (React/FastAPI/MongoDB) qui a été significativement améliorée pour la gestion multi-centres. La plupart des modules (Actualités, Planning, Congés, Stocks, Salles, Notes) sont désormais isolés par  au niveau du backend.
+
+Les permissions ont été ajustées : les Directeurs/Super-Admins ont une vue globale dans la Gestion Multi-Centres (tous les employés, tous les centres, avec filtres), tandis que la Gestion du Personnel reste bien filtrée sur le centre actif de l'employé connecté.
+
+Une fonctionnalité de Centre Favori a été ajoutée dans le profil utilisateur, accompagnée d'un outil de migration à usage unique pour le directeur, permettant d'assigner toutes les données historiques (y compris les employés) sans centre au centre favori défini.
+
+Plusieurs composants (, , ) ont été correctement extraits de , réduisant sa taille. Cependant, la tentative d'extraction du  (un composant de ~9000 lignes) a échoué et a été annulée.
+
+L'interface a été modernisée avec un nouvel arrière-plan dynamique et une barre de navigation horizontale responsive pour la version ordinateur, tout en conservant le menu latéral pour les mobiles. Plusieurs bugs d'UI, comme le défilement du menu et le débordement de certains éléments, ont été corrigés.
 
 **Last working item**:
-- **Last item agent was working:** L'agent a commencé à analyser le code pour implémenter un système de notifications entièrement repensé, suite à une demande très spécifique de l'utilisateur. Les nouvelles exigences sont :
-    1.  Une notification matinale pour chaque employé, détaillant son équipe et sa salle de travail.
-    2.  Une fonction pour envoyer des notifications de test personnalisées à des employés spécifiques.
-    3.  La possibilité pour les utilisateurs de répondre aux messages de chat directement depuis la notification sur leur téléphone, sans ouvrir l'application.
-- **Status:** IN PROGRESS
-- **Agent Testing Done:** N
-- **Which testing method agent to use?** both. Cette fonctionnalité complexe nécessite des tests backend (pour la logique d'envoi et la gestion des appareils) et frontend (pour les interactions et les réponses rapides). L'utilisation de  est fortement recommandée après l'implémentation.
+- **Last item agent was working:** Implémentation d'une barre de navigation horizontale fixe pour la version ordinateur (), tout en conservant le menu latéral classique (type hamburger) pour la version mobile.
+- **Status:** USER VERIFICATION PENDING
+- **Agent Testing Done:** Y (Les fichiers ont été modifiés et le build a réussi, mais une validation visuelle finale est recommandée).
+- **Which testing method agent to use?** screenshot tool. Une capture d'écran est nécessaire pour que l'utilisateur valide le nouveau design de la navigation.
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-- **Issue 1: Problème de rechargement persistant (P1)**
-- **Issue 2: Les vues Mois et Planning ne fonctionnent pas bien sur mobile (P2)**
-- **Issue 3: La création des créneaux pour les assistants n'est pas vérifiée (P2)**
-- **Issue 4: La gestion des erreurs est peu informative (P3)**
+- **Issue 1: Le composant  est un monolithe critique (P0)**
+- **Issue 2: Problème de rechargement persistant sur mobile (P1)**
+- **Issue 3: Bug d'affichage dans la liste des congés (P2)**
 
 **Issues Detail:**
-- **Issue 1: Problème de rechargement persistant (P1)**
-  - **Description:** L'utilisateur signale devoir recharger la page plusieurs fois pour que l'application fonctionne, en particulier sur mobile.
-  - **Attempted fixes:** Des optimisations ont été faites (endpoint , ajout de ). Cependant, l'utilisateur signale que le problème persiste.
+- **Issue 1: Le composant  est un monolithe critique (P0)**
+  - **Attempted fixes:** Une tentative d'extraction a été faite mais a échoué en raison d'erreurs à l'exécution, probablement liées à des dépendances complexes (contexte, props non passées, composants non importés comme ). Le changement a été annulé pour restaurer la fonctionnalité.
   - **Next debug checklist:**
-    1.  Analyser les  pour identifier des race conditions ou des dépendances manquantes.
-    2.  Vérifier la gestion d'état (useState, useEffect) lors du chargement initial des données.
-    3.  Implémenter une stratégie de retry automatique pour les requêtes API échouées, qui pourrait masquer les erreurs réseau intermittentes sur mobile.
-  - **Why fix this issue and what will be achieved with the fix?** C'est un problème d'UX majeur qui rend l'application peu fiable pour l'utilisateur.
-  - **Status:** IN PROGRESS
+    1.  Relire attentivement le guide de refactorisation  (s'il existe, sinon le créer).
+    2.  Identifier **toutes** les props, les hooks (, ) et les composants externes () utilisés par  dans .
+    3.  Créer le fichier .
+    4.  Copier le code, ajouter tous les imports nécessaires et définir la signature du composant pour qu'il accepte toutes les props identifiées.
+    5.  Remplacer le code dans  par l'appel au nouveau composant importé, en lui passant les bonnes props.
+  - **Why fix this issue and what will be achieved with the fix?** C'est la plus grosse partie de la dette technique. Son extraction rendra  beaucoup plus lisible, améliorera la maintenabilité et réduira les risques de régressions.
+  - **Status:** NOT STARTED (la tentative précédente a été annulée).
   - **Is recurring issue?** Y
   - **Should Test frontend/backend/both after fix?** Frontend.
   - **Blocked on other issue:** Non.
 
-- **Issue 2: Les vues Mois et Planning ne fonctionnent pas bien sur mobile (P2)**
-  - **Description:** L'utilisateur a signalé que ces vues ne fonctionnent pas ou s'affichent mal sur téléphone.
-  - **Attempted fixes:** L'agent a créé un endpoint backend pour optimiser le chargement de la vue Mois et ajouté quelques styles responsives.
-  - **Next debug checklist:**
-    1.  Utiliser un outil de développement mobile pour inspecter le rendu et les erreurs de console sur les vues Planning et Mois.
-    2.  Revoir les classes Tailwind/CSS (, largeurs fixes) pour s'assurer qu'elles sont bien responsives.
-    3.  Confirmer que les données chargées via le nouvel endpoint s'affichent correctement sur un petit écran.
-  - **Why fix this issue and what will be achieved with the fix?** Assurer la fonctionnalité de base de la planification sur tous les appareils.
-  - **Status:** IN PROGRESS
-  - **Is recurring issue?** Y
-  - **Should Test frontend/backend/both after fix?** Frontend.
-  - **Blocked on other issue:** Non.
-
-- **Issue 3: La création des créneaux pour les assistants n'est pas vérifiée (P2)**
-  - **Description:** Un bug signalé initialement où l'approbation d'un congé pour un médecin ne créait pas correctement les créneaux pour les assistants remplaçants.
-  - **Attempted fixes:** Aucun. Ce problème critique de logique métier n'a jamais été traité.
-  - **Next debug checklist:**
-    1.  Analyser le code backend dans  lié à l'approbation des congés (route gérant ).
-    2.  Écrire un scénario de test (via curl ou un script de test) pour reproduire le problème.
-    3.  Corriger la logique de création de créneaux dans .
-  - **Why fix this issue and what will be achieved with the fix?** Corrige une fonctionnalité métier essentielle pour la planification du cabinet.
+- **Issue 2: Problème de rechargement persistant sur mobile (P1)**
+  - **Description:** Problème hérité du fork précédent. L'application échoue parfois à se recharger correctement sur mobile.
+  - **Next debug checklist:** (Identique au handoff précédent)
+    1.  Utiliser les outils de développement mobile pour inspecter la console et le réseau.
+    2.  Analyser les  dans  liés à l'authentification et au  initial.
+  - **Why fix this issue and what will be achieved with the fix?** Améliore la fiabilité et l'expérience utilisateur sur mobile.
   - **Status:** NOT STARTED
   - **Is recurring issue?** Y
-  - **Should Test frontend/backend/both after fix?** Backend.
-  - **Blocked on other issue:** Non.
+  - **Should Test frontend/backend/both after fix?** Frontend.
 
-- **Issue 4: La gestion des erreurs est peu informative (P3)**
-  - **Description:** L'application utilise des  génériques, ce que l'utilisateur souhaite améliorer.
-  - **Attempted fixes:** Aucun.
+- **Issue 3: Bug d'affichage dans la liste des congés (P2)**
+  - **Description:** Dans l'onglet Congés, les statistiques affichent le bon nombre de congés (ex: 3 approuvés), mais la liste en dessous affiche Aucune demande de congé trouvée.
   - **Next debug checklist:**
-    1.  Intégrer  qui est déjà dans les dépendances de shadcn/ui.
-    2.  Remplacer progressivement les  par des  dans .
-  - **Why fix this issue and what will be achieved with the fix?** Améliore l'UX en fournissant des retours clairs et non bloquants.
+    1.  Examiner le composant  (maintenant dans ).
+    2.  Vérifier la logique de filtrage (par date, statut, etc.) qui s'applique à la liste des congés. Il est probable qu'un filtre par défaut masque les résultats.
+    3.  Inspecter la réponse de l'API  et comparer les données reçues avec ce qui est affiché.
+  - **Why fix this issue and what will be achieved with the fix?** Corrige un bug d'UX qui empêche les utilisateurs de voir les détails des demandes de congé.
   - **Status:** NOT STARTED
   - **Is recurring issue?** N
   - **Should Test frontend/backend/both after fix?** Frontend.
-  - **Blocked on other issue:** Non.
 
 **In progress Task List**:
-- **Task 1: Implémentation du nouveau système de notifications (P0)**
-  - **Where to resume:** Le backend () doit être modifié pour gérer la logique d'envoi des différents types de notifications (planning, test, chat). Le frontend () doit être modifié pour implémenter la réponse rapide aux messages.
-  - **What will be achieved with this?** Une fonctionnalité de communication avancée et très demandée par l'utilisateur.
+- **Task 1: Finaliser la refactorisation de  (P0)**
+  - **Where to resume:** Le  doit être extrait (voir Issue 1). Après cela,  agira principalement comme un routeur et un fournisseur de contexte.
+  - **What will be achieved with this?** Une base de code stable, performante et maintenable.
   - **Status:** IN PROGRESS
-  - **Should Test frontend/backend/both after fix?** Both.
+  - **Should Test frontend/backend/both after fix?** Frontend.
   - **Blocked on something:** Non.
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
-  - **Refactorisation du monolithe  (P0):** C'est la dette technique la plus critique. Le fichier doit être découpé en composants React spécialisés (, , , , , etc.) dans une structure de dossiers logique (, ).
+  - **Interface de gestion des logos de centre (P2):** Le backend (modèle  avec ) est prêt, mais il manque une interface dans Gestion Multi-Centres pour permettre au directeur de téléverser ou de lier une URL de logo pour chaque centre.
 - **Future Tasks:**
-  - **Validation du calcul des heures supplémentaires (P2):** Une ancienne demande qui n'a jamais été formellement validée par l'utilisateur.
-  - **Modernisation de l'UI des sections restantes (P2):** Appliquer le nouveau style aux formulaires, modales, et à la vue calendrier détaillée.
+  - **Validation fonctionnelle du calcul des heures supplémentaires (P3):** Le code backend existe, mais une validation formelle du calcul n'a jamais été réalisée.
+  - **Amélioration de l'interface des permissions des managers (P3):** Permettre une configuration plus fine des droits des managers.
 
 **Completed work in this session**
-- Correction de l'erreur JavaScript  en important l'icône manquante.
-- Remplacement de la bannière PWA par un bouton plus discret.
-- Correction du problème des images cassées en ajoutant un fallback (affichage des initiales) pour les photos des employés dans le Plan du cabinet et la Gestion du personnel.
-- Correction de l'erreur JavaScript .
-- Optimisation majeure de la vue Mois en créant un endpoint backend () qui réduit le nombre de requêtes de ~30 à 1.
-- Amélioration de la responsivité mobile du Plan du Cabinet avec une vue à défilement horizontal et un popup plein écran.
-- Amélioration de la gestion des notifications push pour supporter plusieurs appareils par utilisateur, avec une interface pour voir et supprimer les appareils enregistrés.
-- Ajout d'un bouton pour redemander la permission des notifications push si elle a été refusée.
-- Ajout de l'attribut  pour empêcher la traduction automatique du navigateur de casser l'application.
-
-**Earlier issues found/mentioned but not fixed**
-- **Création des créneaux pour les assistants:** Voir .
-- **Gestion des erreurs peu informative:** Voir .
-
-**Known issue recurrence from previous fork**
-- Le bug de la création des créneaux pour les assistants après approbation d'un congé est un problème récurrent non résolu.
+- **Permissions Multi-Centres implémentées :** Le Directeur a une vue globale dans Gestion Multi-Centres, et la Gestion du Personnel est correctement filtrée par centre actif.
+- **Isolation des données par centre :** Presque tous les modules (Actualités, Planning, Congés, Stocks, Salles, etc.) ont été migrés pour être dépendants du .
+- **Fonctionnalité Centre Favori et Migration :** Création de l'UI et des endpoints pour définir un centre favori et migrer les données orphelines (y compris les employés).
+- **Refactorisation partielle de  :** , ,  ont été extraits avec succès, nettoyant environ 1500 lignes de code dupliqué.
+- **Amélioration de l'UI/UX :**
+  - Ajout d'un arrière-plan moderne et dynamique.
+  - Implémentation d'une barre de navigation horizontale responsive pour desktop.
+  - Correction du bug de défilement du menu latéral.
+  - Correction des bugs de débordement du Plan du Cabinet sur le tableau de bord et dans la vue Personnel.
+  - Réintégration du Plan du Cabinet dans l'onglet Actualités.
 
 **Code Architecture**
-translate=no
+
 
 **Key Technical Concepts**
-- **Frontend:** React, Tailwind CSS (via des classes dans ). Toute la logique applicative, l'état, et le rendu sont dans le fichier monolithique .
-- **Backend:** FastAPI (Python), MongoDB (via ).
-- **Déploiement:** L'utilisateur déploie sur **Render.com**, qui est l'environnement cible.
+- **Frontend:** React, Tailwind CSS, Shadcn/UI, Responsive Design (distinction mobile/desktop pour la navigation).
+- **Backend:** FastAPI, MongoDB (via ), Pydantic.
+- **Architecture:** Multi-tenant (multi-centre). Les données sont maintenant presque entièrement partitionnées par . Logique de migration de données.
 
 **key DB schema**
-- : { , , , , : [ { , , ,  } ] ... }
-- : { , ,  }
-- : { , , ,  }
-- : { , , , ,  }
-
-**changes in tech stack**
-- Aucune modification de la stack technologique, mais le schéma de la collection  a été modifié pour supporter plusieurs abonnements push.
+- : Ajout de .
+- : Ajout de .
+- , , , , , , , , : Tous ces modèles ont maintenant un champ  obligatoire.
 
 **All files of reference**
-- : Fichier central où toutes les modifications ont été effectuées. Sa complexité a encore augmenté.
-- : Enrichi avec de nombreux styles pour la responsivité mobile.
-- : Modifié pour ajouter le nouvel endpoint  et les endpoints de gestion des appareils push ().
-- : Modifié pour ajouter .
+- : Fichier principal, modifié pour la refactorisation et l'ajout de la nouvelle navigation.
+- : Fichier principal du backend, lourdement modifié pour l'isolation des données et les nouveaux endpoints de migration.
+- : Modifié pour les nouveaux styles de fond et de navigation.
+- : Dossier contenant de nombreux composants extraits ou modifiés.
+- : Mis à jour tout au long de la session.
 
 **Areas that need refactoring**:
-- ****: **Priorité absolue (P0)**. Le fichier est ingérable. Le refactoriser en composants modulaires est essentiel pour la stabilité et l'évolutivité de l'application.
-- ****: Pourrait être divisé en modules CSS ou PostCSS lors de la refactorisation de .
+- ** (P0 - Critique):** La priorité absolue est d'extraire le  (~9000 lignes). La tentative précédente ayant échoué, il faut une approche plus méticuleuse.
 
 **key api endpoints**
-- **Nouveaux endpoints:**
-    - : Récupère tout le planning pour un mois donné.
-    - : Liste les appareils enregistrés pour les notifications pour l'utilisateur authentifié.
-    - : Supprime un appareil enregistré.
-- **Endpoints modifiés:**
-    - : Logique mise à jour pour gérer un tableau d'abonnements par utilisateur.
+- : Pour définir le centre favori de l'utilisateur.
+- : Endpoint réservé au directeur pour migrer les données orphelines vers le centre favori.
+- : Mis à jour pour permettre de modifier le .
+- La plupart des endpoints GET et POST ont été mis à jour pour filtrer ou enregistrer avec le  de l'utilisateur actif.
 
 **Critical Info for New Agent**
-- **Le problème de rechargement nécessaire est une plainte majeure de l'utilisateur.** Même si des optimisations ont été faites, le problème de fond persiste probablement. Y prêter une attention particulière.
-- **La refactorisation de  est la tâche la plus importante et la plus critique.** Il est fortement recommandé de la proposer comme prochaine étape majeure après avoir résolu les problèmes les plus urgents. Continuer à ajouter des fonctionnalités à ce monolithe est risqué.
-- **L'environnement cible est Render.com.** Les tests de connexion échoueront dans l'environnement de prévisualisation Emergent. La validation finale doit être faite par l'utilisateur.
+- **Priorité absolue à la refactorisation du **. L'échec précédent est dû à des dépendances complexes (composants, contextes, props). Analysez bien toutes les dépendances avant de retenter l'extraction.
+- **La navigation est maintenant duale :** une barre horizontale sur desktop ( et plus), et un menu latéral sur mobile. Toute modification de la navigation doit prendre en compte ces deux modes.
+- **Le backend est maintenant center-aware :** Pour la création de nouvelles données (congé, planning, etc.), le backend associe automatiquement l'entité au  de l'utilisateur si aucun  n'est fourni. Cela simplifie la logique frontend.
 
 **documents and test reports created in this job**
-- Aucun.
+-  (mis à jour).
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **Utilisateur (Plus récent):** Spécifie des exigences détaillées pour un nouveau système de notifications (planning du matin, test, réponse rapide aux messages). (NON TRAITÉ)
-2.  **Utilisateur:** Suggère une nouvelle approche pour le Plan du Cabinet sur mobile : scroll horizontal avec un popup plein écran. (FAIT)
-3.  **Utilisateur:** Signale que le Plan du Cabinet est cassé sur mobile. (FAIT)
-4.  **Utilisateur:** Signale un problème de traduction automatique (BOÎTE vs BOXE), des problèmes de disposition et confirme que le rechargement est toujours nécessaire. (PARTIELLEMENT FAIT :  ajouté, disposition triée, mais le problème de rechargement persiste).
-5.  **Utilisateur:** Demande si les notifications push notent bien sur quel appareil elles sont activées et si on peut en avoir plusieurs. (FAIT : gestion multi-appareils implémentée).
-6.  **Utilisateur:** Demande à pouvoir redemander les permissions de notifications push. (FAIT)
-7.  **Utilisateur:** Signale que l'application fonctionne mal sur téléphone (rechargement nécessaire) et que les vues Mois et Planning ne fonctionnent pas. (PARTIELLEMENT FAIT : optimisation pour la vue Mois effectuée, mais le problème général n'est pas résolu).
-8.  **Utilisateur:** Signale que la section Personnel ne fonctionne toujours pas après une première correction. (FAIT :  corrigé).
-9.  **Utilisateur:** Signale un problème d'affichage des photos dans l'application. (FAIT : fallback sur les initiales implémenté).
-10. **Agent:** Propose de résumer les corrections et les prochaines étapes.
+1.  **Utilisateur (plus récent):** je ne vois plus le rappel du planning du jour avec les photos dans la rubrique actualités - **Statut : RÉSOLU**.
+2.  **Utilisateur:** cest pas beau ca prend pas toute la largeur" (à propos du Plan du Cabinet) - **Statut : RÉSOLU**.
+3.  **Utilisateur:** "il faut aussi intégrer la migration des employés si ils ont pas de centre défini" - **Statut : RÉSOLU**.
+4.  **Utilisateur:** "je veux que tout ce que jai fait par le passé [...] soit défini automatiquement au centre favoris - **Statut : RÉSOLU**.
+5.  **Utilisateur:** il faut aussi que je puisse définir un centre favoris - **Statut : RÉSOLU**.
+6.  **Utilisateur:** fini (pendant que l'agent tentait de corriger une erreur) - **Statut : TRAITÉ**.
+7.  **Utilisateur:** ok fini les 3 points (refactorisation, notifications, heures sup) - **Statut : EN COURS** (la refactorisation du PlanningManager a été annulée).
+8.  **Utilisateur:** normalement les 3 points sont déja fait peux tu vérifier - **Statut : TRAITÉ** (l'agent a fourni un état des lieux).
+9.  **Utilisateur:** tant que ca fonctionne fait ce qui est le mieux (à propos de la refactorisation) - **Statut : TRAITÉ**.
+10. **Utilisateur:** tu peux vérifier dans tes historiques tu doit avoir déja fait toutes les refactorisations - **Statut : TRAITÉ** (l'agent a découvert que la refactorisation n'était pas terminée).
 
 **Project Health Check:**
-- **Broken:** L'expérience utilisateur sur mobile est dégradée à cause de problèmes de chargement récurrents (reload required) et de possibles bugs d'affichage résiduels dans les vues Planning et Mois.
-- **Mocked:** N/A
+- **Broken:** Le monolithe  dans  représente un risque majeur pour la stabilité et la maintenabilité.
+- **Mocked:** L'intégration Firebase pour les notifications push est simulée car les identifiants ne sont pas fournis.
 
 **3rd Party Integrations**
-- **Lucide-react:** Utilisé pour les icônes.
+- **Lucide-react:** Bibliothèque d'icônes.
+- **APScheduler:** Planificateur de tâches pour le backend.
 
 **Testing status**
-- **Testing agent used after significant changes:** NO
+- **Testing agent used after significant changes:** NO (l'agent a utilisé des tests manuels via  et ).
 - **Troubleshoot agent used after agent stuck in loop:** NO
-- **Test files created:** []
-- **Known regressions:** Le problème de rechargement persistant sur mobile est une régression ou un problème de fond qui n'a été que partiellement atténué.
+- **Test files created:** Un fichier de test temporaire pour les heures supplémentaires a été créé et exécuté via ============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-9.0.2, pluggy-1.6.0
+rootdir: /app
+plugins: anyio-4.12.1
+collected 29 items
+
+backend/tests/test_heures_supplementaires.py .....                       [ 17%]
+backend/tests/test_notifications.py FFEFFEEEEEFEEEEEEEEEEE               [ 93%]
+test_push_notification.py F                                              [ 96%]
+test_work_requests.py .                                                  [100%]
+
+==================================== ERRORS ====================================
+_ ERROR at setup of TestNotificationEmployeesList.test_get_employees_for_test_success _
+
+self = <test_notifications.TestNotificationEmployeesList object at 0xfe3a55c86350>
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+_ ERROR at setup of TestNotificationTestSending.test_send_test_notification_success _
+
+self = <test_notifications.TestNotificationTestSending object at 0xfe3a55c878d0>
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:128: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+_ ERROR at setup of TestNotificationTestSending.test_send_test_notification_multiple_users _
+
+self = <test_notifications.TestNotificationTestSending object at 0xfe3a55c87f50>
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:128: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+_ ERROR at setup of TestNotificationTestSending.test_send_test_notification_empty_users _
+
+self = <test_notifications.TestNotificationTestSending object at 0xfe3a55c90650>
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:128: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+_ ERROR at setup of TestNotificationTestSending.test_send_test_notification_invalid_user _
+
+self = <test_notifications.TestNotificationTestSending object at 0xfe3a55c90d10>
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:128: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+_ ERROR at setup of TestDailyPlanningNotification.test_trigger_daily_planning_success _
+
+self = <test_notifications.TestDailyPlanningNotification object at 0xfe3a55c91610>
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:247: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+_____ ERROR at setup of TestQuickReply.test_quick_reply_missing_message_id _____
+
+self = <test_notifications.TestQuickReply object at 0xfe3a55c92610>
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:282: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+_______ ERROR at setup of TestQuickReply.test_quick_reply_empty_content ________
+
+self = <test_notifications.TestQuickReply object at 0xfe3a55c92d50>
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:282: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+_____ ERROR at setup of TestQuickReply.test_quick_reply_whitespace_content _____
+
+self = <test_notifications.TestQuickReply object at 0xfe3a55c93490>
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:282: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+_____ ERROR at setup of TestQuickReply.test_quick_reply_with_real_message ______
+
+self = <test_notifications.TestQuickReply object at 0xfe3a55c93c10>
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:282: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+_ ERROR at setup of TestLeaveApprovalWithAssistantSlots.test_leave_approval_endpoint_exists _
+
+self = <test_notifications.TestLeaveApprovalWithAssistantSlots object at 0xfe3a55c93750>
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:377: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+_ ERROR at setup of TestLeaveApprovalWithAssistantSlots.test_create_and_approve_leave_for_medecin _
+
+self = <test_notifications.TestLeaveApprovalWithAssistantSlots object at 0xfe3a55c92110>
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:377: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+__ ERROR at setup of TestLeaveApprovalWithAssistantSlots.test_get_conges_list __
+
+self = <test_notifications.TestLeaveApprovalWithAssistantSlots object at 0xfe3a55c86d50>
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:377: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+_ ERROR at setup of TestAssistantSlotHandlingE2E.test_full_assistant_slot_handling_flow _
+
+self = <test_notifications.TestAssistantSlotHandlingE2E object at 0xfe3a55c9c510>
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:487: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+_____ ERROR at setup of TestNotificationsList.test_get_user_notifications ______
+
+self = <test_notifications.TestNotificationsList object at 0xfe3a55c9cb50>
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:668: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+_____ ERROR at setup of TestNotificationsList.test_mark_notification_read ______
+
+self = <test_notifications.TestNotificationsList object at 0xfe3a55c9ced0>
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:668: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+____________ ERROR at setup of TestCleanup.test_cleanup_test_leaves ____________
+
+self = <test_notifications.TestCleanup object at 0xfe3a55c9d5d0>
+
+    @pytest.fixture
+    def auth_headers(self):
+        """Get auth headers for director"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:753: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+=================================== FAILURES ===================================
+______________________ TestHealthAndAuth.test_api_health _______________________
+
+self = <test_notifications.TestHealthAndAuth object at 0xfe3a55c85450>
+
+    def test_api_health(self):
+        """Test that API is accessible"""
+>       response = requests.get(f"{BASE_URL}/api/debug-users")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_notifications.py:23: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:73: in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [GET]>, url = '/api/debug-users', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/debug-users': No scheme supplied. Perhaps you meant https:///api/debug-users?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+____________________ TestHealthAndAuth.test_login_director _____________________
+
+self = <test_notifications.TestHealthAndAuth object at 0xfe3a55c85a90>
+
+    def test_login_director(self):
+        """Test director login to get auth token"""
+>       response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+________ TestNotificationEmployeesList.test_get_employees_unauthorized _________
+
+self = <test_notifications.TestNotificationEmployeesList object at 0xfe3a55c86990>
+
+    def test_get_employees_unauthorized(self):
+        """Test that endpoint requires authentication"""
+>       response = requests.get(f"{BASE_URL}/api/notifications/employees-for-test")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_notifications.py:90: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:73: in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [GET]>, url = '/api/notifications/employees-for-test'
+params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/notifications/employees-for-test': No scheme supplied. Perhaps you meant https:///api/notifications/employees-for-test?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+________ TestNotificationEmployeesList.test_get_employees_non_director _________
+
+self = <test_notifications.TestNotificationEmployeesList object at 0xfe3a55c86fd0>
+
+    def test_get_employees_non_director(self):
+        """Test that only directors can access this endpoint"""
+        # First, check if there are any non-director users
+>       login_response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "directeur@cabinet.fr",
+            "password": "admin123"
+        })
+
+backend/tests/test_notifications.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/auth/login', params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/auth/login': No scheme supplied. Perhaps you meant https:///api/auth/login?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+____ TestDailyPlanningNotification.test_trigger_daily_planning_unauthorized ____
+
+self = <test_notifications.TestDailyPlanningNotification object at 0xfe3a55c91cd0>
+
+    def test_trigger_daily_planning_unauthorized(self):
+        """Test that endpoint requires director authentication"""
+>       response = requests.post(f"{BASE_URL}/api/notifications/send-daily-planning")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_notifications.py:271: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/root/.venv/lib/python3.11/site-packages/requests/api.py:115: in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <PreparedRequest [POST]>, url = '/api/notifications/send-daily-planning'
+params = OrderedDict()
+
+    def prepare_url(self, url, params):
+        """Prepares the given HTTP URL."""
+        #: Accept objects that have string representations.
+        #: We're unable to blindly call unicode/str functions
+        #: as this will include the bytestring indicator (b'')
+        #: on python 3.x.
+        #: https://github.com/psf/requests/pull/2238
+        if isinstance(url, bytes):
+            url = url.decode("utf8")
+        else:
+            url = str(url)
+    
+        # Remove leading whitespaces from url
+        url = url.lstrip()
+    
+        # Don't do any URL preparation for non-HTTP schemes like `mailto`,
+        # `data` etc to work around exceptions from `url_parse`, which
+        # handles RFC 3986 only.
+        if ":" in url and not url.lower().startswith("http"):
+            self.url = url
+            return
+    
+        # Support for unicode domain names and paths.
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except LocationParseError as e:
+            raise InvalidURL(*e.args)
+    
+        if not scheme:
+>           raise MissingSchema(
+                f"Invalid URL {url!r}: No scheme supplied. "
+                f"Perhaps you meant https://{url}?"
+            )
+E           requests.exceptions.MissingSchema: Invalid URL '/api/notifications/send-daily-planning': No scheme supplied. Perhaps you meant https:///api/notifications/send-daily-planning?
+
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: MissingSchema
+__________________________________ test_push ___________________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+=============================== warnings summary ===============================
+test_work_requests.py::test_work_requests_only
+  /root/.venv/lib/python3.11/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but test_work_requests.py::test_work_requests_only returned <class 'bool'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_notifications.py::TestHealthAndAuth::test_api_health
+FAILED backend/tests/test_notifications.py::TestHealthAndAuth::test_login_director
+FAILED backend/tests/test_notifications.py::TestNotificationEmployeesList::test_get_employees_unauthorized
+FAILED backend/tests/test_notifications.py::TestNotificationEmployeesList::test_get_employees_non_director
+FAILED backend/tests/test_notifications.py::TestDailyPlanningNotification::test_trigger_daily_planning_unauthorized
+FAILED test_push_notification.py::test_push - Failed: async def functions are...
+ERROR backend/tests/test_notifications.py::TestNotificationEmployeesList::test_get_employees_for_test_success
+ERROR backend/tests/test_notifications.py::TestNotificationTestSending::test_send_test_notification_success
+ERROR backend/tests/test_notifications.py::TestNotificationTestSending::test_send_test_notification_multiple_users
+ERROR backend/tests/test_notifications.py::TestNotificationTestSending::test_send_test_notification_empty_users
+ERROR backend/tests/test_notifications.py::TestNotificationTestSending::test_send_test_notification_invalid_user
+ERROR backend/tests/test_notifications.py::TestDailyPlanningNotification::test_trigger_daily_planning_success
+ERROR backend/tests/test_notifications.py::TestQuickReply::test_quick_reply_missing_message_id
+ERROR backend/tests/test_notifications.py::TestQuickReply::test_quick_reply_empty_content
+ERROR backend/tests/test_notifications.py::TestQuickReply::test_quick_reply_whitespace_content
+ERROR backend/tests/test_notifications.py::TestQuickReply::test_quick_reply_with_real_message
+ERROR backend/tests/test_notifications.py::TestLeaveApprovalWithAssistantSlots::test_leave_approval_endpoint_exists
+ERROR backend/tests/test_notifications.py::TestLeaveApprovalWithAssistantSlots::test_create_and_approve_leave_for_medecin
+ERROR backend/tests/test_notifications.py::TestLeaveApprovalWithAssistantSlots::test_get_conges_list
+ERROR backend/tests/test_notifications.py::TestAssistantSlotHandlingE2E::test_full_assistant_slot_handling_flow
+ERROR backend/tests/test_notifications.py::TestNotificationsList::test_get_user_notifications
+ERROR backend/tests/test_notifications.py::TestNotificationsList::test_mark_notification_read
+ERROR backend/tests/test_notifications.py::TestCleanup::test_cleanup_test_leaves
+============== 6 failed, 6 passed, 1 warning, 17 errors in 3.40s ===============, mais il n'a pas été conservé.
+- **Known regressions:** Aucune nouvelle, mais le problème de rechargement mobile et le bug d'affichage des congés persistent.
 
 **Credentials to test flow:**
 - **Utilisateur:** 
 - **Mot de passe:** 
 
 **What agent forgot to execute**
-- L'agent n'a toujours pas traité le bug critique de la **création des créneaux pour les assistants**.
-- L'agent n'a pas commencé l'amélioration de la **gestion des erreurs** (remplacement des ).
-- La **refactorisation de **, bien qu'identifiée comme prioritaire depuis le début, a été continuellement reportée au profit de nouvelles fonctionnalités et corrections.</analysis>
+- L'agent n'a pas implémenté l'interface utilisateur (UI) pour que le directeur puisse ajouter/modifier le logo d'un centre, bien que le backend soit prêt.
+- Le bug d'affichage dans la liste des congés a été remarqué mais n'a pas été traité.
+- La tâche principale oubliée ou plutôt échouée est l'extraction du .</analysis>
