@@ -1658,17 +1658,23 @@ const NotificationBadge = ({ setActiveTab }) => {
   });
 
   useEffect(() => {
-    if (user?.role === 'Directeur') {
-      fetchNotifications();
-      // Recharger les notifications toutes les 30 secondes
-      const interval = setInterval(fetchNotifications, 30000);
+    // Polling intelligent pour les notifications
+    const startPolling = (fetchFn) => {
+      fetchFn();
+      return setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          fetchFn();
+        }
+      }, 45000); // 45 secondes au lieu de 30
+    };
+    
+    if (user?.role === 'Directeur' || user?.role === 'Super-Admin') {
+      const interval = startPolling(fetchNotifications);
       return () => clearInterval(interval);
     }
     
     if (user) {
-      fetchUserNotifications();
-      // Recharger les notifications utilisateur toutes les 30 secondes
-      const interval = setInterval(fetchUserNotifications, 30000);
+      const interval = startPolling(fetchUserNotifications);
       return () => clearInterval(interval);
     }
   }, [user]);
