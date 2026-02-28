@@ -2674,9 +2674,6 @@ const PersonnelManager = () => {
           <TabsTrigger value="secretaires">
             Secrétaires ({getUsersByRole('Secrétaire').length})
           </TabsTrigger>
-          <TabsTrigger value="assignations">
-            Assignations
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="medecins">
