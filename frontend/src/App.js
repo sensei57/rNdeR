@@ -12869,13 +12869,20 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh, centreActif }
       <CardContent>
         <div className="flex flex-col lg:flex-row items-stretch gap-4 w-full">
           {/* Plan Matin */}
-          {planMatin && (
+          {planMatin && planMatin.salles && planMatin.salles.length > 0 && (
             <div className="flex-1 space-y-2">
               <h3 className="text-lg font-semibold text-amber-500 flex items-center justify-center space-x-2">
                 <span>☀️</span>
                 <span>Matin</span>
               </h3>
-              <div className="relative bg-amber-50 rounded-lg p-4 overflow-hidden border border-amber-200 min-h-[600px]">
+              <div 
+                className="bg-amber-50 rounded-lg p-4 border border-amber-200"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(${Math.max(...planMatin.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(s => s.position_x))}, minmax(80px, 1fr))`,
+                  gap: '8px'
+                }}
+              >
                 {planMatin.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => renderSalle(salle, 'MATIN'))}
               </div>
             </div>
