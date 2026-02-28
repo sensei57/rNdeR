@@ -3744,7 +3744,7 @@ const PlanningManager = () => {
       });
       
       // Générer le tableau
-      pdf.autoTable({
+      autoTable(pdf, {
         head: tableHead,
         body: tableBody,
         startY: 28,
