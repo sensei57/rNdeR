@@ -1688,32 +1688,44 @@ async def login(user_login: UserLogin):
             if centre:
                 selected_centre = user_login.centre_id
     else:
-        # Pour les autres utilisateurs : vérifier le centre
-        user_centre_id = user.get('centre_id')
+        # Pour les autres utilisateurs : récupérer leurs centres (multi-centres supporté)
+        user_centre_ids = user.get('centre_ids', [])
+        user_centre_id = user.get('centre_id')  # Legacy: centre unique
         
-        if not user_centre_id:
+        # Compatibilité: si centre_ids n'existe pas mais centre_id existe
+        if not user_centre_ids and user_centre_id:
+            user_centre_ids = [user_centre_id]
+        
+        if not user_centre_ids:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Aucun centre assigné à votre compte. Contactez l'administrateur."
             )
         
-        # Vérifier que le centre existe et est actif
-        centre = await db.centres.find_one({"id": user_centre_id, "actif": True})
-        if not centre:
+        # Récupérer tous les centres de l'utilisateur
+        user_centres = await db.centres.find(
+            {"id": {"$in": user_centre_ids}, "actif": True}, 
+            {"_id": 0, "id": 1, "nom": 1}
+        ).to_list(100)
+        
+        if not user_centres:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Votre centre n'est plus actif. Contactez l'administrateur."
+                detail="Vos centres ne sont plus actifs. Contactez l'administrateur."
             )
         
-        # Si l'utilisateur a spécifié un centre différent du sien, refuser
-        if user_login.centre_id and user_login.centre_id != user_centre_id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Vous n'avez pas accès à ce centre."
-            )
+        centres_list = user_centres
         
-        selected_centre = user_centre_id
-        centres_list = [{"id": centre["id"], "nom": centre["nom"]}]
+        # Sélectionner le centre spécifié ou le premier disponible
+        if user_login.centre_id:
+            if user_login.centre_id not in user_centre_ids:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Vous n'avez pas accès à ce centre."
+                )
+            selected_centre = user_login.centre_id
+        else:
+            selected_centre = user_centres[0]["id"]
     
     # Update last login et centre sélectionné
     update_data = {"derniere_connexion": datetime.now(timezone.utc)}
