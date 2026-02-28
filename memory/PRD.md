@@ -1,55 +1,56 @@
-# PRD - OphtaGestion Multi-Centres v2.3
+# PRD - OphtaGestion Multi-Centres v2.4
 
 ## 1. Vue d'ensemble
-Application web full-stack de gestion de cabinets médicaux multi-centres. **Version 2.3 avec amélioration de la Gestion Multi-Centres.**
+Application web full-stack de gestion de cabinets médicaux multi-centres. **Version 2.4 avec données indépendantes par centre.**
 
-## 2. Nouveautés v2.3 (28 février 2026)
+## 2. Nouveautés v2.4 (28 février 2026)
+
+### Indépendance des données par centre
+Les modules suivants sont maintenant indépendants pour chaque centre :
+- ✅ **Actualités** : Chaque centre a ses propres actualités
+- ✅ **Planning** : Les créneaux sont associés au centre actif
+- ✅ **Congés** : Les demandes de congé sont filtrées par centre
+- ✅ **Demandes de créneaux** : Les demandes de travail sont par centre
+- ✅ **Plan de cabinet** : Les salles et planning sont filtrés par centre
+
+### Changements techniques
+- Ajout du champ `centre_id` aux modèles : `CreneauPlanning`, `Actualite`, `DemandeConge`, `DemandeJourTravail`
+- Les endpoints filtrent automatiquement par le centre actif de l'utilisateur
+- Rétrocompatibilité : les données sans `centre_id` restent visibles (legacy)
+
+## 3. Nouveautés v2.3 (28 février 2026)
 
 ### Gestion Multi-Centres Améliorée
 - ✅ **Vue globale des employés** : Le Directeur voit TOUS les employés de TOUS les centres
 - ✅ **Filtres avancés** : Par rôle (Médecin, Assistant, Secrétaire) et par centre
 - ✅ **Recherche par nom** : Champ de recherche pour filtrer rapidement
 - ✅ **Assignation multi-centres** : Possibilité d'assigner un employé à plusieurs centres
-- ✅ **Compteurs par rôle** : Affichage du nombre d'employés par rôle dans chaque centre
-- ✅ **Sidebar scrollable** : Correction du menu coupé (overflow-y-auto)
 
-### Différenciation des vues
-- **Gestion Multi-Centres** : Vue globale pour Super-Admin/Directeur (tous centres, tous employés)
-- **Gestion du Personnel** : Vue filtrée par centre actif uniquement
-
-## 3. État des fonctionnalités
+## 4. État des fonctionnalités
 
 ### Toutes les fonctionnalités validées
 - ✅ **Authentification** : Login multi-centre, retry automatique
-- ✅ **Planning** : Header composant intégré, Vues Jour/Semaine/Mois
-- ✅ **Congés** : Interface modernisée avec stats
+- ✅ **Planning** : Header composant intégré, Vues Jour/Semaine/Mois, **filtré par centre**
+- ✅ **Congés** : Interface modernisée avec stats, **filtré par centre**
 - ✅ **Messages** : Chat général/privé/groupes
-- ✅ **Actualités** : Actualités ciblées, anniversaires
+- ✅ **Actualités** : Actualités ciblées, anniversaires, **filtré par centre**
 - ✅ **Stocks** : Header gradient, catégories
 - ✅ **Salles** : Header gradient, configuration
 - ✅ **Notifications** : Push Firebase, réponses rapides
 - ✅ **Vue Mobile** : 100% responsive sur téléphone
-- ✅ **Gestion Multi-Centres** : Vue globale avec filtres (NOUVEAU)
+- ✅ **Gestion Multi-Centres** : Vue globale avec filtres
 
-## 4. API - Paramètre all_centres
+## 5. API - Filtrage par centre
 
-### Endpoint `/api/users`
+### Endpoints modifiés
 ```
-GET /api/users                    # Employés du centre actif
-GET /api/users?all_centres=true   # TOUS les employés (Directeur seulement)
+GET /api/actualites              # Actualités du centre actif
+GET /api/planning                # Planning du centre actif
+GET /api/conges                  # Congés du centre actif (Directeur)
+GET /api/demandes-travail        # Demandes du centre actif (Directeur)
+GET /api/cabinet/plan/{date}     # Plan du centre actif
+GET /api/users?all_centres=true  # TOUS les employés (Gestion Multi-Centres)
 ```
-
-## 5. Composants Intégrés
-
-| Composant | Fichier | Statut |
-|-----------|---------|--------|
-| **PlanningHeader** | `/components/planning/PlanningHeader.jsx` | ✅ INTÉGRÉ |
-| **CentresManager** | Intégré dans App.js | ✅ Amélioré |
-| PlanningFilters | `/components/planning/PlanningFilters.jsx` | Prêt |
-| usePlanningHooks | `/hooks/usePlanningHooks.js` | Prêt |
-| CongeManager | `/components/conges/CongeManager.jsx` | Extrait |
-| ChatManager | `/components/chat/ChatManager.jsx` | Extrait |
-| ActualitesManager | `/components/dashboard/ActualitesManager.jsx` | Extrait |
 
 ## 6. Credentials de Test
 - **Email:** directeur@cabinet.fr
@@ -69,7 +70,7 @@ GET /api/users?all_centres=true   # TOUS les employés (Directeur seulement)
 - [ ] Interface de gestion fine des permissions des managers
 
 ---
-**Version:** 2.3  
+**Version:** 2.4  
 **Date:** 28 février 2026  
 **Status:** ✅ PRODUCTION READY  
 **Mobile:** ✅ Responsive complet
