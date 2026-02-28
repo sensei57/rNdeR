@@ -111,6 +111,7 @@ class UserBase(BaseModel):
     prenom: str
     role: str
     centre_id: Optional[str] = None  # ID du centre (None pour Super-Admin qui gère tous les centres)
+    centre_actif_id: Optional[str] = None  # Centre actuellement sélectionné (pour Super-Admin)
     telephone: Optional[str] = None
     date_naissance: Optional[str] = None  # Date de naissance (YYYY-MM-DD)
     photo_url: Optional[str] = None  # URL de la photo de profil
