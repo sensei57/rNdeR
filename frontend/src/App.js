@@ -3985,7 +3985,6 @@ const SallesManager = () => {
               </form>
             </DialogContent>
           </Dialog>
-      </div>
 
       {/* Configuration Modal */}
       <Dialog open={showConfigModal} onOpenChange={setShowConfigModal}>
