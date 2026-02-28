@@ -19707,10 +19707,12 @@ const ChatManager = () => {
   useEffect(() => {
     fetchMessages();
     
-    // Polling automatique pour les nouveaux messages (toutes les 5 secondes)
+    // Polling intelligent pour les messages (10 secondes, pause si onglet caché)
     const interval = setInterval(() => {
-      fetchMessages();
-    }, 5000);
+      if (document.visibilityState === 'visible') {
+        fetchMessages();
+      }
+    }, 10000);
     
     return () => clearInterval(interval);
   }, [chatType, selectedGroupe, selectedUser]);
