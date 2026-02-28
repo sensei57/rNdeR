@@ -3350,7 +3350,29 @@ async def get_planning_by_date(
     date: str,
     current_user: User = Depends(get_current_user)
 ):
-    creneaux = await db.planning.find({"date": date}).sort("creneau", 1).to_list(1000)
+    # Déterminer le centre actif de l'utilisateur
+    centre_actif = getattr(current_user, 'centre_actif_id', None)
+    if not centre_actif:
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        centre_actif = user_centres[0] if user_centres else None
+    
+    # Filtrer par centre
+    query = {"date": date}
+    if centre_actif:
+        query = {
+            "$and": [
+                {"date": date},
+                {"$or": [
+                    {"centre_id": centre_actif},
+                    {"centre_id": None},
+                    {"centre_id": {"$exists": False}}
+                ]}
+            ]
+        }
+    
+    creneaux = await db.planning.find(query).sort("creneau", 1).to_list(1000)
     
     enriched_creneaux = []
     for creneau in creneaux:
