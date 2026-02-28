@@ -3854,46 +3854,49 @@ const SallesManager = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">Gestion des Salles</h2>
-          <p className="text-gray-600 mt-1">Configurez les salles et boxes du cabinet</p>
-        </div>
-        
-        {user?.role === 'Directeur' && (
-          <div className="flex space-x-3">
-            {salles.length === 0 && (
-              <Button
-                onClick={initialiserCabinet}
-                variant="outline"
-                className="flex items-center space-x-2"
-              >
-                <Building2 className="h-4 w-4" />
-                <span>Initialiser Cabinet</span>
-              </Button>
-            )}
-            
-            <Button
-              onClick={() => setShowConfigModal(true)}
-              variant="outline"
-              className="flex items-center space-x-2"
-            >
-              <Settings className="h-4 w-4" />
-              <span>Configuration</span>
-            </Button>
+    <div className="space-y-6" data-testid="salles-manager">
+      {/* Header moderne avec gradient */}
+      <div className="bg-gradient-to-r from-[#0091B9] via-[#007494] to-[#19CD91] rounded-2xl p-6 text-white shadow-lg">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <Building2 className="h-7 w-7" />
+              Gestion des Salles
+            </h2>
+            <p className="text-white/80 mt-1">Configurez les salles et boxes du cabinet</p>
           </div>
-        )}
+          
+          {user?.role === 'Directeur' && (
+            <div className="flex flex-wrap gap-2">
+              {salles.length === 0 && (
+                <Button
+                  onClick={initialiserCabinet}
+                  className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                >
+                  <Building2 className="h-4 w-4 mr-2" />
+                  Initialiser
+                </Button>
+              )}
+              <Button
+                onClick={() => setShowConfigModal(true)}
+                className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Configuration
+              </Button>
+              <Button 
+                onClick={() => setShowSalleModal(true)}
+                className="bg-white text-[#0091B9] hover:bg-white/90"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Nouvelle Salle
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
 
         <Dialog open={showSalleModal} onOpenChange={setShowSalleModal}>
-          <DialogTrigger asChild>
-            {user?.role === 'Directeur' && (
-              <Button className="flex items-center space-x-2">
-                <Plus className="h-4 w-4" />
-                <span>Nouvelle Salle</span>
-              </Button>
-            )}
-          </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>
