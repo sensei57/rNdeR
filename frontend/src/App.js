@@ -2033,8 +2033,8 @@ const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab 
         </div>
       </div>
       
-      {/* Sélecteur de centre mobile pour Super-Admin */}
-      {isSuperAdmin && centres.length > 1 && (
+      {/* Sélecteur de centre mobile (visible si plusieurs centres) */}
+      {centres.length > 1 && (
         <div className="md:hidden px-4 pb-2">
           <Select 
             value={centreActif?.id || ''} 
