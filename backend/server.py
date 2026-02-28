@@ -735,6 +735,7 @@ class SalleReservation(BaseModel):
     salle: str
     type_salle: str  # "MEDECIN" ou "ASSISTANT"
     utilisateur_id: str
+    centre_id: Optional[str] = None  # Centre auquel appartient cette réservation
     date: str  # YYYY-MM-DD
     creneau: str  # "MATIN" ou "APRES_MIDI"
     notes: Optional[str] = None
