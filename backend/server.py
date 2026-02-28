@@ -2752,7 +2752,7 @@ async def set_centre_favori(
 @api_router.post("/admin/migrate-data-to-centre")
 async def migrate_data_to_centre(
     data: Dict[str, str],
-    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"], ROLES["SUPER_ADMIN"]]))
 ):
     """
     Migrer toutes les données sans centre_id vers le centre favori de l'utilisateur
