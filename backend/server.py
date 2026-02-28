@@ -5646,7 +5646,7 @@ async def delete_article_stock(
     current_user: User = Depends(get_current_user)
 ):
     # Vérifier les permissions
-    if current_user.role != 'Directeur':
+    if current_user.role not in ['Directeur', 'Super-Admin']:
         permission = await db.permissions_stock.find_one({"utilisateur_id": current_user.id})
         if not permission or not permission.get('peut_supprimer', False):
             raise HTTPException(status_code=403, detail="Accès non autorisé")
