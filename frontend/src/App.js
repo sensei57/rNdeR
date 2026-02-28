@@ -3333,7 +3333,7 @@ const CongeManager = () => {
                 Nouvelle Demande
               </Button>
             </DialogTrigger>
-          <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Nouvelle Demande de Congé</DialogTitle>
               <DialogDescription>
