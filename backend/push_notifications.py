@@ -85,12 +85,15 @@ def get_firebase_status():
 async def send_push_notification(fcm_token: str, title: str, body: str, data: dict = None):
     """
     Envoie une notification push à un utilisateur via Firebase Admin SDK
+    avec support des actions (réponse rapide pour les messages de chat)
     
     Args:
         fcm_token: Token FCM de l'utilisateur
         title: Titre de la notification
         body: Corps de la notification
         data: Données supplémentaires (optionnel)
+            - type: "chat_message" active les actions de réponse rapide
+            - requires_reply: "true" pour afficher l'action de réponse
     
     Returns:
         bool: True si envoyé avec succès, False sinon
@@ -106,21 +109,50 @@ async def send_push_notification(fcm_token: str, title: str, body: str, data: di
         return False
     
     try:
+        # Préparer les données
+        notification_data = {k: str(v) for k, v in (data or {}).items()}
+        
+        # Configurer les actions selon le type de notification
+        actions = []
+        if notification_data.get("type") == "chat_message" and notification_data.get("requires_reply") == "true":
+            # Ajouter l'action de réponse rapide pour les messages de chat
+            actions = [
+                {
+                    "action": "reply",
+                    "title": "Répondre",
+                    "type": "text",
+                    "placeholder": "Tapez votre réponse..."
+                },
+                {
+                    "action": "open",
+                    "title": "Ouvrir"
+                }
+            ]
+        
+        # Construire la configuration webpush
+        webpush_notification_config = {
+            "icon": "/icon-192.png",
+            "badge": "/icon-192.png",
+            "require_interaction": True,
+            "vibrate": [200, 100, 200],
+            "tag": notification_data.get("message_id", "default"),  # Grouper par message
+            "renotify": True
+        }
+        
+        # Ajouter les actions si disponibles
+        if actions:
+            webpush_notification_config["actions"] = actions
+        
         # Construire le message
         message = messaging.Message(
             notification=messaging.Notification(
                 title=title,
                 body=body
             ),
-            data={k: str(v) for k, v in (data or {}).items()},  # Convertir toutes les valeurs en string
+            data=notification_data,
             token=fcm_token,
             webpush=messaging.WebpushConfig(
-                notification=messaging.WebpushNotification(
-                    icon='/icon-192.png',
-                    badge='/icon-192.png',
-                    require_interaction=True,
-                    vibrate=[200, 100, 200]
-                ),
+                notification=messaging.WebpushNotification(**webpush_notification_config),
                 fcm_options=messaging.WebpushFCMOptions(
                     link='/'
                 )
