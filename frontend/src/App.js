@@ -739,6 +739,14 @@ const AuthProvider = ({ children }) => {
       localStorage.setItem('token', access_token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
       
+      // Envoyer le token au Service Worker pour les réponses rapides
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'STORE_TOKEN',
+          token: access_token
+        });
+      }
+      
       toast.success('Connexion réussie !');
       
       return true;
