@@ -16017,6 +16017,7 @@ const AdminManager = () => {
 
   useEffect(() => {
     fetchAllUsers();
+    fetchEmployeesForTest();
   }, []);
 
   const fetchAllUsers = async () => {
@@ -16029,6 +16030,65 @@ const AdminManager = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Charger la liste des employés pour les notifications de test
+  const fetchEmployeesForTest = async () => {
+    try {
+      const response = await axios.get(`${API}/notifications/employees-for-test`);
+      setEmployeesForTest(response.data.employees || []);
+    } catch (error) {
+      console.error('Erreur lors du chargement des employés pour test:', error);
+    }
+  };
+
+  // Envoyer des notifications de test à plusieurs employés
+  const handleSendTestNotifications = async () => {
+    if (selectedEmployeesForTest.length === 0) {
+      toast.error('Sélectionnez au moins un employé');
+      return;
+    }
+    if (!testNotificationTitle.trim() || !testNotificationMessage.trim()) {
+      toast.error('Le titre et le message sont requis');
+      return;
+    }
+
+    setSendingTestNotification(true);
+    try {
+      const response = await axios.post(`${API}/notifications/test`, {
+        user_ids: selectedEmployeesForTest,
+        title: testNotificationTitle.trim(),
+        message: testNotificationMessage.trim()
+      });
+      
+      toast.success(response.data.message);
+      setShowTestNotificationModal(false);
+      setSelectedEmployeesForTest([]);
+      setTestNotificationTitle('');
+      setTestNotificationMessage('');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de l\'envoi des notifications de test');
+    } finally {
+      setSendingTestNotification(false);
+    }
+  };
+
+  // Sélectionner/Désélectionner tous les employés pour le test
+  const toggleSelectAllEmployees = () => {
+    if (selectedEmployeesForTest.length === employeesForTest.length) {
+      setSelectedEmployeesForTest([]);
+    } else {
+      setSelectedEmployeesForTest(employeesForTest.map(e => e.id));
+    }
+  };
+
+  // Sélectionner/Désélectionner un employé pour le test
+  const toggleEmployeeForTest = (employeeId) => {
+    setSelectedEmployeesForTest(prev => 
+      prev.includes(employeeId) 
+        ? prev.filter(id => id !== employeeId)
+        : [...prev, employeeId]
+    );
   };
 
   const handleImpersonate = async (userId) => {
