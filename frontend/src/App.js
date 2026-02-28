@@ -17910,10 +17910,52 @@ const CentresManager = () => {
 
         {/* Onglet Employés */}
         <TabsContent value="employees" className="space-y-4">
-          {/* Afficher tous les employés avec possibilité d'assigner des centres */}
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Tous les Employés</h3>
-            <Badge>{employees.length} employé(s)</Badge>
+          {/* Header avec titre et filtres */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-semibold">Tous les Employés</h3>
+              <p className="text-sm text-gray-500">Vue globale de tous les employés de tous les centres</p>
+            </div>
+            <Badge className="w-fit">{employees.filter(e => e.role !== 'Manager' && e.role !== 'Super-Admin' && e.role !== 'Directeur').length} employé(s)</Badge>
+          </div>
+          
+          {/* Filtres */}
+          <div className="flex flex-wrap gap-3 p-3 bg-gray-50 rounded-lg">
+            {/* Recherche par nom */}
+            <div className="flex-1 min-w-[200px]">
+              <Input
+                placeholder="Rechercher par nom..."
+                value={employeeSearchTerm}
+                onChange={(e) => setEmployeeSearchTerm(e.target.value)}
+                className="bg-white"
+              />
+            </div>
+            
+            {/* Filtre par rôle */}
+            <Select value={employeeRoleFilter} onValueChange={setEmployeeRoleFilter}>
+              <SelectTrigger className="w-[150px] bg-white">
+                <SelectValue placeholder="Tous les rôles" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les rôles</SelectItem>
+                <SelectItem value="Médecin">🩺 Médecins</SelectItem>
+                <SelectItem value="Assistant">👨‍⚕️ Assistants</SelectItem>
+                <SelectItem value="Secrétaire">📋 Secrétaires</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            {/* Filtre par centre */}
+            <Select value={employeeCentreFilter} onValueChange={setEmployeeCentreFilter}>
+              <SelectTrigger className="w-[180px] bg-white">
+                <SelectValue placeholder="Tous les centres" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les centres</SelectItem>
+                {centres.map(c => (
+                  <SelectItem key={c.id} value={c.id}>{c.nom}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           {employees.length === 0 ? (
@@ -17923,7 +17965,22 @@ const CentresManager = () => {
             </Card>
           ) : (
             <div className="grid gap-3">
-              {employees.filter(e => e.role !== 'Manager' && e.role !== 'Super-Admin' && e.role !== 'Directeur').map((employee) => {
+              {employees
+                .filter(e => e.role !== 'Manager' && e.role !== 'Super-Admin' && e.role !== 'Directeur')
+                .filter(e => employeeRoleFilter === 'all' || e.role === employeeRoleFilter)
+                .filter(e => {
+                  if (employeeCentreFilter === 'all') return true;
+                  const empCentres = e.centre_ids || (e.centre_id ? [e.centre_id] : []);
+                  return empCentres.includes(employeeCentreFilter);
+                })
+                .filter(e => {
+                  if (!employeeSearchTerm) return true;
+                  const term = employeeSearchTerm.toLowerCase();
+                  return (e.prenom?.toLowerCase().includes(term) || 
+                          e.nom?.toLowerCase().includes(term) ||
+                          e.email?.toLowerCase().includes(term));
+                })
+                .map((employee) => {
                 // Récupérer les centres de l'employé (multi-centres)
                 const employeeCentres = employee.centre_ids || (employee.centre_id ? [employee.centre_id] : []);
                 
