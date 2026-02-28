@@ -17759,43 +17759,6 @@ const CentresManager = () => {
             })}
           </div>
         </TabsContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {rubriquesDisponibles.map((rubrique) => {
-                    const isActive = selectedCentre.config?.rubriques_actives?.includes(rubrique.id) ?? true;
-                    return (
-                      <label 
-                        key={rubrique.id}
-                        className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all ${
-                          isActive ? 'bg-[#E6F4F8] border-[#0091B9]' : 'bg-gray-50 border-gray-200'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isActive}
-                          onChange={(e) => {
-                            const newRubriques = e.target.checked
-                              ? [...(selectedCentre.config?.rubriques_actives || []), rubrique.id]
-                              : (selectedCentre.config?.rubriques_actives || []).filter(r => r !== rubrique.id);
-                            handleUpdateCentreConfig(selectedCentre.id, { rubriques_actives: newRubriques });
-                            setSelectedCentre({
-                              ...selectedCentre,
-                              config: { ...selectedCentre.config, rubriques_actives: newRubriques }
-                            });
-                          }}
-                          className="w-4 h-4 text-[#0091B9]"
-                        />
-                        <div>
-                          <div className="font-medium text-sm">{rubrique.nom}</div>
-                          <div className="text-xs text-gray-500">{rubrique.description}</div>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
 
         {/* Onglet Managers */}
         <TabsContent value="managers" className="space-y-4">
