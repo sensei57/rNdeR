@@ -5254,20 +5254,23 @@ async def get_plan_cabinet(
             user_centres.append(current_user.centre_id)
         centre_actif = user_centres[0] if user_centres else None
     
-    print(f"[DEBUG cabinet/plan] centre_actif: {centre_actif}, user: {current_user.email}, role: {current_user.role}")
+    print(f"[DEBUG cabinet/plan] centre_actif: {centre_actif}, user: {current_user.email}")
     
-    # Pour les Directeurs/Super-Admin, récupérer TOUTES les salles actives
-    # Pour les autres, filtrer par centre
-    is_admin = current_user.role in ['Directeur', 'Super-Admin']
+    # TOUJOURS filtrer par centre actif - même pour les admins
+    # Si pas de centre actif, retourner une liste vide
+    if not centre_actif:
+        return {"date": date, "creneau": creneau, "salles": []}
     
-    if is_admin or not centre_actif:
-        # Admin ou pas de centre défini -> toutes les salles actives
-        salles_query = {"actif": True}
-    else:
-        # Filtrer par centre pour les non-admins
-        salles_query = {
-            "$and": [
-                {"actif": True},
+    # Récupérer uniquement les salles du centre actif
+    salles_query = {
+        "$and": [
+            {"actif": True},
+            {"centre_id": centre_actif}
+        ]
+    }
+    
+    salles = await db.salles.find(salles_query).to_list(1000)
+    print(f"[DEBUG cabinet/plan] Salles trouvées pour centre {centre_actif}: {len(salles)}")
                 {"$or": [
                     {"centre_id": centre_actif},
                     {"centre_id": None},
