@@ -636,13 +636,19 @@ const AuthProvider = ({ children }) => {
         } else if (centresResponse.data.centres?.length > 0) {
           setCentreActif(centresResponse.data.centres[0]);
         }
-      } else if (response.data.centre_id) {
-        // Pour les autres utilisateurs, charger leur centre
-        const centresResponse = await axios.get(`${API}/centres`);
-        const userCentre = centresResponse.data.centres?.find(c => c.id === response.data.centre_id);
-        if (userCentre) {
-          setCentres([userCentre]);
-          setCentreActif(userCentre);
+      } else {
+        // Pour les autres utilisateurs (multi-centres supporté)
+        // Les centres sont déjà inclus dans la réponse du login
+        const userCentreIds = response.data.centre_ids || (response.data.centre_id ? [response.data.centre_id] : []);
+        if (userCentreIds.length > 0) {
+          const centresResponse = await axios.get(`${API}/centres`);
+          const userCentres = centresResponse.data.centres?.filter(c => userCentreIds.includes(c.id)) || [];
+          setCentres(userCentres);
+          
+          // Centre actif = celui de la session ou le premier
+          const centreActifId = response.data.centre_actif_id || userCentreIds[0];
+          const activeCentre = userCentres.find(c => c.id === centreActifId);
+          setCentreActif(activeCentre || userCentres[0] || null);
         }
       }
     } catch (error) {
