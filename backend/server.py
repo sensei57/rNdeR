@@ -2408,20 +2408,32 @@ async def migrate_to_multicentre(current_user: User = Depends(get_current_user))
 # User management routes
 @api_router.get("/users", response_model=List[User])
 async def get_users(current_user: User = Depends(get_current_user)):
-    """Tous les utilisateurs authentifiés peuvent voir la liste du personnel de leur centre"""
+    """Tous les utilisateurs authentifiés peuvent voir la liste du personnel de leur(s) centre(s)"""
     is_super_admin = current_user.role in [ROLES["SUPER_ADMIN"], ROLES["DIRECTEUR"]]
     
     # Construire la requête selon le rôle
     query = {"actif": True}
+    
     if not is_super_admin:
-        # Les employés normaux voient uniquement leur centre
-        if current_user.centre_id:
-            query["centre_id"] = current_user.centre_id
+        # Les employés voient les utilisateurs de leurs centres
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        
+        if user_centres:
+            # Voir tous les utilisateurs qui ont au moins un centre en commun
+            query["$or"] = [
+                {"centre_id": {"$in": user_centres}},
+                {"centre_ids": {"$elemMatch": {"$in": user_centres}}}
+            ]
     else:
         # Super-Admin avec centre actif sélectionné
         centre_actif = getattr(current_user, 'centre_actif_id', None)
         if centre_actif:
-            query["centre_id"] = centre_actif
+            query["$or"] = [
+                {"centre_id": centre_actif},
+                {"centre_ids": centre_actif}
+            ]
     
     # Optimisation sécurité: exclure password_hash et _id
     users = await db.users.find(query, {"_id": 0, "password_hash": 0}).to_list(1000)
@@ -2439,12 +2451,24 @@ async def get_users_by_role(
     
     # Construire la requête
     query = {"role": role, "actif": True}
-    if not is_super_admin and current_user.centre_id:
-        query["centre_id"] = current_user.centre_id
-    elif is_super_admin:
+    
+    if not is_super_admin:
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        
+        if user_centres:
+            query["$or"] = [
+                {"centre_id": {"$in": user_centres}},
+                {"centre_ids": {"$elemMatch": {"$in": user_centres}}}
+            ]
+    else:
         centre_actif = getattr(current_user, 'centre_actif_id', None)
         if centre_actif:
-            query["centre_id"] = centre_actif
+            query["$or"] = [
+                {"centre_id": centre_actif},
+                {"centre_ids": centre_actif}
+            ]
     
     # Optimisation sécurité: exclure password_hash et _id
     users = await db.users.find(query, {"_id": 0, "password_hash": 0}).to_list(1000)
