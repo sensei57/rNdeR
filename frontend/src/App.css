@@ -1873,9 +1873,16 @@ p {
 
 .dashboard-container {
   padding: 28px;
-  max-width: 1600px;
+  max-width: 100%;
   margin: 0 auto;
   animation: fadeIn 0.4s ease-out;
+}
+
+/* Sur les très grands écrans, garder un max-width raisonnable */
+@media (min-width: 1920px) {
+  .dashboard-container {
+    max-width: 1800px;
+  }
 }
 
 .dashboard-grid {
