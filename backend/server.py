@@ -3143,10 +3143,32 @@ async def get_planning(
 ):
     query = {}
     
+    # Filtrer par centre actif de l'utilisateur
+    centre_actif = getattr(current_user, 'centre_actif_id', None)
+    if not centre_actif:
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        centre_actif = user_centres[0] if user_centres else None
+    
+    if centre_actif:
+        # Afficher le planning du centre actif OU les créneaux sans centre (legacy)
+        query["$or"] = [
+            {"centre_id": centre_actif},
+            {"centre_id": None},
+            {"centre_id": {"$exists": False}}
+        ]
+    
     if date_debut and date_fin:
-        query["date"] = {"$gte": date_debut, "$lte": date_fin}
+        if "$or" in query:
+            query = {"$and": [query, {"date": {"$gte": date_debut, "$lte": date_fin}}]}
+        else:
+            query["date"] = {"$gte": date_debut, "$lte": date_fin}
     elif date_debut:
-        query["date"] = {"$gte": date_debut}
+        if "$or" in query:
+            query = {"$and": [query, {"date": {"$gte": date_debut}}]}
+        else:
+            query["date"] = {"$gte": date_debut}
     
     creneaux = await db.planning.find(query).sort("date", 1).to_list(1000)
     
