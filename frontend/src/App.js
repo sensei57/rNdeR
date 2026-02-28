@@ -3980,7 +3980,7 @@ const PlanningManager = () => {
     } else if (viewMode === 'planning') {
       fetchPlanningTableau(selectedWeek);
     }
-  }, [selectedDate, selectedWeek, selectedMonth, viewMode, user?.role]);
+  }, [selectedDate, selectedWeek, selectedMonth, viewMode, user?.role, centreActif?.id]); // Recharger quand le centre change
 
   const getMondayOfWeek = (date) => {
     const selectedDate = new Date(date);
