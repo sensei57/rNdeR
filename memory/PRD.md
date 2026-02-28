@@ -56,6 +56,20 @@ Application de gestion pour cabinet d'ophtalmologie avec :
   - `PUT /api/centres/{id}` : Modifier un centre
   - `POST /api/centres/{id}/switch` : Changer de centre actif
   - `POST /api/admin/migrate-to-multicentre` : Migration des données
+  - `GET /api/admin/centres/details` : Détails des centres avec statistiques
+  - `GET /api/admin/centres/{id}/employees` : Employés d'un centre
+  - `PUT /api/admin/centres/{id}/config` : Configuration rubriques d'un centre
+  - `GET /api/admin/rubriques` : Liste des rubriques disponibles
+  - `POST /api/admin/managers` : Créer un manager
+  - `PUT /api/admin/managers/{id}/permissions` : Modifier permissions manager
+  - `PUT /api/admin/employees/{id}/visibility` : Configurer visibilité employé
+  - `PUT /api/admin/employees/{id}/centre` : Déplacer employé vers autre centre
+
+- ✅ **Interface "Gestion Multi-Centres" (CentresManager)**
+  - Onglet **Centres** : Liste des centres avec stats, création, modification, configuration des rubriques
+  - Onglet **Managers** : Gestion des managers par centre avec permissions détaillées
+  - Onglet **Employés** : Liste des employés par centre avec visibilité et possibilité de déplacement
+  - Onglet **Inscriptions** : Approbation/rejet des demandes d'inscription en attente
 - ✅ **Système de notifications de test depuis l'administration**
   - Nouvel endpoint GET `/api/notifications/employees-for-test` : Liste des employés avec statut push
   - Nouvel endpoint POST `/api/notifications/test` : Envoi de notifications personnalisées à plusieurs employés
