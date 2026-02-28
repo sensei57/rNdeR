@@ -24,8 +24,6 @@ const getPhotoUrl = (photoUrl) => {
 const ActualitesManager = ({ user, CabinetPlanWithPopup }) => {
   const [actualites, setActualites] = useState([]);
   const [anniversaires, setAnniversaires] = useState([]);
-  const [planMatin, setPlanMatin] = useState(null);
-  const [planApresMidi, setPlanApresMidi] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingActualite, setEditingActualite] = useState(null);
