@@ -4423,7 +4423,7 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh }) => {
 
   const renderSalle = (salle, creneau) => {
     const occupation = salle.occupation;
-    const baseClasses = "absolute border-2 rounded-lg p-2 text-xs font-medium transition-all flex flex-col justify-center items-center";
+    const baseClasses = "absolute border-2 rounded-lg p-1 text-xs font-medium transition-all flex flex-col justify-center items-center";
     
     let bgColor = 'bg-gray-100 border-gray-300';
     let textColor = 'text-gray-600';
@@ -4447,13 +4447,14 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh }) => {
     }
     
     // Ajuster position_x pour supprimer colonnes 0 et 6 (décaler de -1 si > 0)
+    // Réduire l'espacement pour s'adapter à la nouvelle largeur (450px pour 5 colonnes = 90px/colonne)
     const adjustedX = salle.position_x > 0 ? salle.position_x - 1 : 0;
     
     const style = {
-      left: `${adjustedX * 100}px`,
-      top: `${salle.position_y * 100}px`,
-      width: '90px',
-      height: '75px',
+      left: `${adjustedX * 85}px`,
+      top: `${salle.position_y * 85}px`,
+      width: '78px',
+      height: '68px',
     };
 
     const getInitiales = (employe) => {
@@ -4476,18 +4477,18 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh }) => {
         }
       >
         <div className="text-center w-full">
-          <div className="font-bold text-xs mb-1">{salle.nom}</div>
+          <div className="font-bold text-[10px] mb-0.5 truncate px-1">{salle.nom}</div>
           {occupation ? (
-            <div className="space-y-1">
-              <div className="text-xs font-bold bg-white bg-opacity-70 rounded-full w-6 h-6 flex items-center justify-center mx-auto border text-[10px]">
+            <div className="space-y-0.5">
+              <div className="text-[9px] font-bold bg-white bg-opacity-70 rounded-full w-5 h-5 flex items-center justify-center mx-auto border">
                 {getInitiales(occupation.employe)}
               </div>
-              <div className="text-[10px] leading-tight">
-                {occupation.employe?.prenom} {occupation.employe?.nom?.charAt(0)}.
+              <div className="text-[9px] leading-tight truncate px-1">
+                {occupation.employe?.prenom?.charAt(0)}. {occupation.employe?.nom?.substring(0, 6)}
               </div>
             </div>
           ) : (
-            <div className="text-[10px] text-gray-500 mt-1">Libre</div>
+            <div className="text-[9px] text-gray-500">Libre</div>
           )}
         </div>
       </div>
