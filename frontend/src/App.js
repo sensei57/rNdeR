@@ -9819,12 +9819,12 @@ const PlanningManager = () => {
                     return (
                       <tr key={secretaire.id} className="hover:bg-pink-50">
                         <td 
-                          className="border p-1 font-medium text-xs whitespace-nowrap"
+                          className="border p-1 font-medium text-xs max-w-[100px] overflow-hidden"
                         >
                           <span 
-                            className="cursor-pointer hover:bg-pink-200 px-1 rounded"
+                            className="cursor-pointer hover:bg-pink-200 px-1 rounded block truncate"
                             onClick={() => openSemaineABCModal({ type: 'employe', employe: secretaire })}
-                            title="Cliquer pour appliquer Semaine A, B ou Congés"
+                            title={`${secretaire.prenom} ${secretaire.nom} - Cliquer pour appliquer Semaine A, B ou Congés`}
                           >
                             {abbreviateName(secretaire.prenom, secretaire.nom)}
                           </span>
