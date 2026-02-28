@@ -1,202 +1,160 @@
-# PRD - OphtaGestion
+# PRD - OphtaGestion Multi-Centres
 
-## Énoncé du problème original
-Application de gestion pour cabinet d'ophtalmologie avec :
-- Planning du personnel et gestion des congés
-- Messagerie interne style WhatsApp
-- Plan du cabinet avec disposition des salles
-- Interface PWA installable
-- **NOUVEAU** : Support multi-centres avec gestion hiérarchique
+## 1. Vue d'ensemble
+Application web full-stack de gestion de cabinet médical multi-centres permettant la gestion du personnel, du planning, des congés, de la messagerie interne et des notifications.
 
-## Utilisateurs cibles
-- **Super-Admin (Directeur)** : Gère TOUS les centres, crée centres/managers, valide inscriptions
-- **Manager** : Gère UN centre avec droits limités (à définir par Super-Admin)
-- Médecins : Appartient à UN centre
-- Assistants : Appartient à UN centre
-- Secrétaires : Appartient à UN centre
+## 2. Architecture Technique
 
-## Architecture technique
-- **Frontend:** React + Tailwind CSS + Shadcn/UI
-- **Backend:** FastAPI + MongoDB
-- **Notifications:** Firebase Admin SDK (push notifications)
-- **Déploiement cible:** Render.com (production de l'utilisateur)
+### Stack Technologique
+- **Frontend:** React 18, Tailwind CSS, Shadcn/UI, Lucide-react
+- **Backend:** FastAPI, Motor (MongoDB async), Pydantic
+- **Base de données:** MongoDB
+- **Planification:** APScheduler pour les tâches cron
 
-## Ce qui a été implémenté
+### Structure des fichiers
+```
+/app/
+├── backend/
+│   ├── server.py        # API FastAPI (~6500 lignes)
+│   └── requirements.txt
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── App.js       # Fichier monolithique (~20750 lignes)
+│   │   ├── App.css
+│   │   ├── components/ui/
+│   │   ├── contexts/    # Nouveaux contextes (AuthContext, PlanningContext)
+│   │   ├── utils/       # Nouveaux utilitaires (api.js, helpers.js)
+│   │   └── pages/       # Pages extraites (LoginPage.jsx)
+│   └── package.json
+└── memory/
+    └── PRD.md
+```
 
-### Session 28/02/2026 - Multi-Centres + Améliorations
+## 3. Fonctionnalités Implémentées
 
-**1. Problème de rechargement mobile (P1) - RÉSOLU**
-- Ajout d'un intercepteur axios avec retry automatique (2 tentatives sur erreur réseau)
-- Système de retry pour fetchCurrentUser (3 tentatives max avec délai exponentiel)
-- Timeout configuré pour toutes les requêtes API (8-10s)
-- Meilleure gestion des erreurs avec fallbacks gracieux
+### 3.1 Architecture Multi-Centres ✅
+- Système de rôles : Super-Admin > Manager > Employé
+- Assignation d'employés à plusieurs centres
+- Sélecteur de centre à la connexion et dans le header
+- Cloisonnement des données par centre
 
-**2. Notifications automatiques à 7h via cron - IMPLÉMENTÉ**
-- Intégration APScheduler avec timezone Europe/Paris
-- Job planifié à 7h chaque matin pour envoyer les notifications de planning
-- Endpoints de monitoring :
-  - `GET /api/notifications/scheduler-status` : Statut du scheduler
-  - `POST /api/notifications/test-scheduler` : Test immédiat
+### 3.2 Authentification ✅
+- Login avec email/mot de passe
+- Sélection du centre à la connexion
+- Demande d'inscription pour nouveaux utilisateurs
+- Système de retry automatique sur erreur réseau
+- Token JWT persisté dans localStorage
 
-**3. Modernisation UI - Gestion des Congés**
-- Header gradient moderne avec bouton "Nouvelle Demande"
-- 4 cartes de statistiques colorées (En attente, Approuvées, Refusées, Total)
-- Filtres modernisés avec boutons colorés
-- Cartes de demandes avec barre de couleur selon statut
-- État vide élégant avec icône et message
+### 3.3 Planning Interactif ✅ (Modernisé 28/02/2026)
+- **Header moderne** avec gradient cyan-vert (#0091B9 → #19CD91)
+- Vue Jour avec sections Matin/Après-midi
+- Vue Semaine avec calendrier 7 jours et filtres par rôle
+- Vue Mois avec grille calendrier complète
+- Vue Planning (directeur uniquement) pour gestion globale
+- **Responsive mobile** : toutes les vues s'adaptent correctement
 
-### Session 28/02/2026 - Architecture Multi-Centres
-- ✅ **Système multi-centres complet**
-  - Nouveau modèle `Centre` avec collection MongoDB
-  - Migration des données existantes vers le centre "Place de l'Étoile"
-  - Isolation des données par centre (users, planning, salles, messages, congés)
-  
-- ✅ **Nouveaux rôles**
-  - `Super-Admin` : Gère tous les centres, droits complets
-  - `Manager` : Gère un centre avec droits personnalisables
-  - Les anciens "Directeur" sont convertis en "Super-Admin"
+### 3.4 Gestion des Congés ✅ (Modernisé)
+- Interface modernisée avec cartes de statistiques
+- Filtres par statut (En attente, Approuvées, Refusées)
+- Support multi-types : Congé payé, RTT, Sans solde, Maladie
 
-- ✅ **Page de connexion améliorée**
-  - Sélecteur de centre médical
-  - Bouton "Demander un accès" pour les inscriptions
-  - Formulaire d'inscription complet avec choix du centre et du poste
+### 3.5 Système de Notifications ✅
+- Notifications push via Firebase
+- Notification matinale à 7h (APScheduler)
+- Interface de test pour admin
+- Réponses rapides (backend prêt)
 
-- ✅ **Gestion des inscriptions**
-  - Nouvel endpoint POST `/api/inscriptions` (public)
-  - Endpoints GET/PUT pour approuver/rejeter les demandes
-  - Notification au Super-Admin pour chaque nouvelle demande
+### 3.6 Autres Fonctionnalités ✅
+- Gestion du personnel avec fiches détaillées
+- Messagerie interne (chat)
+- Coffre-fort de documents
+- Plan du cabinet interactif
+- Gestion des salles
+- Gestion des stocks
 
-- ✅ **Navigation multi-centres pour Super-Admin**
-  - Sélecteur de centre dans le header
-  - Changement de centre en temps réel (rechargement automatique)
-  - Filtrage des données selon le centre actif
+## 4. Credentials de Test
+- **Email:** directeur@cabinet.fr
+- **Mot de passe:** admin123
 
-- ✅ **Endpoints API multi-centres**
-  - `GET /api/centres/public` : Liste des centres (sans auth)
-  - `GET /api/centres` : Liste des centres accessibles
-  - `POST /api/centres` : Créer un centre (Super-Admin)
-  - `PUT /api/centres/{id}` : Modifier un centre
-  - `POST /api/centres/{id}/switch` : Changer de centre actif
-  - `POST /api/admin/migrate-to-multicentre` : Migration des données
-  - `GET /api/admin/centres/details` : Détails des centres avec statistiques
-  - `GET /api/admin/centres/{id}/employees` : Employés d'un centre
-  - `PUT /api/admin/centres/{id}/config` : Configuration rubriques d'un centre
-  - `GET /api/admin/rubriques` : Liste des rubriques disponibles
-  - `POST /api/admin/managers` : Créer un manager
-  - `PUT /api/admin/managers/{id}/permissions` : Modifier permissions manager
-  - `PUT /api/admin/employees/{id}/visibility` : Configurer visibilité employé
-  - `PUT /api/admin/employees/{id}/centre` : Déplacer employé vers autre centre
+## 5. Tâches Complétées (28/02/2026)
 
-- ✅ **Interface "Gestion Multi-Centres" (CentresManager)**
-  - Onglet **Centres** : Liste des centres avec stats, création, modification, configuration des rubriques
-  - Onglet **Managers** : Gestion des managers par centre avec permissions détaillées
-  - Onglet **Employés** : Liste des employés par centre avec visibilité et possibilité de déplacement
-  - Onglet **Inscriptions** : Approbation/rejet des demandes d'inscription en attente
-- ✅ **Système de notifications de test depuis l'administration**
-  - Nouvel endpoint GET `/api/notifications/employees-for-test` : Liste des employés avec statut push
-  - Nouvel endpoint POST `/api/notifications/test` : Envoi de notifications personnalisées à plusieurs employés
-  - Interface dans AdminManager pour sélectionner les employés et envoyer des notifications
-  - Affichage du statut push (actif/inactif) pour chaque employé
+### Session actuelle
+- ✅ Modernisation du header PlanningManager (gradient moderne)
+- ✅ Amélioration du système de retry pour l'authentification
+- ✅ Correction des vues Planning sur mobile (Semaine et Mois fonctionnelles)
+- ✅ Création de la structure de refactorisation (contexts/, utils/, pages/)
+- ✅ Tests frontend passés à 100%
 
-- ✅ **Notification matinale du planning (déclenchement à 7h)**
-  - Endpoint POST `/api/notifications/send-daily-planning` : Déclenche manuellement l'envoi
-  - Message détaillé avec salle et équipe du jour
+## 6. Tâches En Cours / À Venir
 
-- ✅ **Réponse rapide aux messages depuis notifications**
-  - Nouvel endpoint POST `/api/notifications/quick-reply` : Permet de répondre directement
-  - Push notifications avec actions de réponse (Répondre / Ouvrir)
+### Haute Priorité (P0)
+- [ ] **Refactorisation App.js** - Découpage du fichier monolithique (20750 lignes) en composants modulaires
 
-- ✅ **Correction bug créneaux assistants après approbation congé médecin**
-  - Nouvelle fonction `handle_assistant_slots_for_leave` dans server.py
-  - Quand un médecin prend un congé approuvé :
-    - Les créneaux des assistants assignés à ce médecin sont mis à jour
-    - Le médecin est retiré de la liste medecin_ids
-    - Les créneaux sont marqués `est_repos=True` avec note "À RÉASSIGNER"
-    - Les assistants concernés reçoivent une notification
-  - Logique ajoutée à l'endpoint PUT `/api/conges/{demande_id}/approuver`
+### Moyenne Priorité (P2)
+- [ ] Finalisation des réponses rapides aux notifications (Service Worker)
+- [ ] Modernisation des autres sections (Personnel, Messages, etc.)
 
-- ✅ **Correction configuration URL backend**
-  - Frontend utilise maintenant `process.env.REACT_APP_BACKEND_URL` en priorité
-  - Fallback vers URL Render.com si non configuré
+### Basse Priorité (P3)
+- [ ] Validation du calcul des heures supplémentaires
+- [ ] Configuration fine des permissions managers
+- [ ] Remplacement des confirm() natifs par des modales modernes
 
-- ✅ **Nettoyage des éléments obsolètes**
-  - Suppression de l'ancien bouton "Notification" individuel dans la liste des utilisateurs
-  - Suppression de l'ancienne modale d'envoi de notification individuelle
-  - Suppression des états et fonctions associés (`showNotificationModal`, `notificationMessage`, `handleSendNotification`)
-  - L'envoi de notifications se fait maintenant via la nouvelle section "Notifications de Test"
+## 7. Problèmes Connus
 
-### Session 15/02/2026
-- ✅ Correction erreur JavaScript `Phone is not defined`
-- ✅ Transformation de la bannière PWA en bouton discret
-- ✅ Gestion d'erreur d'image avec fallback vers initiales
-- ✅ Correction bug `personnelList is not defined`
-- ✅ **OPTIMISATION MOBILE** : Vue Mois passe de 30+ requêtes à 1 seule
-- ✅ Gestion multi-appareils pour les notifications push
+### Partiellement Résolus
+- **Rechargement mobile** : Système de retry amélioré, mais monitoring nécessaire
 
-### Sessions précédentes
-- ✅ Refonte de la page de connexion moderne
-- ✅ Refonte du tableau de bord
-- ✅ Interface de chat style WhatsApp
-- ✅ Bulle de chat flottante avec compteur
-- ✅ Refonte des cartes d'employés
-- ✅ Arrière-plan thématique ophtalmologie
-- ✅ Icônes PWA personnalisées
+### En attente
+- **Notifications Push** : Firebase SDK non initialisé (FIREBASE_CREDENTIALS manquant)
 
-## Bugs en attente
+## 8. Endpoints API Principaux
 
-### P1 - Problème de rechargement persistant sur mobile
-- **Description:** L'utilisateur signale devoir recharger la page plusieurs fois
-- **Status:** À investiguer - possible race condition dans les useEffect
+### Authentification
+- `POST /api/auth/login` - Connexion avec centre
+- `GET /api/users/me` - Utilisateur courant
 
-### P2 - Vues "Mois" et "Planning" sur mobile
-- **Description:** Affichage potentiellement mal adapté sur petits écrans
-- **Status:** Partiellement traité avec optimisation endpoint
+### Centres
+- `GET /api/centres/public` - Liste publique des centres
+- `POST /api/centres/{id}/switch` - Changement de centre actif
 
-### P3 - Gestion des erreurs
-- **Description:** Utilisation de `alert()` génériques - à remplacer par des toasts
-- **Status:** Non commencé
-
-## Tâches à venir
-
-### P0 - Refactorisation critique
-- **`frontend/src/App.js`** - Fichier monolithique de +19,500 lignes
-- À découper en composants: Dashboard, Chat, PersonnelList, CabinetPlan, etc.
-- Structure suggérée: `src/components/`, `src/pages/`, `src/hooks/`, `src/utils/`
-
-### P1 - Modernisation UI
-- Appliquer le nouveau style aux sections restantes
-
-### P2 - Validation
-- Validation du calcul des heures supplémentaires
-
-## Fichiers clés
-- `/app/frontend/src/App.js` - Monolithe principal
-- `/app/frontend/src/App.css` - Styles
-- `/app/backend/server.py` - API FastAPI
-- `/app/backend/push_notifications.py` - Gestion Firebase
-
-## Endpoints API clés
-
-### Notifications
-- `GET /api/notifications` - Liste notifications utilisateur
-- `GET /api/notifications/employees-for-test` - Liste employés pour test (Directeur)
-- `POST /api/notifications/test` - Envoyer notification de test (Directeur)
-- `POST /api/notifications/send-daily-planning` - Déclencher planning quotidien (Directeur)
-- `POST /api/notifications/quick-reply` - Répondre depuis notification
-- `POST /api/notifications/subscribe` - S'abonner aux push
-- `GET /api/notifications/devices` - Liste appareils enregistrés
-- `DELETE /api/notifications/devices/{id}` - Supprimer appareil
+### Planning
+- `GET /api/planning/{date}` - Planning d'un jour
+- `GET /api/planning/semaine/{date}` - Planning hebdomadaire
+- `GET /api/planning/mois/{mois}` - Planning mensuel
 
 ### Congés
-- `POST /api/conges` - Créer demande de congé
 - `GET /api/conges` - Liste des congés
-- `PUT /api/conges/{id}/approuver` - Approuver/Rejeter (déclenche gestion assistants)
+- `POST /api/conges` - Nouvelle demande
+- `PUT /api/conges/{id}/approuver` - Approuver/Refuser
 
-## Credentials de test
-- Email: `directeur@cabinet.fr`
-- Mot de passe: `admin123`
+## 9. Schéma de Base de Données
 
-## Tests
-- Fichier de tests: `/app/backend/tests/test_notifications.py`
-- Rapport: `/app/test_reports/iteration_2.json`
-- Taux de réussite: 95% (21/22 tests passés, 1 ignoré)
+### Collection `users`
+```json
+{
+  "username": "string",
+  "email": "string",
+  "password_hash": "string",
+  "role": "Super-Admin|Manager|Médecin|Assistant|Secrétaire",
+  "centre_ids": ["ObjectId"],
+  "centre_actif_id": "ObjectId",
+  "actif": true,
+  "photo_url": "string|null"
+}
+```
+
+### Collection `centres`
+```json
+{
+  "nom": "string",
+  "visible_sections": ["string"],
+  "manager_permissions": {
+    "can_edit_planning": true,
+    "can_manage_conges": true
+  }
+}
+```
+
+---
+Dernière mise à jour: 28 février 2026
