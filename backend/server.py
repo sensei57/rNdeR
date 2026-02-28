@@ -5462,12 +5462,29 @@ async def initialiser_cabinet(
 @api_router.get("/stocks/categories", response_model=List[CategorieStock])
 async def get_categories_stock(current_user: User = Depends(get_current_user)):
     # Vérifier les permissions
-    if current_user.role != 'Directeur':
+    if current_user.role not in ['Directeur', 'Super-Admin']:
         permission = await db.permissions_stock.find_one({"utilisateur_id": current_user.id})
         if not permission or not permission.get('peut_voir', False):
             raise HTTPException(status_code=403, detail="Accès non autorisé")
     
-    categories = await db.categories_stock.find({}).to_list(length=None)
+    # Déterminer le centre actif de l'utilisateur
+    centre_actif = getattr(current_user, 'centre_actif_id', None)
+    if not centre_actif:
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        centre_actif = user_centres[0] if user_centres else None
+    
+    # Filtrer par centre
+    query = {}
+    if centre_actif:
+        query["$or"] = [
+            {"centre_id": centre_actif},
+            {"centre_id": None},
+            {"centre_id": {"$exists": False}}
+        ]
+    
+    categories = await db.categories_stock.find(query).to_list(length=None)
     return [CategorieStock(**cat) for cat in categories]
 
 @api_router.post("/stocks/categories", response_model=CategorieStock)
@@ -5476,13 +5493,26 @@ async def create_categorie_stock(
     current_user: User = Depends(get_current_user)
 ):
     # Vérifier les permissions  
-    if current_user.role != 'Directeur':
+    if current_user.role not in ['Directeur', 'Super-Admin']:
         permission = await db.permissions_stock.find_one({"utilisateur_id": current_user.id})
         if not permission or not permission.get('peut_ajouter', False):
             raise HTTPException(status_code=403, detail="Accès non autorisé")
     
+    # Déterminer le centre_id
+    centre_id = categorie.centre_id if hasattr(categorie, 'centre_id') and categorie.centre_id else None
+    if not centre_id:
+        centre_actif = getattr(current_user, 'centre_actif_id', None)
+        if centre_actif:
+            centre_id = centre_actif
+        else:
+            user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+            if current_user.centre_id and current_user.centre_id not in user_centres:
+                user_centres.append(current_user.centre_id)
+            centre_id = user_centres[0] if user_centres else None
+    
     categorie_dict = categorie.dict()
     categorie_dict['id'] = str(uuid.uuid4())
+    categorie_dict['centre_id'] = centre_id
     categorie_dict['date_creation'] = datetime.now(timezone.utc)
     
     await db.categories_stock.insert_one(categorie_dict)
@@ -5491,13 +5521,37 @@ async def create_categorie_stock(
 @api_router.get("/stocks/articles", response_model=List[Dict])
 async def get_articles_stock(current_user: User = Depends(get_current_user)):
     # Vérifier les permissions
-    if current_user.role != 'Directeur':
+    if current_user.role not in ['Directeur', 'Super-Admin']:
         permission = await db.permissions_stock.find_one({"utilisateur_id": current_user.id})
         if not permission or not permission.get('peut_voir', False):
             raise HTTPException(status_code=403, detail="Accès non autorisé")
     
+    # Déterminer le centre actif de l'utilisateur
+    centre_actif = getattr(current_user, 'centre_actif_id', None)
+    if not centre_actif:
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        centre_actif = user_centres[0] if user_centres else None
+    
+    # Construire le filtre par centre
+    match_stage = {}
+    if centre_actif:
+        match_stage = {
+            "$match": {
+                "$or": [
+                    {"centre_id": centre_actif},
+                    {"centre_id": None},
+                    {"centre_id": {"$exists": False}}
+                ]
+            }
+        }
+    
     # Récupérer articles avec informations de catégorie
-    pipeline = [
+    pipeline = []
+    if match_stage:
+        pipeline.append(match_stage)
+    pipeline.extend([
         {
             "$lookup": {
                 "from": "categories_stock",
