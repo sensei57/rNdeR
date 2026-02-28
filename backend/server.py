@@ -5590,13 +5590,26 @@ async def create_article_stock(
     current_user: User = Depends(get_current_user)
 ):
     # Vérifier les permissions
-    if current_user.role != 'Directeur':
+    if current_user.role not in ['Directeur', 'Super-Admin']:
         permission = await db.permissions_stock.find_one({"utilisateur_id": current_user.id})
         if not permission or not permission.get('peut_ajouter', False):
             raise HTTPException(status_code=403, detail="Accès non autorisé")
     
+    # Déterminer le centre_id
+    centre_id = article.centre_id if hasattr(article, 'centre_id') and article.centre_id else None
+    if not centre_id:
+        centre_actif = getattr(current_user, 'centre_actif_id', None)
+        if centre_actif:
+            centre_id = centre_actif
+        else:
+            user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+            if current_user.centre_id and current_user.centre_id not in user_centres:
+                user_centres.append(current_user.centre_id)
+            centre_id = user_centres[0] if user_centres else None
+    
     article_dict = article.dict()
     article_dict['id'] = str(uuid.uuid4())
+    article_dict['centre_id'] = centre_id
     article_dict['date_creation'] = datetime.now(timezone.utc)
     article_dict['date_modification'] = datetime.now(timezone.utc)
     
@@ -5610,7 +5623,7 @@ async def update_article_stock(
     current_user: User = Depends(get_current_user)
 ):
     # Vérifier les permissions
-    if current_user.role != 'Directeur':
+    if current_user.role not in ['Directeur', 'Super-Admin']:
         permission = await db.permissions_stock.find_one({"utilisateur_id": current_user.id})
         if not permission or not permission.get('peut_modifier', False):
             raise HTTPException(status_code=403, detail="Accès non autorisé")
