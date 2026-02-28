@@ -11,24 +11,31 @@ Application web full-stack de gestion de cabinet médical multi-centres permetta
 - **Base de données:** MongoDB
 - **Planification:** APScheduler pour les tâches cron
 
-### Structure des fichiers
+### Structure des fichiers (En cours de refactorisation)
 ```
-/app/
-├── backend/
-│   ├── server.py        # API FastAPI (~6500 lignes)
-│   └── requirements.txt
-├── frontend/
-│   ├── public/
-│   ├── src/
-│   │   ├── App.js       # Fichier monolithique (~20750 lignes)
-│   │   ├── App.css
-│   │   ├── components/ui/
-│   │   ├── contexts/    # Nouveaux contextes (AuthContext, PlanningContext)
-│   │   ├── utils/       # Nouveaux utilitaires (api.js, helpers.js)
-│   │   └── pages/       # Pages extraites (LoginPage.jsx)
-│   └── package.json
-└── memory/
-    └── PRD.md
+frontend/src/
+├── App.js                 # Fichier principal (~20750 lignes - en cours de découpage)
+├── App.css                # Styles globaux
+│
+├── components/
+│   ├── ui/                # Composants Shadcn
+│   ├── common/            # ✅ Composants réutilisables (créé)
+│   │   ├── PhotoWithFallback.jsx
+│   │   ├── ProtectedRoute.jsx
+│   │   └── LoadingSpinner.jsx
+│   └── conges/            # ✅ Gestion congés (extrait)
+│       └── CongeManager.jsx
+│
+├── contexts/              # ✅ Contextes React (créé)
+│   ├── AuthContext.jsx
+│   └── PlanningContext.jsx
+│
+├── pages/                 # ✅ Pages (créé)
+│   └── LoginPage.jsx
+│
+└── utils/                 # ✅ Utilitaires (créé)
+    ├── api.js
+    └── helpers.js
 ```
 
 ## 3. Fonctionnalités Implémentées
@@ -40,34 +47,34 @@ Application web full-stack de gestion de cabinet médical multi-centres permetta
 - Cloisonnement des données par centre
 
 ### 3.2 Authentification ✅
-- Login avec email/mot de passe
-- Sélection du centre à la connexion
-- Demande d'inscription pour nouveaux utilisateurs
-- Système de retry automatique sur erreur réseau
+- Login avec email/mot de passe et sélection de centre
+- Système de retry automatique robuste (useRef + délais progressifs)
 - Token JWT persisté dans localStorage
+- Demande d'inscription pour nouveaux utilisateurs
 
-### 3.3 Planning Interactif ✅ (Modernisé 28/02/2026)
+### 3.3 Planning Interactif ✅ (Modernisé)
 - **Header moderne** avec gradient cyan-vert (#0091B9 → #19CD91)
 - Vue Jour avec sections Matin/Après-midi
 - Vue Semaine avec calendrier 7 jours et filtres par rôle
 - Vue Mois avec grille calendrier complète
-- Vue Planning (directeur uniquement) pour gestion globale
-- **Responsive mobile** : toutes les vues s'adaptent correctement
+- Vue Planning (directeur) pour gestion globale
+- **100% responsive mobile** - toutes les vues fonctionnent
 
-### 3.4 Gestion des Congés ✅ (Modernisé)
+### 3.4 Gestion des Congés ✅
 - Interface modernisée avec cartes de statistiques
 - Filtres par statut (En attente, Approuvées, Refusées)
 - Support multi-types : Congé payé, RTT, Sans solde, Maladie
+- Composant extrait dans `/components/conges/CongeManager.jsx`
 
 ### 3.5 Système de Notifications ✅
 - Notifications push via Firebase
-- Notification matinale à 7h (APScheduler)
+- Notification matinale à 7h (APScheduler cron)
 - Interface de test pour admin
 - Réponses rapides (backend prêt)
 
 ### 3.6 Autres Fonctionnalités ✅
 - Gestion du personnel avec fiches détaillées
-- Messagerie interne (chat)
+- Messagerie interne (chat général, privé, groupes)
 - Coffre-fort de documents
 - Plan du cabinet interactif
 - Gestion des salles
@@ -77,33 +84,47 @@ Application web full-stack de gestion de cabinet médical multi-centres permetta
 - **Email:** directeur@cabinet.fr
 - **Mot de passe:** admin123
 
-## 5. Tâches Complétées (28/02/2026)
+## 5. Session de travail (28/02/2026)
 
-### Session actuelle
-- ✅ Modernisation du header PlanningManager (gradient moderne)
-- ✅ Amélioration du système de retry pour l'authentification
-- ✅ Correction des vues Planning sur mobile (Semaine et Mois fonctionnelles)
-- ✅ Création de la structure de refactorisation (contexts/, utils/, pages/)
-- ✅ Tests frontend passés à 100%
+### Complété
+- ✅ Modernisation header PlanningManager (gradient moderne + boutons intégrés)
+- ✅ Correction vues Planning Semaine/Mois sur mobile
+- ✅ Amélioration système retry authentification
+- ✅ **Début refactorisation App.js:**
+  - Structure de dossiers créée (`contexts/`, `utils/`, `components/common/`, `pages/`)
+  - `AuthContext.jsx` créé
+  - `PlanningContext.jsx` créé
+  - `api.js` et `helpers.js` créés
+  - `CongeManager.jsx` extrait (560 lignes)
+  - `LoginPage.jsx` créé
+  - Guide de refactorisation documenté
+- ✅ Tests frontend : 100% de réussite
 
-## 6. Tâches En Cours / À Venir
+### Structure de refactorisation créée
+Voir `/app/frontend/src/REFACTORING_GUIDE.md` pour le guide complet de migration.
+
+## 6. Tâches Restantes
 
 ### Haute Priorité (P0)
-- [ ] **Refactorisation App.js** - Découpage du fichier monolithique (20750 lignes) en composants modulaires
+- [ ] **Continuer refactorisation App.js:**
+  - Extraire `PlanningManager` (~9400 lignes) - priorité 1
+  - Extraire `PersonnelManager` (~500 lignes)
+  - Extraire `ChatManager` (~420 lignes)
+  - Mettre à jour App.js pour utiliser les imports
 
 ### Moyenne Priorité (P2)
-- [ ] Finalisation des réponses rapides aux notifications (Service Worker)
-- [ ] Modernisation des autres sections (Personnel, Messages, etc.)
+- [ ] Finaliser réponses rapides notifications (Service Worker)
+- [ ] Moderniser autres sections (Personnel, Messages, etc.)
 
 ### Basse Priorité (P3)
-- [ ] Validation du calcul des heures supplémentaires
-- [ ] Configuration fine des permissions managers
-- [ ] Remplacement des confirm() natifs par des modales modernes
+- [ ] Validation calcul heures supplémentaires
+- [ ] Configuration fine permissions managers
+- [ ] Remplacement confirm() par modales modernes
 
 ## 7. Problèmes Connus
 
 ### Partiellement Résolus
-- **Rechargement mobile** : Système de retry amélioré, mais monitoring nécessaire
+- **Rechargement mobile** : Système de retry amélioré avec timeouts progressifs
 
 ### En attente
 - **Notifications Push** : Firebase SDK non initialisé (FIREBASE_CREDENTIALS manquant)
@@ -115,16 +136,16 @@ Application web full-stack de gestion de cabinet médical multi-centres permetta
 - `GET /api/users/me` - Utilisateur courant
 
 ### Centres
-- `GET /api/centres/public` - Liste publique des centres
-- `POST /api/centres/{id}/switch` - Changement de centre actif
+- `GET /api/centres/public` - Liste publique
+- `POST /api/centres/{id}/switch` - Changement centre
 
 ### Planning
-- `GET /api/planning/{date}` - Planning d'un jour
-- `GET /api/planning/semaine/{date}` - Planning hebdomadaire
-- `GET /api/planning/mois/{mois}` - Planning mensuel
+- `GET /api/planning/{date}` - Planning jour
+- `GET /api/planning/semaine/{date}` - Planning semaine
+- `GET /api/planning/mois/{mois}` - Planning mois
 
 ### Congés
-- `GET /api/conges` - Liste des congés
+- `GET /api/conges` - Liste
 - `POST /api/conges` - Nouvelle demande
 - `PUT /api/conges/{id}/approuver` - Approuver/Refuser
 
@@ -139,8 +160,7 @@ Application web full-stack de gestion de cabinet médical multi-centres permetta
   "role": "Super-Admin|Manager|Médecin|Assistant|Secrétaire",
   "centre_ids": ["ObjectId"],
   "centre_actif_id": "ObjectId",
-  "actif": true,
-  "photo_url": "string|null"
+  "actif": true
 }
 ```
 
@@ -149,10 +169,7 @@ Application web full-stack de gestion de cabinet médical multi-centres permetta
 {
   "nom": "string",
   "visible_sections": ["string"],
-  "manager_permissions": {
-    "can_edit_planning": true,
-    "can_manage_conges": true
-  }
+  "manager_permissions": {}
 }
 ```
 
