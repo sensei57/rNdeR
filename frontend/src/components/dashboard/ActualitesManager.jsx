@@ -21,7 +21,7 @@ const getPhotoUrl = (photoUrl) => {
   return photoUrl;
 };
 
-const ActualitesManager = ({ user, CabinetPlanWithPopup }) => {
+const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
   const [actualites, setActualites] = useState([]);
   const [anniversaires, setAnniversaires] = useState([]);
   const [loading, setLoading] = useState(true);
