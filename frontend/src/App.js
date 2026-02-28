@@ -1955,27 +1955,30 @@ const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab 
               </h1>
             </div>
             
-            {/* Sélecteur de centre pour Super-Admin */}
-            {isSuperAdmin && centres.length > 0 && (
+            {/* Sélecteur de centre (visible si l'utilisateur a accès à plusieurs centres) */}
+            {centres.length > 0 && (
               <div className="hidden md:block">
                 <Select 
                   value={centreActif?.id || ''} 
                   onValueChange={(value) => switchCentre(value)}
+                  disabled={centres.length === 1}
                 >
                   <SelectTrigger 
-                    className="h-9 w-[200px] border-[#0091B9]/30 bg-[#E6F4F8]/50 text-sm"
+                    className={`h-9 w-[200px] border-[#0091B9]/30 bg-[#E6F4F8]/50 text-sm ${centres.length === 1 ? 'cursor-default' : ''}`}
                     data-testid="centre-switcher"
                   >
                     <Building2 className="h-4 w-4 mr-2 text-[#0091B9]" />
                     <SelectValue placeholder="Sélectionner un centre" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {centres.map((centre) => (
-                      <SelectItem key={centre.id} value={centre.id}>
-                        {centre.nom}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
+                  {centres.length > 1 && (
+                    <SelectContent>
+                      {centres.map((centre) => (
+                        <SelectItem key={centre.id} value={centre.id}>
+                          {centre.nom}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  )}
                 </Select>
               </div>
             )}
