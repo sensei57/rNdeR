@@ -19412,7 +19412,7 @@ const MonProfilManager = () => {
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('actualites');
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, centreActif } = useAuth();
 
   const getMenuItems = () => {
     const items = [
