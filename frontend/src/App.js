@@ -12912,13 +12912,20 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh, centreActif }
           )}
           
           {/* Plan Après-midi */}
-          {planApresMidi && (
+          {planApresMidi && planApresMidi.salles && planApresMidi.salles.length > 0 && (
             <div className="flex-1 space-y-2">
               <h3 className="text-lg font-semibold text-indigo-600 flex items-center justify-center space-x-2">
                 <span>🌙</span>
                 <span>Après-midi</span>
               </h3>
-              <div className="relative bg-indigo-50 rounded-lg p-4 overflow-hidden border border-indigo-200 min-h-[600px]">
+              <div 
+                className="bg-indigo-50 rounded-lg p-4 border border-indigo-200"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(${Math.max(...planApresMidi.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(s => s.position_x))}, minmax(80px, 1fr))`,
+                  gap: '8px'
+                }}
+              >
                 {planApresMidi.salles.filter(s => s.position_x > 0 && s.position_x < 6).map(salle => renderSalle(salle, 'APRES_MIDI'))}
               </div>
             </div>
