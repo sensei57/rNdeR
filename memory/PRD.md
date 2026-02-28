@@ -37,7 +37,17 @@ Application web full-stack de gestion de cabinets médicaux multi-centres. **Ver
 - **Email:** directeur@cabinet.fr
 - **Mot de passe:** admin123
 
+## 5. Issues Connues
+- **PlanningManager** : Le composant fait ~9000 lignes, une extraction serait bénéfique pour la maintenabilité
+- **Bug affichage congés** : Les statistiques affichent le bon nombre mais la liste peut afficher "Aucune demande"
+- **Rechargement mobile** : Problème persistant de rechargement sur certains appareils mobiles
+
+## 6. Tâches Futures
+- Interface de gestion des logos de centre (backend prêt, UI manquante)
+- Validation fonctionnelle du calcul des heures supplémentaires
+- Amélioration de l'interface des permissions des managers
+
 ---
-**Version:** 2.7  
+**Version:** 2.8  
 **Date:** 28 février 2026  
 **Status:** ✅ PRODUCTION READY
