@@ -5034,12 +5034,40 @@ async def create_note_generale(
     current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
 ):
     note.auteur_id = current_user.id
+    
+    # Déterminer le centre_id
+    centre_actif = getattr(current_user, 'centre_actif_id', None)
+    if not centre_actif:
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        centre_actif = user_centres[0] if user_centres else None
+    note.centre_id = centre_actif
+    
     await db.notes_generales.insert_one(note.dict())
     return note
 
 @api_router.get("/notes", response_model=List[Dict[str, Any]])
 async def get_notes_generales(current_user: User = Depends(get_current_user)):
-    notes = await db.notes_generales.find({"visible": True}).sort("date_creation", -1).to_list(100)
+    # Déterminer le centre actif de l'utilisateur
+    centre_actif = getattr(current_user, 'centre_actif_id', None)
+    if not centre_actif:
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        centre_actif = user_centres[0] if user_centres else None
+    
+    # Filtrer par centre
+    query = {"visible": True}
+    if centre_actif:
+        query["$or"] = [
+            {"centre_id": centre_actif},
+            {"centre_id": None},
+            {"centre_id": {"$exists": False}}
+        ]
+        query = {"$and": [{"visible": True}, {"$or": query["$or"]}]}
+    
+    notes = await db.notes_generales.find(query).sort("date_creation", -1).to_list(100)
     
     # Enrich with author details
     enriched_notes = []
