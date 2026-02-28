@@ -3089,6 +3089,18 @@ async def create_creneau_planning(
     if not employe:
         raise HTTPException(status_code=404, detail="Employé non trouvé")
     
+    # Déterminer le centre_id
+    centre_id = creneau_data.centre_id
+    if not centre_id:
+        centre_actif = getattr(current_user, 'centre_actif_id', None)
+        if centre_actif:
+            centre_id = centre_actif
+        else:
+            user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+            if current_user.centre_id and current_user.centre_id not in user_centres:
+                user_centres.append(current_user.centre_id)
+            centre_id = user_centres[0] if user_centres else None
+    
     # Si JOURNEE_COMPLETE, créer 2 créneaux séparés (MATIN + APRES_MIDI)
     creneaux_a_creer = []
     if creneau_data.creneau == "JOURNEE_COMPLETE":
@@ -3119,10 +3131,11 @@ async def create_creneau_planning(
             if salle_occupee:
                 raise HTTPException(status_code=400, detail=f"La salle est déjà occupée le {creneau_type.lower()}")
         
-        # Créer le créneau
+        # Créer le créneau avec le centre_id
         creneau_dict = creneau_data.dict()
         creneau_dict['creneau'] = creneau_type  # Remplacer JOURNEE_COMPLETE par MATIN ou APRES_MIDI
         creneau_dict['id'] = str(uuid.uuid4())  # Générer un nouvel ID pour chaque créneau
+        creneau_dict['centre_id'] = centre_id  # Associer au centre
         
         creneau = CreneauPlanning(
             **creneau_dict,
