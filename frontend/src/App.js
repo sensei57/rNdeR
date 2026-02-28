@@ -2663,7 +2663,7 @@ const PersonnelManager = () => {
       </div>
 
       <Tabs defaultValue="medecins" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3">
           <TabsTrigger value="medecins">
             Médecins ({getUsersByRole('Médecin').length})
           </TabsTrigger>
