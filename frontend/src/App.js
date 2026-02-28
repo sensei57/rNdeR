@@ -16,7 +16,7 @@ import { Calendar, Users, Clock, FileText, MessageSquare, Settings, LogOut, Plus
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner";
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 import usePWA from './hooks/usePWA';
 
