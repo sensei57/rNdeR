@@ -177,6 +177,8 @@ class CentreBase(BaseModel):
     adresse: Optional[str] = None
     telephone: Optional[str] = None
     email: Optional[str] = None
+    logo_url: Optional[str] = None  # URL du logo du centre
+    couleur_primaire: Optional[str] = "#0091B9"  # Couleur principale du centre
     actif: bool = True
     config: Optional[CentreConfig] = None  # Configuration des rubriques
 
@@ -193,6 +195,8 @@ class CentreUpdate(BaseModel):
     adresse: Optional[str] = None
     telephone: Optional[str] = None
     email: Optional[str] = None
+    logo_url: Optional[str] = None
+    couleur_primaire: Optional[str] = None
     actif: Optional[bool] = None
     config: Optional[CentreConfig] = None
 
