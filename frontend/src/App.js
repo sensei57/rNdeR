@@ -12581,7 +12581,7 @@ const PlanningManager = () => {
   );
 };
 
-const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh }) => {
+const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh, centreActif }) => {
   const [planMatin, setPlanMatin] = useState(null);
   const [planApresMidi, setPlanApresMidi] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -12592,7 +12592,7 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh }) => {
 
   useEffect(() => {
     fetchPlans();
-  }, [selectedDate]);
+  }, [selectedDate, centreActif?.id]); // Recharger quand le centre change
 
   const fetchPlans = async () => {
     try {
