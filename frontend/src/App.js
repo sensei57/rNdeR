@@ -20659,7 +20659,12 @@ const FloatingChatButton = ({ onNavigateToChat }) => {
     };
 
     fetchUnreadMessages();
-    const interval = setInterval(fetchUnreadMessages, 10000);
+    // Polling intelligent : 15 secondes, pause si onglet caché
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchUnreadMessages();
+      }
+    }, 15000);
     return () => clearInterval(interval);
   }, [user]);
 
