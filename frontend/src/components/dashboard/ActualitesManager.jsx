@@ -358,8 +358,6 @@ const ActualitesManager = ({ user, CabinetPlanWithPopup }) => {
       {/* Plan du Cabinet */}
       {CabinetPlanWithPopup && (
         <CabinetPlanWithPopup 
-          planMatin={planMatin} 
-          planApresMidi={planApresMidi}
           user={user}
         />
       )}
