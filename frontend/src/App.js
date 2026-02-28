@@ -17838,7 +17838,9 @@ const CentresManager = () => {
                       <div className="mt-3 pt-3 border-t">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-medium text-gray-700">Centres assignés :</span>
-                          <span className="text-xs text-gray-500">{employeeCentres.length} centre(s)</span>
+                          <span className="text-xs text-gray-500">
+                            {(employee.centre_ids?.length > 0 ? employee.centre_ids.length : (employee.centre_id ? 1 : 0))} centre(s)
+                          </span>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {centres.map((c) => {
