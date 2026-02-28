@@ -1879,7 +1879,8 @@ const NotificationBadge = ({ setActiveTab }) => {
 
 // Dashboard Navigation
 const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab }) => {
-  const { user, logout, setUser } = useAuth();
+  const { user, logout, setUser, centres, centreActif, switchCentre } = useAuth();
+  const isSuperAdmin = user?.role === 'Super-Admin' || user?.role === 'Directeur';
 
   const handleStopImpersonation = async () => {
     try {
@@ -1913,7 +1914,9 @@ const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab 
 
   const getRoleColor = (role) => {
     switch (role) {
+      case 'Super-Admin':
       case 'Directeur': return 'bg-gradient-to-br from-red-500 to-red-600';
+      case 'Manager': return 'bg-gradient-to-br from-orange-500 to-orange-600';
       case 'Médecin': return 'bg-gradient-to-br from-[#0091B9] to-[#007494]';
       case 'Assistant': return 'bg-gradient-to-br from-[#19CD91] to-[#14A474]';
       case 'Secrétaire': return 'bg-gradient-to-br from-purple-500 to-purple-600';
@@ -1945,6 +1948,31 @@ const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab 
                 OphtaGestion
               </h1>
             </div>
+            
+            {/* Sélecteur de centre pour Super-Admin */}
+            {isSuperAdmin && centres.length > 0 && (
+              <div className="hidden md:block">
+                <Select 
+                  value={centreActif?.id || ''} 
+                  onValueChange={(value) => switchCentre(value)}
+                >
+                  <SelectTrigger 
+                    className="h-9 w-[200px] border-[#0091B9]/30 bg-[#E6F4F8]/50 text-sm"
+                    data-testid="centre-switcher"
+                  >
+                    <Building2 className="h-4 w-4 mr-2 text-[#0091B9]" />
+                    <SelectValue placeholder="Sélectionner un centre" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {centres.map((centre) => (
+                      <SelectItem key={centre.id} value={centre.id}>
+                        {centre.nom}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
           
           <div className="flex items-center space-x-3">
@@ -1963,7 +1991,7 @@ const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab 
                   {user?.prenom} {user?.nom}
                 </p>
                 <Badge variant="secondary" className="text-xs font-medium bg-gray-100 text-gray-600 border-0">
-                  {user?.role}
+                  {user?.role === 'Directeur' ? 'Super-Admin' : user?.role}
                 </Badge>
               </div>
             </div>
@@ -1995,6 +2023,28 @@ const Navigation = ({ menuOpen, setMenuOpen, menuItems, activeTab, setActiveTab 
           </div>
         </div>
       </div>
+      
+      {/* Sélecteur de centre mobile pour Super-Admin */}
+      {isSuperAdmin && centres.length > 1 && (
+        <div className="md:hidden px-4 pb-2">
+          <Select 
+            value={centreActif?.id || ''} 
+            onValueChange={(value) => switchCentre(value)}
+          >
+            <SelectTrigger className="w-full h-9 border-[#0091B9]/30 bg-[#E6F4F8]/50 text-sm">
+              <Building2 className="h-4 w-4 mr-2 text-[#0091B9]" />
+              <SelectValue placeholder="Sélectionner un centre" />
+            </SelectTrigger>
+            <SelectContent>
+              {centres.map((centre) => (
+                <SelectItem key={centre.id} value={centre.id}>
+                  {centre.nom}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       
       {/* Menu déroulant modernisé */}
       {menuOpen && (
