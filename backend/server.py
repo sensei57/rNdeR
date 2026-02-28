@@ -39,16 +39,70 @@ api_router = APIRouter(prefix="/api")
 
 # Enums and Constants
 ROLES = {
-    "DIRECTEUR": "Directeur",
+    "SUPER_ADMIN": "Super-Admin",  # Directeur général - gère tous les centres
+    "MANAGER": "Manager",  # Directeur de centre - droits limités sur un centre
+    "DIRECTEUR": "Directeur",  # Legacy - sera traité comme Super-Admin
     "MEDECIN": "Médecin", 
     "ASSISTANT": "Assistant",
     "SECRETAIRE": "Secrétaire"
+}
+
+# Droits des managers (peuvent être activés/désactivés par le Super-Admin)
+MANAGER_PERMISSIONS = {
+    "gerer_planning": True,  # Créer/modifier le planning
+    "gerer_conges": True,  # Approuver les congés
+    "gerer_personnel": False,  # Créer/modifier les employés
+    "voir_statistiques": True,  # Voir les stats du centre
+    "envoyer_notifications": True,  # Envoyer des notifications
 }
 
 SALLES_MEDECINS = ["1", "2", "3", "4", "5", "6"]
 SALLES_ASSISTANTS = ["A", "B", "C", "D", "O", "Blue"]
 
 CRENEAU_TYPES = ["MATIN", "APRES_MIDI"]
+
+# ===== MODÈLES CENTRES =====
+
+class CentreBase(BaseModel):
+    nom: str
+    adresse: Optional[str] = None
+    telephone: Optional[str] = None
+    email: Optional[str] = None
+    actif: bool = True
+
+class CentreCreate(CentreBase):
+    pass
+
+class Centre(CentreBase):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    cree_par: Optional[str] = None  # ID du Super-Admin qui a créé le centre
+
+class CentreUpdate(BaseModel):
+    nom: Optional[str] = None
+    adresse: Optional[str] = None
+    telephone: Optional[str] = None
+    email: Optional[str] = None
+    actif: Optional[bool] = None
+
+# ===== MODÈLE DEMANDE D'INSCRIPTION =====
+
+class InscriptionRequest(BaseModel):
+    email: EmailStr
+    nom: str
+    prenom: str
+    telephone: Optional[str] = None
+    centre_id: str
+    role_souhaite: str  # Le rôle demandé par l'utilisateur
+    message: Optional[str] = None  # Message optionnel pour la demande
+
+class Inscription(InscriptionRequest):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    date_demande: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    statut: str = "EN_ATTENTE"  # EN_ATTENTE, APPROUVE, REJETE
+    traite_par: Optional[str] = None  # ID du Super-Admin qui a traité la demande
+    date_traitement: Optional[datetime] = None
+    commentaire_admin: Optional[str] = None
 
 # Models
 class UserBase(BaseModel):
