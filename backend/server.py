@@ -3517,19 +3517,31 @@ async def get_planning_by_date(
             user_centres.append(current_user.centre_id)
         centre_actif = user_centres[0] if user_centres else None
     
-    # Filtrer par centre
+    is_admin = current_user.role in ['Directeur', 'Super-Admin']
+    
+    # Filtrer par centre - strict pour éviter le mélange des données
     query = {"date": date}
     if centre_actif:
-        query = {
-            "$and": [
-                {"date": date},
-                {"$or": [
-                    {"centre_id": centre_actif},
-                    {"centre_id": None},
-                    {"centre_id": {"$exists": False}}
-                ]}
-            ]
-        }
+        if is_admin:
+            # Les admins peuvent voir les données sans centre_id (données historiques)
+            query = {
+                "$and": [
+                    {"date": date},
+                    {"$or": [
+                        {"centre_id": centre_actif},
+                        {"centre_id": None},
+                        {"centre_id": {"$exists": False}}
+                    ]}
+                ]
+            }
+        else:
+            # Les employés ne voient que les données de leur centre
+            query = {
+                "$and": [
+                    {"date": date},
+                    {"centre_id": centre_actif}
+                ]
+            }
     
     creneaux = await db.planning.find(query).sort("creneau", 1).to_list(1000)
     
