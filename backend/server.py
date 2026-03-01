@@ -7092,8 +7092,25 @@ async def delete_actualite(actualite_id: str, current_user: User = Depends(get_c
 
 @api_router.get("/anniversaires")
 async def get_anniversaires(current_user: User = Depends(get_current_user)):
-    """Récupérer les prochains anniversaires des employés"""
-    users = await db.users.find({"actif": True, "date_naissance": {"$ne": None}}).to_list(1000)
+    """Récupérer les prochains anniversaires des employés du centre actif"""
+    
+    # Déterminer le centre actif de l'utilisateur
+    centre_actif = getattr(current_user, 'centre_actif_id', None)
+    if not centre_actif:
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        centre_actif = user_centres[0] if user_centres else None
+    
+    # Construire la requête avec filtrage par centre
+    query = {"actif": True, "date_naissance": {"$ne": None}}
+    if centre_actif:
+        query["$or"] = [
+            {"centre_id": centre_actif},
+            {"centre_ids": centre_actif}
+        ]
+    
+    users = await db.users.find(query).to_list(1000)
     
     today = datetime.now()
     anniversaires = []
