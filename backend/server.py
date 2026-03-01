@@ -3116,29 +3116,16 @@ async def create_conge_direct(
 
 @api_router.get("/conges", response_model=List[Dict[str, Any]])
 async def get_demandes_conges(current_user: User = Depends(get_current_user)):
-    # Déterminer le centre actif de l'utilisateur
-    centre_actif = getattr(current_user, 'centre_actif_id', None)
-    if not centre_actif:
-        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
-        if current_user.centre_id and current_user.centre_id not in user_centres:
-            user_centres.append(current_user.centre_id)
-        centre_actif = user_centres[0] if user_centres else None
+    print(f"[DEBUG CONGES] User: {current_user.email}, Role: {current_user.role}")
     
     if current_user.role in [ROLES["DIRECTEUR"], "Super-Admin"]:
-        # Le directeur voit les congés du centre actif
-        if centre_actif:
-            demandes = await db.demandes_conges.find({
-                "$or": [
-                    {"centre_id": centre_actif},
-                    {"centre_id": None},
-                    {"centre_id": {"$exists": False}}
-                ]
-            }).to_list(1000)
-        else:
-            demandes = await db.demandes_conges.find().to_list(1000)
+        # Le directeur voit TOUS les congés (pas de filtrage par centre)
+        demandes = await db.demandes_conges.find().to_list(1000)
+        print(f"[DEBUG CONGES] Directeur - Tous les congés: {len(demandes)}")
     else:
         # Les employés voient seulement leurs propres congés
         demandes = await db.demandes_conges.find({"utilisateur_id": current_user.id}).to_list(1000)
+        print(f"[DEBUG CONGES] Employé - Ses congés: {len(demandes)}")
     
     # Optimisation: Batch fetch all users at once (évite N+1 queries)
     all_user_ids = set(demande["utilisateur_id"] for demande in demandes if "utilisateur_id" in demande)
