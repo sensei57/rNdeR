@@ -456,7 +456,7 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
       {/* Modal création/édition */}
       {showModal && (
         <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingActualite ? 'Modifier l\'actualité' : 'Nouvelle Actualité'}</DialogTitle>
             </DialogHeader>
@@ -474,7 +474,7 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Type de contenu</Label>
-                  <Select value={newActualite.type_contenu} onValueChange={(v) => setNewActualite({...newActualite, type_contenu: v})}>
+                  <Select value={newActualite.type_contenu} onValueChange={(v) => setNewActualite({...newActualite, type_contenu: v, fichier_url: '', fichier_nom: ''})}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="texte">📝 Texte</SelectItem>
@@ -498,6 +498,56 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
                 </div>
               </div>
 
+              {/* Upload de fichier/image */}
+              {(newActualite.type_contenu === 'image' || newActualite.type_contenu === 'fichier') && (
+                <div className="space-y-2">
+                  <Label>{newActualite.type_contenu === 'image' ? 'Image' : 'Fichier'}</Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                    {newActualite.fichier_url ? (
+                      <div className="space-y-2">
+                        {newActualite.type_contenu === 'image' ? (
+                          <img 
+                            src={newActualite.fichier_url.startsWith('/') ? `${BACKEND_URL}${newActualite.fichier_url}` : newActualite.fichier_url} 
+                            alt="Aperçu" 
+                            className="max-h-32 mx-auto rounded" 
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center text-gray-600">
+                            <FileText className="h-8 w-8 mr-2" />
+                            <span>{newActualite.fichier_nom}</span>
+                          </div>
+                        )}
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setNewActualite({...newActualite, fichier_url: '', fichier_nom: ''})}
+                        >
+                          Supprimer
+                        </Button>
+                      </div>
+                    ) : (
+                      <label className="cursor-pointer">
+                        <input
+                          type="file"
+                          accept={newActualite.type_contenu === 'image' ? 'image/*' : '.pdf,.doc,.docx,.xls,.xlsx,.txt'}
+                          onChange={handleFileUpload}
+                          className="hidden"
+                          disabled={uploading}
+                        />
+                        <div className="flex flex-col items-center">
+                          <Upload className={`h-8 w-8 ${uploading ? 'animate-pulse text-blue-500' : 'text-gray-400'}`} />
+                          <span className="mt-2 text-sm text-gray-600">
+                            {uploading ? 'Upload en cours...' : `Cliquez pour ajouter ${newActualite.type_contenu === 'image' ? 'une image' : 'un fichier'}`}
+                          </span>
+                          <span className="text-xs text-gray-400 mt-1">Max 10MB</span>
+                        </div>
+                      </label>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label>Contenu *</Label>
                 <textarea
@@ -509,11 +559,84 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
                 />
               </div>
 
+              {/* Option signature requise */}
+              <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
+                <div>
+                  <Label className="text-orange-800 font-medium">Signature requise</Label>
+                  <p className="text-xs text-orange-600">Les employés devront confirmer avoir lu cette actualité</p>
+                </div>
+                <Switch 
+                  checked={newActualite.signature_requise} 
+                  onCheckedChange={(checked) => setNewActualite({...newActualite, signature_requise: checked})}
+                />
+              </div>
+
               <div className="flex justify-end space-x-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setShowModal(false)}>Annuler</Button>
-                <Button type="submit">{editingActualite ? 'Modifier' : 'Publier'}</Button>
+                <Button type="submit" disabled={uploading}>{editingActualite ? 'Modifier' : 'Publier'}</Button>
               </div>
             </form>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Modal des signatures */}
+      {showSignaturesModal && selectedActualiteSignatures && (
+        <Dialog open={showSignaturesModal} onOpenChange={setShowSignaturesModal}>
+          <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Signatures - {selectedActualiteSignatures.titre}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {/* Résumé */}
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <span className="text-sm font-medium">Progression</span>
+                <span className="text-sm">
+                  <span className="text-green-600 font-bold">{selectedActualiteSignatures.total_signes}</span>
+                  <span className="text-gray-500"> / {selectedActualiteSignatures.total_cibles}</span>
+                </span>
+              </div>
+
+              {/* Employés ayant signé */}
+              <div>
+                <h4 className="font-medium text-green-700 flex items-center mb-2">
+                  <CheckCircle className="h-4 w-4 mr-1" /> Ont signé ({selectedActualiteSignatures.employes_signes?.length || 0})
+                </h4>
+                {selectedActualiteSignatures.employes_signes?.length > 0 ? (
+                  <div className="space-y-1 max-h-40 overflow-y-auto">
+                    {selectedActualiteSignatures.signatures.map((sig, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-2 bg-green-50 rounded text-sm">
+                        <span>{sig.user_name} ({sig.user_role})</span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(sig.signed_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">Aucune signature pour le moment</p>
+                )}
+              </div>
+
+              {/* Employés n'ayant pas signé */}
+              <div>
+                <h4 className="font-medium text-red-700 flex items-center mb-2">
+                  <Users className="h-4 w-4 mr-1" /> En attente ({selectedActualiteSignatures.employes_non_signes?.length || 0})
+                </h4>
+                {selectedActualiteSignatures.employes_non_signes?.length > 0 ? (
+                  <div className="space-y-1 max-h-40 overflow-y-auto">
+                    {selectedActualiteSignatures.employes_non_signes.map((emp) => (
+                      <div key={emp.id} className="flex items-center justify-between p-2 bg-red-50 rounded text-sm">
+                        <span>{emp.prenom} {emp.nom}</span>
+                        <span className="text-xs text-gray-500">{emp.role}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-green-600 font-medium">Tous les employés ont signé !</p>
+                )}
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       )}
