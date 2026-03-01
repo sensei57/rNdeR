@@ -7401,12 +7401,15 @@ async def upload_fichier_actualite(file: UploadFile = File(...), current_user: U
 
 
 # Activation du routeur et des sécurités
+print("🔧 [DEBUG] Ajout du routeur API...")
 app.include_router(api_router)
+print("🔧 [DEBUG] Routeur API ajouté")
 
 # Servir les fichiers uploadés (photos de profil)
 uploads_dir = ROOT_DIR / "uploads"
 uploads_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/api/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
+print("🔧 [DEBUG] Dossier uploads monté")
 
 app.add_middleware(
     CORSMiddleware,
@@ -7415,8 +7418,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+print("🔧 [DEBUG] CORS configuré")
 
 # Fermeture propre de la base de données
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+print("✅ [DEBUG] server.py chargé complètement - Prêt à recevoir des requêtes!")
