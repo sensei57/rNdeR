@@ -7225,21 +7225,21 @@ async def get_signatures_actualite(actualite_id: str, current_user: User = Depen
 
 @api_router.get("/anniversaires")
 async def get_anniversaires(current_user: User = Depends(get_current_user)):
-    """Récupérer les prochains anniversaires des employés"""
+    """Récupérer les prochains anniversaires des employés du centre actif"""
     
-    is_admin = current_user.role in ['Directeur', 'Super-Admin']
+    # Déterminer le centre actif de l'utilisateur
+    centre_actif = getattr(current_user, 'centre_actif_id', None)
+    if not centre_actif:
+        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+        if current_user.centre_id and current_user.centre_id not in user_centres:
+            user_centres.append(current_user.centre_id)
+        centre_actif = user_centres[0] if user_centres else None
     
-    # Le directeur voit TOUS les anniversaires (pas de filtrage par centre)
-    if is_admin:
-        query = {
-            "actif": True,
-            "date_naissance": {"$nin": [None, "", "null"]}
-        }
-    else:
-        # Les autres utilisateurs voient seulement leur centre
-        centre_actif = getattr(current_user, 'centre_actif_id', None) or current_user.centre_id
-        if not centre_actif:
-            return []
+    print(f"[DEBUG ANNIV] User: {current_user.email}, Role: {current_user.role}, Centre actif: {centre_actif}")
+    
+    # Construire la requête avec filtrage par centre
+    if centre_actif:
+        # Voir les employés de ce centre qui ont une date de naissance
         query = {
             "actif": True,
             "date_naissance": {"$nin": [None, "", "null"]},
@@ -7248,15 +7248,25 @@ async def get_anniversaires(current_user: User = Depends(get_current_user)):
                 {"centre_ids": centre_actif}
             ]
         }
+    else:
+        # Pas de centre actif = aucun anniversaire (sauf Super-Admin)
+        if current_user.role == "Super-Admin":
+            query = {
+                "actif": True,
+                "date_naissance": {"$nin": [None, "", "null"]}
+            }
+        else:
+            print("[DEBUG ANNIV] Pas de centre actif - retourne []")
+            return []
     
-    print(f"[DEBUG ANNIV] User: {current_user.email}, Role: {current_user.role}, Query: {query}")
+    print(f"[DEBUG ANNIV] Query: {query}")
     
     users = await db.users.find(query).to_list(1000)
-    print(f"[DEBUG ANNIV] Utilisateurs avec date_naissance: {len(users)}")
+    print(f"[DEBUG ANNIV] Utilisateurs trouvés avec date_naissance: {len(users)}")
     
     # Log détaillé des utilisateurs trouvés
     for u in users[:5]:
-        print(f"[DEBUG ANNIV] -> {u.get('prenom')} {u.get('nom')}: {u.get('date_naissance')}")
+        print(f"[DEBUG ANNIV] -> {u.get('prenom')} {u.get('nom')}: {u.get('date_naissance')} (centre: {u.get('centre_id', 'N/A')[:8] if u.get('centre_id') else 'N/A'}...)")
     
     today = datetime.now()
     anniversaires = []
@@ -7278,7 +7288,6 @@ async def get_anniversaires(current_user: User = Depends(get_current_user)):
             for fmt in ["%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%Y/%m/%d"]:
                 try:
                     dn = datetime.strptime(date_str, fmt)
-                    print(f"[DEBUG ANNIV] Date parsée pour {user.get('prenom')}: {date_str} -> {dn} (format: {fmt})")
                     break
                 except:
                     continue
