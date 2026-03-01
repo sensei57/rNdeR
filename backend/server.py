@@ -6995,15 +6995,13 @@ async def get_actualites(current_user: User = Depends(get_current_user)):
             user_centres.append(current_user.centre_id)
         centre_actif = user_centres[0] if user_centres else None
     
-    # Construire la requête - filtrer par centre
+    # Construire la requête - filtrer STRICTEMENT par centre actif
     query = {"actif": True}
     if centre_actif:
-        # Afficher les actualités du centre actif OU les actualités sans centre (globales)
-        query["$or"] = [
-            {"centre_id": centre_actif},
-            {"centre_id": None},
-            {"centre_id": {"$exists": False}}
-        ]
+        query["centre_id"] = centre_actif
+    else:
+        # Si pas de centre actif, retourner une liste vide
+        return []
     
     actualites = await db.actualites.find(query).sort("priorite", -1).to_list(100)
     
