@@ -194,7 +194,7 @@ async def send_push_notification(fcm_token: str, title: str, body: str, data: di
         )
         
         # Log détaillé pour debug
-        print(f"📤 [PUSH] Envoi notification:")
+        print("📤 [PUSH] Envoi notification:")
         print(f"   - Title: {title}")
         print(f"   - Body: {body[:50]}..." if len(body) > 50 else f"   - Body: {body}")
         print(f"   - Token: {fcm_token[:40]}...")
