@@ -7119,6 +7119,80 @@ async def delete_actualite(actualite_id: str, current_user: User = Depends(get_c
     
     return {"message": "Actualité supprimée"}
 
+
+@api_router.post("/actualites/{actualite_id}/signer")
+async def signer_actualite(actualite_id: str, current_user: User = Depends(get_current_user)):
+    """Signer une actualité pour confirmer sa lecture"""
+    # Vérifier que l'actualité existe
+    actualite = await db.actualites.find_one({"id": actualite_id, "actif": True})
+    if not actualite:
+        raise HTTPException(status_code=404, detail="Actualité non trouvée")
+    
+    # Vérifier que la signature est requise
+    if not actualite.get("signature_requise"):
+        raise HTTPException(status_code=400, detail="Cette actualité ne nécessite pas de signature")
+    
+    # Vérifier si l'utilisateur a déjà signé
+    signatures = actualite.get("signatures", [])
+    if any(s["user_id"] == current_user.id for s in signatures):
+        raise HTTPException(status_code=400, detail="Vous avez déjà signé cette actualité")
+    
+    # Ajouter la signature
+    nouvelle_signature = {
+        "user_id": current_user.id,
+        "user_name": f"{current_user.prenom} {current_user.nom}",
+        "user_role": current_user.role,
+        "signed_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.actualites.update_one(
+        {"id": actualite_id},
+        {"$push": {"signatures": nouvelle_signature}}
+    )
+    
+    return {"message": "Actualité signée avec succès", "signature": nouvelle_signature}
+
+@api_router.get("/actualites/{actualite_id}/signatures")
+async def get_signatures_actualite(actualite_id: str, current_user: User = Depends(get_current_user)):
+    """Récupérer les signatures d'une actualité (Directeur/Super-Admin uniquement)"""
+    if current_user.role not in ["Directeur", "Super-Admin"]:
+        raise HTTPException(status_code=403, detail="Accès réservé aux directeurs")
+    
+    actualite = await db.actualites.find_one({"id": actualite_id})
+    if not actualite:
+        raise HTTPException(status_code=404, detail="Actualité non trouvée")
+    
+    # Récupérer la liste des employés ciblés
+    groupe_cible = actualite.get("groupe_cible", "tous")
+    centre_id = actualite.get("centre_id")
+    
+    query = {"actif": True}
+    if centre_id:
+        query["$or"] = [{"centre_id": centre_id}, {"centre_ids": centre_id}]
+    if groupe_cible != "tous":
+        query["role"] = groupe_cible
+    
+    employes = await db.users.find(query, {"_id": 0, "id": 1, "prenom": 1, "nom": 1, "role": 1}).to_list(1000)
+    
+    signatures = actualite.get("signatures", [])
+    signed_ids = [s["user_id"] for s in signatures]
+    
+    # Catégoriser les employés
+    employes_signes = [e for e in employes if e["id"] in signed_ids]
+    employes_non_signes = [e for e in employes if e["id"] not in signed_ids]
+    
+    return {
+        "actualite_id": actualite_id,
+        "titre": actualite.get("titre"),
+        "signature_requise": actualite.get("signature_requise", False),
+        "total_cibles": len(employes),
+        "total_signes": len(employes_signes),
+        "signatures": signatures,
+        "employes_signes": employes_signes,
+        "employes_non_signes": employes_non_signes
+    }
+
+
 @api_router.get("/anniversaires")
 async def get_anniversaires(current_user: User = Depends(get_current_user)):
     """Récupérer les prochains anniversaires des employés du centre actif"""
