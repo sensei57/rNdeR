@@ -3127,45 +3127,32 @@ async def get_demandes_conges(current_user: User = Depends(get_current_user)):
     print(f"[DEBUG CONGES] User: {current_user.email}, Role: {current_user.role}, Centre actif: {centre_actif}")
     
     if current_user.role in [ROLES["DIRECTEUR"], "Super-Admin"]:
-        # Le directeur voit les congés du centre actif + ceux sans centre (anciennes données)
+        # Le directeur voit les congés du centre actif uniquement
         if centre_actif:
-            demandes = await db.demandes_conges.find({
-                "$or": [
-                    {"centre_id": centre_actif},
-                    {"centre_id": None},
-                    {"centre_id": {"$exists": False}},
-                    {"centre_id": ""}
-                ]
-            }).to_list(1000)
-            print(f"[DEBUG CONGES] Directeur - Congés du centre {centre_actif[:8]}... + sans centre: {len(demandes)}")
+            demandes = await db.demandes_conges.find({"centre_id": centre_actif}).to_list(1000)
+            print(f"[DEBUG CONGES] Directeur - Congés du centre: {len(demandes)}")
         else:
-            # Pas de centre actif = voir tous
-            demandes = await db.demandes_conges.find().to_list(1000)
-            print(f"[DEBUG CONGES] Directeur sans centre - Tous les congés: {len(demandes)}")
+            demandes = []
+            print("[DEBUG CONGES] Pas de centre actif - retourne []")
     else:
         # Les employés voient seulement leurs propres congés
         demandes = await db.demandes_conges.find({"utilisateur_id": current_user.id}).to_list(1000)
         print(f"[DEBUG CONGES] Employé - Ses congés: {len(demandes)}")
     
-    # Optimisation: Batch fetch all users at once (évite N+1 queries)
+    # Optimisation: Batch fetch all users at once
     all_user_ids = set(demande["utilisateur_id"] for demande in demandes if "utilisateur_id" in demande)
     
-    # Une seule requête pour tous les utilisateurs
     users = await db.users.find(
         {"id": {"$in": list(all_user_ids)}},
-        {"_id": 0, "password_hash": 0}  # Exclure champs sensibles
+        {"_id": 0, "password_hash": 0}
     ).to_list(1000)
     
-    # Créer un map pour accès rapide O(1)
     users_map = {user["id"]: User(**user) for user in users}
     
-    # Enrich with user details and clean data
     enriched_demandes = []
     for demande in demandes:
         demande.pop('_id', None)
-        
         utilisateur = users_map.get(demande.get("utilisateur_id"))
-            
         enriched_demandes.append({
             **demande,
             "utilisateur": utilisateur if utilisateur else None
