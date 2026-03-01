@@ -15,25 +15,79 @@ const firebaseConfig = {
   appId: "1:752001506338:web:2eb60761bd9d7c00973e7b"
 };
 
+// Clé VAPID pour l'authentification des notifications push
+const VAPID_KEY = 'BLDFCJN6pePvpIaVCTQtAhcwNhlusiMzFjPDdzll12vBWZcvkYJ4Bc60R9RSBcTx-hpqwT3ngTWn4lgVh4qQS-E';
+
 // Initialiser Firebase immédiatement (synchrone)
 let messaging = null;
 try {
   firebase.initializeApp(firebaseConfig);
   messaging = firebase.messaging();
   console.log('✅ Firebase Messaging initialisé dans le Service Worker');
+  console.log('🔑 VAPID Key configurée:', VAPID_KEY.substring(0, 20) + '...');
 } catch (error) {
   console.error('❌ Erreur initialisation Firebase:', error);
 }
 
-// Handle background messages (notifications quand l'app est en arrière-plan)
+// IMPORTANT: Intercepter l'événement push directement pour garantir l'affichage
+self.addEventListener('push', (event) => {
+  console.log('🔔 [SW] Push event reçu:', event);
+  
+  let payload = {};
+  
+  try {
+    if (event.data) {
+      payload = event.data.json();
+      console.log('📦 [SW] Payload JSON:', payload);
+    }
+  } catch (e) {
+    console.log('📦 [SW] Payload texte:', event.data?.text());
+    payload = { notification: { title: 'Notification', body: event.data?.text() || 'Nouveau message' } };
+  }
+  
+  // Extraire les données de notification
+  const notificationTitle = payload.notification?.title || payload.data?.title || 'Cabinet Médical';
+  const notificationBody = payload.notification?.body || payload.data?.body || 'Vous avez une nouvelle notification';
+  const data = payload.data || {};
+  
+  const isReplyable = data.requires_reply === 'true' || data.type === 'chat_message';
+  
+  const notificationOptions = {
+    body: notificationBody,
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    tag: data.message_id ? `msg-${data.message_id}` : `notif-${Date.now()}`,
+    requireInteraction: true,
+    renotify: true,
+    vibrate: [200, 100, 200],
+    data: data,
+    actions: isReplyable ? [
+      { action: 'reply', title: '💬 Répondre' },
+      { action: 'open', title: '📱 Ouvrir' }
+    ] : [
+      { action: 'open', title: '📱 Ouvrir' }
+    ]
+  };
+
+  console.log('📢 [SW] Affichage notification:', notificationTitle, notificationOptions);
+  
+  event.waitUntil(
+    self.registration.showNotification(notificationTitle, notificationOptions)
+      .then(() => console.log('✅ [SW] Notification affichée avec succès'))
+      .catch(err => console.error('❌ [SW] Erreur affichage notification:', err))
+  );
+});
+
+// Handle background messages via Firebase (backup si push event ne se déclenche pas)
 if (messaging) {
   messaging.onBackgroundMessage((payload) => {
-    console.log('Background message received:', payload);
+    console.log('📩 [SW] onBackgroundMessage reçu:', payload);
     
+    // Note: L'événement push devrait déjà avoir géré cela
+    // Ce handler est un backup au cas où
     const notificationTitle = payload.notification?.title || 'Cabinet Medical';
     const data = payload.data || {};
     
-    // Vérifier si c'est un message de chat qui nécessite une réponse rapide
     const isReplyable = data.requires_reply === 'true' || data.type === 'chat_message';
     
     const notificationOptions = {
@@ -43,16 +97,15 @@ if (messaging) {
       tag: data.message_id ? `msg-${data.message_id}` : 'cabinet-notification',
       requireInteraction: true,
       data: data,
-      // Ajouter les actions de réponse rapide si c'est un message
       actions: isReplyable ? [
-        { action: 'reply', title: '💬 Répondre', type: 'text' },
+        { action: 'reply', title: '💬 Répondre' },
         { action: 'open', title: '📱 Ouvrir' }
       ] : [
         { action: 'open', title: '📱 Ouvrir' }
       ]
     };
 
-    self.registration.showNotification(notificationTitle, notificationOptions);
+    return self.registration.showNotification(notificationTitle, notificationOptions);
   });
 }
 
