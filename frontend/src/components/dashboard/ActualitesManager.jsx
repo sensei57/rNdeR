@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { Bell, Plus, Edit, Trash2, FileText } from 'lucide-react';
+import { Bell, Plus, Edit, Trash2, FileText, Upload, CheckCircle, Users, Eye } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -9,6 +9,7 @@ import { Label } from '../ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Switch } from '../ui/switch';
 
 const API = process.env.REACT_APP_BACKEND_URL + '/api';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
