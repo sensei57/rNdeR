@@ -86,11 +86,15 @@ def initialize_firebase():
             'storageBucket': FIREBASE_STORAGE_BUCKET
         })
         
-        # Initialiser le bucket Storage
-        _storage_bucket = storage.bucket()
+        # Initialiser le bucket Storage si disponible
+        if STORAGE_AVAILABLE and storage:
+            _storage_bucket = storage.bucket()
+            logger.info("✅ Firebase Admin SDK initialisé avec succès (Storage activé)")
+            print(f"✅ Firebase Admin SDK initialisé avec succès - Storage: {FIREBASE_STORAGE_BUCKET}")
+        else:
+            logger.info("✅ Firebase Admin SDK initialisé (Storage non disponible)")
+            print("✅ Firebase Admin SDK initialisé (Storage non disponible)")
         
-        logger.info("✅ Firebase Admin SDK initialisé avec succès (Storage activé)")
-        print(f"✅ Firebase Admin SDK initialisé avec succès - Storage: {FIREBASE_STORAGE_BUCKET}")
         return _firebase_app
         
     except Exception as e:
