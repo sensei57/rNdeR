@@ -13134,6 +13134,12 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh, centreActif }
                         {emp.employe_role === 'Médecin' ? 'Dr. ' : ''}
                         {emp.employe?.prenom} {emp.employe?.nom}
                       </span>
+                      {/* Afficher les initiales des médecins pour les assistants */}
+                      {emp.employe_role === 'Assistant' && emp.medecinsInitiales && (
+                        <span className="text-xs text-gray-500 block">
+                          (avec {emp.medecinsInitiales})
+                        </span>
+                      )}
                       {emp.hasAnySalle && !emp.isAssigned && (
                         <span className="text-xs text-yellow-600 ml-2">
                           (déjà en {selectedSalle?.type_salle === 'ATTENTE' ? emp.salle_attente : emp.salle_attribuee})
