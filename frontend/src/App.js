@@ -1490,8 +1490,8 @@ const PushNotificationManager = () => {
           const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
           console.log('Service Worker enregistré:', registration);
           
+          // Obtenir le token sans VAPID key (utilise la configuration Firebase)
           token = await getToken(messaging, {
-            vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY,
             serviceWorkerRegistration: registration
           });
           console.log('Token FCM obtenu:', token ? token.substring(0, 20) + '...' : 'null');
