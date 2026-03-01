@@ -1408,9 +1408,10 @@ const PushNotificationManager = () => {
     try {
       setLoadingDevices(true);
       const response = await axios.get(`${API}/notifications/devices`);
-      setDevices(response.data || []);
+      const devicesList = response.data?.devices || [];
+      setDevices(devicesList);
       // Si l'utilisateur a des appareils, il est considéré comme abonné
-      if (response.data && response.data.length > 0) {
+      if (devicesList.length > 0) {
         setSubscribed(true);
       }
     } catch (error) {
