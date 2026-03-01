@@ -259,7 +259,8 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
       setNewActualite(prev => ({
         ...prev,
         image_url: response.data.url,
-        image_nom: response.data.filename
+        image_nom: response.data.filename,
+        image_storage_path: response.data.storage_path // Pour suppression future
       }));
       toast.success('Image uploadée');
     } catch (error) {
