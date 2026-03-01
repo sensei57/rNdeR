@@ -5,46 +5,57 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-com
 // URL de l'API backend
 const API_BASE_URL = self.location.origin;
 
-// Configuration Firebase depuis variables d'environnement via fetch
-fetch('/firebase-config.json')
-  .then(response => response.json())
-  .then(firebaseConfig => {
-    firebase.initializeApp(firebaseConfig);
+// Configuration Firebase - REMPLACEZ CES VALEURS PAR VOS VRAIES CLÉS FIREBASE
+// Ces clés sont publiques par nature et conçues pour être lues par le navigateur
+const firebaseConfig = {
+  apiKey: "VOTRE_FIREBASE_API_KEY",
+  authDomain: "VOTRE_PROJET.firebaseapp.com",
+  projectId: "VOTRE_PROJECT_ID",
+  storageBucket: "VOTRE_PROJET.appspot.com",
+  messagingSenderId: "VOTRE_MESSAGING_SENDER_ID",
+  appId: "VOTRE_APP_ID"
+};
 
-    const messaging = firebase.messaging();
+// Initialiser Firebase immédiatement (synchrone)
+let messaging = null;
+try {
+  firebase.initializeApp(firebaseConfig);
+  messaging = firebase.messaging();
+  console.log('✅ Firebase Messaging initialisé dans le Service Worker');
+} catch (error) {
+  console.error('❌ Erreur initialisation Firebase:', error);
+}
 
-    // Handle background messages
-    messaging.onBackgroundMessage((payload) => {
-      console.log('Background message received:', payload);
-      
-      const notificationTitle = payload.notification?.title || 'Cabinet Medical';
-      const data = payload.data || {};
-      
-      // Vérifier si c'est un message de chat qui nécessite une réponse rapide
-      const isReplyable = data.requires_reply === 'true' || data.type === 'chat_message';
-      
-      const notificationOptions = {
-        body: payload.notification?.body || data.body,
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
-        tag: data.message_id ? `msg-${data.message_id}` : 'cabinet-notification',
-        requireInteraction: true,
-        data: data,
-        // Ajouter les actions de réponse rapide si c'est un message
-        actions: isReplyable ? [
-          { action: 'reply', title: '💬 Répondre', type: 'text' },
-          { action: 'open', title: '📱 Ouvrir' }
-        ] : [
-          { action: 'open', title: '📱 Ouvrir' }
-        ]
-      };
+// Handle background messages (notifications quand l'app est en arrière-plan)
+if (messaging) {
+  messaging.onBackgroundMessage((payload) => {
+    console.log('Background message received:', payload);
+    
+    const notificationTitle = payload.notification?.title || 'Cabinet Medical';
+    const data = payload.data || {};
+    
+    // Vérifier si c'est un message de chat qui nécessite une réponse rapide
+    const isReplyable = data.requires_reply === 'true' || data.type === 'chat_message';
+    
+    const notificationOptions = {
+      body: payload.notification?.body || data.body,
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      tag: data.message_id ? `msg-${data.message_id}` : 'cabinet-notification',
+      requireInteraction: true,
+      data: data,
+      // Ajouter les actions de réponse rapide si c'est un message
+      actions: isReplyable ? [
+        { action: 'reply', title: '💬 Répondre', type: 'text' },
+        { action: 'open', title: '📱 Ouvrir' }
+      ] : [
+        { action: 'open', title: '📱 Ouvrir' }
+      ]
+    };
 
-      self.registration.showNotification(notificationTitle, notificationOptions);
-    });
-  })
-  .catch(error => {
-    console.error('Error loading Firebase config:', error);
+    self.registration.showNotification(notificationTitle, notificationOptions);
   });
+}
 
 // Handle notification clicks
 self.addEventListener('notificationclick', (event) => {
