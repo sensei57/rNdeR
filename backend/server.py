@@ -888,6 +888,8 @@ async def send_notification_to_user(user_id: str, title: str, body: str, data: O
             try:
                 from push_notifications import send_push_notification
                 
+                invalid_tokens = []  # Pour supprimer les tokens invalides
+                
                 # Envoyer à tous les appareils de l'utilisateur
                 for fcm_token in fcm_tokens:
                     print(f"📱 [PUSH] Tentative d'envoi à token: {fcm_token[:40]}...")
@@ -897,9 +899,20 @@ async def send_notification_to_user(user_id: str, title: str, body: str, data: O
                         body=body,
                         data=data or {}
                     )
-                    if push_result:
+                    if push_result == True:
                         push_sent = True
                         print(f"✅ [PUSH] Notification envoyée avec succès à {user_id}")
+                    elif push_result == "INVALID_TOKEN":
+                        invalid_tokens.append(fcm_token)
+                        print(f"🗑️ [PUSH] Token invalide marqué pour suppression")
+                
+                # Supprimer les tokens invalides de la base
+                if invalid_tokens:
+                    print(f"🧹 [PUSH] Suppression de {len(invalid_tokens)} token(s) invalide(s) pour {user_id}")
+                    await db.users.update_one(
+                        {"id": user_id},
+                        {"$pull": {"fcm_devices": {"fcm_token": {"$in": invalid_tokens}}}}
+                    )
                 
                 if push_sent:
                     notification["push_status"] = "sent"
