@@ -3127,12 +3127,19 @@ async def get_demandes_conges(current_user: User = Depends(get_current_user)):
     print(f"[DEBUG CONGES] User: {current_user.email}, Role: {current_user.role}, Centre actif: {centre_actif}")
     
     if current_user.role in [ROLES["DIRECTEUR"], "Super-Admin"]:
-        # Le directeur voit les congés du centre actif uniquement
+        # Le directeur voit les congés du centre actif + ceux sans centre (anciennes données)
         if centre_actif:
-            demandes = await db.demandes_conges.find({"centre_id": centre_actif}).to_list(1000)
-            print(f"[DEBUG CONGES] Directeur - Congés du centre {centre_actif}: {len(demandes)}")
+            demandes = await db.demandes_conges.find({
+                "$or": [
+                    {"centre_id": centre_actif},
+                    {"centre_id": None},
+                    {"centre_id": {"$exists": False}},
+                    {"centre_id": ""}
+                ]
+            }).to_list(1000)
+            print(f"[DEBUG CONGES] Directeur - Congés du centre {centre_actif[:8]}... + sans centre: {len(demandes)}")
         else:
-            # Pas de centre actif = voir tous (cas rare)
+            # Pas de centre actif = voir tous
             demandes = await db.demandes_conges.find().to_list(1000)
             print(f"[DEBUG CONGES] Directeur sans centre - Tous les congés: {len(demandes)}")
     else:
