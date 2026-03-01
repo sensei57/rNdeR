@@ -12323,7 +12323,7 @@ const PlanningManager = () => {
                   if (created > 0) {
                     toast.success(`Congés appliqués ! ${created} jour(s) de congé créé(s)`);
                     fetchConges();
-                    fetchPlanning();
+                    fetchPlanningTableau(selectedWeek);
                   } else {
                     toast.info('Aucun congé créé (déjà existants ou créneaux présents)');
                   }
