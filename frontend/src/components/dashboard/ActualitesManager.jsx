@@ -38,6 +38,20 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
   const [selectedActualiteSignatures, setSelectedActualiteSignatures] = useState(null);
   const [editingActualite, setEditingActualite] = useState(null);
   const [uploading, setUploading] = useState(false);
+  
+  // État pour la navigation dans les actualités
+  const [currentGeneralIndex, setCurrentGeneralIndex] = useState(0);
+  const [currentCibleIndex, setCurrentCibleIndex] = useState(0);
+  const [actualitesLues, setActualitesLues] = useState(() => {
+    // Charger les actualités lues depuis localStorage
+    try {
+      const saved = localStorage.getItem(`actualites_lues_${user?.id}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  
   const [newActualite, setNewActualite] = useState({
     titre: '',
     contenu: '',
@@ -53,6 +67,22 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
   });
   
   const TOUS_LES_GROUPES = ['Médecin', 'Assistant', 'Secrétaire'];
+  
+  // Marquer une actualité comme lue
+  const marquerCommeLue = useCallback((actualiteId) => {
+    if (!actualitesLues.includes(actualiteId)) {
+      const newLues = [...actualitesLues, actualiteId];
+      setActualitesLues(newLues);
+      try {
+        localStorage.setItem(`actualites_lues_${user?.id}`, JSON.stringify(newLues));
+      } catch {}
+    }
+  }, [actualitesLues, user?.id]);
+  
+  // Vérifier si une actualité est non lue
+  const estNonLue = useCallback((actualiteId) => {
+    return !actualitesLues.includes(actualiteId);
+  }, [actualitesLues]);
 
   const fetchData = useCallback(async () => {
     try {
