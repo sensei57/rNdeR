@@ -9,7 +9,7 @@ from datetime import datetime
 import json
 
 class JourneeCompleteBugTester:
-    def __init__(self, base_url="https://medical-hub-refactor.preview.emergentagent.com"):
+    def __init__(self, base_url="https://cabinet-multi-centre.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.directeur_token = None
