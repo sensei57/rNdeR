@@ -3,24 +3,32 @@ Module pour gérer les notifications push via Firebase Admin SDK
 Supporte les credentials via:
 1. Variable d'environnement FIREBASE_CREDENTIALS (JSON string) - recommandé pour Render
 2. Fichier firebase-credentials.json (fallback)
+
+Inclut aussi Firebase Storage pour les uploads d'images
 """
 import os
 import json
 import logging
 import tempfile
 import time
+import uuid
+from datetime import datetime, timezone
 import firebase_admin
-from firebase_admin import credentials, messaging
+from firebase_admin import credentials, messaging, storage
 
 logger = logging.getLogger(__name__)
 
+# Configuration Storage
+FIREBASE_STORAGE_BUCKET = os.environ.get('FIREBASE_STORAGE_BUCKET', 'cabinet-medical-ope.firebasestorage.app')
+
 # Initialisation Firebase Admin SDK
 _firebase_app = None
+_storage_bucket = None
 _temp_cred_file = None  # Pour nettoyer le fichier temporaire si nécessaire
 
 def initialize_firebase():
     """Initialise Firebase Admin SDK avec les credentials"""
-    global _firebase_app, _temp_cred_file
+    global _firebase_app, _storage_bucket, _temp_cred_file
     
     if _firebase_app is not None:
         return _firebase_app
@@ -64,11 +72,16 @@ def initialize_firebase():
                 logger.warning("⚠️ Pour activer les notifications push, configurez FIREBASE_CREDENTIALS dans les variables d'environnement")
                 return None
         
-        # Initialiser Firebase Admin
-        _firebase_app = firebase_admin.initialize_app(cred)
+        # Initialiser Firebase Admin avec Storage
+        _firebase_app = firebase_admin.initialize_app(cred, {
+            'storageBucket': FIREBASE_STORAGE_BUCKET
+        })
         
-        logger.info("✅ Firebase Admin SDK initialisé avec succès")
-        print("✅ Firebase Admin SDK initialisé avec succès - Notifications push activées")
+        # Initialiser le bucket Storage
+        _storage_bucket = storage.bucket()
+        
+        logger.info("✅ Firebase Admin SDK initialisé avec succès (Storage activé)")
+        print(f"✅ Firebase Admin SDK initialisé avec succès - Storage: {FIREBASE_STORAGE_BUCKET}")
         return _firebase_app
         
     except Exception as e:
