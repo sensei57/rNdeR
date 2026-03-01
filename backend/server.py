@@ -464,6 +464,8 @@ class Actualite(BaseModel):
     date_modification: Optional[datetime] = None
     actif: bool = True
     priorite: int = 0  # Plus élevé = plus important
+    signature_requise: bool = False  # Si True, les employés doivent signer pour confirmer la lecture
+    signatures: List[Dict[str, Any]] = Field(default_factory=list)  # Liste des signatures {user_id, user_name, signed_at}
 
 class ActualiteCreate(BaseModel):
     titre: str
@@ -474,6 +476,7 @@ class ActualiteCreate(BaseModel):
     groupe_cible: str = "tous"
     centre_id: Optional[str] = None  # Centre auquel appartient cette actualité
     priorite: int = 0
+    signature_requise: bool = False
 
 class ActualiteUpdate(BaseModel):
     titre: Optional[str] = None
@@ -485,6 +488,7 @@ class ActualiteUpdate(BaseModel):
     centre_id: Optional[str] = None
     priorite: Optional[int] = None
     actif: Optional[bool] = None
+    signature_requise: Optional[bool] = None
 
 # Documents Coffre Fort Models
 class DocumentPersonnel(BaseModel):
