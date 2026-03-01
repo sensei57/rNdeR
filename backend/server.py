@@ -123,26 +123,35 @@ async def send_morning_planning_notifications():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    print("🚀 Démarrage du serveur...")
+    print("🚀 [LIFESPAN] Démarrage du serveur...")
     
-    # Configurer le scheduler pour 7h du matin (heure de Paris)
-    scheduler.add_job(
-        send_morning_planning_notifications,
-        CronTrigger(hour=7, minute=0, timezone="Europe/Paris"),
-        id="daily_planning_notification",
-        replace_existing=True
-    )
-    scheduler.start()
-    print("⏰ Scheduler activé - Notifications de planning à 7h chaque jour")
+    try:
+        # Configurer le scheduler pour 7h du matin (heure de Paris)
+        scheduler.add_job(
+            send_morning_planning_notifications,
+            CronTrigger(hour=7, minute=0, timezone="Europe/Paris"),
+            id="daily_planning_notification",
+            replace_existing=True
+        )
+        scheduler.start()
+        print("⏰ [LIFESPAN] Scheduler activé - Notifications de planning à 7h chaque jour")
+    except Exception as e:
+        print(f"⚠️ [LIFESPAN] Erreur scheduler (non bloquante): {e}")
     
+    print("✅ [LIFESPAN] Serveur prêt!")
     yield
     
     # Shutdown
-    scheduler.shutdown()
-    print("🛑 Serveur arrêté")
+    try:
+        scheduler.shutdown()
+    except:
+        pass
+    print("🛑 [LIFESPAN] Serveur arrêté")
 
+print("🔧 [DEBUG] Création de l'app FastAPI...")
 # Create the main app with lifespan
 app = FastAPI(title="Gestion Personnel Médical", lifespan=lifespan)
+print("🔧 [DEBUG] App FastAPI créée")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
