@@ -9711,18 +9711,19 @@ const PlanningManager = () => {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
               </div>
             ) : (
-              <div ref={planningTableRef}>
-              <table className="w-full border-collapse text-xs table-fixed">
+              <div ref={planningTableRef} className="overflow-x-auto">
+              <table className="w-full border-collapse text-xs" style={{tableLayout: 'fixed', minWidth: '800px'}}>
                 <thead>
                   <tr className="bg-gray-100">
-                    <th className="border p-1 text-left text-xs" style={{width: '100px', maxWidth: '100px'}}>
+                    <th className="border p-1 text-left text-xs" style={{width: '90px', minWidth: '90px', maxWidth: '90px'}}>
                       Employé
                     </th>
                     {planningTableau.dates.map((date, dateIndex) => (
                       <th 
                         key={date} 
-                        className={`border p-1 text-center min-w-[80px] cursor-pointer hover:bg-teal-100 transition-colors ${dateIndex % 2 === 0 ? 'bg-slate-50' : 'bg-slate-100'}`}
+                        className={`border p-1 text-center cursor-pointer hover:bg-teal-100 transition-colors ${dateIndex % 2 === 0 ? 'bg-slate-50' : 'bg-slate-100'}`}
                         colSpan={2}
+                        style={{minWidth: '70px'}}
                         onClick={() => openDetailJourModal(date)}
                         title="📋 Cliquer pour voir le détail de cette journée"
                       >
@@ -9739,8 +9740,8 @@ const PlanningManager = () => {
                     ))}
                     {showRecapColumns && (
                       <>
-                        <th className="border p-1 text-center bg-gray-300 text-xs" title="Total demi-journées">½j</th>
-                        <th className="border p-1 text-center bg-blue-200 text-xs" title="Heures effectuées cette semaine (selon Semaine A ou B)">
+                        <th className="border p-1 text-center bg-gray-300 text-xs" style={{width: '30px'}} title="Total demi-journées">½j</th>
+                        <th className="border p-1 text-center bg-blue-200 text-xs" style={{width: '50px'}} title="Heures effectuées cette semaine (selon Semaine A ou B)">
                           <div className="flex flex-col items-center">
                             <span>H Eff</span>
                             <select 
@@ -9754,25 +9755,27 @@ const PlanningManager = () => {
                             </select>
                           </div>
                         </th>
-                        <th className="border p-1 text-center bg-indigo-200 text-xs" title="Comparaison heures faites vs contrat">Ctr</th>
-                        <th className="border p-1 text-center bg-orange-200 text-xs" title="Heures supp/récup Semaine">+/- S</th>
-                        <th className="border p-1 text-center bg-orange-100 text-xs" title="Heures supp/récup Mois">+/- M</th>
-                        <th className="border p-1 text-center bg-orange-50 text-xs" title="Heures supp/récup Année">+/- A</th>
-                        <th className="border p-1 text-center bg-green-200 text-xs" title="Heures de congés">Cg</th>
+                        <th className="border p-1 text-center bg-indigo-200 text-xs" style={{width: '30px'}} title="Comparaison heures faites vs contrat">Ctr</th>
+                        <th className="border p-1 text-center bg-orange-200 text-xs" style={{width: '35px'}} title="Heures supp/récup Semaine">+/- S</th>
+                        <th className="border p-1 text-center bg-orange-100 text-xs" style={{width: '35px'}} title="Heures supp/récup Mois">+/- M</th>
+                        <th className="border p-1 text-center bg-orange-50 text-xs" style={{width: '35px'}} title="Heures supp/récup Année">+/- A</th>
+                        <th className="border p-1 text-center bg-green-200 text-xs" style={{width: '30px'}} title="Heures de congés">Cg</th>
                       </>
                     )}
                   </tr>
                   <tr className="bg-gray-50">
-                    <th className="border p-1"></th>
+                    <th className="border p-1" style={{width: '90px'}}></th>
                     {planningTableau.dates.map((date, dateIndex) => (
                       <React.Fragment key={`header-${date}`}>
                         <th 
                           className={`border p-1 text-center text-xs cursor-pointer hover:bg-slate-200 transition-colors ${dateIndex % 2 === 0 ? 'bg-slate-50' : 'bg-slate-100'}`}
+                          style={{width: '35px'}}
                           onClick={() => openDetailJourModal(date)}
                           title="📋 Voir détail journée"
                         >M</th>
                         <th 
                           className={`border p-1 text-center text-xs cursor-pointer hover:bg-slate-200 transition-colors ${dateIndex % 2 === 0 ? 'bg-slate-50' : 'bg-slate-100'}`}
+                          style={{width: '35px'}}
                           onClick={() => openDetailJourModal(date)}
                           title="📋 Voir détail journée"
                         >AM</th>
