@@ -7300,39 +7300,51 @@ async def get_firebase_status_endpoint(current_user: User = Depends(require_role
 @api_router.get("/actualites")
 async def get_actualites(current_user: User = Depends(get_current_user)):
     """Récupérer les actualités du centre actif"""
-    # Déterminer le centre actif de l'utilisateur
-    centre_actif = getattr(current_user, 'centre_actif_id', None)
-    if not centre_actif:
-        # Utiliser le premier centre de l'utilisateur
-        user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
-        if current_user.centre_id and current_user.centre_id not in user_centres:
-            user_centres.append(current_user.centre_id)
-        centre_actif = user_centres[0] if user_centres else None
-    
-    # Construire la requête - filtrer STRICTEMENT par centre actif
-    query = {"actif": True}
-    if centre_actif:
-        query["centre_id"] = centre_actif
-    else:
-        # Si pas de centre actif, retourner une liste vide
-        return []
-    
-    actualites = await db.actualites.find(query).sort("priorite", -1).to_list(100)
-    
-    # Enrichir avec les informations de l'auteur
-    for actu in actualites:
-        if '_id' in actu:
-            del actu['_id']
-        auteur = await db.users.find_one({"id": actu.get("auteur_id")})
-        if auteur:
-            actu['auteur'] = {
-                "id": auteur.get("id"),
-                "nom": auteur.get("nom"),
-                "prenom": auteur.get("prenom"),
-                "role": auteur.get("role")
-            }
-    
-    return actualites
+    try:
+        # Déterminer le centre actif de l'utilisateur
+        centre_actif = getattr(current_user, 'centre_actif_id', None)
+        print(f"[DEBUG ACTU] User: {current_user.email}, centre_actif_id attr: {centre_actif}")
+        
+        if not centre_actif:
+            # Utiliser le premier centre de l'utilisateur
+            user_centres = current_user.centre_ids if hasattr(current_user, 'centre_ids') and current_user.centre_ids else []
+            if current_user.centre_id and current_user.centre_id not in user_centres:
+                user_centres.append(current_user.centre_id)
+            centre_actif = user_centres[0] if user_centres else None
+            print(f"[DEBUG ACTU] Fallback centre_actif: {centre_actif}, user_centres: {user_centres}")
+        
+        # Construire la requête - filtrer STRICTEMENT par centre actif
+        query = {"actif": True}
+        if centre_actif:
+            query["centre_id"] = centre_actif
+        else:
+            # Si pas de centre actif, retourner une liste vide
+            print("[DEBUG ACTU] Pas de centre actif - retourne []")
+            return []
+        
+        print(f"[DEBUG ACTU] Query: {query}")
+        actualites = await db.actualites.find(query).sort("priorite", -1).to_list(100)
+        print(f"[DEBUG ACTU] Actualités trouvées: {len(actualites)}")
+        
+        # Enrichir avec les informations de l'auteur
+        for actu in actualites:
+            if '_id' in actu:
+                del actu['_id']
+            auteur = await db.users.find_one({"id": actu.get("auteur_id")})
+            if auteur:
+                actu['auteur'] = {
+                    "id": auteur.get("id"),
+                    "nom": auteur.get("nom"),
+                    "prenom": auteur.get("prenom"),
+                    "role": auteur.get("role")
+                }
+        
+        return actualites
+    except Exception as e:
+        print(f"[ERROR ACTU] Exception: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erreur serveur: {str(e)}")
 
 @api_router.post("/actualites")
 async def create_actualite(actualite: ActualiteCreate, current_user: User = Depends(get_current_user)):
