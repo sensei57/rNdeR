@@ -311,6 +311,7 @@ class UserUpdate(BaseModel):
     telephone: Optional[str] = None
     date_naissance: Optional[str] = None
     photo_url: Optional[str] = None
+    photo_storage_path: Optional[str] = None
     actif: Optional[bool] = None
     centre_id: Optional[str] = None  # Centre principal (legacy)
     centre_ids: Optional[List[str]] = None  # Liste des centres
