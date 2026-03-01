@@ -548,14 +548,18 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
         </div>
       </div>
 
-      {/* 2 Colonnes : Actualités */}
+      {/* 2 Colonnes : Actualités avec Carrousel */}
       <div className="news-section">
+        {/* Colonne Actualités Générales */}
         <div className="news-card">
           <div className="news-card-header">
             <div className="news-card-icon general">📢</div>
             <h2 className="news-card-title">Actualités Générales</h2>
-            {/* Debug: afficher le nombre total */}
-            <span className="text-xs text-gray-400 ml-2">({actualites.length} total, {actualitesGenerales.length} générales)</span>
+            {actualitesGenerales.length > 0 && (
+              <span className="ml-auto text-sm font-medium text-gray-500">
+                {currentGeneralIndex + 1} / {actualitesGenerales.length}
+              </span>
+            )}
           </div>
           
           {actualitesGenerales.length === 0 ? (
@@ -564,14 +568,102 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
               <p className="empty-state-text">Aucune actualité générale</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {actualitesGenerales.map((actu) => (
-                <ActualiteCard key={actu.id} actu={actu} />
-              ))}
+            <div className="relative">
+              {/* Indicateur actualités non lues */}
+              {actualitesGenerales.filter(a => estNonLue(a.id)).length > 0 && (
+                <div className="mb-3 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-500 text-white text-xs font-bold rounded-full animate-pulse">
+                    {actualitesGenerales.filter(a => estNonLue(a.id)).length}
+                  </span>
+                  <span className="text-sm text-blue-700 font-medium">
+                    actualité{actualitesGenerales.filter(a => estNonLue(a.id)).length > 1 ? 's' : ''} non lue{actualitesGenerales.filter(a => estNonLue(a.id)).length > 1 ? 's' : ''}
+                  </span>
+                </div>
+              )}
+              
+              {/* Navigation et Carte */}
+              <div className="flex items-center gap-2">
+                {/* Bouton Précédent */}
+                <button
+                  onClick={() => {
+                    const newIndex = currentGeneralIndex > 0 ? currentGeneralIndex - 1 : actualitesGenerales.length - 1;
+                    setCurrentGeneralIndex(newIndex);
+                  }}
+                  disabled={actualitesGenerales.length <= 1}
+                  className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                    actualitesGenerales.length <= 1 
+                      ? 'bg-gray-100 text-gray-300 cursor-not-allowed' 
+                      : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 shadow-sm'
+                  }`}
+                  title="Actualité précédente"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                
+                {/* Carte Actualité */}
+                <div className="flex-1 min-w-0">
+                  {actualitesGenerales[currentGeneralIndex] && (
+                    <div 
+                      className={`relative ${estNonLue(actualitesGenerales[currentGeneralIndex].id) ? 'ring-2 ring-blue-400 ring-offset-2 rounded-lg' : ''}`}
+                      onClick={() => marquerCommeLue(actualitesGenerales[currentGeneralIndex].id)}
+                    >
+                      {estNonLue(actualitesGenerales[currentGeneralIndex].id) && (
+                        <div className="absolute -top-2 -right-2 z-10">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-500 text-white shadow-lg">
+                            NOUVEAU
+                          </span>
+                        </div>
+                      )}
+                      <ActualiteCard actu={actualitesGenerales[currentGeneralIndex]} />
+                    </div>
+                  )}
+                </div>
+                
+                {/* Bouton Suivant */}
+                <button
+                  onClick={() => {
+                    const newIndex = currentGeneralIndex < actualitesGenerales.length - 1 ? currentGeneralIndex + 1 : 0;
+                    setCurrentGeneralIndex(newIndex);
+                  }}
+                  disabled={actualitesGenerales.length <= 1}
+                  className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                    actualitesGenerales.length <= 1 
+                      ? 'bg-gray-100 text-gray-300 cursor-not-allowed' 
+                      : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 shadow-sm'
+                  }`}
+                  title="Actualité suivante"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </div>
+              
+              {/* Points de navigation (dots) */}
+              {actualitesGenerales.length > 1 && actualitesGenerales.length <= 10 && (
+                <div className="flex justify-center gap-1.5 mt-3">
+                  {actualitesGenerales.map((actu, idx) => (
+                    <button
+                      key={actu.id}
+                      onClick={() => {
+                        setCurrentGeneralIndex(idx);
+                        marquerCommeLue(actu.id);
+                      }}
+                      className={`relative w-2.5 h-2.5 rounded-full transition-all ${
+                        idx === currentGeneralIndex 
+                          ? 'bg-[#0091B9] w-6' 
+                          : estNonLue(actu.id) 
+                            ? 'bg-blue-400 animate-pulse' 
+                            : 'bg-gray-300 hover:bg-gray-400'
+                      }`}
+                      title={`${actu.titre}${estNonLue(actu.id) ? ' (Non lue)' : ''}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
 
+        {/* Colonne Actualités Ciblées */}
         <div className="news-card">
           <div className="news-card-header">
             <div className={`news-card-icon ${user?.role === 'Médecin' ? 'general' : 'targeted'}`}>
@@ -580,20 +672,22 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
             <h2 className="news-card-title">
               Actualités {isAdmin ? 'Ciblées' : `pour les ${user?.role}s`}
             </h2>
+            {!isAdmin && actualitesPourMonGroupe.length > 0 && (
+              <span className="ml-auto text-sm font-medium text-gray-500">
+                {currentCibleIndex + 1} / {actualitesPourMonGroupe.length}
+              </span>
+            )}
           </div>
           
           {isAdmin ? (
+            /* Vue Admin : affiche toutes les actualités ciblées par groupe */
             <div className="space-y-4">
               {['Médecin', 'Assistant', 'Secrétaire'].map(role => {
-                // Filtrer les actualités qui ciblent ce rôle (ancien ou nouveau format)
                 const actusRole = (actualites || []).filter(a => {
-                  // Exclure les actualités générales
                   if (isActualiteGenerale(a)) return false;
-                  // Nouveau format : groupes_cibles
                   if (a.groupes_cibles && Array.isArray(a.groupes_cibles)) {
                     return a.groupes_cibles.includes(role);
                   }
-                  // Ancien format : groupe_cible
                   return a.groupe_cible === role;
                 });
                 if (actusRole.length === 0) return null;
@@ -604,6 +698,7 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
                         role === 'Médecin' ? 'bg-blue-500' : role === 'Assistant' ? 'bg-emerald-500' : 'bg-purple-500'
                       }`}></span>
                       Pour les {role}s
+                      <span className="ml-auto text-xs text-gray-400">({actusRole.length})</span>
                     </h3>
                     <div className="space-y-2">
                       {actusRole.map(actu => <ActualiteCard key={actu.id} actu={actu} />)}
@@ -613,16 +708,104 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
               })}
             </div>
           ) : (
+            /* Vue Employé : carrousel pour ses actualités ciblées */
             actualitesPourMonGroupe.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-state-icon">📭</div>
                 <p className="empty-state-text">Aucune actualité pour les {user?.role}s</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {actualitesPourMonGroupe.map((actu) => (
-                  <ActualiteCard key={actu.id} actu={actu} />
-                ))}
+              <div className="relative">
+                {/* Indicateur actualités non lues */}
+                {actualitesPourMonGroupe.filter(a => estNonLue(a.id)).length > 0 && (
+                  <div className="mb-3 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center w-6 h-6 bg-emerald-500 text-white text-xs font-bold rounded-full animate-pulse">
+                      {actualitesPourMonGroupe.filter(a => estNonLue(a.id)).length}
+                    </span>
+                    <span className="text-sm text-emerald-700 font-medium">
+                      actualité{actualitesPourMonGroupe.filter(a => estNonLue(a.id)).length > 1 ? 's' : ''} non lue{actualitesPourMonGroupe.filter(a => estNonLue(a.id)).length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Navigation et Carte */}
+                <div className="flex items-center gap-2">
+                  {/* Bouton Précédent */}
+                  <button
+                    onClick={() => {
+                      const newIndex = currentCibleIndex > 0 ? currentCibleIndex - 1 : actualitesPourMonGroupe.length - 1;
+                      setCurrentCibleIndex(newIndex);
+                    }}
+                    disabled={actualitesPourMonGroupe.length <= 1}
+                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                      actualitesPourMonGroupe.length <= 1 
+                        ? 'bg-gray-100 text-gray-300 cursor-not-allowed' 
+                        : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 shadow-sm'
+                    }`}
+                    title="Actualité précédente"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  
+                  {/* Carte Actualité */}
+                  <div className="flex-1 min-w-0">
+                    {actualitesPourMonGroupe[currentCibleIndex] && (
+                      <div 
+                        className={`relative ${estNonLue(actualitesPourMonGroupe[currentCibleIndex].id) ? 'ring-2 ring-emerald-400 ring-offset-2 rounded-lg' : ''}`}
+                        onClick={() => marquerCommeLue(actualitesPourMonGroupe[currentCibleIndex].id)}
+                      >
+                        {estNonLue(actualitesPourMonGroupe[currentCibleIndex].id) && (
+                          <div className="absolute -top-2 -right-2 z-10">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500 text-white shadow-lg">
+                              NOUVEAU
+                            </span>
+                          </div>
+                        )}
+                        <ActualiteCard actu={actualitesPourMonGroupe[currentCibleIndex]} />
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Bouton Suivant */}
+                  <button
+                    onClick={() => {
+                      const newIndex = currentCibleIndex < actualitesPourMonGroupe.length - 1 ? currentCibleIndex + 1 : 0;
+                      setCurrentCibleIndex(newIndex);
+                    }}
+                    disabled={actualitesPourMonGroupe.length <= 1}
+                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                      actualitesPourMonGroupe.length <= 1 
+                        ? 'bg-gray-100 text-gray-300 cursor-not-allowed' 
+                        : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 shadow-sm'
+                    }`}
+                    title="Actualité suivante"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </div>
+                
+                {/* Points de navigation (dots) */}
+                {actualitesPourMonGroupe.length > 1 && actualitesPourMonGroupe.length <= 10 && (
+                  <div className="flex justify-center gap-1.5 mt-3">
+                    {actualitesPourMonGroupe.map((actu, idx) => (
+                      <button
+                        key={actu.id}
+                        onClick={() => {
+                          setCurrentCibleIndex(idx);
+                          marquerCommeLue(actu.id);
+                        }}
+                        className={`relative w-2.5 h-2.5 rounded-full transition-all ${
+                          idx === currentCibleIndex 
+                            ? 'bg-emerald-500 w-6' 
+                            : estNonLue(actu.id) 
+                              ? 'bg-emerald-400 animate-pulse' 
+                              : 'bg-gray-300 hover:bg-gray-400'
+                        }`}
+                        title={`${actu.titre}${estNonLue(actu.id) ? ' (Non lue)' : ''}`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )
           )}
