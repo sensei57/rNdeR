@@ -442,6 +442,8 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
           <div className="news-card-header">
             <div className="news-card-icon general">📢</div>
             <h2 className="news-card-title">Actualités Générales</h2>
+            {/* Debug: afficher le nombre total */}
+            <span className="text-xs text-gray-400 ml-2">({actualites.length} total, {actualitesGenerales.length} générales)</span>
           </div>
           
           {actualitesGenerales.length === 0 ? (
