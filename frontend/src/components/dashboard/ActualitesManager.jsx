@@ -124,13 +124,18 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
         await axios.put(`${API}/actualites/${editingActualite.id}`, newActualite);
         toast.success('Actualité modifiée');
       } else {
-        await axios.post(`${API}/actualites`, newActualite);
+        const response = await axios.post(`${API}/actualites`, newActualite);
+        console.log('[ActualitesManager] Actualité créée:', response.data);
         toast.success('Actualité créée');
       }
       setShowModal(false);
       resetForm();
-      fetchData();
+      // Forcer le rechargement après un court délai
+      setTimeout(() => {
+        fetchData();
+      }, 500);
     } catch (error) {
+      console.error('[ActualitesManager] Erreur création:', error);
       toast.error('Erreur lors de la sauvegarde');
     }
   };
