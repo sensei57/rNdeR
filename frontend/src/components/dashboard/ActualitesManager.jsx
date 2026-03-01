@@ -14,6 +14,9 @@ import { Switch } from '../ui/switch';
 const API = process.env.REACT_APP_BACKEND_URL + '/api';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
+// Debug: afficher l'URL de l'API au chargement
+console.log('[ActualitesManager] API URL:', API, 'BACKEND_URL:', BACKEND_URL);
+
 const getPhotoUrl = (photoUrl) => {
   if (!photoUrl) return null;
   if (photoUrl.startsWith('/api')) {
