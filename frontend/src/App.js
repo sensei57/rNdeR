@@ -9829,7 +9829,7 @@ const PlanningManager = () => {
                     return (
                       <tr key={secretaire.id} className="hover:bg-pink-50">
                         <td 
-                          className="border p-1 font-medium text-xs max-w-[100px] overflow-hidden"
+                          className="border p-1 font-medium text-xs col-employe overflow-hidden"
                         >
                           <span 
                             className="cursor-pointer hover:bg-pink-200 px-1 rounded block truncate"
