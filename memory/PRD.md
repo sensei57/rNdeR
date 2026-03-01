@@ -142,4 +142,8 @@ Application full-stack de gestion de cabinet médical multi-centres permettant l
 
 ## Dernière Mise à Jour
 - Date: 1er Mars 2026
-- Session: Vérification migration données, suppression script doublon
+- Session: Implémentation du carrousel pour les actualités (navigation, compteur, indicateurs non-lus)
+
+## Historique des Sessions
+- **1er Mars 2026**: Ajout du système de carrousel pour les actualités avec navigation et indicateurs
+- **Sessions précédentes**: Migration Firebase Storage, scission des congés, corrections bugs API
