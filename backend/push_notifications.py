@@ -320,6 +320,79 @@ async def send_push_to_multiple(fcm_tokens: list, title: str, body: str, data: d
 # Cela évite de bloquer le démarrage du serveur
 
 
+# ==================== COMPRESSION D'IMAGES ====================
+
+def compress_image(image_data: bytes, max_size_kb: int = 300, max_dimension: int = 1920) -> tuple:
+    """
+    Compresse une image pour qu'elle ne dépasse pas max_size_kb.
+    
+    Args:
+        image_data: Données de l'image en bytes
+        max_size_kb: Taille maximale en KB (défaut: 300KB)
+        max_dimension: Dimension maximale (largeur ou hauteur) en pixels
+    
+    Returns:
+        tuple (compressed_data: bytes, content_type: str)
+    """
+    from PIL import Image
+    import io
+    
+    try:
+        # Ouvrir l'image
+        img = Image.open(io.BytesIO(image_data))
+        
+        # Convertir en RGB si nécessaire (pour JPEG)
+        if img.mode in ('RGBA', 'LA', 'P'):
+            # Créer un fond blanc pour les images avec transparence
+            background = Image.new('RGB', img.size, (255, 255, 255))
+            if img.mode == 'P':
+                img = img.convert('RGBA')
+            background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+            img = background
+        elif img.mode != 'RGB':
+            img = img.convert('RGB')
+        
+        # Redimensionner si trop grand
+        original_size = img.size
+        if max(img.size) > max_dimension:
+            ratio = max_dimension / max(img.size)
+            new_size = (int(img.size[0] * ratio), int(img.size[1] * ratio))
+            img = img.resize(new_size, Image.Resampling.LANCZOS)
+            logger.info(f"📐 Image redimensionnée: {original_size} -> {img.size}")
+        
+        # Compresser progressivement jusqu'à atteindre la taille cible
+        quality = 85
+        max_size_bytes = max_size_kb * 1024
+        
+        while quality >= 20:
+            output = io.BytesIO()
+            img.save(output, format='JPEG', quality=quality, optimize=True)
+            compressed_data = output.getvalue()
+            
+            if len(compressed_data) <= max_size_bytes:
+                logger.info(f"✅ Image compressée: {len(image_data)/1024:.1f}KB -> {len(compressed_data)/1024:.1f}KB (qualité: {quality}%)")
+                return compressed_data, 'image/jpeg'
+            
+            quality -= 10
+        
+        # Si toujours trop grand, réduire encore les dimensions
+        while len(compressed_data) > max_size_bytes and min(img.size) > 200:
+            new_size = (int(img.size[0] * 0.8), int(img.size[1] * 0.8))
+            img = img.resize(new_size, Image.Resampling.LANCZOS)
+            
+            output = io.BytesIO()
+            img.save(output, format='JPEG', quality=60, optimize=True)
+            compressed_data = output.getvalue()
+        
+        logger.info(f"✅ Image compressée (final): {len(image_data)/1024:.1f}KB -> {len(compressed_data)/1024:.1f}KB")
+        return compressed_data, 'image/jpeg'
+        
+    except Exception as e:
+        logger.error(f"❌ Erreur compression image: {e}")
+        # Retourner l'image originale en cas d'erreur
+        return image_data, 'image/jpeg'
+
+
 # ==================== FIREBASE STORAGE ====================
 
 def get_storage_bucket():
