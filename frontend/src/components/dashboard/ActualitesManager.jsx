@@ -11,8 +11,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Switch } from '../ui/switch';
 
-const API = process.env.REACT_APP_BACKEND_URL + '/api';
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || (
+  window.location.hostname.includes('test') 
+    ? 'https://ope-francis-test.onrender.com' 
+    : 'https://ope-francis.onrender.com'
+);
+const API = BACKEND_URL + '/api';
 
 // Debug: afficher l'URL de l'API au chargement
 console.log('[ActualitesManager] API URL:', API, 'BACKEND_URL:', BACKEND_URL);
