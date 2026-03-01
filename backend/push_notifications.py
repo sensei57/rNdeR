@@ -14,7 +14,16 @@ import time
 import uuid
 from datetime import datetime, timezone
 import firebase_admin
-from firebase_admin import credentials, messaging, storage
+from firebase_admin import credentials, messaging
+
+# Import conditionnel de storage pour éviter les erreurs si google-cloud-storage n'est pas installé
+try:
+    from firebase_admin import storage
+    STORAGE_AVAILABLE = True
+except ImportError as e:
+    print(f"⚠️ Firebase Storage non disponible: {e}")
+    storage = None
+    STORAGE_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
