@@ -573,15 +573,68 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
 
               <div className="space-y-2">
                 <Label>Diffuser à</Label>
-                <Select value={newActualite.groupe_cible} onValueChange={(v) => setNewActualite({...newActualite, groupe_cible: v})}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="tous">📢 Tout le monde</SelectItem>
-                    <SelectItem value="Médecin">👨‍⚕️ Médecins</SelectItem>
-                    <SelectItem value="Assistant">👥 Assistants</SelectItem>
-                    <SelectItem value="Secrétaire">📋 Secrétaires</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="border rounded-lg p-3 space-y-2 bg-gray-50">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-gray-600">
+                      {newActualite.groupes_cibles.length === TOUS_LES_GROUPES.length 
+                        ? '📢 Actualité Générale (tous)' 
+                        : `🎯 Actualité Ciblée (${newActualite.groupes_cibles.length} groupe${newActualite.groupes_cibles.length > 1 ? 's' : ''})`
+                      }
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        if (newActualite.groupes_cibles.length === TOUS_LES_GROUPES.length) {
+                          setNewActualite({...newActualite, groupes_cibles: []});
+                        } else {
+                          setNewActualite({...newActualite, groupes_cibles: [...TOUS_LES_GROUPES]});
+                        }
+                      }}
+                    >
+                      {newActualite.groupes_cibles.length === TOUS_LES_GROUPES.length ? 'Désélectionner tout' : 'Sélectionner tout'}
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { value: 'Médecin', label: '👨‍⚕️ Médecins', color: 'blue' },
+                      { value: 'Assistant', label: '👥 Assistants', color: 'green' },
+                      { value: 'Secrétaire', label: '📋 Secrétaires', color: 'purple' }
+                    ].map(({ value, label, color }) => {
+                      const isSelected = newActualite.groupes_cibles.includes(value);
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => {
+                            if (isSelected) {
+                              setNewActualite({
+                                ...newActualite, 
+                                groupes_cibles: newActualite.groupes_cibles.filter(g => g !== value)
+                              });
+                            } else {
+                              setNewActualite({
+                                ...newActualite, 
+                                groupes_cibles: [...newActualite.groupes_cibles, value]
+                              });
+                            }
+                          }}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                            isSelected 
+                              ? `bg-${color}-100 text-${color}-700 border-2 border-${color}-400 shadow-sm` 
+                              : 'bg-white text-gray-500 border border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          {isSelected && '✓ '}{label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {newActualite.groupes_cibles.length === 0 && (
+                    <p className="text-xs text-red-500 mt-1">⚠️ Sélectionnez au moins un groupe</p>
+                  )}
+                </div>
               </div>
 
               {/* Zone Image (optionnelle) */}
