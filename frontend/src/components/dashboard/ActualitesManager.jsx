@@ -186,14 +186,28 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
     }
   };
 
+  // Désactiver une actualité (soft delete - garde les fichiers)
   const handleDeleteActualite = async (id) => {
-    if (!window.confirm('Supprimer cette actualité ?')) return;
+    if (!window.confirm('Masquer cette actualité ? (Elle pourra être réactivée plus tard)')) return;
     try {
       await axios.delete(`${API}/actualites/${id}`);
-      toast.success('Actualité supprimée');
+      toast.success('Actualité masquée');
       fetchData();
     } catch (error) {
       toast.error('Erreur lors de la suppression');
+    }
+  };
+
+  // Supprimer définitivement une actualité ET ses fichiers
+  const handleDeleteActualitePermanent = async (id, titre) => {
+    if (!window.confirm(`⚠️ ATTENTION: Supprimer définitivement "${titre}" ?\n\nCette action est IRRÉVERSIBLE.\nL'actualité et ses fichiers (images, documents) seront supprimés de manière permanente.`)) return;
+    try {
+      const response = await axios.delete(`${API}/actualites/${id}/permanent`);
+      toast.success(`Actualité supprimée définitivement${response.data.fichiers_supprimes?.length > 0 ? ` (${response.data.fichiers_supprimes.join(', ')} supprimé(s))` : ''}`);
+      fetchData();
+    } catch (error) {
+      console.error('Erreur suppression:', error);
+      toast.error(error.response?.data?.detail || 'Erreur lors de la suppression');
     }
   };
 
