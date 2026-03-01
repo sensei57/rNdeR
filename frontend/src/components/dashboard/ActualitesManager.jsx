@@ -27,7 +27,10 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
   const [anniversaires, setAnniversaires] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showSignaturesModal, setShowSignaturesModal] = useState(false);
+  const [selectedActualiteSignatures, setSelectedActualiteSignatures] = useState(null);
   const [editingActualite, setEditingActualite] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [newActualite, setNewActualite] = useState({
     titre: '',
     contenu: '',
@@ -35,7 +38,8 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
     fichier_url: '',
     fichier_nom: '',
     groupe_cible: 'tous',
-    priorite: 0
+    priorite: 0,
+    signature_requise: false
   });
 
   const fetchData = useCallback(async () => {
