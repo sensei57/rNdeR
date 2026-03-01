@@ -366,10 +366,13 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
                     <Eye className="h-3 w-3" />
                   </Button>
                 )}
-                <Button size="sm" variant="ghost" onClick={() => openEditModal(actu)} className="h-7 w-7 p-0">
+                <Button size="sm" variant="ghost" onClick={() => openEditModal(actu)} className="h-7 w-7 p-0" title="Modifier">
                   <Edit className="h-3 w-3" />
                 </Button>
-                <Button size="sm" variant="ghost" className="text-red-600 h-7 w-7 p-0" onClick={() => handleDeleteActualite(actu.id)}>
+                <Button size="sm" variant="ghost" className="text-orange-500 h-7 w-7 p-0" onClick={() => handleDeleteActualite(actu.id)} title="Masquer">
+                  <X className="h-3 w-3" />
+                </Button>
+                <Button size="sm" variant="ghost" className="text-red-600 h-7 w-7 p-0" onClick={() => handleDeleteActualitePermanent(actu.id, actu.titre)} title="Supprimer définitivement">
                   <Trash2 className="h-3 w-3" />
                 </Button>
               </div>
