@@ -1454,6 +1454,7 @@ async def subscribe_to_notifications(
     try:
         fcm_token = subscription_data.get("token")
         device_info = subscription_data.get("device_info", {})
+        centre_id = subscription_data.get("centre_id")
         
         if not fcm_token:
             raise HTTPException(status_code=400, detail="Token FCM manquant")
@@ -1462,7 +1463,7 @@ async def subscribe_to_notifications(
         import hashlib
         device_id = hashlib.md5(fcm_token.encode()).hexdigest()[:12]
         
-        # Construire les infos appareil
+        # Construire les infos appareil avec le centre
         device_data = {
             "device_id": device_id,
             "fcm_token": fcm_token,
@@ -1471,6 +1472,7 @@ async def subscribe_to_notifications(
             "device_name": device_info.get("deviceName", "Appareil inconnu"),
             "browser": device_info.get("browser", "Inconnu"),
             "os": device_info.get("os", "Inconnu"),
+            "centre_id": centre_id,
             "registered_at": datetime.now(timezone.utc).isoformat(),
             "last_used": datetime.now(timezone.utc).isoformat()
         }
