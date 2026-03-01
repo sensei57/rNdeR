@@ -190,7 +190,7 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
       image_nom: '',
       fichier_url: '',
       fichier_nom: '',
-      groupe_cible: 'tous',
+      groupes_cibles: [...TOUS_LES_GROUPES], // Tous sélectionnés par défaut
       priorite: 0,
       signature_requise: false
     });
@@ -199,6 +199,13 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
 
   const openEditModal = (actu) => {
     setEditingActualite(actu);
+    // Convertir l'ancien format vers le nouveau
+    let groupes = [...TOUS_LES_GROUPES];
+    if (actu.groupes_cibles && Array.isArray(actu.groupes_cibles)) {
+      groupes = actu.groupes_cibles;
+    } else if (actu.groupe_cible && actu.groupe_cible !== 'tous') {
+      groupes = [actu.groupe_cible];
+    }
     setNewActualite({
       titre: actu.titre,
       contenu: actu.contenu,
@@ -206,7 +213,7 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
       image_nom: actu.image_nom || '',
       fichier_url: actu.fichier_url || '',
       fichier_nom: actu.fichier_nom || '',
-      groupe_cible: actu.groupe_cible || 'tous',
+      groupes_cibles: groupes,
       priorite: actu.priorite || 0,
       signature_requise: actu.signature_requise || false
     });
