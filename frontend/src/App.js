@@ -1490,14 +1490,15 @@ const PushNotificationManager = () => {
           const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
           console.log('Service Worker enregistré:', registration);
           
-          // Obtenir le token sans VAPID key (utilise la configuration Firebase)
+          // Obtenir le token avec la VAPID key
           token = await getToken(messaging, {
+            vapidKey: 'BLDFCJN6pePvpIaVCTQtAhcwNhlusiMzFjPDdzll12vBWZcvkYJ4Bc60R9RSBcTx-hpqwT3ngTWn4lgVh4qQS-E',
             serviceWorkerRegistration: registration
           });
-          console.log('Token FCM obtenu:', token ? token.substring(0, 20) + '...' : 'null');
+          console.log('✅ Token FCM obtenu:', token ? token.substring(0, 20) + '...' : 'null');
         }
       } catch (firebaseError) {
-        console.warn('Erreur Firebase, utilisation du mode local:', firebaseError.message);
+        console.error('❌ Erreur Firebase:', firebaseError.message);
         // Générer un token local unique pour cet appareil
         token = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       }
