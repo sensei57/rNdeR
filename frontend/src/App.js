@@ -1612,23 +1612,60 @@ const PushNotificationManager = () => {
 
   if (permission === 'granted' && subscribed) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded p-3 text-sm">
+      <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Bell className="h-4 w-4 text-green-600" />
-            <span className="text-green-800">Notifications Firebase activées ✓</span>
+            <Bell className="h-5 w-5 text-green-600" />
+            <span className="text-green-800 font-medium">Notifications activées ✓</span>
           </div>
-          <Button 
-            onClick={testNotification} 
-            size="sm" 
-            variant="outline"
-            className="text-xs"
-          >
-            Test
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button 
+              onClick={testNotification} 
+              size="sm" 
+              variant="outline"
+              className="text-xs"
+            >
+              Test
+            </Button>
+          </div>
         </div>
+        
         {/* Liste des appareils */}
         <DevicesList />
+        
+        {/* Boutons d'action */}
+        <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-green-200">
+          <Button 
+            onClick={subscribeToPush} 
+            size="sm" 
+            variant="outline"
+            className="flex-1 text-xs border-green-300 text-green-700 hover:bg-green-100"
+          >
+            ➕ Ajouter cet appareil
+          </Button>
+          <Button 
+            onClick={async () => {
+              try {
+                // Désabonner de Firebase
+                const registration = await navigator.serviceWorker.ready;
+                const subscription = await registration.pushManager.getSubscription();
+                if (subscription) {
+                  await subscription.unsubscribe();
+                }
+                setSubscribed(false);
+                toast.success('Notifications désactivées sur cet appareil');
+              } catch (error) {
+                console.error('Erreur désabonnement:', error);
+                toast.error('Erreur lors de la désactivation');
+              }
+            }} 
+            size="sm" 
+            variant="outline"
+            className="flex-1 text-xs border-red-300 text-red-700 hover:bg-red-100"
+          >
+            🔕 Désactiver sur cet appareil
+          </Button>
+        </div>
       </div>
     );
   }
