@@ -293,7 +293,8 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
       setNewActualite(prev => ({
         ...prev,
         fichier_url: response.data.url,
-        fichier_nom: response.data.filename
+        fichier_nom: response.data.filename,
+        fichier_storage_path: response.data.storage_path // Pour suppression future
       }));
       toast.success('Fichier uploadé');
     } catch (error) {
