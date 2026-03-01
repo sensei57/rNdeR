@@ -899,12 +899,12 @@ async def send_notification_to_user(user_id: str, title: str, body: str, data: O
                         body=body,
                         data=data or {}
                     )
-                    if push_result == True:
+                    if push_result is True:
                         push_sent = True
                         print(f"✅ [PUSH] Notification envoyée avec succès à {user_id}")
                     elif push_result == "INVALID_TOKEN":
                         invalid_tokens.append(fcm_token)
-                        print(f"🗑️ [PUSH] Token invalide marqué pour suppression")
+                        print("🗑️ [PUSH] Token invalide marqué pour suppression")
                 
                 # Supprimer les tokens invalides de la base
                 if invalid_tokens:
