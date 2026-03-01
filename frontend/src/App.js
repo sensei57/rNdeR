@@ -12718,18 +12718,49 @@ const PlanCabinetCompact = ({ selectedDate, isDirector, onRefresh, centreActif }
         roleFilter = ['Médecin']; // Les salles d'attente sont pour les médecins
       }
       
+      // Récupérer les médecins présents ce créneau pour afficher leurs initiales
+      const medecinsPresents = planning.filter(p => 
+        p.creneau === creneau && p.employe_role === 'Médecin'
+      );
+      
+      // Créer un map des médecins par ID pour accès rapide
+      const medecinsMap = {};
+      medecinsPresents.forEach(m => {
+        if (m.employe) {
+          medecinsMap[m.employe_id] = m.employe;
+        }
+      });
+      
       const presents = planning.filter(p => 
         p.creneau === creneau && 
         roleFilter.includes(p.employe_role)
-      ).map(p => ({
-        ...p,
-        isAssigned: salle.type_salle === 'ATTENTE' 
-          ? p.salle_attente === salle.nom
-          : p.salle_attribuee === salle.nom,
-        hasAnySalle: salle.type_salle === 'ATTENTE'
-          ? !!p.salle_attente
-          : !!p.salle_attribuee
-      }));
+      ).map(p => {
+        // Pour les assistants, récupérer les initiales des médecins associés
+        let medecinsInitiales = '';
+        if (p.employe_role === 'Assistant' && p.medecin_ids && p.medecin_ids.length > 0) {
+          const initiales = p.medecin_ids
+            .map(medId => {
+              const med = medecinsMap[medId];
+              if (med) {
+                return `${med.prenom?.charAt(0) || ''}${med.nom?.charAt(0) || ''}`.toUpperCase();
+              }
+              return null;
+            })
+            .filter(Boolean);
+          medecinsInitiales = initiales.join(', ');
+        }
+        
+        return {
+          ...p,
+          isAssigned: salle.type_salle === 'ATTENTE' 
+            ? p.salle_attente === salle.nom
+            : p.salle_attribuee === salle.nom,
+          hasAnySalle: salle.type_salle === 'ATTENTE'
+            ? !!p.salle_attente
+            : !!p.salle_attribuee,
+          medecinsInitiales
+        };
+      });
       
       setEmployesPresents(presents);
       setShowAssignModal(true);
