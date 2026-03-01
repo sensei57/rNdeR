@@ -7647,7 +7647,10 @@ firebase_config = {
 
 @api_router.post("/upload/photo")
 async def upload_photo(file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
-    """Upload une photo de profil vers Firebase Storage (compressée à max 300KB)"""
+    """Upload une photo de profil vers Firebase Storage (compressée à max 300KB)
+    
+    Supprime automatiquement l'ancienne photo pour ne garder qu'une seule photo par utilisateur.
+    """
     try:
         content = await file.read()
         
@@ -7656,7 +7659,11 @@ async def upload_photo(file: UploadFile = File(...), current_user: User = Depend
             raise HTTPException(status_code=400, detail="Photo trop volumineuse (max 10MB)")
         
         # Compresser l'image à max 300KB
-        from push_notifications import upload_file_to_firebase, compress_image
+        from push_notifications import upload_file_to_firebase, compress_image, delete_file_from_firebase
+        
+        # Récupérer l'ancienne photo pour la supprimer après
+        user_data = await db.users.find_one({"id": current_user.id})
+        old_photo_storage_path = user_data.get("photo_storage_path") if user_data else None
         
         file_ext = file.filename.split('.')[-1].lower() if '.' in file.filename else 'jpg'
         if file_ext in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
@@ -7668,6 +7675,7 @@ async def upload_photo(file: UploadFile = File(...), current_user: User = Depend
             content_type = file.content_type
             filename = file.filename
         
+        # Upload la nouvelle photo
         result = upload_file_to_firebase(
             file_data=compressed_data,
             filename=filename,
@@ -7675,7 +7683,24 @@ async def upload_photo(file: UploadFile = File(...), current_user: User = Depend
             folder="photos"
         )
         
-        return {"url": result["url"], "filename": result["filename"]}
+        # Mettre à jour l'utilisateur avec la nouvelle photo ET le storage_path
+        await db.users.update_one(
+            {"id": current_user.id},
+            {"$set": {
+                "photo_url": result["url"],
+                "photo_storage_path": result["storage_path"]
+            }}
+        )
+        
+        # Supprimer l'ancienne photo de Firebase Storage
+        if old_photo_storage_path:
+            try:
+                delete_file_from_firebase(old_photo_storage_path)
+                print(f"✅ Ancienne photo supprimée: {old_photo_storage_path}")
+            except Exception as e:
+                print(f"⚠️ Impossible de supprimer l'ancienne photo: {e}")
+        
+        return {"url": result["url"], "filename": result["filename"], "storage_path": result["storage_path"]}
         
     except HTTPException:
         raise
