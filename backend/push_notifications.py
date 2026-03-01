@@ -222,6 +222,27 @@ async def send_push_to_multiple(fcm_tokens: list, title: str, body: str, data: d
         return 0
     
     try:
+        # Récupérer l'URL frontend pour le lien de la notification
+        frontend_url = os.environ.get('FRONTEND_URL', '').strip()
+        
+        # Construire la config webpush
+        webpush_notification_config = messaging.WebpushNotification(
+            icon='/icon-192.png',
+            badge='/icon-192.png',
+            require_interaction=True,
+            vibrate=[200, 100, 200]
+        )
+        
+        webpush_config_args = {
+            "notification": webpush_notification_config
+        }
+        
+        # Ajouter le lien seulement si FRONTEND_URL est configuré avec HTTPS
+        if frontend_url and frontend_url.startswith('https://'):
+            webpush_config_args["fcm_options"] = messaging.WebpushFCMOptions(
+                link=frontend_url
+            )
+        
         # Construire le message multicast
         message = messaging.MulticastMessage(
             notification=messaging.Notification(
@@ -230,14 +251,7 @@ async def send_push_to_multiple(fcm_tokens: list, title: str, body: str, data: d
             ),
             data={k: str(v) for k, v in (data or {}).items()},
             tokens=fcm_tokens,
-            webpush=messaging.WebpushConfig(
-                notification=messaging.WebpushNotification(
-                    icon='/icon-192.png',
-                    badge='/icon-192.png',
-                    require_interaction=True,
-                    vibrate=[200, 100, 200]
-                )
-            )
+            webpush=messaging.WebpushConfig(**webpush_config_args)
         )
         
         # Envoyer les notifications
