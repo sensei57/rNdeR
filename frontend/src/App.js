@@ -1391,20 +1391,43 @@ const NotificationToday = () => {
 
 // Push Notification Manager Component
 const PushNotificationManager = () => {
-  const { user } = useAuth();
+  const { user, centreActif } = useAuth();
   const [permission, setPermission] = useState(typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default');
   const [subscribed, setSubscribed] = useState(false);
+  const [devices, setDevices] = useState([]);
+  const [loadingDevices, setLoadingDevices] = useState(true);
 
   useEffect(() => {
-    checkSubscription();
+    if (user) {
+      checkSubscription();
+      fetchDevices();
+    }
   }, [user]);
+
+  const fetchDevices = async () => {
+    try {
+      setLoadingDevices(true);
+      const response = await axios.get(`${API}/notifications/devices`);
+      setDevices(response.data || []);
+      // Si l'utilisateur a des appareils, il est considéré comme abonné
+      if (response.data && response.data.length > 0) {
+        setSubscribed(true);
+      }
+    } catch (error) {
+      console.error('Erreur chargement appareils:', error);
+    } finally {
+      setLoadingDevices(false);
+    }
+  };
 
   const checkSubscription = async () => {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       try {
         const registration = await navigator.serviceWorker.ready;
         const subscription = await registration.pushManager.getSubscription();
-        setSubscribed(!!subscription);
+        if (subscription) {
+          setSubscribed(true);
+        }
       } catch (error) {
         console.error('Erreur lors de la vérification de l\'abonnement:', error);
       }
