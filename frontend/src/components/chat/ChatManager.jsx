@@ -8,8 +8,12 @@ import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 
-const API = process.env.REACT_APP_BACKEND_URL + '/api';
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || (
+  window.location.hostname.includes('test') 
+    ? 'https://ope-francis-test.onrender.com' 
+    : 'https://ope-francis.onrender.com'
+);
+const API = BACKEND_URL + '/api';
 
 const getPhotoUrl = (photoUrl) => {
   if (!photoUrl) return null;

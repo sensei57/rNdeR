@@ -12,7 +12,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Textarea } from '../ui/textarea';
 
-const API = process.env.REACT_APP_BACKEND_URL + '/api';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || (
+  window.location.hostname.includes('test') 
+    ? 'https://ope-francis-test.onrender.com' 
+    : 'https://ope-francis.onrender.com'
+);
+const API = BACKEND_URL + '/api';
 
 const CongeManager = ({ user }) => {
   const [demandes, setDemandes] = useState([]);
