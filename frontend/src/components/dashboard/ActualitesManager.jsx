@@ -34,7 +34,8 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
   const [newActualite, setNewActualite] = useState({
     titre: '',
     contenu: '',
-    type_contenu: 'texte',
+    image_url: '',
+    image_nom: '',
     fichier_url: '',
     fichier_nom: '',
     groupe_cible: 'tous',
