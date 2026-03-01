@@ -404,7 +404,13 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
               )}
               {isAdmin && actu.signatures?.length > 0 && (
                 <div className="mt-2 text-xs text-gray-500">
-                  {actu.signatures.length} signature(s) sur {actu.groupe_cible === 'tous' ? 'tous les employés' : `les ${actu.groupe_cible}s`}
+                  {actu.signatures.length} signature(s) sur {
+                    isActualiteGenerale(actu) 
+                      ? 'tous les employés' 
+                      : actu.groupes_cibles && Array.isArray(actu.groupes_cibles) && actu.groupes_cibles.length > 1
+                        ? `les ${actu.groupes_cibles.join('s, ')}s`
+                        : `les ${actu.groupe_cible || actu.groupes_cibles?.[0]}s`
+                  }
                 </div>
               )}
             </div>
