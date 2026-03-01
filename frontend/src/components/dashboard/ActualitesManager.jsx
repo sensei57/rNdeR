@@ -117,8 +117,30 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
     return dansLaSemaine.length > 0 ? dansLaSemaine : [anniversaires[0]];
   };
 
-  const actualitesGenerales = (actualites || []).filter(a => a.groupe_cible === 'tous' || !a.groupe_cible);
-  const actualitesPourMonGroupe = (actualites || []).filter(a => a.groupe_cible === user?.role);
+  // Une actualité est "générale" si elle cible tous les groupes ou si groupe_cible === 'tous'
+  const isActualiteGenerale = (actu) => {
+    // Ancien format: groupe_cible === 'tous'
+    if (actu.groupe_cible === 'tous' || !actu.groupe_cible) return true;
+    // Nouveau format: groupes_cibles contient tous les groupes
+    if (actu.groupes_cibles && Array.isArray(actu.groupes_cibles)) {
+      return TOUS_LES_GROUPES.every(g => actu.groupes_cibles.includes(g));
+    }
+    return false;
+  };
+  
+  // Une actualité est "pour mon groupe" si elle cible spécifiquement mon rôle
+  const isActualitePourMonGroupe = (actu) => {
+    // Ancien format
+    if (actu.groupe_cible === user?.role) return true;
+    // Nouveau format
+    if (actu.groupes_cibles && Array.isArray(actu.groupes_cibles)) {
+      return actu.groupes_cibles.includes(user?.role) && !isActualiteGenerale(actu);
+    }
+    return false;
+  };
+  
+  const actualitesGenerales = (actualites || []).filter(isActualiteGenerale);
+  const actualitesPourMonGroupe = (actualites || []).filter(isActualitePourMonGroupe);
 
   const handleCreateActualite = async (e) => {
     e.preventDefault();
