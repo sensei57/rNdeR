@@ -7100,13 +7100,41 @@ async def get_anniversaires(current_user: User = Depends(get_current_user)):
             user_centres.append(current_user.centre_id)
         centre_actif = user_centres[0] if user_centres else None
     
+    is_admin = current_user.role in ['Directeur', 'Super-Admin']
+    
     # Construire la requête avec filtrage par centre
-    query = {"actif": True, "date_naissance": {"$ne": None}}
     if centre_actif:
-        query["$or"] = [
-            {"centre_id": centre_actif},
-            {"centre_ids": centre_actif}
-        ]
+        if is_admin:
+            # Les admins voient aussi les utilisateurs sans centre défini
+            query = {
+                "$and": [
+                    {"actif": True},
+                    {"date_naissance": {"$ne": None}},
+                    {"$or": [
+                        {"centre_id": centre_actif},
+                        {"centre_ids": centre_actif},
+                        {"centre_id": None},
+                        {"centre_id": {"$exists": False}}
+                    ]}
+                ]
+            }
+        else:
+            query = {
+                "$and": [
+                    {"actif": True},
+                    {"date_naissance": {"$ne": None}},
+                    {"$or": [
+                        {"centre_id": centre_actif},
+                        {"centre_ids": centre_actif}
+                    ]}
+                ]
+            }
+    else:
+        # Pas de centre actif - retourner tous les anniversaires (pour les admins)
+        if is_admin:
+            query = {"actif": True, "date_naissance": {"$ne": None}}
+        else:
+            return []
     
     users = await db.users.find(query).to_list(1000)
     
