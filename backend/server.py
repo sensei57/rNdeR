@@ -3278,6 +3278,250 @@ async def modifier_type_conge(
     
     return {"message": f"Type de congé modifié en '{nouveau_type}'"}
 
+
+# Modèle pour la scission de congé
+class ScissionCongeRequest(BaseModel):
+    date_a_modifier: str  # Date spécifique à modifier (YYYY-MM-DD)
+    creneau: Optional[str] = "JOURNEE_COMPLETE"  # MATIN, APRES_MIDI, ou JOURNEE_COMPLETE
+    nouveau_type: Optional[str] = None  # Nouveau type de congé (None = supprimer ce jour du congé)
+    creer_creneau_travail: bool = False  # Si True, créer un créneau de travail à la place
+
+@api_router.put("/conges/{demande_id}/scinder")
+async def scinder_conge(
+    demande_id: str,
+    request: ScissionCongeRequest,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"], ROLES["SUPER_ADMIN"]]))
+):
+    """
+    Scinder un congé multi-jours pour modifier un jour spécifique.
+    
+    Cas d'usage:
+    - Congé du 6 au 8 mars: On veut mettre le 6 en jour de travail
+      → Scinder en: congé 7-8 mars, et optionnellement créer un créneau travail le 6
+    - Congé du 6 au 8 mars: On veut changer le 7 matin en repos
+      → Scinder en: congé 6, repos 7 matin, congé 7 AM + 8
+    """
+    demande = await db.demandes_conges.find_one({"id": demande_id})
+    if not demande:
+        raise HTTPException(status_code=404, detail="Demande de congé non trouvée")
+    
+    date_debut = demande["date_debut"]
+    date_fin = demande["date_fin"]
+    date_a_modifier = request.date_a_modifier
+    
+    # Vérifier que la date à modifier est dans la plage du congé
+    if date_a_modifier < date_debut or date_a_modifier > date_fin:
+        raise HTTPException(status_code=400, detail="La date à modifier n'est pas dans la plage du congé")
+    
+    # Si c'est un congé d'un seul jour
+    if date_debut == date_fin:
+        if request.nouveau_type is None:
+            # Supprimer le congé entier
+            await db.demandes_conges.delete_one({"id": demande_id})
+            
+            # Créer un créneau de travail si demandé
+            if request.creer_creneau_travail:
+                creneaux_a_creer = ["MATIN", "APRES_MIDI"] if request.creneau == "JOURNEE_COMPLETE" else [request.creneau]
+                for creneau in creneaux_a_creer:
+                    nouveau_creneau = {
+                        "id": str(uuid.uuid4()),
+                        "date": date_a_modifier,
+                        "creneau": creneau,
+                        "employe_id": demande["utilisateur_id"],
+                        "employe_role": (await db.users.find_one({"id": demande["utilisateur_id"]}))["role"],
+                        "centre_id": demande.get("centre_id"),
+                        "notes": "Converti depuis congé",
+                        "date_creation": datetime.now(timezone.utc)
+                    }
+                    await db.planning.insert_one(nouveau_creneau)
+            
+            return {"message": "Congé supprimé", "action": "deleted", "creneaux_crees": request.creer_creneau_travail}
+        else:
+            # Modifier le type du congé entier
+            await db.demandes_conges.update_one(
+                {"id": demande_id},
+                {"$set": {"type_conge": request.nouveau_type, "date_modification": datetime.now(timezone.utc)}}
+            )
+            return {"message": f"Type de congé modifié en '{request.nouveau_type}'", "action": "modified"}
+    
+    # Congé multi-jours: on doit le scinder
+    from datetime import datetime as dt, timedelta
+    
+    date_obj = dt.strptime(date_a_modifier, "%Y-%m-%d")
+    date_debut_obj = dt.strptime(date_debut, "%Y-%m-%d")
+    date_fin_obj = dt.strptime(date_fin, "%Y-%m-%d")
+    
+    actions_effectuees = []
+    
+    # Cas 1: La date à modifier est au début du congé
+    if date_a_modifier == date_debut:
+        if request.creneau == "JOURNEE_COMPLETE" or request.creneau is None:
+            # Réduire le congé pour commencer le lendemain
+            nouvelle_date_debut = (date_obj + timedelta(days=1)).strftime("%Y-%m-%d")
+            if nouvelle_date_debut <= date_fin:
+                await db.demandes_conges.update_one(
+                    {"id": demande_id},
+                    {"$set": {"date_debut": nouvelle_date_debut, "date_modification": datetime.now(timezone.utc)}}
+                )
+                actions_effectuees.append(f"Congé raccourci: {nouvelle_date_debut} au {date_fin}")
+            else:
+                # Le congé ne fait plus qu'un jour, le supprimer
+                await db.demandes_conges.delete_one({"id": demande_id})
+                actions_effectuees.append("Congé supprimé (plus de jours restants)")
+        else:
+            # On modifie seulement un créneau (matin ou après-midi)
+            # Créer un nouveau congé pour le créneau opposé
+            creneau_oppose = "APRES_MIDI" if request.creneau == "MATIN" else "MATIN"
+            nouveau_conge = {
+                "id": str(uuid.uuid4()),
+                "utilisateur_id": demande["utilisateur_id"],
+                "centre_id": demande.get("centre_id"),
+                "date_debut": date_a_modifier,
+                "date_fin": date_a_modifier,
+                "type_conge": demande["type_conge"],
+                "creneau": creneau_oppose,
+                "motif": f"Issu de la scission du congé {demande_id}",
+                "statut": "APPROUVE",
+                "date_demande": datetime.now(timezone.utc),
+                "approuve_par": current_user.id,
+                "date_approbation": datetime.now(timezone.utc)
+            }
+            await db.demandes_conges.insert_one(nouveau_conge)
+            
+            # Réduire le congé original
+            nouvelle_date_debut = (date_obj + timedelta(days=1)).strftime("%Y-%m-%d")
+            if nouvelle_date_debut <= date_fin:
+                await db.demandes_conges.update_one(
+                    {"id": demande_id},
+                    {"$set": {"date_debut": nouvelle_date_debut, "date_modification": datetime.now(timezone.utc)}}
+                )
+            else:
+                await db.demandes_conges.delete_one({"id": demande_id})
+            
+            actions_effectuees.append(f"Congé {creneau_oppose} créé pour {date_a_modifier}")
+    
+    # Cas 2: La date à modifier est à la fin du congé
+    elif date_a_modifier == date_fin:
+        if request.creneau == "JOURNEE_COMPLETE" or request.creneau is None:
+            # Réduire le congé pour finir la veille
+            nouvelle_date_fin = (date_obj - timedelta(days=1)).strftime("%Y-%m-%d")
+            if nouvelle_date_fin >= date_debut:
+                await db.demandes_conges.update_one(
+                    {"id": demande_id},
+                    {"$set": {"date_fin": nouvelle_date_fin, "date_modification": datetime.now(timezone.utc)}}
+                )
+                actions_effectuees.append(f"Congé raccourci: {date_debut} au {nouvelle_date_fin}")
+            else:
+                await db.demandes_conges.delete_one({"id": demande_id})
+                actions_effectuees.append("Congé supprimé (plus de jours restants)")
+        else:
+            # On modifie seulement un créneau
+            creneau_oppose = "APRES_MIDI" if request.creneau == "MATIN" else "MATIN"
+            nouveau_conge = {
+                "id": str(uuid.uuid4()),
+                "utilisateur_id": demande["utilisateur_id"],
+                "centre_id": demande.get("centre_id"),
+                "date_debut": date_a_modifier,
+                "date_fin": date_a_modifier,
+                "type_conge": demande["type_conge"],
+                "creneau": creneau_oppose,
+                "motif": f"Issu de la scission du congé {demande_id}",
+                "statut": "APPROUVE",
+                "date_demande": datetime.now(timezone.utc),
+                "approuve_par": current_user.id,
+                "date_approbation": datetime.now(timezone.utc)
+            }
+            await db.demandes_conges.insert_one(nouveau_conge)
+            
+            nouvelle_date_fin = (date_obj - timedelta(days=1)).strftime("%Y-%m-%d")
+            if nouvelle_date_fin >= date_debut:
+                await db.demandes_conges.update_one(
+                    {"id": demande_id},
+                    {"$set": {"date_fin": nouvelle_date_fin, "date_modification": datetime.now(timezone.utc)}}
+                )
+            else:
+                await db.demandes_conges.delete_one({"id": demande_id})
+            
+            actions_effectuees.append(f"Congé {creneau_oppose} créé pour {date_a_modifier}")
+    
+    # Cas 3: La date à modifier est au milieu du congé
+    else:
+        # Scinder le congé en deux parties
+        # Partie 1: du début jusqu'à la veille
+        nouvelle_date_fin_partie1 = (date_obj - timedelta(days=1)).strftime("%Y-%m-%d")
+        await db.demandes_conges.update_one(
+            {"id": demande_id},
+            {"$set": {"date_fin": nouvelle_date_fin_partie1, "date_modification": datetime.now(timezone.utc)}}
+        )
+        actions_effectuees.append(f"Congé 1: {date_debut} au {nouvelle_date_fin_partie1}")
+        
+        # Partie 2: du lendemain jusqu'à la fin
+        nouvelle_date_debut_partie2 = (date_obj + timedelta(days=1)).strftime("%Y-%m-%d")
+        if nouvelle_date_debut_partie2 <= date_fin:
+            nouveau_conge_partie2 = {
+                "id": str(uuid.uuid4()),
+                "utilisateur_id": demande["utilisateur_id"],
+                "centre_id": demande.get("centre_id"),
+                "date_debut": nouvelle_date_debut_partie2,
+                "date_fin": date_fin,
+                "type_conge": demande["type_conge"],
+                "creneau": demande.get("creneau", "JOURNEE_COMPLETE"),
+                "motif": f"Issu de la scission du congé {demande_id}",
+                "statut": "APPROUVE",
+                "date_demande": datetime.now(timezone.utc),
+                "approuve_par": current_user.id,
+                "date_approbation": datetime.now(timezone.utc)
+            }
+            await db.demandes_conges.insert_one(nouveau_conge_partie2)
+            actions_effectuees.append(f"Congé 2: {nouvelle_date_debut_partie2} au {date_fin}")
+    
+    # Créer le nouveau type de congé si demandé
+    if request.nouveau_type:
+        creneaux_conge = ["MATIN", "APRES_MIDI"] if request.creneau == "JOURNEE_COMPLETE" else [request.creneau]
+        for creneau in creneaux_conge:
+            nouveau_conge = {
+                "id": str(uuid.uuid4()),
+                "utilisateur_id": demande["utilisateur_id"],
+                "centre_id": demande.get("centre_id"),
+                "date_debut": date_a_modifier,
+                "date_fin": date_a_modifier,
+                "type_conge": request.nouveau_type,
+                "creneau": creneau,
+                "motif": f"Modifié depuis congé {demande['type_conge']}",
+                "statut": "APPROUVE",
+                "date_demande": datetime.now(timezone.utc),
+                "approuve_par": current_user.id,
+                "date_approbation": datetime.now(timezone.utc)
+            }
+            await db.demandes_conges.insert_one(nouveau_conge)
+        actions_effectuees.append(f"Nouveau congé {request.nouveau_type} créé pour {date_a_modifier}")
+    
+    # Créer un créneau de travail si demandé
+    if request.creer_creneau_travail:
+        user = await db.users.find_one({"id": demande["utilisateur_id"]})
+        creneaux_travail = ["MATIN", "APRES_MIDI"] if request.creneau == "JOURNEE_COMPLETE" else [request.creneau]
+        for creneau in creneaux_travail:
+            nouveau_creneau = {
+                "id": str(uuid.uuid4()),
+                "date": date_a_modifier,
+                "creneau": creneau,
+                "employe_id": demande["utilisateur_id"],
+                "employe_role": user["role"] if user else "Assistant",
+                "centre_id": demande.get("centre_id"),
+                "notes": "Converti depuis congé",
+                "date_creation": datetime.now(timezone.utc)
+            }
+            await db.planning.insert_one(nouveau_creneau)
+        actions_effectuees.append(f"Créneau(x) de travail créé(s) pour {date_a_modifier}")
+    
+    return {
+        "message": "Congé scindé avec succès",
+        "actions": actions_effectuees,
+        "date_modifiee": date_a_modifier
+    }
+
+
+
 # Room reservations
 @api_router.post("/salles/reservation", response_model=SalleReservation)
 async def create_reservation_salle(
