@@ -91,7 +91,7 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
         document.removeEventListener('visibilitychange', handleVisibility);
       };
     }
-  }, [user, fetchData]);
+  }, [user, fetchData, centreActif?.id]); // Recharger quand le centre change
 
   const getAnniversairesAffiches = () => {
     if (!anniversaires || anniversaires.length === 0) return [];
