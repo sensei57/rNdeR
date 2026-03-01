@@ -1487,9 +1487,17 @@ const PushNotificationManager = () => {
       try {
         const { messaging, getToken } = await import('./firebase.js');
         if (messaging) {
-          // Enregistrer d'abord le service worker
-          const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+          // Enregistrer d'abord le service worker avec mise à jour forcée
+          const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+            updateViaCache: 'none' // Force le téléchargement du SW à chaque fois
+          });
           console.log('Service Worker enregistré:', registration);
+          
+          // Forcer la mise à jour du Service Worker s'il y en a un nouveau
+          if (registration.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+          registration.update().catch(e => console.log('SW update check:', e));
           
           // Obtenir le token avec la VAPID key
           token = await getToken(messaging, {
