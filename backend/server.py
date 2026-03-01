@@ -3286,11 +3286,14 @@ async def supprimer_conge(
     
     return {"message": "Congé supprimé avec succès"}
 
+class ModifierTypeCongeRequest(BaseModel):
+    type_conge: str
+
 @api_router.put("/conges/{demande_id}/modifier-type")
 async def modifier_type_conge(
     demande_id: str,
-    nouveau_type: str,
-    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+    request: ModifierTypeCongeRequest,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"], ROLES["SUPER_ADMIN"]]))
 ):
     """Modifier le type d'un congé (Directeur uniquement). 
     Types: CONGE_PAYE, RTT, MALADIE, ABSENT, REPOS, HEURES_A_RECUPERER, HEURES_RECUPEREES"""
@@ -3299,11 +3302,11 @@ async def modifier_type_conge(
         raise HTTPException(status_code=404, detail="Demande non trouvée")
     
     types_valides = ["CONGE_PAYE", "RTT", "MALADIE", "ABSENT", "REPOS", "AUTRE", "HEURES_A_RECUPERER", "HEURES_RECUPEREES"]
-    if nouveau_type not in types_valides:
+    if request.type_conge not in types_valides:
         raise HTTPException(status_code=400, detail=f"Type invalide. Types valides: {', '.join(types_valides)}")
     
     update_data = {
-        "type_conge": nouveau_type,
+        "type_conge": request.type_conge,
         "modifie_par": current_user.id,
         "date_modification": datetime.now(timezone.utc)
     }
@@ -3313,7 +3316,7 @@ async def modifier_type_conge(
     if result.modified_count == 0:
         raise HTTPException(status_code=400, detail="Erreur lors de la modification")
     
-    return {"message": f"Type de congé modifié en '{nouveau_type}'"}
+    return {"message": f"Type de congé modifié en '{request.type_conge}'"}
 
 
 # Modèle pour la scission de congé
