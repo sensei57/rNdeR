@@ -7244,41 +7244,24 @@ async def get_anniversaires(current_user: User = Depends(get_current_user)):
     
     print(f"[DEBUG ANNIV] User: {current_user.email}, Role: {current_user.role}, Centre actif: {centre_actif}")
     
-    # Construire la requête avec filtrage par centre
-    if centre_actif:
-        # Voir les employés de ce centre + ceux sans centre (anciennes données)
-        query = {
-            "actif": True,
-            "date_naissance": {"$nin": [None, "", "null"]},
-            "$or": [
-                {"centre_id": centre_actif},
-                {"centre_ids": centre_actif},
-                {"centre_id": None},
-                {"centre_id": {"$exists": False}},
-                {"centre_id": ""}
-            ]
-        }
-    else:
-        # Pas de centre actif = voir tous les anniversaires (Super-Admin)
-        if current_user.role in ["Super-Admin", "Directeur"]:
-            query = {
-                "actif": True,
-                "date_naissance": {"$nin": [None, "", "null"]}
-            }
-        else:
-            print("[DEBUG ANNIV] Pas de centre actif - retourne []")
-            return []
+    if not centre_actif:
+        print("[DEBUG ANNIV] Pas de centre actif - retourne []")
+        return []
+    
+    # Filtrage strict : employés assignés à ce centre uniquement
+    query = {
+        "actif": True,
+        "date_naissance": {"$nin": [None, "", "null"]},
+        "$or": [
+            {"centre_id": centre_actif},
+            {"centre_ids": centre_actif}
+        ]
+    }
     
     print(f"[DEBUG ANNIV] Query: {query}")
     
     users = await db.users.find(query).to_list(1000)
-    print(f"[DEBUG ANNIV] Utilisateurs trouvés avec date_naissance: {len(users)}")
-    
-    # Log détaillé des utilisateurs trouvés
-    for u in users[:5]:
-        centre_info = u.get('centre_id', 'N/A')
-        centre_display = centre_info[:8] + '...' if centre_info and len(str(centre_info)) > 8 else str(centre_info)
-        print(f"[DEBUG ANNIV] -> {u.get('prenom')} {u.get('nom')}: {u.get('date_naissance')} (centre: {centre_display})")
+    print(f"[DEBUG ANNIV] Employés du centre avec date_naissance: {len(users)}")
     
     today = datetime.now()
     anniversaires = []
@@ -7296,7 +7279,6 @@ async def get_anniversaires(current_user: User = Depends(get_current_user)):
             dn = None
             date_str = str(date_naissance).strip()
             
-            # Essayer différents formats
             for fmt in ["%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%Y/%m/%d"]:
                 try:
                     dn = datetime.strptime(date_str, fmt)
