@@ -7077,7 +7077,8 @@ async def create_actualite(actualite: ActualiteCreate, current_user: User = Depe
         groupe_cible=actualite.groupe_cible,
         centre_id=centre_id,
         auteur_id=current_user.id,
-        priorite=actualite.priorite
+        priorite=actualite.priorite,
+        signature_requise=actualite.signature_requise
     )
     
     await db.actualites.insert_one(nouvelle_actualite.model_dump())
