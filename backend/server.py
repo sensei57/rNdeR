@@ -7327,6 +7327,53 @@ async def upload_photo(file: UploadFile = File(...), current_user: User = Depend
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur upload photo: {str(e)}")
 
+
+@api_router.post("/upload/actualite")
+async def upload_fichier_actualite(file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
+    """Upload un fichier ou une image pour une actualité (Directeur/Super-Admin uniquement)"""
+    if current_user.role not in ["Directeur", "Super-Admin"]:
+        raise HTTPException(status_code=403, detail="Seul le directeur peut uploader des fichiers")
+    
+    try:
+        # Créer le dossier uploads s'il n'existe pas
+        upload_dir = ROOT_DIR / "uploads" / "actualites"
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Vérifier la taille du fichier (max 10MB)
+        content = await file.read()
+        if len(content) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="Fichier trop volumineux (max 10MB)")
+        
+        # Déterminer l'extension
+        file_ext = file.filename.split('.')[-1].lower() if '.' in file.filename else 'bin'
+        
+        # Vérifier les extensions autorisées
+        allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt']
+        if file_ext not in allowed_extensions:
+            raise HTTPException(status_code=400, detail=f"Extension non autorisée. Extensions permises: {', '.join(allowed_extensions)}")
+        
+        # Générer un nom unique
+        file_name = f"actu_{uuid.uuid4().hex[:12]}.{file_ext}"
+        file_path = upload_dir / file_name
+        
+        # Sauvegarder le fichier
+        with open(file_path, "wb") as f:
+            f.write(content)
+        
+        # Retourner l'URL relative
+        file_url = f"/api/uploads/actualites/{file_name}"
+        
+        return {
+            "url": file_url, 
+            "filename": file.filename,
+            "type": "image" if file_ext in ['jpg', 'jpeg', 'png', 'gif', 'webp'] else "fichier"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur upload: {str(e)}")
+
+
 # Activation du routeur et des sécurités
 app.include_router(api_router)
 
