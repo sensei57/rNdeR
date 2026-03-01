@@ -408,6 +408,9 @@ def get_storage_bucket():
     """Récupère le bucket Firebase Storage (initialise Firebase si nécessaire)"""
     global _storage_bucket
     
+    if not STORAGE_AVAILABLE:
+        raise Exception("Firebase Storage non disponible - google-cloud-storage non installé")
+    
     if _storage_bucket is None:
         initialize_firebase()
     
