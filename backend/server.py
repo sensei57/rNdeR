@@ -484,7 +484,8 @@ class Actualite(BaseModel):
     image_nom: Optional[str] = None
     fichier_url: Optional[str] = None
     fichier_nom: Optional[str] = None
-    groupe_cible: str = "tous"  # "tous", "Médecin", "Assistant", "Secrétaire"
+    groupe_cible: str = "tous"  # "tous", "Médecin", "Assistant", "Secrétaire" (ancien format)
+    groupes_cibles: List[str] = Field(default_factory=lambda: ["Médecin", "Assistant", "Secrétaire"])  # Nouveau format multi-groupes
     centre_id: Optional[str] = None  # Centre auquel appartient cette actualité
     auteur_id: str
     date_creation: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -502,6 +503,7 @@ class ActualiteCreate(BaseModel):
     fichier_url: Optional[str] = None
     fichier_nom: Optional[str] = None
     groupe_cible: str = "tous"
+    groupes_cibles: List[str] = Field(default_factory=lambda: ["Médecin", "Assistant", "Secrétaire"])
     centre_id: Optional[str] = None  # Centre auquel appartient cette actualité
     priorite: int = 0
     signature_requise: bool = False
@@ -514,6 +516,7 @@ class ActualiteUpdate(BaseModel):
     fichier_url: Optional[str] = None
     fichier_nom: Optional[str] = None
     groupe_cible: Optional[str] = None
+    groupes_cibles: Optional[List[str]] = None
     centre_id: Optional[str] = None
     priorite: Optional[int] = None
     actif: Optional[bool] = None
