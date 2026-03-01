@@ -124,7 +124,8 @@ async def send_morning_planning_notifications():
 async def lifespan(app: FastAPI):
     # Startup
     print("🚀 [LIFESPAN] Démarrage du serveur...")
-    print(f"🔧 [LIFESPAN] Python version: {os.sys.version}")
+    import sys
+    print(f"🔧 [LIFESPAN] Python version: {sys.version}")
     
     # Test MongoDB connection first
     try:
