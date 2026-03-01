@@ -3132,6 +3132,35 @@ p {
   }
 }
 
+
+/* Tableau Planning Semaine - Largeurs fixes pour mobile */
+.planning-semaine-table {
+  table-layout: fixed;
+  min-width: 800px;
+}
+
+.planning-semaine-table th,
+.planning-semaine-table td {
+  box-sizing: border-box;
+}
+
+.planning-semaine-table .col-employe {
+  width: 90px !important;
+  min-width: 90px !important;
+  max-width: 90px !important;
+}
+
+.planning-semaine-table .col-jour {
+  width: 35px !important;
+  min-width: 35px !important;
+}
+
+.planning-semaine-table .col-recap {
+  width: 30px !important;
+  min-width: 30px !important;
+}
+
+
 /* Fix très petits écrans (< 480px) */
 @media (max-width: 480px) {
   /* Vue calendrier mois - format compact */
