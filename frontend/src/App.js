@@ -4964,24 +4964,25 @@ const PlanningManager = () => {
     try {
       await axios.delete(`${API}/conges/${congeId}`);
       toast.success('Congé supprimé !');
-      fetchConges();
+      // Recharger le planning pour refléter les changements
       fetchPlanningTableau(selectedWeek);
     } catch (error) {
-      console.error('Erreur:', error);
-      toast.error('Erreur lors de la suppression du congé');
+      console.error('Erreur suppression congé:', error);
+      toast.error(error.response?.data?.detail || 'Erreur lors de la suppression du congé');
     }
   };
   
   // Modifier le type d'un congé existant
   const handleModifierTypeConge = async (congeId, nouveauType) => {
     try {
-      await axios.put(`${API}/conges/${congeId}`, { type_conge: nouveauType });
+      // Utiliser l'endpoint correct: /conges/{id}/modifier-type
+      await axios.put(`${API}/conges/${congeId}/modifier-type`, { type_conge: nouveauType });
       toast.success('Type de congé modifié !');
-      fetchConges();
+      // Recharger le planning pour refléter les changements
       fetchPlanningTableau(selectedWeek);
     } catch (error) {
-      console.error('Erreur:', error);
-      toast.error('Erreur lors de la modification');
+      console.error('Erreur modification type congé:', error);
+      toast.error(error.response?.data?.detail || 'Erreur lors de la modification');
     }
   };
   
@@ -4995,12 +4996,12 @@ const PlanningManager = () => {
         creer_creneau_travail: creerCreneauTravail
       });
       toast.success(response.data.message || 'Congé modifié avec succès !');
-      fetchConges();
+      // Recharger le planning pour refléter les changements
       fetchPlanningTableau(selectedWeek);
       setShowJourneeModal(false);
       return response.data;
     } catch (error) {
-      console.error('Erreur:', error);
+      console.error('Erreur scission congé:', error);
       toast.error(error.response?.data?.detail || 'Erreur lors de la modification du congé');
       return null;
     }
