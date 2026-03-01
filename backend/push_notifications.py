@@ -318,4 +318,100 @@ async def send_push_to_multiple(fcm_tokens: list, title: str, body: str, data: d
 # NE PAS initialiser Firebase au démarrage du module
 # L'initialisation se fait de manière lazy au premier appel de send_push_notification
 # Cela évite de bloquer le démarrage du serveur
+
+
+# ==================== FIREBASE STORAGE ====================
+
+def get_storage_bucket():
+    """Récupère le bucket Firebase Storage (initialise Firebase si nécessaire)"""
+    global _storage_bucket
+    
+    if _storage_bucket is None:
+        initialize_firebase()
+    
+    return _storage_bucket
+
+
+def upload_file_to_firebase(file_data: bytes, filename: str, content_type: str = None, folder: str = "uploads") -> dict:
+    """
+    Upload un fichier vers Firebase Storage
+    
+    Args:
+        file_data: Contenu du fichier en bytes
+        filename: Nom du fichier
+        content_type: Type MIME du fichier
+        folder: Dossier de destination dans le bucket
+    
+    Returns:
+        dict avec url, filename, et type
+    """
+    try:
+        bucket = get_storage_bucket()
+        
+        if bucket is None:
+            raise Exception("Firebase Storage non initialisé")
+        
+        # Générer un nom unique pour éviter les conflits
+        unique_filename = f"{folder}/{uuid.uuid4().hex}_{filename}"
+        
+        # Créer le blob
+        blob = bucket.blob(unique_filename)
+        
+        # Upload le fichier
+        blob.upload_from_string(file_data, content_type=content_type)
+        
+        # Rendre le fichier public pour un accès direct
+        blob.make_public()
+        
+        # Récupérer l'URL publique
+        public_url = blob.public_url
+        
+        logger.info(f"✅ Fichier uploadé vers Firebase Storage: {unique_filename}")
+        
+        # Déterminer le type de fichier
+        file_type = "file"
+        if content_type:
+            if content_type.startswith("image/"):
+                file_type = "image"
+            elif content_type == "application/pdf":
+                file_type = "pdf"
+        
+        return {
+            "url": public_url,
+            "filename": filename,
+            "type": file_type,
+            "storage_path": unique_filename
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Erreur upload Firebase Storage: {e}")
+        raise e
+
+
+def delete_file_from_firebase(storage_path: str) -> bool:
+    """
+    Supprime un fichier de Firebase Storage
+    
+    Args:
+        storage_path: Chemin du fichier dans le bucket
+    
+    Returns:
+        True si succès, False sinon
+    """
+    try:
+        bucket = get_storage_bucket()
+        
+        if bucket is None:
+            raise Exception("Firebase Storage non initialisé")
+        
+        blob = bucket.blob(storage_path)
+        blob.delete()
+        
+        logger.info(f"✅ Fichier supprimé de Firebase Storage: {storage_path}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Erreur suppression Firebase Storage: {e}")
+        return False
+
 # initialize_firebase()
