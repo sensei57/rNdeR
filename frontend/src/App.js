@@ -986,7 +986,7 @@ const LoginPage = () => {
                 {/* Sélection du centre - Optionnel pour les Directeurs */}
                 <div className="space-y-2">
                   <Label htmlFor="centre" className="text-sm font-semibold text-gray-700">
-                    Centre médical <span className="text-gray-400 font-normal">(optionnel pour Directeur)</span>
+                    Centre médical
                   </Label>
                   <Select 
                     value={centreId} 
@@ -998,11 +998,11 @@ const LoginPage = () => {
                       data-testid="centre-select"
                       className="h-12 rounded-xl border-2 border-gray-200 focus:border-[#0091B9]"
                     >
-                      <SelectValue placeholder={loadingCentres ? "Chargement..." : "Tous les centres (Directeur)"} />
+                      <SelectValue placeholder={loadingCentres ? "Chargement..." : "Tous les centres"} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">
-                        <span className="font-medium">Tous les centres (Directeur)</span>
+                        <span className="font-medium">Tous les centres</span>
                       </SelectItem>
                       {centres.map((centre) => (
                         <SelectItem key={centre.id} value={centre.id}>
