@@ -273,4 +273,15 @@ async function storeToken(token) {
   });
 }
 
+// Activation immédiate du SW pour prendre le contrôle
+self.addEventListener('install', (event) => {
+  console.log('🔧 [SW] Installation du Service Worker');
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  console.log('✅ [SW] Service Worker activé');
+  event.waitUntil(clients.claim());
+});
+
 console.log('Firebase Messaging Service Worker loaded with Quick Reply support');
