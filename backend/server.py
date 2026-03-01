@@ -7597,26 +7597,30 @@ firebase_config = {
 
 @api_router.post("/upload/photo")
 async def upload_photo(file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
+    """Upload une photo de profil vers Firebase Storage"""
     try:
-        # Créer le dossier uploads s'il n'existe pas
-        upload_dir = ROOT_DIR / "uploads" / "photos"
-        upload_dir.mkdir(parents=True, exist_ok=True)
-        
-        # On définit le nom du fichier
-        file_ext = file.filename.split('.')[-1].lower() if '.' in file.filename else 'jpg'
-        file_name = f"{current_user.id}_{uuid.uuid4().hex[:8]}.{file_ext}"
-        file_path = upload_dir / file_name
-        
-        # Sauvegarder le fichier
         content = await file.read()
-        with open(file_path, "wb") as f:
-            f.write(content)
         
-        # Retourner l'URL relative
-        photo_url = f"/api/uploads/photos/{file_name}"
+        # Vérifier la taille (max 5MB pour les photos)
+        if len(content) > 5 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="Photo trop volumineuse (max 5MB)")
         
-        return {"url": photo_url, "filename": file_name}
+        # Upload vers Firebase Storage
+        from push_notifications import upload_file_to_firebase
+        
+        result = upload_file_to_firebase(
+            file_data=content,
+            filename=file.filename,
+            content_type=file.content_type,
+            folder="photos"
+        )
+        
+        return {"url": result["url"], "filename": result["filename"]}
+        
+    except HTTPException:
+        raise
     except Exception as e:
+        print(f"❌ Erreur upload photo: {e}")
         raise HTTPException(status_code=500, detail=f"Erreur upload photo: {str(e)}")
 
 
