@@ -12278,7 +12278,7 @@ const PlanningManager = () => {
                   }
                   if (created > 0) {
                     toast.success(`Semaine A appliquée ! ${created} créneau(x) créé(s)`);
-                    fetchPlanning();
+                    fetchPlanningTableau(selectedWeek);
                   } else {
                     toast.info('Aucun créneau créé (déjà existants ou congés)');
                   }
