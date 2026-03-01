@@ -337,12 +337,12 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
         )}
       </div>
 
-      {/* Bannière Anniversaires */}
-      {anniversairesAffiches.length > 0 && (
-        <div className="birthday-banner">
-          <span className="birthday-banner-icon">🎂</span>
-          <div className="flex items-center gap-4 flex-wrap flex-1">
-            {anniversairesAffiches.map((anniv) => (
+      {/* Bannière Anniversaires - Toujours visible */}
+      <div className="birthday-banner" style={{ minHeight: '60px' }}>
+        <span className="birthday-banner-icon">🎂</span>
+        <div className="flex items-center gap-4 flex-wrap flex-1">
+          {anniversairesAffiches.length > 0 ? (
+            anniversairesAffiches.map((anniv) => (
               <div key={anniv.id} className="flex items-center gap-3 bg-white rounded-2xl px-5 py-3 shadow-md border border-pink-100 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <Avatar className="h-12 w-12 ring-2 ring-pink-200 ring-offset-2">
                   {anniv.photo_url && <AvatarImage src={getPhotoUrl(anniv.photo_url)} />}
@@ -371,10 +371,14 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
                   </p>
                 </div>
               </div>
-            ))}
-          </div>
+            ))
+          ) : (
+            <div className="text-gray-500 text-sm italic">
+              Aucun anniversaire à venir (vérifiez que les dates de naissance sont renseignées dans les profils)
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* 2 Colonnes : Actualités */}
       <div className="news-section">
