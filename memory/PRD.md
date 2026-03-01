@@ -63,3 +63,11 @@ Application web full-stack de gestion de cabinets médicaux multi-centres. **Ver
 **Version:** 2.9  
 **Date:** 28 février 2026  
 **Status:** ✅ PRODUCTION READY
+
+---
+## Changelog - 1er Mars 2026 (Suite)
+### Bug Fix - Firebase "WebpushFCMOptions.link must be a HTTPS URL"
+- **Fichier:** `/app/backend/push_notifications.py`
+- **Problème:** `link='/'` n'est pas une URL HTTPS valide
+- **Solution:** Utilise `FRONTEND_URL` de l'environnement, inclut le lien seulement si HTTPS
+- **Action utilisateur:** Ajouter `FRONTEND_URL=https://ope-francis.onrender.com` sur Render
