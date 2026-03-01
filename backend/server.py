@@ -7636,7 +7636,7 @@ async def upload_photo(file: UploadFile = File(...), current_user: User = Depend
 
 @api_router.post("/upload/actualite")
 async def upload_fichier_actualite(file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
-    """Upload un fichier ou une image pour une actualité vers Firebase Storage"""
+    """Upload un fichier ou une image pour une actualité vers Firebase Storage (images compressées à max 300KB)"""
     if current_user.role not in ["Directeur", "Super-Admin"]:
         raise HTTPException(status_code=403, detail="Seul le directeur peut uploader des fichiers")
     
@@ -7655,12 +7655,22 @@ async def upload_fichier_actualite(file: UploadFile = File(...), current_user: U
             raise HTTPException(status_code=400, detail=f"Extension non autorisée. Extensions permises: {', '.join(allowed_extensions)}")
         
         # Upload vers Firebase Storage
-        from push_notifications import upload_file_to_firebase
+        from push_notifications import upload_file_to_firebase, compress_image
+        
+        # Compresser si c'est une image
+        if file_ext in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
+            compressed_data, content_type = compress_image(content, max_size_kb=300)
+            # Changer l'extension en .jpg car on convertit en JPEG
+            filename = file.filename.rsplit('.', 1)[0] + '.jpg' if '.' in file.filename else file.filename + '.jpg'
+        else:
+            compressed_data = content
+            content_type = file.content_type
+            filename = file.filename
         
         result = upload_file_to_firebase(
-            file_data=content,
-            filename=file.filename,
-            content_type=file.content_type,
+            file_data=compressed_data,
+            filename=filename,
+            content_type=content_type,
             folder="actualites"
         )
         
