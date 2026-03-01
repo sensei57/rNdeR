@@ -142,12 +142,17 @@ async def send_push_notification(fcm_token: str, title: str, body: str, data: di
             ]
         
         # Construire la configuration webpush
+        # IMPORTANT: Utiliser un tag UNIQUE pour chaque notification (sinon elles se remplacent)
+        unique_tag = f"notif-{int(time.time() * 1000)}-{notification_data.get('type', 'default')}"
+        
         webpush_notification_config = {
+            "title": title,  # CRITIQUE: Inclure le titre dans webpush
+            "body": body,    # CRITIQUE: Inclure le corps dans webpush
             "icon": "/icon-192.png",
             "badge": "/icon-192.png",
             "require_interaction": True,
             "vibrate": [200, 100, 200],
-            "tag": notification_data.get("message_id", "default"),  # Grouper par message
+            "tag": unique_tag,  # Tag unique pour chaque notification
             "renotify": True
         }
         
