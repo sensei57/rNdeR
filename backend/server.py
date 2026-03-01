@@ -7622,15 +7622,11 @@ async def upload_photo(file: UploadFile = File(...), current_user: User = Depend
 
 @api_router.post("/upload/actualite")
 async def upload_fichier_actualite(file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
-    """Upload un fichier ou une image pour une actualité (Directeur/Super-Admin uniquement)"""
+    """Upload un fichier ou une image pour une actualité vers Firebase Storage"""
     if current_user.role not in ["Directeur", "Super-Admin"]:
         raise HTTPException(status_code=403, detail="Seul le directeur peut uploader des fichiers")
     
     try:
-        # Créer le dossier uploads s'il n'existe pas
-        upload_dir = ROOT_DIR / "uploads" / "actualites"
-        upload_dir.mkdir(parents=True, exist_ok=True)
-        
         # Vérifier la taille du fichier (max 10MB)
         content = await file.read()
         if len(content) > 10 * 1024 * 1024:
@@ -7644,25 +7640,22 @@ async def upload_fichier_actualite(file: UploadFile = File(...), current_user: U
         if file_ext not in allowed_extensions:
             raise HTTPException(status_code=400, detail=f"Extension non autorisée. Extensions permises: {', '.join(allowed_extensions)}")
         
-        # Générer un nom unique
-        file_name = f"actu_{uuid.uuid4().hex[:12]}.{file_ext}"
-        file_path = upload_dir / file_name
+        # Upload vers Firebase Storage
+        from push_notifications import upload_file_to_firebase
         
-        # Sauvegarder le fichier
-        with open(file_path, "wb") as f:
-            f.write(content)
+        result = upload_file_to_firebase(
+            file_data=content,
+            filename=file.filename,
+            content_type=file.content_type,
+            folder="actualites"
+        )
         
-        # Retourner l'URL relative
-        file_url = f"/api/uploads/actualites/{file_name}"
+        return result
         
-        return {
-            "url": file_url, 
-            "filename": file.filename,
-            "type": "image" if file_ext in ['jpg', 'jpeg', 'png', 'gif', 'webp'] else "fichier"
-        }
     except HTTPException:
         raise
     except Exception as e:
+        print(f"❌ Erreur upload actualité: {e}")
         raise HTTPException(status_code=500, detail=f"Erreur upload: {str(e)}")
 
 
