@@ -1486,12 +1486,18 @@ const PushNotificationManager = () => {
       try {
         const { messaging, getToken } = await import('./firebase.js');
         if (messaging) {
+          // Enregistrer d'abord le service worker
+          const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+          console.log('Service Worker enregistré:', registration);
+          
           token = await getToken(messaging, {
-            vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY
+            vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY,
+            serviceWorkerRegistration: registration
           });
+          console.log('Token FCM obtenu:', token ? token.substring(0, 20) + '...' : 'null');
         }
       } catch (firebaseError) {
-        console.warn('Firebase non configuré, utilisation du mode local:', firebaseError.message);
+        console.warn('Erreur Firebase, utilisation du mode local:', firebaseError.message);
         // Générer un token local unique pour cet appareil
         token = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       }
@@ -1501,10 +1507,11 @@ const PushNotificationManager = () => {
         token = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       }
 
-      // Enregistrer le token au backend avec les infos appareil
+      // Enregistrer le token au backend avec les infos appareil ET le centre
       await axios.post(`${API}/notifications/subscribe`, {
         token: token,
         userId: user.id,
+        centre_id: centreActif?.id || null,
         device_info: {
           userAgent: userAgent,
           platform: navigator.platform,
@@ -1515,10 +1522,12 @@ const PushNotificationManager = () => {
       });
       
       setSubscribed(true);
-      toast.success(`✅ Notifications activées sur ${deviceName} ! Vous recevrez votre planning chaque matin à 7h45.`);
+      // Recharger la liste des appareils
+      await fetchDevices();
+      toast.success(`✅ Notifications activées sur ${deviceName} !`);
     } catch (error) {
       console.error('Erreur lors de l\'abonnement:', error);
-      toast.error('Erreur lors de l\'enregistrement de l\'appareil');
+      toast.error('Erreur: ' + (error.response?.data?.detail || error.message));
     }
   };
 
