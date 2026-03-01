@@ -7231,6 +7231,8 @@ async def get_anniversaires(current_user: User = Depends(get_current_user)):
             user_centres.append(current_user.centre_id)
         centre_actif = user_centres[0] if user_centres else None
     
+    print(f"[DEBUG ANNIV] centre_actif: {centre_actif}, user: {current_user.email}")
+    
     is_admin = current_user.role in ['Directeur', 'Super-Admin']
     
     # Construire la requête avec filtrage par centre
@@ -7241,6 +7243,7 @@ async def get_anniversaires(current_user: User = Depends(get_current_user)):
                 "$and": [
                     {"actif": True},
                     {"date_naissance": {"$ne": None}},
+                    {"date_naissance": {"$ne": ""}},
                     {"$or": [
                         {"centre_id": centre_actif},
                         {"centre_ids": centre_actif},
@@ -7254,6 +7257,7 @@ async def get_anniversaires(current_user: User = Depends(get_current_user)):
                 "$and": [
                     {"actif": True},
                     {"date_naissance": {"$ne": None}},
+                    {"date_naissance": {"$ne": ""}},
                     {"$or": [
                         {"centre_id": centre_actif},
                         {"centre_ids": centre_actif}
@@ -7263,11 +7267,13 @@ async def get_anniversaires(current_user: User = Depends(get_current_user)):
     else:
         # Pas de centre actif - retourner tous les anniversaires (pour les admins)
         if is_admin:
-            query = {"actif": True, "date_naissance": {"$ne": None}}
+            query = {"actif": True, "date_naissance": {"$ne": None}, "date_naissance": {"$ne": ""}}
         else:
             return []
     
+    print(f"[DEBUG ANNIV] Query: {query}")
     users = await db.users.find(query).to_list(1000)
+    print(f"[DEBUG ANNIV] Utilisateurs trouvés: {len(users)}")
     
     today = datetime.now()
     anniversaires = []
@@ -7277,12 +7283,24 @@ async def get_anniversaires(current_user: User = Depends(get_current_user)):
             del user['_id']
         
         date_naissance = user.get("date_naissance")
+        print(f"[DEBUG ANNIV] {user.get('prenom')} {user.get('nom')}: date_naissance={date_naissance} (type={type(date_naissance).__name__})")
+        
         if not date_naissance:
             continue
         
         try:
-            # Parser la date de naissance
-            dn = datetime.strptime(date_naissance, "%Y-%m-%d")
+            # Parser la date de naissance - supporter plusieurs formats
+            dn = None
+            for fmt in ["%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y"]:
+                try:
+                    dn = datetime.strptime(str(date_naissance).strip(), fmt)
+                    break
+                except:
+                    continue
+            
+            if not dn:
+                print(f"[DEBUG ANNIV] Format de date non reconnu: {date_naissance}")
+                continue
             
             # Calculer le prochain anniversaire
             anniv_cette_annee = dn.replace(year=today.year)
@@ -7309,12 +7327,15 @@ async def get_anniversaires(current_user: User = Depends(get_current_user)):
                 "jours_restants": jours_restants,
                 "age": age
             })
-        except:
+            print(f"[DEBUG ANNIV] Ajouté: {user.get('prenom')} - prochain anniv dans {jours_restants} jours")
+        except Exception as e:
+            print(f"[DEBUG ANNIV] Erreur pour {user.get('prenom')}: {e}")
             continue
     
     # Trier par jours restants
     anniversaires.sort(key=lambda x: x["jours_restants"])
     
+    print(f"[DEBUG ANNIV] Total anniversaires: {len(anniversaires)}")
     return anniversaires[:10]  # Retourner les 10 prochains
 
 # --- NOUVEAU BLOC FIREBASE SANS ERREUR DE PERMISSION ---
