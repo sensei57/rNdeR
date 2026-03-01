@@ -150,12 +150,27 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
       return;
     }
 
+    // Validation : au moins un groupe doit être sélectionné
+    if (!newActualite.groupes_cibles || newActualite.groupes_cibles.length === 0) {
+      toast.error('Veuillez sélectionner au moins un groupe');
+      return;
+    }
+
+    // Préparer les données pour l'API
+    const dataToSend = {
+      ...newActualite,
+      // Convertir vers l'ancien format pour compatibilité backend
+      groupe_cible: newActualite.groupes_cibles.length === TOUS_LES_GROUPES.length ? 'tous' : newActualite.groupes_cibles[0],
+      // Envoyer aussi le nouveau format
+      groupes_cibles: newActualite.groupes_cibles
+    };
+
     try {
       if (editingActualite) {
-        await axios.put(`${API}/actualites/${editingActualite.id}`, newActualite);
+        await axios.put(`${API}/actualites/${editingActualite.id}`, dataToSend);
         toast.success('Actualité modifiée');
       } else {
-        const response = await axios.post(`${API}/actualites`, newActualite);
+        const response = await axios.post(`${API}/actualites`, dataToSend);
         console.log('[ActualitesManager] Actualité créée:', response.data);
         toast.success('Actualité créée');
       }
