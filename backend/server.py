@@ -7412,19 +7412,63 @@ async def update_actualite(actualite_id: str, actualite: ActualiteUpdate, curren
 
 @api_router.delete("/actualites/{actualite_id}")
 async def delete_actualite(actualite_id: str, current_user: User = Depends(get_current_user)):
-    """Supprimer une actualité (Directeur uniquement)"""
-    if current_user.role != "Directeur":
+    """Désactiver une actualité (soft delete) - Directeur/Super-Admin uniquement"""
+    if current_user.role not in ["Directeur", "Super-Admin"]:
         raise HTTPException(status_code=403, detail="Seul le directeur peut supprimer des actualités")
     
     result = await db.actualites.update_one(
         {"id": actualite_id},
-        {"$set": {"actif": False}}
+        {"$set": {"actif": False, "date_modification": datetime.now(timezone.utc)}}
     )
     
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Actualité non trouvée")
     
-    return {"message": "Actualité supprimée"}
+    return {"message": "Actualité désactivée"}
+
+
+@api_router.delete("/actualites/{actualite_id}/permanent")
+async def delete_actualite_permanent(actualite_id: str, current_user: User = Depends(get_current_user)):
+    """Supprimer définitivement une actualité ET ses fichiers de Firebase Storage"""
+    if current_user.role not in ["Directeur", "Super-Admin"]:
+        raise HTTPException(status_code=403, detail="Seul le directeur peut supprimer des actualités")
+    
+    # Récupérer l'actualité pour avoir les chemins des fichiers
+    actualite = await db.actualites.find_one({"id": actualite_id})
+    if not actualite:
+        raise HTTPException(status_code=404, detail="Actualité non trouvée")
+    
+    # Supprimer les fichiers de Firebase Storage
+    from push_notifications import delete_file_from_firebase
+    
+    files_deleted = []
+    
+    # Supprimer l'image si présente
+    if actualite.get("image_storage_path"):
+        try:
+            delete_file_from_firebase(actualite["image_storage_path"])
+            files_deleted.append("image")
+        except Exception as e:
+            print(f"⚠️ Erreur suppression image: {e}")
+    
+    # Supprimer le fichier joint si présent
+    if actualite.get("fichier_storage_path"):
+        try:
+            delete_file_from_firebase(actualite["fichier_storage_path"])
+            files_deleted.append("fichier")
+        except Exception as e:
+            print(f"⚠️ Erreur suppression fichier: {e}")
+    
+    # Supprimer l'actualité de la base de données
+    result = await db.actualites.delete_one({"id": actualite_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=500, detail="Erreur lors de la suppression")
+    
+    return {
+        "message": "Actualité supprimée définitivement",
+        "fichiers_supprimes": files_deleted
+    }
 
 
 @api_router.post("/actualites/{actualite_id}/signer")
