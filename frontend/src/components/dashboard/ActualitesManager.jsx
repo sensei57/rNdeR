@@ -228,45 +228,82 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
     }
   };
 
-  const ActualiteCard = ({ actu }) => (
-    <Card className="overflow-hidden">
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className="text-base flex items-center space-x-2">
-              {actu.priorite > 0 && <span className="text-red-500">📌</span>}
-              <span>{actu.titre}</span>
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Par {actu.auteur?.prenom} {actu.auteur?.nom} • {new Date(actu.date_creation).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
-            </CardDescription>
+  const ActualiteCard = ({ actu }) => {
+    const userHasSigned = actu.signatures?.some(s => s.user_id === user?.id);
+    const isAdmin = user?.role === 'Directeur' || user?.role === 'Super-Admin';
+    
+    return (
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-2">
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="text-base flex items-center space-x-2">
+                {actu.priorite > 0 && <span className="text-red-500">📌</span>}
+                {actu.signature_requise && <span className="text-orange-500" title="Signature requise">✍️</span>}
+                <span>{actu.titre}</span>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Par {actu.auteur?.prenom} {actu.auteur?.nom} • {new Date(actu.date_creation).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+              </CardDescription>
+            </div>
+            {isAdmin && (
+              <div className="flex space-x-1">
+                {actu.signature_requise && (
+                  <Button size="sm" variant="ghost" onClick={() => handleVoirSignatures(actu.id)} className="h-7 w-7 p-0" title="Voir les signatures">
+                    <Eye className="h-3 w-3" />
+                  </Button>
+                )}
+                <Button size="sm" variant="ghost" onClick={() => openEditModal(actu)} className="h-7 w-7 p-0">
+                  <Edit className="h-3 w-3" />
+                </Button>
+                <Button size="sm" variant="ghost" className="text-red-600 h-7 w-7 p-0" onClick={() => handleDeleteActualite(actu.id)}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
           </div>
-          {(user?.role === 'Directeur' || user?.role === 'Super-Admin') && (
-            <div className="flex space-x-1">
-              <Button size="sm" variant="ghost" onClick={() => openEditModal(actu)} className="h-7 w-7 p-0">
-                <Edit className="h-3 w-3" />
-              </Button>
-              <Button size="sm" variant="ghost" className="text-red-600 h-7 w-7 p-0" onClick={() => handleDeleteActualite(actu.id)}>
-                <Trash2 className="h-3 w-3" />
-              </Button>
+        </CardHeader>
+        <CardContent className="pt-0">
+          {actu.type_contenu === 'image' && actu.fichier_url && (
+            <img src={`${BACKEND_URL}${actu.fichier_url}`} alt={actu.titre} className="w-full max-h-40 object-cover rounded-lg mb-2" />
+          )}
+          <p className="text-sm text-gray-700 whitespace-pre-wrap line-clamp-4">{actu.contenu}</p>
+          {actu.type_contenu === 'fichier' && actu.fichier_url && (
+            <a href={`${BACKEND_URL}${actu.fichier_url}`} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center text-xs text-blue-600 hover:underline">
+              <FileText className="h-3 w-3 mr-1" />
+              {actu.fichier_nom || 'Fichier'}
+            </a>
+          )}
+          
+          {/* Section signature */}
+          {actu.signature_requise && (
+            <div className="mt-3 pt-3 border-t">
+              {userHasSigned ? (
+                <div className="flex items-center text-green-600 text-xs">
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  Vous avez signé cette actualité
+                </div>
+              ) : (
+                <Button 
+                  size="sm" 
+                  onClick={() => handleSignerActualite(actu.id)}
+                  className="bg-orange-500 hover:bg-orange-600 text-white text-xs"
+                >
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Signer pour confirmer la lecture
+                </Button>
+              )}
+              {isAdmin && actu.signatures?.length > 0 && (
+                <div className="mt-2 text-xs text-gray-500">
+                  {actu.signatures.length} signature(s) sur {actu.groupe_cible === 'tous' ? 'tous les employés' : `les ${actu.groupe_cible}s`}
+                </div>
+              )}
             </div>
           )}
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {actu.type_contenu === 'image' && actu.fichier_url && (
-          <img src={actu.fichier_url} alt={actu.titre} className="w-full max-h-40 object-cover rounded-lg mb-2" />
-        )}
-        <p className="text-sm text-gray-700 whitespace-pre-wrap line-clamp-4">{actu.contenu}</p>
-        {actu.type_contenu === 'fichier' && actu.fichier_url && (
-          <a href={actu.fichier_url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center text-xs text-blue-600 hover:underline">
-            <FileText className="h-3 w-3 mr-1" />
-            {actu.fichier_nom || 'Fichier'}
-          </a>
-        )}
-      </CardContent>
-    </Card>
-  );
+        </CardContent>
+      </Card>
+    );
+  };
 
   if (loading) {
     return (
