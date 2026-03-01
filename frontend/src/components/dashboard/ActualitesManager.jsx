@@ -174,6 +174,16 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
   const actualitesGenerales = (actualites || []).filter(isActualiteGenerale);
   const actualitesPourMonGroupe = (actualites || []).filter(isActualitePourMonGroupe);
 
+  // Réinitialiser les index si hors limites après changement de données
+  useEffect(() => {
+    if (currentGeneralIndex >= actualitesGenerales.length && actualitesGenerales.length > 0) {
+      setCurrentGeneralIndex(0);
+    }
+    if (currentCibleIndex >= actualitesPourMonGroupe.length && actualitesPourMonGroupe.length > 0) {
+      setCurrentCibleIndex(0);
+    }
+  }, [actualitesGenerales.length, actualitesPourMonGroupe.length, currentGeneralIndex, currentCibleIndex]);
+
   const handleCreateActualite = async (e) => {
     e.preventDefault();
     
