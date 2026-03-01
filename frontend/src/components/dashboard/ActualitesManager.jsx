@@ -65,6 +65,9 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
         fetchWithTimeout(`${API}/anniversaires`).catch((err) => { console.log('Erreur anniversaires:', err); return { data: [] }; })
       ]);
       
+      // Debug log
+      console.log('[ActualitesManager] Actualités reçues:', actusRes.data?.length || 0, actusRes.data);
+      
       setActualites(Array.isArray(actusRes.data) ? actusRes.data : []);
       setAnniversaires(Array.isArray(annivRes.data) ? annivRes.data : []);
     } catch (error) {
