@@ -147,7 +147,8 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
     setNewActualite({
       titre: '',
       contenu: '',
-      type_contenu: 'texte',
+      image_url: '',
+      image_nom: '',
       fichier_url: '',
       fichier_nom: '',
       groupe_cible: 'tous',
@@ -162,7 +163,8 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
     setNewActualite({
       titre: actu.titre,
       contenu: actu.contenu,
-      type_contenu: actu.type_contenu,
+      image_url: actu.image_url || actu.fichier_url || '',
+      image_nom: actu.image_nom || '',
       fichier_url: actu.fichier_url || '',
       fichier_nom: actu.fichier_nom || '',
       groupe_cible: actu.groupe_cible || 'tous',
@@ -172,12 +174,44 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
     setShowModal(true);
   };
 
-  // Upload de fichier
+  // Upload d'image
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image trop volumineuse (max 10MB)');
+      return;
+    }
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(`${API}/upload/actualite`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      setNewActualite(prev => ({
+        ...prev,
+        image_url: response.data.url,
+        image_nom: response.data.filename
+      }));
+      toast.success('Image uploadée');
+    } catch (error) {
+      console.error('Erreur upload image:', error);
+      toast.error(error.response?.data?.detail || 'Erreur lors de l\'upload');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Upload de fichier (PDF, DOC, etc.)
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Vérifier la taille (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       toast.error('Fichier trop volumineux (max 10MB)');
       return;
@@ -192,15 +226,14 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      setNewActualite({
-        ...newActualite,
+      setNewActualite(prev => ({
+        ...prev,
         fichier_url: response.data.url,
-        fichier_nom: response.data.filename,
-        type_contenu: response.data.type
-      });
-      toast.success('Fichier uploadé avec succès');
+        fichier_nom: response.data.filename
+      }));
+      toast.success('Fichier uploadé');
     } catch (error) {
-      console.error('Erreur upload:', error);
+      console.error('Erreur upload fichier:', error);
       toast.error(error.response?.data?.detail || 'Erreur lors de l\'upload');
     } finally {
       setUploading(false);
@@ -212,7 +245,7 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
     try {
       await axios.post(`${API}/actualites/${actualiteId}/signer`);
       toast.success('Actualité signée avec succès');
-      fetchData(); // Recharger pour mettre à jour les signatures
+      fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Erreur lors de la signature');
     }
