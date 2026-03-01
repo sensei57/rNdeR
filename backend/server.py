@@ -866,32 +866,56 @@ async def send_notification_to_user(user_id: str, title: str, body: str, data: O
         
         # 2. Envoyer notification push si l'utilisateur a un token FCM
         push_sent = False
-        user = await db.users.find_one({"id": user_id}, {"fcm_token": 1, "device_info": 1})
+        user = await db.users.find_one({"id": user_id}, {"fcm_token": 1, "fcm_devices": 1, "device_info": 1})
         
-        if user and user.get("fcm_token"):
+        # Récupérer tous les tokens FCM de l'utilisateur (nouveau format: fcm_devices, ancien: fcm_token)
+        fcm_tokens = []
+        
+        if user:
+            # Nouveau format: tableau de devices
+            if user.get("fcm_devices"):
+                for device in user["fcm_devices"]:
+                    token = device.get("fcm_token")
+                    # Ignorer les tokens locaux (générés quand Firebase échoue)
+                    if token and not token.startswith("local_"):
+                        fcm_tokens.append(token)
+            
+            # Ancien format: un seul token
+            elif user.get("fcm_token") and not user["fcm_token"].startswith("local_"):
+                fcm_tokens.append(user["fcm_token"])
+        
+        if fcm_tokens:
             try:
                 from push_notifications import send_push_notification
-                push_result = await send_push_notification(
-                    fcm_token=user["fcm_token"],
-                    title=title,
-                    body=body,
-                    data=data or {}
-                )
-                if push_result:
+                
+                # Envoyer à tous les appareils de l'utilisateur
+                for fcm_token in fcm_tokens:
+                    print(f"📱 [PUSH] Tentative d'envoi à token: {fcm_token[:40]}...")
+                    push_result = await send_push_notification(
+                        fcm_token=fcm_token,
+                        title=title,
+                        body=body,
+                        data=data or {}
+                    )
+                    if push_result:
+                        push_sent = True
+                        print(f"✅ [PUSH] Notification envoyée avec succès à {user_id}")
+                
+                if push_sent:
                     notification["push_status"] = "sent"
                     notification["push_sent_at"] = datetime.now(timezone.utc)
-                    push_sent = True
-                    print(f"📱 Push notification envoyée à {user_id}")
                 else:
                     notification["push_status"] = "failed"
-                    notification["push_error"] = "Firebase SDK returned False"
-                    print(f"⚠️ Push notification échouée pour {user_id}")
+                    notification["push_error"] = "Tous les envois ont échoué"
+                    print(f"⚠️ [PUSH] Tous les envois ont échoué pour {user_id}")
+                    
             except Exception as push_error:
                 notification["push_status"] = "failed"
                 notification["push_error"] = str(push_error)
-                print(f"❌ Erreur push pour {user_id}: {push_error}")
+                print(f"❌ [PUSH] Erreur pour {user_id}: {push_error}")
         else:
             notification["push_status"] = "no_token"
+            print(f"⚠️ [PUSH] Aucun token FCM valide pour {user_id}")
         
         # 3. Sauvegarder en base pour la notification in-app (avec statut push)
         await db.notifications.insert_one(notification)
