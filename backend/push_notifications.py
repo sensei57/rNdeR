@@ -210,11 +210,6 @@ async def send_push_notification(fcm_token: str, title: str, body: str, data: di
         error_msg = str(e)
         logger.error(f"❌ Erreur Firebase lors de l'envoi: {error_msg}")
         print(f"❌ [PUSH] Erreur Firebase: {error_msg}")
-        
-        # Si le token est invalide, retourner un code spécial pour le supprimer
-        if "Requested entity was not found" in error_msg or "not a valid FCM" in error_msg:
-            print(f"⚠️ [PUSH] Token invalide détecté, à supprimer: {fcm_token[:30]}...")
-            return "INVALID_TOKEN"
         return False
     except Exception as e:
         logger.error(f"❌ Erreur lors de l'envoi de la notification push: {e}")
