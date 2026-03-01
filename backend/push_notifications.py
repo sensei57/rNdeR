@@ -185,6 +185,8 @@ async def send_push_notification(fcm_token: str, title: str, body: str, data: di
         # Envoyer la notification
         response = messaging.send(message)
         logger.info(f"✅ Push notification envoyée avec succès: {response}")
+        print(f"✅ [PUSH] Notification envoyée - Response ID: {response}")
+        print(f"✅ [PUSH] Token utilisé: {fcm_token[:30]}..." if len(fcm_token) > 30 else f"✅ [PUSH] Token utilisé: {fcm_token}")
         return True
         
     except firebase_admin.exceptions.FirebaseError as e:
