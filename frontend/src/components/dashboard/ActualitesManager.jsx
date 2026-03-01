@@ -298,14 +298,26 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          {actu.type_contenu === 'image' && actu.fichier_url && (
-            <img src={`${BACKEND_URL}${actu.fichier_url}`} alt={actu.titre} className="w-full max-h-40 object-cover rounded-lg mb-2" />
+          {/* Image si présente */}
+          {actu.image_url && (
+            <img 
+              src={actu.image_url.startsWith('/') ? `${BACKEND_URL}${actu.image_url}` : actu.image_url} 
+              alt={actu.titre} 
+              className="w-full max-h-40 object-cover rounded-lg mb-2" 
+            />
           )}
+          {/* Contenu texte */}
           <p className="text-sm text-gray-700 whitespace-pre-wrap line-clamp-4">{actu.contenu}</p>
-          {actu.type_contenu === 'fichier' && actu.fichier_url && (
-            <a href={`${BACKEND_URL}${actu.fichier_url}`} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center text-xs text-blue-600 hover:underline">
+          {/* Fichier joint si présent */}
+          {actu.fichier_url && (
+            <a 
+              href={actu.fichier_url.startsWith('/') ? `${BACKEND_URL}${actu.fichier_url}` : actu.fichier_url} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="mt-2 inline-flex items-center text-xs text-blue-600 hover:underline bg-blue-50 px-2 py-1 rounded"
+            >
               <FileText className="h-3 w-3 mr-1" />
-              {actu.fichier_nom || 'Fichier'}
+              {actu.fichier_nom || 'Télécharger le fichier'}
             </a>
           )}
           
