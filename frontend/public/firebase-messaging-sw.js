@@ -5,15 +5,14 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-com
 // URL de l'API backend
 const API_BASE_URL = self.location.origin;
 
-// Configuration Firebase - REMPLACEZ CES VALEURS PAR VOS VRAIES CLÉS FIREBASE
-// Ces clés sont publiques par nature et conçues pour être lues par le navigateur
+// Configuration Firebase avec les vraies clés
 const firebaseConfig = {
-  apiKey: "VOTRE_FIREBASE_API_KEY",
-  authDomain: "VOTRE_PROJET.firebaseapp.com",
-  projectId: "VOTRE_PROJECT_ID",
-  storageBucket: "VOTRE_PROJET.appspot.com",
-  messagingSenderId: "VOTRE_MESSAGING_SENDER_ID",
-  appId: "VOTRE_APP_ID"
+  apiKey: "AIzaSyAyFIWDwfSGmcLzfPpPL_qo1w5Vxm6ctS4",
+  authDomain: "cabinet-medical-ope.firebaseapp.com",
+  projectId: "cabinet-medical-ope",
+  storageBucket: "cabinet-medical-ope.appspot.com",
+  messagingSenderId: "752001506338",
+  appId: "1:752001506338:web:2eb60761bd9d7c00973e7b"
 };
 
 // Initialiser Firebase immédiatement (synchrone)
