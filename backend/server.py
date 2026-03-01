@@ -7597,21 +7597,31 @@ firebase_config = {
 
 @api_router.post("/upload/photo")
 async def upload_photo(file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
-    """Upload une photo de profil vers Firebase Storage"""
+    """Upload une photo de profil vers Firebase Storage (compressée à max 300KB)"""
     try:
         content = await file.read()
         
-        # Vérifier la taille (max 5MB pour les photos)
-        if len(content) > 5 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail="Photo trop volumineuse (max 5MB)")
+        # Vérifier la taille initiale (max 10MB avant compression)
+        if len(content) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="Photo trop volumineuse (max 10MB)")
         
-        # Upload vers Firebase Storage
-        from push_notifications import upload_file_to_firebase
+        # Compresser l'image à max 300KB
+        from push_notifications import upload_file_to_firebase, compress_image
+        
+        file_ext = file.filename.split('.')[-1].lower() if '.' in file.filename else 'jpg'
+        if file_ext in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
+            compressed_data, content_type = compress_image(content, max_size_kb=300)
+            # Changer l'extension en .jpg car on convertit en JPEG
+            filename = file.filename.rsplit('.', 1)[0] + '.jpg' if '.' in file.filename else file.filename + '.jpg'
+        else:
+            compressed_data = content
+            content_type = file.content_type
+            filename = file.filename
         
         result = upload_file_to_firebase(
-            file_data=content,
-            filename=file.filename,
-            content_type=file.content_type,
+            file_data=compressed_data,
+            filename=filename,
+            content_type=content_type,
             folder="photos"
         )
         
