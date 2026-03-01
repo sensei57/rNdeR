@@ -480,7 +480,8 @@ class Actualite(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     titre: str
     contenu: str
-    type_contenu: str = "texte"  # "texte", "image", "fichier"
+    image_url: Optional[str] = None
+    image_nom: Optional[str] = None
     fichier_url: Optional[str] = None
     fichier_nom: Optional[str] = None
     groupe_cible: str = "tous"  # "tous", "Médecin", "Assistant", "Secrétaire"
@@ -496,7 +497,8 @@ class Actualite(BaseModel):
 class ActualiteCreate(BaseModel):
     titre: str
     contenu: str
-    type_contenu: str = "texte"
+    image_url: Optional[str] = None
+    image_nom: Optional[str] = None
     fichier_url: Optional[str] = None
     fichier_nom: Optional[str] = None
     groupe_cible: str = "tous"
@@ -507,7 +509,8 @@ class ActualiteCreate(BaseModel):
 class ActualiteUpdate(BaseModel):
     titre: Optional[str] = None
     contenu: Optional[str] = None
-    type_contenu: Optional[str] = None
+    image_url: Optional[str] = None
+    image_nom: Optional[str] = None
     fichier_url: Optional[str] = None
     fichier_nom: Optional[str] = None
     groupe_cible: Optional[str] = None
