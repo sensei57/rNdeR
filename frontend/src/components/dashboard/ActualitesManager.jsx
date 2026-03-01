@@ -509,85 +509,65 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Type de contenu</Label>
-                  <Select value={newActualite.type_contenu} onValueChange={(v) => setNewActualite({...newActualite, type_contenu: v, fichier_url: '', fichier_nom: ''})}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="texte">📝 Texte</SelectItem>
-                      <SelectItem value="image">🖼️ Image</SelectItem>
-                      <SelectItem value="fichier">📎 Fichier</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-2">
+                <Label>Diffuser à</Label>
+                <Select value={newActualite.groupe_cible} onValueChange={(v) => setNewActualite({...newActualite, groupe_cible: v})}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="tous">📢 Tout le monde</SelectItem>
+                    <SelectItem value="Médecin">👨‍⚕️ Médecins</SelectItem>
+                    <SelectItem value="Assistant">👥 Assistants</SelectItem>
+                    <SelectItem value="Secrétaire">📋 Secrétaires</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                <div className="space-y-2">
-                  <Label>Diffuser à</Label>
-                  <Select value={newActualite.groupe_cible} onValueChange={(v) => setNewActualite({...newActualite, groupe_cible: v})}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="tous">📢 Tout le monde</SelectItem>
-                      <SelectItem value="Médecin">👨‍⚕️ Médecins</SelectItem>
-                      <SelectItem value="Assistant">👥 Assistants</SelectItem>
-                      <SelectItem value="Secrétaire">📋 Secrétaires</SelectItem>
-                    </SelectContent>
-                  </Select>
+              {/* Zone Image (optionnelle) */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <span>🖼️</span> Image (optionnel)
+                </Label>
+                <div className="border-2 border-dashed border-gray-200 rounded-lg p-3 text-center bg-gray-50">
+                  {newActualite.image_url ? (
+                    <div className="space-y-2">
+                      <img 
+                        src={newActualite.image_url.startsWith('/') ? `${BACKEND_URL}${newActualite.image_url}` : newActualite.image_url} 
+                        alt="Aperçu" 
+                        className="max-h-32 mx-auto rounded shadow" 
+                      />
+                      <p className="text-xs text-gray-500">{newActualite.image_nom}</p>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setNewActualite({...newActualite, image_url: '', image_nom: ''})}
+                      >
+                        Supprimer l'image
+                      </Button>
+                    </div>
+                  ) : (
+                    <label className="cursor-pointer block">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        disabled={uploading}
+                      />
+                      <div className="flex flex-col items-center py-2">
+                        <Upload className={`h-6 w-6 ${uploading ? 'animate-pulse text-blue-500' : 'text-gray-400'}`} />
+                        <span className="mt-1 text-sm text-gray-500">
+                          {uploading ? 'Upload...' : 'Cliquez pour ajouter une image'}
+                        </span>
+                      </div>
+                    </label>
+                  )}
                 </div>
               </div>
 
-              {/* Upload de fichier/image */}
-              {(newActualite.type_contenu === 'image' || newActualite.type_contenu === 'fichier') && (
-                <div className="space-y-2">
-                  <Label>{newActualite.type_contenu === 'image' ? 'Image' : 'Fichier'}</Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                    {newActualite.fichier_url ? (
-                      <div className="space-y-2">
-                        {newActualite.type_contenu === 'image' ? (
-                          <img 
-                            src={newActualite.fichier_url.startsWith('/') ? `${BACKEND_URL}${newActualite.fichier_url}` : newActualite.fichier_url} 
-                            alt="Aperçu" 
-                            className="max-h-32 mx-auto rounded" 
-                          />
-                        ) : (
-                          <div className="flex items-center justify-center text-gray-600">
-                            <FileText className="h-8 w-8 mr-2" />
-                            <span>{newActualite.fichier_nom}</span>
-                          </div>
-                        )}
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setNewActualite({...newActualite, fichier_url: '', fichier_nom: ''})}
-                        >
-                          Supprimer
-                        </Button>
-                      </div>
-                    ) : (
-                      <label className="cursor-pointer">
-                        <input
-                          type="file"
-                          accept={newActualite.type_contenu === 'image' ? 'image/*' : '.pdf,.doc,.docx,.xls,.xlsx,.txt'}
-                          onChange={handleFileUpload}
-                          className="hidden"
-                          disabled={uploading}
-                        />
-                        <div className="flex flex-col items-center">
-                          <Upload className={`h-8 w-8 ${uploading ? 'animate-pulse text-blue-500' : 'text-gray-400'}`} />
-                          <span className="mt-2 text-sm text-gray-600">
-                            {uploading ? 'Upload en cours...' : `Cliquez pour ajouter ${newActualite.type_contenu === 'image' ? 'une image' : 'un fichier'}`}
-                          </span>
-                          <span className="text-xs text-gray-400 mt-1">Max 10MB</span>
-                        </div>
-                      </label>
-                    )}
-                  </div>
-                </div>
-              )}
-
+              {/* Zone Texte */}
               <div className="space-y-2">
-                <Label>Contenu *</Label>
+                <Label>📝 Contenu *</Label>
                 <textarea
                   value={newActualite.contenu}
                   onChange={(e) => setNewActualite({...newActualite, contenu: e.target.value})}
@@ -595,6 +575,47 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
                   className="w-full min-h-[100px] p-3 border rounded-md text-sm"
                   required
                 />
+              </div>
+
+              {/* Zone Fichier (optionnelle) */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <span>📎</span> Fichier joint (optionnel)
+                </Label>
+                <div className="border-2 border-dashed border-gray-200 rounded-lg p-3 text-center bg-gray-50">
+                  {newActualite.fichier_url ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-center text-gray-600">
+                        <FileText className="h-6 w-6 mr-2 text-blue-500" />
+                        <span className="text-sm">{newActualite.fichier_nom}</span>
+                      </div>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setNewActualite({...newActualite, fichier_url: '', fichier_nom: ''})}
+                      >
+                        Supprimer le fichier
+                      </Button>
+                    </div>
+                  ) : (
+                    <label className="cursor-pointer block">
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        disabled={uploading}
+                      />
+                      <div className="flex flex-col items-center py-2">
+                        <Upload className={`h-6 w-6 ${uploading ? 'animate-pulse text-blue-500' : 'text-gray-400'}`} />
+                        <span className="mt-1 text-sm text-gray-500">
+                          {uploading ? 'Upload...' : 'Cliquez pour joindre un fichier (PDF, DOC, XLS...)'}
+                        </span>
+                      </div>
+                    </label>
+                  )}
+                </div>
               </div>
 
               {/* Option signature requise */}
