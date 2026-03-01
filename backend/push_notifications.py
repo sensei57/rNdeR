@@ -29,14 +29,26 @@ def initialize_firebase():
         
         # Option 1: Variable d'environnement FIREBASE_CREDENTIALS (JSON string)
         firebase_creds_env = os.environ.get('FIREBASE_CREDENTIALS')
+        
+        # LOG DE DIAGNOSTIC
+        print(f"🔍 [FIREBASE DEBUG] Variable FIREBASE_CREDENTIALS présente: {bool(firebase_creds_env)}")
+        if firebase_creds_env:
+            print(f"🔍 [FIREBASE DEBUG] Longueur du JSON: {len(firebase_creds_env)} caractères")
+            print(f"🔍 [FIREBASE DEBUG] Commence par '{{': {firebase_creds_env.strip().startswith('{')}")
+            print(f"🔍 [FIREBASE DEBUG] Finit par '}}': {firebase_creds_env.strip().endswith('}')}")
+            print(f"🔍 [FIREBASE DEBUG] Premiers 50 caractères: {firebase_creds_env[:50]}...")
+        
         if firebase_creds_env:
             try:
                 # Parser le JSON depuis la variable d'environnement
                 cred_dict = json.loads(firebase_creds_env)
+                print(f"✅ [FIREBASE DEBUG] JSON parsé avec succès. Clés trouvées: {list(cred_dict.keys())}")
                 cred = credentials.Certificate(cred_dict)
                 logger.info("✅ Firebase credentials chargées depuis variable d'environnement FIREBASE_CREDENTIALS")
+                print("✅ Firebase credentials chargées depuis variable d'environnement")
             except json.JSONDecodeError as e:
                 logger.error(f"❌ Erreur parsing JSON FIREBASE_CREDENTIALS: {e}")
+                print(f"❌ [FIREBASE DEBUG] Erreur parsing JSON: {e}")
                 # Continuer pour essayer le fichier
         
         # Option 2: Fichier firebase-credentials.json (fallback)
