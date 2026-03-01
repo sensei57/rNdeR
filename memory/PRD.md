@@ -1,73 +1,137 @@
-# PRD - OphtaGestion Multi-Centres v2.9
+# OphtagGestion - Application de Gestion de Cabinet Médical
 
-## 1. Vue d'ensemble
-Application web full-stack de gestion de cabinets médicaux multi-centres. **Version 2.9 - UI/UX Améliorations.**
+## Problem Statement
+Application full-stack de gestion de cabinet médical multi-centres permettant la gestion du planning, des congés, des actualités, des stocks et de la communication interne.
 
-## 2. Nouveautés v2.9 (28 février 2026)
+## Architecture
 
-### Menu Navigation Horizontal Optimisé
-- ✅ Menu "Plus" réservé uniquement aux items admin (Administration, Gestion Centres)
-- ✅ Tous les autres items (Coffre-Fort, Plan Cabinet, Salles, Stocks) visibles dans la barre principale
-- ✅ Meilleure utilisation de l'espace horizontal sur desktop
+### Stack Technique
+- **Frontend**: React + Tailwind CSS + Shadcn/UI
+- **Backend**: FastAPI + MongoDB (via motor)
+- **Auth**: JWT + bcrypt
+- **Notifications**: Firebase Cloud Messaging
+- **Exports**: jspdf + jspdf-autotable + html2canvas
 
-### Plan du Cabinet - Layout Responsive
-- ✅ Nouveau système de grille CSS responsive (`room-card-grid`)
-- ✅ Le plan s'adapte maintenant à la largeur disponible
-- ✅ Suppression des positions absolues fixes en pixels
+### Structure des Fichiers
+```
+/app/
+├── backend/
+│   ├── server.py           # API FastAPI principale
+│   ├── push_notifications.py # Gestion Firebase FCM
+│   └── .env                 # Configuration MongoDB
+├── frontend/
+│   ├── src/App.js          # Application React principale
+│   └── public/
+│       └── firebase-messaging-sw.js # Service Worker FCM
+└── memory/
+    └── PRD.md              # Ce fichier
+```
 
-### Planning - Noms Tronqués
-- ✅ Les noms des employés sont maintenant tronqués avec `truncate` et `max-w-[100px]`
-- ✅ Info-bulle (title) affiche le nom complet au survol
-- ✅ Évite les débordements de texte dans les cellules
+## Fonctionnalités Implémentées
 
-### v2.8 - Layout Plein Écran PC
-- ✅ Suppression des contraintes `max-w-7xl` 
-- ✅ Padding adaptatif (`px-4 sm:px-6 lg:px-10 xl:px-12`)
-- ✅ CSS `dashboard-container` : max-width à 100%
+### Core
+- [x] Authentification JWT avec rôles (Super-Admin, Directeur, Manager, Médecin, Assistant, Secrétaire)
+- [x] Gestion multi-centres avec configuration par centre
+- [x] Planning avec créneaux MATIN/APRES_MIDI
+- [x] Gestion des congés avec workflow d'approbation
+- [x] Messagerie interne (privée et groupes)
+- [x] Gestion des stocks par centre
+- [x] Plan du cabinet avec salles
 
-### v2.7 - Centre Favori et Migration
-- ✅ Champ `centre_favori_id` pour chaque utilisateur
-- ✅ Migration automatique des données sans `centre_id`
+### Actualités (Refonte Récente)
+- [x] Création avec texte + image + fichier combinés
+- [x] Ciblage par groupe (tous, Médecin, Assistant, Secrétaire)
+- [x] Signature requise pour confirmer lecture
+- [x] Upload d'images et fichiers
 
-## 3. Modules filtrés par centre
+### Notifications Push
+- [x] Intégration Firebase Cloud Messaging
+- [x] Support multi-appareils par utilisateur
+- [x] Notifications automatiques à 7h (planning du jour)
+- [x] Notifications de test personnalisées
 
-| Module | Endpoint | Filtrage |
-|--------|----------|----------|
-| Actualités | `/api/actualites` | ✅ Par centre |
-| Planning | `/api/planning` | ✅ Par centre |
-| Congés | `/api/conges` | ✅ Par centre |
-| Demandes créneaux | `/api/demandes-travail` | ✅ Par centre |
-| Salles | `/api/salles` | ✅ Par centre |
-| Stocks | `/api/stocks/*` | ✅ Par centre |
-| Notes | `/api/notes` | ✅ Par centre |
+### Migration Multi-Centres
+- [x] API `/api/admin/migrate-data-to-centre`
+- [x] Interface dans Mon Profil > Centre Favori
+- [x] Migration automatique vers centre favori
 
-## 4. Credentials de Test
-- **Email:** directeur@cabinet.fr
-- **Mot de passe:** admin123
+## Problèmes Connus (Issues)
 
-## 5. Issues Connues
-- **PlanningManager** : Le composant fait ~9000 lignes, une extraction serait bénéfique
-- **Bug affichage congés** : La liste peut afficher "Aucune demande" malgré les stats
-- **Rechargement mobile** : Problème persistant sur certains appareils
+### P0 - Critiques
+1. **Backend Render ne démarre pas**
+   - Logs: "No open HTTP ports detected"
+   - Cause suspectée: Initialisation Firebase bloquante
+   - Tentative: Initialisation "lazy" ajoutée
 
-## 6. Notes Techniques
-- **Plan Cabinet dans Actualités** : Affiche "Aucun planning" si aucune salle n'est configurée
-- Les données sont isolées par centre - un centre sans configuration affichera des listes vides
+2. **Notifications Push non fiables**
+   - Une seule notification reçue au lieu de plusieurs
+   - Message incorrect (cache SW)
+   - Erreur "Requested entity was not found" (tokens invalides)
 
-## 7. Tâches Futures
-- Interface de gestion des logos de centre (backend prêt, UI manquante)
-- Validation fonctionnelle du calcul des heures supplémentaires
-- Amélioration de l'interface des permissions des managers
+### P1 - Importants
+3. **Composant PlanningManager monolithique** (~9000 lignes)
+4. **Téléchargements PDF/Image** - Erreur `n.autoTable is not a function`
 
----
-**Version:** 2.9  
-**Date:** 28 février 2026  
-**Status:** ✅ PRODUCTION READY
+### P2 - Mineurs
+5. Interface de gestion des logos de centre (backend prêt)
+6. Affichage anniversaires/congés (filtrage par centre)
 
----
-## Changelog - 1er Mars 2026 (Suite)
-### Bug Fix - Firebase "WebpushFCMOptions.link must be a HTTPS URL"
-- **Fichier:** `/app/backend/push_notifications.py`
-- **Problème:** `link='/'` n'est pas une URL HTTPS valide
-- **Solution:** Utilise `FRONTEND_URL` de l'environnement, inclut le lien seulement si HTTPS
-- **Action utilisateur:** Ajouter `FRONTEND_URL=https://ope-francis.onrender.com` sur Render
+## API Endpoints Clés
+
+### Auth
+- `POST /api/auth/login` - Connexion
+- `POST /api/auth/register` - Inscription
+
+### Multi-Centres
+- `GET /api/centres` - Liste des centres
+- `POST /api/admin/migrate-data-to-centre` - Migration données orphelines
+
+### Actualités
+- `GET /api/actualites` - Liste des actualités
+- `POST /api/actualites` - Créer une actualité
+- `POST /api/actualites/upload-file` - Upload image/fichier
+- `POST /api/actualites/sign/{id}` - Signer une actualité
+
+### Notifications
+- `POST /api/notifications/subscribe` - Enregistrer token FCM
+- `POST /api/notifications/test` - Envoyer notification test
+
+## Schéma DB Clé
+
+### users
+```json
+{
+  "id": "uuid",
+  "email": "string",
+  "nom": "string",
+  "prenom": "string",
+  "role": "Super-Admin|Directeur|Manager|Médecin|Assistant|Secrétaire",
+  "centre_id": "uuid",
+  "centre_ids": ["uuid"],
+  "centre_favori_id": "uuid",
+  "fcm_devices": [{"device_id": "string", "fcm_token": "string", ...}]
+}
+```
+
+### actualites
+```json
+{
+  "id": "uuid",
+  "titre": "string",
+  "contenu": "string",
+  "image_url": "string?",
+  "fichier_url": "string?",
+  "groupe_cible": "tous|Médecin|Assistant|Secrétaire",
+  "centre_id": "uuid",
+  "signature_requise": "boolean",
+  "signatures": [{"user_id": "uuid", "user_name": "string", "signed_at": "datetime"}]
+}
+```
+
+## Credentials Test
+- Email: `directeur@cabinet.fr`
+- Password: `admin123`
+
+## Dernière Mise à Jour
+- Date: 1er Mars 2026
+- Session: Vérification migration données, suppression script doublon
