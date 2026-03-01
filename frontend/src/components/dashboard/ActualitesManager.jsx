@@ -45,10 +45,12 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
     image_nom: '',
     fichier_url: '',
     fichier_nom: '',
-    groupe_cible: 'tous',
+    groupes_cibles: ['Médecin', 'Assistant', 'Secrétaire'], // Par défaut tous sélectionnés
     priorite: 0,
     signature_requise: false
   });
+  
+  const TOUS_LES_GROUPES = ['Médecin', 'Assistant', 'Secrétaire'];
 
   const fetchData = useCallback(async () => {
     try {
