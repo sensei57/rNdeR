@@ -47,7 +47,7 @@ async def seed_demo_data():
         print(f"✅ Centre existant: {centre.get('nom')} ({centre_id[:8]}...)")
     
     # 2. Récupérer le directeur existant
-    directeur = await db.users.find_one({"role": "Directeur"})
+    directeur = await db.users.find_one({"$or": [{"role": "Directeur"}, {"role": "Super-Admin"}]})
     if not directeur:
         print("❌ Aucun directeur trouvé. Lancez d'abord init_db.py")
         client.close()
