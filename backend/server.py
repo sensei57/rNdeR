@@ -3118,9 +3118,18 @@ async def create_conge_direct(
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     
-    # Créer le congé avec statut APPROUVE directement
+    # Déterminer le centre_id (priorité: centre de l'utilisateur cible, sinon centre actif du directeur)
+    centre_id = user.get('centre_id') or user.get('centre_favori_id')
+    if not centre_id:
+        # Utiliser le centre actif du directeur qui crée le congé
+        centre_id = getattr(current_user, 'centre_actif_id', None) or current_user.centre_id
+    
+    print(f"[DEBUG CONGE DIRECT] Création congé pour {utilisateur_id} avec centre_id: {centre_id}")
+    
+    # Créer le congé avec statut APPROUVE directement ET avec le centre_id
     demande = DemandeConge(
         utilisateur_id=utilisateur_id,
+        centre_id=centre_id,  # IMPORTANT: ajouter le centre_id pour le filtrage
         date_debut=demande_data['date_debut'],
         date_fin=demande_data['date_fin'],
         type_conge=demande_data.get('type_conge', 'CONGE_PAYE'),
@@ -3132,7 +3141,7 @@ async def create_conge_direct(
     
     await db.demandes_conges.insert_one(demande.dict())
     
-    return {"message": "Congé créé et approuvé", "id": demande.id}
+    return {"message": "Congé créé et approuvé", "id": demande.id, "centre_id": centre_id}
 
 @api_router.get("/conges", response_model=List[Dict[str, Any]])
 async def get_demandes_conges(current_user: User = Depends(get_current_user)):
