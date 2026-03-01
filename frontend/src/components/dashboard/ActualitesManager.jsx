@@ -43,8 +43,10 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
     contenu: '',
     image_url: '',
     image_nom: '',
+    image_storage_path: '',
     fichier_url: '',
     fichier_nom: '',
+    fichier_storage_path: '',
     groupes_cibles: ['Médecin', 'Assistant', 'Secrétaire'], // Par défaut tous sélectionnés
     priorite: 0,
     signature_requise: false
