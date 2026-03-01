@@ -302,5 +302,7 @@ async def send_push_to_multiple(fcm_tokens: list, title: str, body: str, data: d
         return 0
 
 
-# Initialiser Firebase au démarrage du module
-initialize_firebase()
+# NE PAS initialiser Firebase au démarrage du module
+# L'initialisation se fait de manière lazy au premier appel de send_push_notification
+# Cela évite de bloquer le démarrage du serveur
+# initialize_firebase()
