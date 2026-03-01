@@ -241,6 +241,10 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'STORE_TOKEN') {
     storeToken(event.data.token);
   }
+  // Permettre la mise à jour immédiate du SW
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Stocker le token dans IndexedDB
