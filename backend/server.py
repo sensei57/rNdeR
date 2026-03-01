@@ -482,8 +482,10 @@ class Actualite(BaseModel):
     contenu: str
     image_url: Optional[str] = None
     image_nom: Optional[str] = None
+    image_storage_path: Optional[str] = None  # Chemin dans Firebase Storage pour suppression
     fichier_url: Optional[str] = None
     fichier_nom: Optional[str] = None
+    fichier_storage_path: Optional[str] = None  # Chemin dans Firebase Storage pour suppression
     groupe_cible: str = "tous"  # "tous", "Médecin", "Assistant", "Secrétaire" (ancien format)
     groupes_cibles: List[str] = Field(default_factory=lambda: ["Médecin", "Assistant", "Secrétaire"])  # Nouveau format multi-groupes
     centre_id: Optional[str] = None  # Centre auquel appartient cette actualité
@@ -500,8 +502,10 @@ class ActualiteCreate(BaseModel):
     contenu: str
     image_url: Optional[str] = None
     image_nom: Optional[str] = None
+    image_storage_path: Optional[str] = None
     fichier_url: Optional[str] = None
     fichier_nom: Optional[str] = None
+    fichier_storage_path: Optional[str] = None
     groupe_cible: str = "tous"
     groupes_cibles: List[str] = Field(default_factory=lambda: ["Médecin", "Assistant", "Secrétaire"])
     centre_id: Optional[str] = None  # Centre auquel appartient cette actualité
@@ -513,8 +517,10 @@ class ActualiteUpdate(BaseModel):
     contenu: Optional[str] = None
     image_url: Optional[str] = None
     image_nom: Optional[str] = None
+    image_storage_path: Optional[str] = None
     fichier_url: Optional[str] = None
     fichier_nom: Optional[str] = None
+    fichier_storage_path: Optional[str] = None
     groupe_cible: Optional[str] = None
     groupes_cibles: Optional[List[str]] = None
     centre_id: Optional[str] = None
