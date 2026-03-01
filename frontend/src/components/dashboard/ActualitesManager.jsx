@@ -526,7 +526,17 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
           {isAdmin ? (
             <div className="space-y-4">
               {['Médecin', 'Assistant', 'Secrétaire'].map(role => {
-                const actusRole = (actualites || []).filter(a => a.groupe_cible === role);
+                // Filtrer les actualités qui ciblent ce rôle (ancien ou nouveau format)
+                const actusRole = (actualites || []).filter(a => {
+                  // Exclure les actualités générales
+                  if (isActualiteGenerale(a)) return false;
+                  // Nouveau format : groupes_cibles
+                  if (a.groupes_cibles && Array.isArray(a.groupes_cibles)) {
+                    return a.groupes_cibles.includes(role);
+                  }
+                  // Ancien format : groupe_cible
+                  return a.groupe_cible === role;
+                });
                 if (actusRole.length === 0) return null;
                 return (
                   <div key={role}>
