@@ -3249,6 +3249,23 @@ async def annuler_conge(
     
     return {"message": "Congé annulé avec succès"}
 
+@api_router.delete("/conges/{demande_id}")
+async def supprimer_conge(
+    demande_id: str,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"], ROLES["SUPER_ADMIN"]]))
+):
+    """Supprimer complètement un congé (Directeur/Super-Admin uniquement)"""
+    demande = await db.demandes_conges.find_one({"id": demande_id})
+    if not demande:
+        raise HTTPException(status_code=404, detail="Demande de congé non trouvée")
+    
+    result = await db.demandes_conges.delete_one({"id": demande_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=400, detail="Erreur lors de la suppression")
+    
+    return {"message": "Congé supprimé avec succès"}
+
 @api_router.put("/conges/{demande_id}/modifier-type")
 async def modifier_type_conge(
     demande_id: str,
