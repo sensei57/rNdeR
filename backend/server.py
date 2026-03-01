@@ -3074,7 +3074,7 @@ async def create_demande_conge(
 @api_router.post("/conges/direct")
 async def create_conge_direct(
     demande_data: dict,
-    current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"], ROLES["SUPER_ADMIN"]]))
 ):
     """Créer un congé directement (déjà approuvé) - Directeur uniquement
     
