@@ -320,7 +320,7 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
             <img 
               src={actu.image_url.startsWith('/') ? `${BACKEND_URL}${actu.image_url}` : actu.image_url} 
               alt={actu.titre} 
-              className="w-full max-h-40 object-cover rounded-lg mb-2" 
+              className="w-full h-auto rounded-lg mb-2" 
             />
           )}
           {/* Contenu texte */}
