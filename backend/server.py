@@ -124,9 +124,19 @@ async def send_morning_planning_notifications():
 async def lifespan(app: FastAPI):
     # Startup
     print("🚀 [LIFESPAN] Démarrage du serveur...")
+    print(f"🔧 [LIFESPAN] Python version: {os.sys.version}")
     
+    # Test MongoDB connection first
     try:
-        # Configurer le scheduler pour 7h du matin (heure de Paris)
+        print("🔧 [LIFESPAN] Test connexion MongoDB...")
+        await client.admin.command('ping')
+        print("✅ [LIFESPAN] MongoDB connecté!")
+    except Exception as e:
+        print(f"⚠️ [LIFESPAN] MongoDB non disponible (non bloquant): {e}")
+    
+    # Scheduler optionnel
+    try:
+        print("🔧 [LIFESPAN] Configuration scheduler...")
         scheduler.add_job(
             send_morning_planning_notifications,
             CronTrigger(hour=7, minute=0, timezone="Europe/Paris"),
@@ -143,7 +153,7 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     try:
-        scheduler.shutdown()
+        scheduler.shutdown(wait=False)
     except:
         pass
     print("🛑 [LIFESPAN] Serveur arrêté")
