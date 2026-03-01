@@ -4985,6 +4985,27 @@ const PlanningManager = () => {
     }
   };
   
+  // Scinder un congé multi-jours pour modifier un jour spécifique
+  const handleScinderConge = async (congeId, dateAModifier, creneau, nouveauType, creerCreneauTravail = false) => {
+    try {
+      const response = await axios.put(`${API}/conges/${congeId}/scinder`, {
+        date_a_modifier: dateAModifier,
+        creneau: creneau, // 'MATIN', 'APRES_MIDI', ou 'JOURNEE_COMPLETE'
+        nouveau_type: nouveauType, // null = supprimer le congé pour ce jour, sinon le nouveau type
+        creer_creneau_travail: creerCreneauTravail
+      });
+      toast.success(response.data.message || 'Congé modifié avec succès !');
+      fetchConges();
+      fetchPlanningTableau(selectedWeek);
+      setShowJourneeModal(false);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error(error.response?.data?.detail || 'Erreur lors de la modification du congé');
+      return null;
+    }
+  };
+  
   // Soumettre le modal journée complète
   // Enregistrer uniquement le MATIN
   const handleEnregistrerMatin = async () => {
