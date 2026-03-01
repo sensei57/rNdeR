@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { Bell, Plus, Edit, Trash2, FileText, Upload, CheckCircle, Users, Eye, X } from 'lucide-react';
+import { Bell, Plus, Edit, Trash2, FileText, Upload, CheckCircle, Users, Eye, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
