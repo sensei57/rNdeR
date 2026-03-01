@@ -244,10 +244,17 @@ async def send_push_to_multiple(fcm_tokens: list, title: str, body: str, data: d
         # Récupérer l'URL frontend pour le lien de la notification
         frontend_url = os.environ.get('FRONTEND_URL', '').strip()
         
-        # Construire la config webpush
+        # Tag unique pour cette notification
+        unique_tag = f"multi-{int(time.time() * 1000)}"
+        
+        # Construire la config webpush avec title et body
         webpush_notification_config = messaging.WebpushNotification(
+            title=title,
+            body=body,
             icon='/icon-192.png',
             badge='/icon-192.png',
+            tag=unique_tag,
+            renotify=True,
             require_interaction=True,
             vibrate=[200, 100, 200]
         )
