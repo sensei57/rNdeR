@@ -40,9 +40,17 @@ Application full-stack de gestion de cabinet médical multi-centres permettant l
 
 ### Actualités (Refonte Récente)
 - [x] Création avec texte + image + fichier combinés
-- [x] Ciblage par groupe (tous, Médecin, Assistant, Secrétaire)
+- [x] Ciblage multi-groupes (sélection multiple parmi Médecin, Assistant, Secrétaire)
 - [x] Signature requise pour confirmer lecture
-- [x] Upload d'images et fichiers
+- [x] Upload d'images et fichiers vers Firebase Storage
+- [x] Compression automatique des images (max 300KB)
+- [x] **Carrousel de navigation** (Nouveau - Mars 2026):
+  - Compteur "X / Y" pour indiquer la position
+  - Navigation précédent/suivant avec flèches
+  - Points de navigation (dots) cliquables
+  - Badge "NOUVEAU" sur les actualités non lues
+  - Indicateur du nombre d'actualités non lues avec animation
+  - Persistance de l'état de lecture dans localStorage par utilisateur
 
 ### Notifications Push
 - [x] Intégration Firebase Cloud Messaging
