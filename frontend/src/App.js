@@ -11895,24 +11895,49 @@ const PlanningManager = () => {
             {/* Option Congé/Repos pour Secrétaires et Assistants */}
             {(journeeData.employe?.role === 'Secrétaire' || journeeData.employe?.role === 'Assistant') && (
               <div className={`border rounded-lg p-4 mt-4 ${journeeData.congeExistant ? 'bg-red-50 border-red-300' : 'bg-gray-50'}`}>
+                {/* Alerte si congé multi-jours */}
+                {journeeData.congeExistant && journeeData.congeExistant.date_debut !== journeeData.congeExistant.date_fin && (
+                  <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-3 mb-3">
+                    <p className="text-sm font-semibold text-yellow-800">
+                      ⚠️ Congé multi-jours : {new Date(journeeData.congeExistant.date_debut + 'T12:00:00').toLocaleDateString('fr-FR')} au {new Date(journeeData.congeExistant.date_fin + 'T12:00:00').toLocaleDateString('fr-FR')}
+                    </p>
+                    <p className="text-xs text-yellow-700 mt-1">
+                      Vous pouvez modifier ce jour spécifiquement. Le congé sera automatiquement scindé si nécessaire.
+                    </p>
+                  </div>
+                )}
+                
                 <h4 className="font-semibold text-gray-700 mb-3">
-                  🏖️ {journeeData.congeExistant ? 'Congé existant - Décocher pour annuler' : 'Ajouter un congé ou repos pour cette journée'}
+                  🏖️ {journeeData.congeExistant ? `Congé existant (${journeeData.congeExistant.type_conge})` : 'Ajouter un congé ou repos pour cette journée'}
                 </h4>
+                
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
+                  {/* MATIN */}
+                  <div className="space-y-2">
                     <label className="flex items-center space-x-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={journeeData.matin.conge || false}
                         onChange={async (e) => {
                           if (!e.target.checked && journeeData.congeExistant) {
-                            // Décocher = supprimer le congé existant
-                            await handleSupprimerCongeExistant(journeeData.congeExistant.id);
+                            // Décocher matin = scinder le congé si multi-jours
+                            const isMultiJours = journeeData.congeExistant.date_debut !== journeeData.congeExistant.date_fin;
+                            if (isMultiJours) {
+                              // Scinder le congé : supprimer ce créneau spécifique
+                              await handleScinderConge(
+                                journeeData.congeExistant.id,
+                                journeeData.date,
+                                'MATIN',
+                                null, // pas de nouveau type = retirer ce créneau du congé
+                                true  // créer un créneau de travail
+                              );
+                            } else {
+                              // Congé d'un jour : supprimer complètement
+                              await handleSupprimerCongeExistant(journeeData.congeExistant.id);
+                            }
                             setJourneeData(prev => ({
                               ...prev,
-                              congeExistant: null,
-                              matin: { ...prev.matin, conge: false, type_conge: '' },
-                              apresMidi: { ...prev.apresMidi, conge: false, type_conge: '' }
+                              matin: { ...prev.matin, conge: false, type_conge: '' }
                             }));
                           } else {
                             setJourneeData(prev => ({
@@ -11927,16 +11952,28 @@ const PlanningManager = () => {
                     </label>
                     {journeeData.matin.conge && (
                       <select
-                        className="w-full p-2 border rounded text-sm mt-2"
+                        className="w-full p-2 border rounded text-sm"
                         value={journeeData.matin.type_conge || 'CONGE_PAYE'}
-                        onChange={(e) => {
+                        onChange={async (e) => {
+                          const nouveauType = e.target.value;
                           setJourneeData(prev => ({
                             ...prev,
-                            matin: { ...prev.matin, type_conge: e.target.value }
+                            matin: { ...prev.matin, type_conge: nouveauType }
                           }));
-                          // Si congé existant, modifier le type
+                          // Si congé existant multi-jours, scinder pour changer le type
                           if (journeeData.congeExistant) {
-                            handleModifierTypeConge(journeeData.congeExistant.id, e.target.value);
+                            const isMultiJours = journeeData.congeExistant.date_debut !== journeeData.congeExistant.date_fin;
+                            if (isMultiJours && nouveauType !== journeeData.congeExistant.type_conge) {
+                              await handleScinderConge(
+                                journeeData.congeExistant.id,
+                                journeeData.date,
+                                'MATIN',
+                                nouveauType,
+                                false
+                              );
+                            } else {
+                              handleModifierTypeConge(journeeData.congeExistant.id, nouveauType);
+                            }
                           }
                         }}
                       >
@@ -11948,20 +11985,60 @@ const PlanningManager = () => {
                         <option value="REPOS">Repos (non comptabilisé)</option>
                       </select>
                     )}
+                    {/* Bouton pour convertir en jour de travail */}
+                    {journeeData.congeExistant && journeeData.matin.conge && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-xs bg-green-50 hover:bg-green-100 border-green-300 text-green-700"
+                        onClick={async () => {
+                          const isMultiJours = journeeData.congeExistant.date_debut !== journeeData.congeExistant.date_fin;
+                          if (isMultiJours) {
+                            await handleScinderConge(
+                              journeeData.congeExistant.id,
+                              journeeData.date,
+                              'MATIN',
+                              null,
+                              true // créer créneau travail
+                            );
+                          } else {
+                            await handleSupprimerCongeExistant(journeeData.congeExistant.id);
+                          }
+                          setJourneeData(prev => ({
+                            ...prev,
+                            matin: { ...prev.matin, conge: false, type_conge: '' }
+                          }));
+                        }}
+                      >
+                        ✅ Convertir en jour de travail
+                      </Button>
+                    )}
                   </div>
-                  <div>
+                  
+                  {/* APRÈS-MIDI */}
+                  <div className="space-y-2">
                     <label className="flex items-center space-x-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={journeeData.apresMidi.conge || false}
                         onChange={async (e) => {
                           if (!e.target.checked && journeeData.congeExistant) {
-                            // Décocher = supprimer le congé existant
-                            await handleSupprimerCongeExistant(journeeData.congeExistant.id);
+                            // Décocher après-midi = scinder le congé si multi-jours
+                            const isMultiJours = journeeData.congeExistant.date_debut !== journeeData.congeExistant.date_fin;
+                            if (isMultiJours) {
+                              await handleScinderConge(
+                                journeeData.congeExistant.id,
+                                journeeData.date,
+                                'APRES_MIDI',
+                                null,
+                                true
+                              );
+                            } else {
+                              await handleSupprimerCongeExistant(journeeData.congeExistant.id);
+                            }
                             setJourneeData(prev => ({
                               ...prev,
-                              congeExistant: null,
-                              matin: { ...prev.matin, conge: false, type_conge: '' },
                               apresMidi: { ...prev.apresMidi, conge: false, type_conge: '' }
                             }));
                           } else {
@@ -11977,16 +12054,27 @@ const PlanningManager = () => {
                     </label>
                     {journeeData.apresMidi.conge && (
                       <select
-                        className="w-full p-2 border rounded text-sm mt-2"
+                        className="w-full p-2 border rounded text-sm"
                         value={journeeData.apresMidi.type_conge || 'CONGE_PAYE'}
-                        onChange={(e) => {
+                        onChange={async (e) => {
+                          const nouveauType = e.target.value;
                           setJourneeData(prev => ({
                             ...prev,
-                            apresMidi: { ...prev.apresMidi, type_conge: e.target.value }
+                            apresMidi: { ...prev.apresMidi, type_conge: nouveauType }
                           }));
-                          // Si congé existant, modifier le type
                           if (journeeData.congeExistant) {
-                            handleModifierTypeConge(journeeData.congeExistant.id, e.target.value);
+                            const isMultiJours = journeeData.congeExistant.date_debut !== journeeData.congeExistant.date_fin;
+                            if (isMultiJours && nouveauType !== journeeData.congeExistant.type_conge) {
+                              await handleScinderConge(
+                                journeeData.congeExistant.id,
+                                journeeData.date,
+                                'APRES_MIDI',
+                                nouveauType,
+                                false
+                              );
+                            } else {
+                              handleModifierTypeConge(journeeData.congeExistant.id, nouveauType);
+                            }
                           }
                         }}
                       >
@@ -11997,6 +12085,35 @@ const PlanningManager = () => {
                         <option value="HEURES_RECUPEREES">Heures récupérées (-H sup)</option>
                         <option value="REPOS">Repos (non comptabilisé)</option>
                       </select>
+                    )}
+                    {/* Bouton pour convertir en jour de travail */}
+                    {journeeData.congeExistant && journeeData.apresMidi.conge && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-xs bg-green-50 hover:bg-green-100 border-green-300 text-green-700"
+                        onClick={async () => {
+                          const isMultiJours = journeeData.congeExistant.date_debut !== journeeData.congeExistant.date_fin;
+                          if (isMultiJours) {
+                            await handleScinderConge(
+                              journeeData.congeExistant.id,
+                              journeeData.date,
+                              'APRES_MIDI',
+                              null,
+                              true
+                            );
+                          } else {
+                            await handleSupprimerCongeExistant(journeeData.congeExistant.id);
+                          }
+                          setJourneeData(prev => ({
+                            ...prev,
+                            apresMidi: { ...prev.apresMidi, conge: false, type_conge: '' }
+                          }));
+                        }}
+                      >
+                        ✅ Convertir en jour de travail
+                      </Button>
                     )}
                   </div>
                 </div>
