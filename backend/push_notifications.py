@@ -159,6 +159,11 @@ async def send_push_notification(fcm_token: str, title: str, body: str, data: di
         # Récupérer l'URL frontend pour le lien de la notification
         frontend_url = os.environ.get('FRONTEND_URL', '').strip()
         
+        # IMPORTANT: Inclure title et body dans data pour que le SW puisse les lire
+        # même si Firebase gère automatiquement le notification payload
+        notification_data["title"] = title
+        notification_data["body"] = body
+        
         # Construire la config webpush avec ou sans lien selon la disponibilité
         webpush_config_args = {
             "notification": messaging.WebpushNotification(**webpush_notification_config)
@@ -182,11 +187,17 @@ async def send_push_notification(fcm_token: str, title: str, body: str, data: di
             webpush=messaging.WebpushConfig(**webpush_config_args)
         )
         
+        # Log détaillé pour debug
+        print(f"📤 [PUSH] Envoi notification:")
+        print(f"   - Title: {title}")
+        print(f"   - Body: {body[:50]}..." if len(body) > 50 else f"   - Body: {body}")
+        print(f"   - Token: {fcm_token[:40]}...")
+        print(f"   - Data keys: {list(notification_data.keys())}")
+        
         # Envoyer la notification
         response = messaging.send(message)
         logger.info(f"✅ Push notification envoyée avec succès: {response}")
         print(f"✅ [PUSH] Notification envoyée - Response ID: {response}")
-        print(f"✅ [PUSH] Token utilisé: {fcm_token[:30]}..." if len(fcm_token) > 30 else f"✅ [PUSH] Token utilisé: {fcm_token}")
         return True
         
     except firebase_admin.exceptions.FirebaseError as e:
