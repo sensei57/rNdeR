@@ -201,6 +201,8 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
+      console.log('[ActualitesManager] Image uploadée, URL:', response.data.url);
+      
       setNewActualite(prev => ({
         ...prev,
         image_url: response.data.url,
