@@ -7246,18 +7246,21 @@ async def get_anniversaires(current_user: User = Depends(get_current_user)):
     
     # Construire la requête avec filtrage par centre
     if centre_actif:
-        # Voir les employés de ce centre qui ont une date de naissance
+        # Voir les employés de ce centre + ceux sans centre (anciennes données)
         query = {
             "actif": True,
             "date_naissance": {"$nin": [None, "", "null"]},
             "$or": [
                 {"centre_id": centre_actif},
-                {"centre_ids": centre_actif}
+                {"centre_ids": centre_actif},
+                {"centre_id": None},
+                {"centre_id": {"$exists": False}},
+                {"centre_id": ""}
             ]
         }
     else:
-        # Pas de centre actif = aucun anniversaire (sauf Super-Admin)
-        if current_user.role == "Super-Admin":
+        # Pas de centre actif = voir tous les anniversaires (Super-Admin)
+        if current_user.role in ["Super-Admin", "Directeur"]:
             query = {
                 "actif": True,
                 "date_naissance": {"$nin": [None, "", "null"]}
@@ -7273,7 +7276,9 @@ async def get_anniversaires(current_user: User = Depends(get_current_user)):
     
     # Log détaillé des utilisateurs trouvés
     for u in users[:5]:
-        print(f"[DEBUG ANNIV] -> {u.get('prenom')} {u.get('nom')}: {u.get('date_naissance')} (centre: {u.get('centre_id', 'N/A')[:8] if u.get('centre_id') else 'N/A'}...)")
+        centre_info = u.get('centre_id', 'N/A')
+        centre_display = centre_info[:8] + '...' if centre_info and len(str(centre_info)) > 8 else str(centre_info)
+        print(f"[DEBUG ANNIV] -> {u.get('prenom')} {u.get('nom')}: {u.get('date_naissance')} (centre: {centre_display})")
     
     today = datetime.now()
     anniversaires = []
