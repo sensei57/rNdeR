@@ -1,9 +1,14 @@
+print("🔧 [DEBUG] Début du chargement de server.py...")
+
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, BackgroundTasks, UploadFile, File
+print("🔧 [DEBUG] FastAPI importé")
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
+print("🔧 [DEBUG] Middleware importé")
 from motor.motor_asyncio import AsyncIOMotorClient
+print("🔧 [DEBUG] Motor importé")
 import os
 import logging
 from pathlib import Path
@@ -16,29 +21,41 @@ from passlib.context import CryptContext
 import bcrypt
 from contextlib import asynccontextmanager
 import asyncio
+print("🔧 [DEBUG] Imports standards OK")
 
 # Scheduler pour les notifications automatiques
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+print("🔧 [DEBUG] APScheduler importé")
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+print("🔧 [DEBUG] .env chargé")
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+print("🔧 [DEBUG] Connexion MongoDB...")
+mongo_url = os.environ.get('MONGO_URL', '')
+if not mongo_url:
+    print("❌ [DEBUG] MONGO_URL non défini!")
+else:
+    print(f"🔧 [DEBUG] MONGO_URL présent ({len(mongo_url)} chars)")
+
+client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
+db = client[os.environ.get('DB_NAME', 'cabinet_medical')]
+print("🔧 [DEBUG] Client MongoDB créé")
 
 # Security
-SECRET_KEY = os.environ['SECRET_KEY']
+SECRET_KEY = os.environ.get('SECRET_KEY', 'default_key')
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 security = HTTPBearer()
+print("🔧 [DEBUG] Security configurée")
 
 # Scheduler global
 scheduler = AsyncIOScheduler(timezone="Europe/Paris")
+print("🔧 [DEBUG] Scheduler créé")
 
 # Fonction de notification automatique à 7h
 async def send_morning_planning_notifications():
