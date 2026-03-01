@@ -156,6 +156,22 @@ async def send_push_notification(fcm_token: str, title: str, body: str, data: di
             webpush_notification_config["actions"] = actions
         
         # Construire le message
+        # Récupérer l'URL frontend pour le lien de la notification
+        frontend_url = os.environ.get('FRONTEND_URL', '').strip()
+        
+        # Construire la config webpush avec ou sans lien selon la disponibilité
+        webpush_config_args = {
+            "notification": messaging.WebpushNotification(**webpush_notification_config)
+        }
+        
+        # Ajouter le lien seulement si FRONTEND_URL est configuré avec HTTPS
+        if frontend_url and frontend_url.startswith('https://'):
+            webpush_config_args["fcm_options"] = messaging.WebpushFCMOptions(
+                link=frontend_url
+            )
+        elif frontend_url:
+            logger.warning(f"⚠️ FRONTEND_URL ({frontend_url}) n'utilise pas HTTPS, lien non inclus dans la notification")
+        
         message = messaging.Message(
             notification=messaging.Notification(
                 title=title,
@@ -163,12 +179,7 @@ async def send_push_notification(fcm_token: str, title: str, body: str, data: di
             ),
             data=notification_data,
             token=fcm_token,
-            webpush=messaging.WebpushConfig(
-                notification=messaging.WebpushNotification(**webpush_notification_config),
-                fcm_options=messaging.WebpushFCMOptions(
-                    link='/'
-                )
-            )
+            webpush=messaging.WebpushConfig(**webpush_config_args)
         )
         
         # Envoyer la notification
