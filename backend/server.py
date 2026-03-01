@@ -7375,6 +7375,7 @@ async def create_actualite(actualite: ActualiteCreate, current_user: User = Depe
         fichier_url=actualite.fichier_url,
         fichier_nom=actualite.fichier_nom,
         groupe_cible=actualite.groupe_cible,
+        groupes_cibles=actualite.groupes_cibles,
         centre_id=centre_id,
         auteur_id=current_user.id,
         priorite=actualite.priorite,
