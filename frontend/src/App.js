@@ -1516,9 +1516,13 @@ const PushNotificationManager = () => {
           
           // ÉTAPE 3: Obtenir le token avec la VAPID key depuis l'environnement
           const vapidKey = process.env.REACT_APP_FIREBASE_VAPID_KEY;
+          const apiKey = process.env.REACT_APP_FIREBASE_API_KEY;
+          
+          console.log('🔑 Clé API utilisée:', apiKey);
           console.log('🔑 VAPID Key utilisée:', vapidKey ? vapidKey.substring(0, 20) + '...' : 'MANQUANTE');
           console.log('📱 Messaging Sender ID:', process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID);
           console.log('🆔 App ID:', process.env.REACT_APP_FIREBASE_APP_ID);
+          console.log('🏗️ Project ID:', process.env.REACT_APP_FIREBASE_PROJECT_ID);
           
           token = await getToken(messaging, {
             vapidKey: vapidKey,
