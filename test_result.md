@@ -486,6 +486,21 @@ backend:
           agent: "testing"
           comment: "🔍 TEST URGENT JOURNEE_COMPLETE RÉALISÉ AVEC SUCCÈS! ✅ TESTS DÉTAILLÉS SELON PROTOCOLE UTILISATEUR (7/7 - 100%): 1) ✅ ÉTAPE 1 - Connexion Directeur: directeur@cabinet.fr/admin123 connecté avec succès (Pierre Martin), 2) ✅ ÉTAPE 2 - ID Assistant: Assistant Julie Moreau trouvé (ID: user-assistant-001), 3) ✅ ÉTAPE 3 - Création demande: POST /api/demandes-travail JOURNEE_COMPLETE créée avec succès (ID: d192fa7e-2f24-47d2-a5af-b88fedc86d09, date: 2026-01-31), 4) ✅ ÉTAPE 4 - Approbation: PUT /api/demandes-travail/{id}/approuver réussie (Status 200, message: 'Demande approuvee avec succès et créneau(x) créé(s) dans le planning'), 5) ✅ ÉTAPE 5 - Vérification créneaux: GET /api/planning/2026-01-31 retourne 2 créneaux pour l'assistant (MATIN + APRES_MIDI), 6) ✅ ÉTAPE 6 - Statut demande: Demande trouvée avec statut APPROUVE, 7) ✅ ÉTAPE 7 - Logs backend: Aucune erreur critique, seulement warnings bcrypt normaux. 🎯 RÉSULTAT CRITIQUE: Le système FONCTIONNE PARFAITEMENT! Les demandes JOURNEE_COMPLETE pour assistants créent bien les 2 créneaux (MATIN + APRES_MIDI) dans le planning. Le bug signalé par l'utilisateur N'EST PAS REPRODUCTIBLE avec les identifiants fournis. Le système divise correctement JOURNEE_COMPLETE en 2 créneaux séparés comme spécifié."
 
+  - task: "TEST RAPIDE - Vérification après restructuration du code (GET /api/health, POST /api/auth/login, GET /api/notifications/scheduler-status, GET /api/notifications/firebase-status)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "user"
+          comment: "TEST RAPIDE - Vérification après restructuration du code. OBJECTIF: Confirmer que la restructuration n'a rien cassé et que le système de notifications est toujours configuré correctement. TESTS À EFFECTUER (5 minutes max): 1) TEST SANTÉ BACKEND - GET /api/health (Vérifier status: healthy et mongo_connected: true), 2) TEST AUTHENTIFICATION - POST /api/auth/login avec directeur@cabinet.fr / admin123 (Vérifier qu'on obtient un token JWT), 3) TEST SCHEDULER NOTIFICATIONS - GET /api/notifications/scheduler-status (avec token) (Vérifier scheduler_running: true, Vérifier job 'daily_planning_notification' présent), 4) TEST FIREBASE STATUS - GET /api/notifications/firebase-status (avec token) (Vérifier que l'endpoint répond même si Firebase pas initialisé)."
+        - working: true
+          agent: "testing"
+          comment: "🎉 TEST RAPIDE APRÈS RESTRUCTURATION COMPLÈTEMENT RÉUSSI! ✅ VALIDATION COMPLÈTE (4/4 - 100%): 1) ✅ TEST 1 - SANTÉ BACKEND: GET /api/health répond Status 200, Status: 'healthy' ✓, Mongo Connected: true ✓, Timestamp correct, Backend et MongoDB opérationnels, 2) ✅ TEST 2 - AUTHENTIFICATION: POST /api/auth/login avec directeur@cabinet.fr/admin123 réussie (Status 200), Token JWT obtenu et valide (eyJhbGciOiJIUzI1NiIs...), User data: Francis LEBLOND (Directeur), Email: directeur@cabinet.fr ✓, 3) ✅ TEST 3 - SCHEDULER NOTIFICATIONS: GET /api/notifications/scheduler-status avec token réussie (Status 200), Scheduler Running: true ✓, Timezone: Europe/Paris, Daily Notification Time: 07:00, Job 'daily_planning_notification' présent ✓, Next Run: 2026-03-03T07:00:00+01:00, Trigger: cron[hour='7', minute='0'], 4) ✅ TEST 4 - FIREBASE STATUS: GET /api/notifications/firebase-status avec token réussie (Status 200), Endpoint répond correctement ✓, Initialized: false (normal en environnement test), Credentials Source: none, Status: inactive, Message: 'Firebase non configuré - notifications push désactivées'. 🎯 OBJECTIF ATTEINT: La restructuration du code N'A RIEN CASSÉ, Le système de notifications est toujours configuré correctement, Tous les services fonctionnent comme attendu, Backend (healthy) + MongoDB (connecté) + Authentification (JWT) + Scheduler (actif) + Firebase endpoint (répond) = 100% opérationnel. RÉSULTAT FINAL: Restructuration réussie - Aucun problème détecté !"
+
 frontend:
   - task: "TEST - Affichage des demandes de congés et créneaux dans le Planning Interactif"
     implemented: true
