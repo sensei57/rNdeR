@@ -163,13 +163,16 @@ async def send_push_notification(fcm_token: str, title: str, body: str, data: di
     """
     global _firebase_app
     
-    # Initialiser Firebase si pas déjà fait
+    # Initialiser Firebase si pas déjà fait (LAZY)
     if _firebase_app is None:
         initialize_firebase()
     
     if _firebase_app is None:
         logger.warning("Firebase non initialisé, notification push non envoyée")
         return False
+    
+    # Import lazy pour avoir messaging
+    _, _, messaging = _lazy_import_firebase()
     
     try:
         # Préparer les données
