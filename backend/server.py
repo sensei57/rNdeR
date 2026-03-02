@@ -7902,14 +7902,32 @@ uploads_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/api/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
 print("🔧 [DEBUG] Dossier uploads monté")
 
+# Configuration CORS - Liste complète des origines autorisées
+# Inclut les URLs de production (Render) et de preview (Emergent)
+CORS_ORIGINS_DEFAULT = [
+    "https://ope-francis.onrender.com",
+    "https://ope-francis-app.onrender.com", 
+    "https://medic-admin-suite.preview.emergentagent.com",
+    "http://localhost:3000",
+    "http://localhost:8001"
+]
+
+# Ajouter les origines depuis la variable d'environnement si présente
+env_origins = os.environ.get('CORS_ORIGINS', '')
+if env_origins and env_origins != '*':
+    CORS_ORIGINS_DEFAULT.extend([o.strip() for o in env_origins.split(',') if o.strip()])
+
+# Si CORS_ORIGINS est '*', autoriser tout (mode développement)
+cors_allow_all = os.environ.get('CORS_ORIGINS', '') == '*'
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=["*"] if cors_allow_all else CORS_ORIGINS_DEFAULT,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-print("🔧 [DEBUG] CORS configuré")
+print(f"🔧 [DEBUG] CORS configuré - Origins: {'*' if cors_allow_all else CORS_ORIGINS_DEFAULT}")
 
 # Fermeture propre de la base de données
 @app.on_event("shutdown")
