@@ -335,14 +335,14 @@ class BackendTester:
                 response
             )
         
-        # Test GET /planning/jour/{date}
-        status, response = await self.make_request("GET", f"planning/jour/{test_date}")
+        # Test GET /planning/{date} au lieu de /planning/jour/{date}
+        status, response = await self.make_request("GET", f"planning/{test_date}")
         if status == 200:
             creneaux_count = len(response) if isinstance(response, list) else "N/A"
             await self.log_test_result(
                 "PLANNING", 
                 "Planning Jour", 
-                f"GET /api/planning/jour/{test_date}",
+                f"GET /api/planning/{test_date}",
                 True,
                 f"{creneaux_count} créneaux trouvés"
             )
@@ -350,7 +350,7 @@ class BackendTester:
             await self.log_test_result(
                 "PLANNING", 
                 "Planning Jour", 
-                f"GET /api/planning/jour/{test_date}",
+                f"GET /api/planning/{test_date}",
                 False,
                 f"Status: {status}",
                 response
