@@ -1404,6 +1404,26 @@ async def build_daily_planning_message(user, planning_slots, date):
 
 # ===== FIN SYSTÈME NOTIFICATIONS =====
 
+# Firebase Status Endpoint - MUST be before generic /notifications endpoint
+@api_router.get("/notifications/firebase-status")
+async def get_firebase_status_endpoint(current_user: User = Depends(require_role([ROLES["DIRECTEUR"]]))):
+    """Vérifie le statut de Firebase pour les notifications push (Directeur uniquement)"""
+    try:
+        from push_notifications import get_firebase_status
+        status = get_firebase_status()
+        
+        # Compter les utilisateurs avec token FCM
+        users_with_fcm = await db.users.count_documents({"fcm_token": {"$exists": True, "$ne": ""}})
+        status["users_with_fcm_token"] = users_with_fcm
+        
+        return status
+    except Exception as e:
+        return {
+            "initialized": False,
+            "status": "error",
+            "message": f"Erreur: {str(e)}"
+        }
+
 # Endpoints pour les notifications
 @api_router.get("/notifications")
 async def get_user_notifications(
