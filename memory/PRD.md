@@ -141,9 +141,10 @@ Application full-stack de gestion de cabinet médical multi-centres permettant l
 - Password: `admin123`
 
 ## Dernière Mise à Jour
-- Date: 1er Mars 2026
-- Session: Implémentation du carrousel pour les actualités (navigation, compteur, indicateurs non-lus)
+- Date: 2 Mars 2026
+- Session: Optimisation cold start backend (démarrage lazy < 1s)
 
 ## Historique des Sessions
-- **1er Mars 2026**: Ajout du système de carrousel pour les actualités avec navigation et indicateurs
+- **2 Mars 2026**: Optimisation du démarrage serveur pour cold start rapide (MongoDB et Scheduler en arrière-plan)
+- **1er Mars 2026**: Carrousel actualités, correction bugs congés (centre_id), permissions Super-Admin
 - **Sessions précédentes**: Migration Firebase Storage, scission des congés, corrections bugs API
