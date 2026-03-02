@@ -1334,7 +1334,7 @@ agent_communication:
 
 test_plan:
   current_focus:
-    - "TEST COMPLET DE TOUTES LES FONCTIONNALITÉS - Validation 100% des endpoints backend (26 endpoints)"
+    - "TEST COMPLET DU FRONTEND - Application de gestion de cabinet médical"
   stuck_tasks: []
   test_all: true
   test_priority: "high_first"
