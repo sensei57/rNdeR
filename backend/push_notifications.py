@@ -60,11 +60,14 @@ _storage_bucket = None
 _temp_cred_file = None  # Pour nettoyer le fichier temporaire si nécessaire
 
 def initialize_firebase():
-    """Initialise Firebase Admin SDK avec les credentials"""
+    """Initialise Firebase Admin SDK avec les credentials (LAZY)"""
     global _firebase_app, _storage_bucket, _temp_cred_file
     
     if _firebase_app is not None:
         return _firebase_app
+    
+    # Import lazy de firebase
+    firebase_admin, credentials, messaging = _lazy_import_firebase()
     
     try:
         cred = None
@@ -76,9 +79,6 @@ def initialize_firebase():
         print(f"🔍 [FIREBASE DEBUG] Variable FIREBASE_CREDENTIALS présente: {bool(firebase_creds_env)}")
         if firebase_creds_env:
             print(f"🔍 [FIREBASE DEBUG] Longueur du JSON: {len(firebase_creds_env)} caractères")
-            print(f"🔍 [FIREBASE DEBUG] Commence par '{{': {firebase_creds_env.strip().startswith('{')}")
-            print(f"🔍 [FIREBASE DEBUG] Finit par '}}': {firebase_creds_env.strip().endswith('}')}")
-            print(f"🔍 [FIREBASE DEBUG] Premiers 50 caractères: {firebase_creds_env[:50]}...")
         
         if firebase_creds_env:
             try:
@@ -111,8 +111,8 @@ def initialize_firebase():
         })
         
         # Initialiser le bucket Storage si disponible
-        if STORAGE_AVAILABLE and storage:
-            _storage_bucket = storage.bucket()
+        if STORAGE_AVAILABLE and _storage:
+            _storage_bucket = _storage.bucket()
             logger.info("✅ Firebase Admin SDK initialisé avec succès (Storage activé)")
             print(f"✅ Firebase Admin SDK initialisé avec succès - Storage: {FIREBASE_STORAGE_BUCKET}")
         else:
