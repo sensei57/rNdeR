@@ -225,6 +225,53 @@ print("🔧 [DEBUG] Création de l'app FastAPI...")
 app = FastAPI(title="Gestion Personnel Médical", lifespan=lifespan)
 print("🔧 [DEBUG] App FastAPI créée")
 
+# ===== ENDPOINTS DE SANTÉ - RÉPONDENT IMMÉDIATEMENT =====
+# Ces endpoints sont montés AVANT tout pour garantir un cold start rapide
+
+@app.get("/health")
+@app.get("/api/health")
+async def health_check():
+    """
+    Health check endpoint - répond IMMÉDIATEMENT sans attendre MongoDB/Firebase.
+    Utilisé par Render/K8s pour vérifier que le serveur est vivant.
+    """
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "uptime_seconds": (datetime.now(timezone.utc) - _startup_time).total_seconds(),
+        "mongo_connected": _mongo_connected
+    }
+
+@app.get("/")
+async def root():
+    """Root endpoint - répond immédiatement"""
+    return {
+        "message": "API Gestion Cabinet Médical",
+        "status": "running",
+        "version": "2.0-lazy"
+    }
+
+@app.get("/api/status")
+async def status_check():
+    """
+    Status détaillé - vérifie réellement les connexions (peut être plus lent)
+    """
+    mongo_ok = False
+    try:
+        await get_mongo_client().admin.command('ping')
+        mongo_ok = True
+    except:
+        pass
+    
+    return {
+        "status": "healthy" if mongo_ok else "degraded",
+        "services": {
+            "mongodb": "connected" if mongo_ok else "disconnected",
+            "scheduler": "running" if (scheduler and scheduler.running) else "stopped"
+        },
+        "uptime_seconds": (datetime.now(timezone.utc) - _startup_time).total_seconds()
+    }
+
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
