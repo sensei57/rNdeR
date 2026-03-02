@@ -31,21 +31,12 @@ let app = null;
 let messaging = null;
 
 try {
-  // Afficher les clés utilisées pour debug
-  console.log('🔧 Firebase Config Debug:');
-  console.log('   API Key:', firebaseConfig.apiKey);
-  console.log('   Project ID:', firebaseConfig.projectId);
-  console.log('   App ID:', firebaseConfig.appId);
-  console.log('   Messaging Sender ID:', firebaseConfig.messagingSenderId);
-  
   // Ne pas initialiser si les clés sont manquantes
   if (firebaseConfig.apiKey && firebaseConfig.projectId) {
     app = initializeApp(firebaseConfig);
-    console.log('✅ Firebase App initialisé');
     
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       messaging = getMessaging(app);
-      console.log('✅ Firebase Messaging initialisé');
     }
   } else {
     console.warn('⚠️ Firebase non initialisé - clés API manquantes');
