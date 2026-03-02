@@ -1,14 +1,11 @@
 print("🔧 [DEBUG] Début du chargement de server.py...")
 
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, BackgroundTasks, UploadFile, File
-print("🔧 [DEBUG] FastAPI importé")
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-print("🔧 [DEBUG] Middleware importé")
 from motor.motor_asyncio import AsyncIOMotorClient
-print("🔧 [DEBUG] Motor importé")
 import os
 import logging
 from pathlib import Path
@@ -21,28 +18,80 @@ from passlib.context import CryptContext
 import bcrypt
 from contextlib import asynccontextmanager
 import asyncio
-print("🔧 [DEBUG] Imports standards OK")
 
-# Scheduler pour les notifications automatiques
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
-print("🔧 [DEBUG] APScheduler importé")
+# Scheduler - import lazy pour éviter de ralentir le démarrage
+scheduler = None
+AsyncIOScheduler = None
+CronTrigger = None
+
+def get_scheduler():
+    """Lazy load du scheduler"""
+    global scheduler, AsyncIOScheduler, CronTrigger
+    if scheduler is None:
+        from apscheduler.schedulers.asyncio import AsyncIOScheduler as _AsyncIOScheduler
+        from apscheduler.triggers.cron import CronTrigger as _CronTrigger
+        AsyncIOScheduler = _AsyncIOScheduler
+        CronTrigger = _CronTrigger
+        scheduler = AsyncIOScheduler(timezone="Europe/Paris")
+    return scheduler
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
-print("🔧 [DEBUG] .env chargé")
 
-# MongoDB connection
-print("🔧 [DEBUG] Connexion MongoDB...")
+# MongoDB connection - LAZY: on crée le client mais on ne connecte pas encore
 mongo_url = os.environ.get('MONGO_URL', '')
-if not mongo_url:
-    print("❌ [DEBUG] MONGO_URL non défini!")
-else:
-    print(f"🔧 [DEBUG] MONGO_URL présent ({len(mongo_url)} chars)")
+db_name = os.environ.get('DB_NAME', 'cabinet_medical')
 
-client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
-db = client[os.environ.get('DB_NAME', 'cabinet_medical')]
-print("🔧 [DEBUG] Client MongoDB créé")
+# État de connexion lazy
+_mongo_client = None
+_db = None
+_mongo_connected = False
+_startup_time = datetime.now(timezone.utc)
+
+def get_mongo_client():
+    """Lazy initialization du client MongoDB"""
+    global _mongo_client
+    if _mongo_client is None:
+        _mongo_client = AsyncIOMotorClient(
+            mongo_url, 
+            serverSelectionTimeoutMS=5000,
+            connectTimeoutMS=5000,
+            socketTimeoutMS=10000
+        )
+    return _mongo_client
+
+def get_db():
+    """Lazy initialization de la base de données"""
+    global _db
+    if _db is None:
+        _db = get_mongo_client()[db_name]
+    return _db
+
+# Pour compatibilité avec le code existant
+client = property(lambda self: get_mongo_client())
+
+# Créer un objet db lazy
+class LazyDB:
+    """Proxy lazy pour la base de données MongoDB"""
+    def __getattr__(self, name):
+        return getattr(get_db(), name)
+    
+    def __getitem__(self, name):
+        return get_db()[name]
+
+db = LazyDB()
+
+async def ensure_mongo_connected():
+    """Vérifie et établit la connexion MongoDB si nécessaire"""
+    global _mongo_connected
+    if not _mongo_connected:
+        try:
+            await get_mongo_client().admin.command('ping')
+            _mongo_connected = True
+            print("✅ MongoDB connecté (lazy)")
+        except Exception as e:
+            print(f"⚠️ MongoDB non disponible: {e}")
+            raise HTTPException(status_code=503, detail="Base de données temporairement indisponible")
 
 # Security
 SECRET_KEY = os.environ.get('SECRET_KEY', 'default_key')
@@ -51,11 +100,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 security = HTTPBearer()
-print("🔧 [DEBUG] Security configurée")
-
-# Scheduler global
-scheduler = AsyncIOScheduler(timezone="Europe/Paris")
-print("🔧 [DEBUG] Scheduler créé")
 
 # Fonction de notification automatique à 7h
 async def send_morning_planning_notifications():
