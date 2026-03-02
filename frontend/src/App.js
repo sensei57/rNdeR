@@ -1485,23 +1485,40 @@ const PushNotificationManager = () => {
       // Essayer d'obtenir un token Firebase
       let token = null;
       try {
+        // ÉTAPE 1: Désinscrire TOUS les anciens Service Workers pour éviter les credentials périmés
+        console.log('🧹 Nettoyage des anciens Service Workers...');
+        const existingRegistrations = await navigator.serviceWorker.getRegistrations();
+        for (const reg of existingRegistrations) {
+          console.log('🗑️ Désinscription SW:', reg.scope);
+          await reg.unregister();
+        }
+        
+        // Attendre un peu pour s'assurer que tout est nettoyé
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         const { messaging, getToken } = await import('./firebase.js');
         if (messaging) {
-          // Enregistrer d'abord le service worker avec mise à jour forcée
+          // ÉTAPE 2: Enregistrer un nouveau Service Worker propre
+          console.log('📝 Enregistrement nouveau Service Worker...');
           const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
             updateViaCache: 'none' // Force le téléchargement du SW à chaque fois
           });
-          console.log('Service Worker enregistré:', registration);
+          console.log('✅ Service Worker enregistré:', registration);
           
-          // Forcer la mise à jour du Service Worker s'il y en a un nouveau
-          if (registration.waiting) {
-            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          // Attendre que le SW soit actif
+          if (registration.installing) {
+            await new Promise(resolve => {
+              registration.installing.addEventListener('statechange', function() {
+                if (this.state === 'activated') resolve();
+              });
+            });
           }
-          registration.update().catch(e => console.log('SW update check:', e));
           
-          // Obtenir le token avec la VAPID key depuis l'environnement
+          // ÉTAPE 3: Obtenir le token avec la VAPID key depuis l'environnement
           const vapidKey = process.env.REACT_APP_FIREBASE_VAPID_KEY;
           console.log('🔑 VAPID Key utilisée:', vapidKey ? vapidKey.substring(0, 20) + '...' : 'MANQUANTE');
+          console.log('📱 Messaging Sender ID:', process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID);
+          console.log('🆔 App ID:', process.env.REACT_APP_FIREBASE_APP_ID);
           
           token = await getToken(messaging, {
             vapidKey: vapidKey,
@@ -1511,6 +1528,7 @@ const PushNotificationManager = () => {
         }
       } catch (firebaseError) {
         console.error('❌ Erreur Firebase:', firebaseError.message);
+        console.error('❌ Détails:', firebaseError);
         // Générer un token local unique pour cet appareil
         token = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       }
