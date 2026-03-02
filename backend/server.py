@@ -7914,6 +7914,7 @@ print("🔧 [DEBUG] CORS configuré")
 # Fermeture propre de la base de données
 @app.on_event("shutdown")
 async def shutdown_db_client():
-    client.close()
+    if _mongo_client:
+        _mongo_client.close()
 
 print("✅ [DEBUG] server.py chargé complètement - Prêt à recevoir des requêtes!")
