@@ -497,14 +497,14 @@ class BackendTester:
                 response
             )
         
-        # Test GET /groupes
-        status, response = await self.make_request("GET", "groupes")
+        # Test GET /groupes-chat (pas /groupes)
+        status, response = await self.make_request("GET", "groupes-chat")
         if status == 200:
             groupes_count = len(response) if isinstance(response, list) else "N/A"
             await self.log_test_result(
                 "MESSAGES", 
                 "Groupes Chat", 
-                "GET /api/groupes",
+                "GET /api/groupes-chat",
                 True,
                 f"{groupes_count} groupes trouvés"
             )
@@ -512,7 +512,7 @@ class BackendTester:
             await self.log_test_result(
                 "MESSAGES", 
                 "Groupes Chat", 
-                "GET /api/groupes",
+                "GET /api/groupes-chat",
                 False,
                 f"Status: {status}",
                 response
