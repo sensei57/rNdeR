@@ -7,7 +7,7 @@ import requests
 import json
 
 def check_users():
-    base_url = "https://medic-admin-suite.preview.emergentagent.com"
+    base_url = "https://mongo-render-deploy.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     # Login as directeur first

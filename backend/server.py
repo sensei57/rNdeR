@@ -7907,7 +7907,7 @@ print("🔧 [DEBUG] Dossier uploads monté")
 CORS_ORIGINS_DEFAULT = [
     "https://ope-francis.onrender.com",
     "https://ope-francis-app.onrender.com", 
-    "https://medic-admin-suite.preview.emergentagent.com",
+    "https://mongo-render-deploy.preview.emergentagent.com",
     "http://localhost:3000",
     "http://localhost:8001"
 ]
