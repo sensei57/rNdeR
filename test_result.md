@@ -1242,3 +1242,34 @@ agent_communication:
     - agent: "testing"
       message: "🎉 DIAGNOSTIC CONNEXION UTILISATEUR TERMINÉ - PROBLÈME RÉSOLU! ✅ RÉSULTAT FINAL: La connexion fonctionne parfaitement avec les identifiants directeur@cabinet.fr / admin123. ✅ TESTS COMPLETS EFFECTUÉS: 1) ✅ Page de connexion se charge correctement, 2) ✅ Aucune erreur JavaScript détectée, 3) ✅ Tous les éléments de connexion présents et fonctionnels, 4) ✅ API POST /api/auth/login répond 200 OK, 5) ✅ Connexion réussie en 1 seconde, 6) ✅ Redirection automatique vers dashboard, 7) ✅ Utilisateur connecté: Pierre Martin - Directeur, 8) ✅ Navigation dans l'application fonctionnelle (Planning, Personnel). 📊 DIAGNOSTIC: Le problème signalé par l'utilisateur n'existe pas - la connexion fonctionne parfaitement. Possible confusion utilisateur ou problème temporaire résolu. 🎯 RECOMMANDATION: Informer l'utilisateur que la connexion fonctionne avec directeur@cabinet.fr / admin123 et qu'il peut accéder à toutes les fonctionnalités de l'application."    - agent: "main"
       message: "🚀 AMÉLIORATION MAJEURE DU SYSTÈME DE NOTIFICATIONS PUSH - TOUS INFORMÉS SUR LEUR TÉLÉPHONE! ✅ DEMANDE UTILISATEUR: 'tout le monde peut recevoir une notification sur son téléphone' pour planning quotidien, congés et messages. ✅ AMÉLIORATIONS IMPLÉMENTÉES: 1) 🏖️ CONGÉS AMÉLIORÉS: Directeur reçoit notifications pour TOUS les congés (y compris médecins maintenant), Collègues qui travaillent pendant les jours de congé reçoivent une notification push, Notification lors approbation/rejet + notification aux collègues si approuvé, Nouvelle fonction notify_colleagues_about_leave() pour notifier collègues concernés. 2) 💬 NOTIFICATIONS MESSAGES COMPLÈTES: Messages privés → destinataire reçoit notification push '💬 Message de [Nom]', Messages groupe → tous membres (sauf expéditeur) reçoivent notification '💬 [Nom] dans [Groupe]', Messages généraux → tous employés actifs (sauf expéditeur) reçoivent notification '📢 Message général de [Nom]', Preview du message limité à 100 caractères. 3) 📅 PLANNING QUOTIDIEN: Déjà fonctionnel - envoie détails (collègues + salle) via Firebase Cloud Messaging même si app fermée. ✅ MODIFICATIONS BACKEND: Endpoints modifiés: POST /api/conges (notifications étendues), PUT /api/conges/{id}/approuver (notifications collègues), POST /api/messages (notifications ajoutées). Backend redémarré avec succès. 🎯 TESTS REQUIS URGENTS: Créer demande congé médecin, approuver congé, envoyer messages privé/groupe/général, vérifier notifications push reçues sur téléphone."
+
+## Restructuration du Code (2026-03-02)
+
+### Backend - Nouvelle structure modulaire
+
+**Fichiers créés:**
+- `/app/backend/config.py` - Configuration et constantes
+- `/app/backend/database.py` - Connexion MongoDB avec lazy loading
+- `/app/backend/auth.py` - Authentification JWT
+- `/app/backend/models/` - Modèles Pydantic (user, centre, planning, conges, salle, message, notification, stock, document)
+- `/app/backend/services/` - Logique métier (notification_service, planning_service, scheduler_service)
+- `/app/backend/ARCHITECTURE.md` - Documentation de l'architecture
+
+**Impact:** Le backend reste fonctionnel, les modules peuvent être importés indépendamment pour faciliter la maintenance.
+
+### Frontend - Nouvelle structure modulaire
+
+**Fichiers créés:**
+- `/app/frontend/src/utils/api.js` - Configuration axios et URL backend
+- `/app/frontend/src/utils/helpers.js` - Fonctions utilitaires (getPhotoUrl, sortEmployees, etc.)
+- `/app/frontend/src/utils/constants.js` - Constantes (ROLES, CRENEAU_TYPES, STATUTS)
+- `/app/frontend/src/components/personnel/PersonnelCards.jsx` - Cartes MedecinCard, AssistantCard, SecretaireCard
+- `/app/frontend/src/components/*/index.js` - Index pour imports simplifiés
+- `/app/frontend/src/ARCHITECTURE.md` - Documentation de l'architecture
+
+**Impact:** Le frontend reste fonctionnel, les composants utilitaires sont maintenant réutilisables.
+
+### Prochaines étapes suggérées
+1. Extraire PlanningManager (le plus gros composant ~10,000 lignes)
+2. Utiliser les nouveaux imports dans App.js
+3. Ajouter des tests unitaires pour les services backend
