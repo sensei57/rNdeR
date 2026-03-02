@@ -1499,9 +1499,12 @@ const PushNotificationManager = () => {
           }
           registration.update().catch(e => console.log('SW update check:', e));
           
-          // Obtenir le token avec la VAPID key
+          // Obtenir le token avec la VAPID key depuis l'environnement
+          const vapidKey = process.env.REACT_APP_FIREBASE_VAPID_KEY;
+          console.log('🔑 VAPID Key utilisée:', vapidKey ? vapidKey.substring(0, 20) + '...' : 'MANQUANTE');
+          
           token = await getToken(messaging, {
-            vapidKey: 'BLDFCJN6pePvpIaVCTQtAhcwNhlusiMzFjPDdzll12vBWZcvkYJ4Bc60R9RSBcTx-hpqwT3ngTWn4lgVh4qQS-E',
+            vapidKey: vapidKey,
             serviceWorkerRegistration: registration
           });
           console.log('✅ Token FCM obtenu:', token ? token.substring(0, 20) + '...' : 'null');
