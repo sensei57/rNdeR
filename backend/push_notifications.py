@@ -259,12 +259,14 @@ async def send_push_notification(fcm_token: str, title: str, body: str, data: di
         print(f"✅ [PUSH] Notification envoyée - Response ID: {response}")
         return True
         
-    except firebase_admin.exceptions.FirebaseError as e:
-        error_msg = str(e)
-        logger.error(f"❌ Erreur Firebase lors de l'envoi: {error_msg}")
-        print(f"❌ [PUSH] Erreur Firebase: {error_msg}")
-        return False
     except Exception as e:
+        # Gérer l'erreur Firebase avec import lazy
+        firebase_admin, _, _ = _lazy_import_firebase()
+        if hasattr(firebase_admin, 'exceptions') and isinstance(e, firebase_admin.exceptions.FirebaseError):
+            error_msg = str(e)
+            logger.error(f"❌ Erreur Firebase lors de l'envoi: {error_msg}")
+            print(f"❌ [PUSH] Erreur Firebase: {error_msg}")
+            return False
         logger.error(f"❌ Erreur lors de l'envoi de la notification push: {e}")
         return False
 
