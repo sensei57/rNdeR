@@ -15,98 +15,52 @@ Ce document décrit la structure modulaire du frontend React.
 ├── components/             # Composants réutilisables
 │   ├── ui/                 # Composants UI de base (shadcn/ui)
 │   ├── common/             # Composants partagés
-│   │   ├── PhotoWithFallback.jsx
-│   │   ├── LoadingSpinner.jsx
-│   │   └── Skeletons.jsx
+│   │   ├── PhotoWithFallback.jsx    ✅ EXTRAIT
+│   │   ├── LoadingSpinner.jsx       ✅ EXTRAIT
+│   │   └── Skeletons.jsx            ✅ EXTRAIT
 │   ├── auth/               # Authentification
-│   │   ├── LoginPage.jsx
-│   │   └── InscriptionPage.jsx
+│   │   ├── LoginPage.jsx            ✅ EXTRAIT (225 lignes)
+│   │   └── InscriptionPage.jsx      ✅ EXTRAIT (187 lignes)
+│   ├── layout/             # Layout
+│   │   └── Navigation.jsx           ✅ EXTRAIT (281 lignes)
 │   ├── planning/           # Planning
-│   │   ├── PlanningManager.jsx
-│   │   ├── PlanningHeader.jsx
-│   │   └── PlanningFilters.jsx
+│   │   ├── PlanningManager.jsx      ✅ EXTRAIT (9354 lignes)
+│   │   ├── PlanningHeader.jsx       ✅ EXTRAIT
+│   │   └── PlanningFilters.jsx      ✅ EXTRAIT
 │   ├── personnel/          # Gestion du personnel
-│   │   ├── PersonnelCards.jsx
-│   │   └── PersonnelManager.jsx
+│   │   └── PersonnelCards.jsx       ✅ EXTRAIT (247 lignes)
 │   ├── conges/             # Gestion des congés
-│   │   └── CongeManager.jsx
-│   ├── demandes/           # Demandes de travail
-│   │   └── DemandesTravailManager.jsx
-│   ├── salles/             # Gestion des salles
-│   │   ├── SallesManager.jsx
-│   │   └── PlanCabinetManager.jsx
+│   │   └── CongeManager.jsx         ✅ EXTRAIT (527 lignes)
 │   ├── chat/               # Messagerie
-│   │   └── ChatManager.jsx
-│   ├── notifications/      # Notifications
-│   │   ├── PushNotificationManager.jsx
-│   │   ├── NotificationBadge.jsx
-│   │   └── DevicesList.jsx
-│   ├── admin/              # Administration
-│   │   ├── AdminManager.jsx
-│   │   ├── CentresManager.jsx
-│   │   └── AttributionManager.jsx
-│   ├── stocks/             # Gestion des stocks
-│   │   └── StocksManager.jsx
-│   ├── documents/          # Documents
-│   │   └── CoffreFortManager.jsx
-│   ├── profile/            # Profil utilisateur
-│   │   ├── MonProfilManager.jsx
-│   │   └── CentreFavoriManager.jsx
-│   └── dashboard/          # Tableau de bord
-│       └── ActualitesManager.jsx
+│   │   └── ChatManager.jsx          ✅ EXTRAIT (435 lignes)
+│   ├── dashboard/          # Tableau de bord
+│   │   └── ActualitesManager.jsx    ✅ EXTRAIT (1098 lignes)
+│   └── notifications/      # Notifications
+│       └── NotificationBadge.jsx    ✅ EXTRAIT (48 lignes)
 ├── hooks/                  # Hooks personnalisés
-│   ├── usePWA.js           # Installation PWA
-│   ├── use-toast.js        # Notifications toast
-│   └── usePlanningHooks.js # Hooks planning
+│   └── usePWA.js           # Installation PWA
 ├── utils/                  # Utilitaires
-│   ├── api.js              # Configuration axios
-│   ├── helpers.js          # Fonctions utilitaires
-│   └── constants.js        # Constantes
-└── pages/                  # Pages (si nécessaire)
-    └── LoginPage.jsx       # Page de connexion
+│   ├── api.js              ✅ CRÉÉ (43 lignes)
+│   ├── helpers.js          ✅ CRÉÉ (96 lignes)
+│   └── constants.js        ✅ CRÉÉ (59 lignes)
+└── firebase.js             # Configuration Firebase
 ```
 
-## Composants principaux dans App.js
+## Composants extraits (Résumé)
 
-Le fichier `App.js` contient encore les composants suivants
-(pour éviter de casser les imports circulaires):
+| Composant | Lignes | Status |
+|-----------|--------|--------|
+| LoginPage | 225 | ✅ Extrait |
+| InscriptionPage | 187 | ✅ Extrait |
+| Navigation | 281 | ✅ Extrait |
+| PlanningManager | 9354 | ✅ Extrait |
+| PersonnelCards | 247 | ✅ Extrait |
+| CongeManager | 527 | ✅ Extrait |
+| ChatManager | 435 | ✅ Extrait |
+| ActualitesManager | 1098 | ✅ Extrait |
+| NotificationBadge | 48 | ✅ Extrait |
 
-- **PlanningManager** (~10,000 lignes) - Le plus gros composant
-- **PersonnelManager** - Gestion du personnel
-- **DemandesTravailManager** - Demandes de créneaux
-- **AdminManager** - Administration
-- **StocksManager** - Gestion des stocks
-- **Navigation** - Menu de navigation
-- **Dashboard** - Tableau de bord
-
-## Composants extraits
-
-Les composants suivants ont été extraits dans des fichiers séparés:
-
-### /components/common/
-- `PhotoWithFallback` - Image avec fallback sur initiales
-- `LoadingSpinner` - Indicateur de chargement
-- `Skeletons` - Squelettes de chargement
-
-### /components/personnel/
-- `MedecinCard` - Carte médecin
-- `AssistantCard` - Carte assistant
-- `SecretaireCard` - Carte secrétaire
-
-### /components/planning/
-- `PlanningHeader` - En-tête du planning
-- `PlanningFilters` - Filtres du planning
-
-### /components/chat/
-- `ChatManager` - Gestionnaire de messagerie
-
-### /components/conges/
-- `CongeManager` - Gestionnaire de congés
-
-### /components/dashboard/
-- `ActualitesManager` - Gestionnaire d'actualités
-
-## Utilitaires
+## Utilitaires créés
 
 ### /utils/api.js
 - `BACKEND_URL` - URL du backend
@@ -119,38 +73,32 @@ Les composants suivants ont été extraits dans des fichiers séparés:
 - `filterEmployeesBySearch()` - Filtrage par recherche
 - `formatDate()` - Formatage de date
 - `formatUserName()` - Formatage de nom
+- `ROLES` - Constantes des rôles
 
 ### /utils/constants.js
 - `ROLES` - Rôles utilisateur
 - `CRENEAU_TYPES` - Types de créneaux
 - `STATUTS` - Statuts de demande
 - `TYPES_CONGES` - Types de congés
-
-## Migration future
-
-Pour continuer la restructuration:
-
-1. **Extraire PlanningManager** (le plus gros)
-   - Diviser en sous-composants
-   - Utiliser les hooks personnalisés
-
-2. **Extraire les autres managers**
-   - AdminManager
-   - StocksManager
-   - DemandesTravailManager
-
-3. **Créer des hooks personnalisés**
-   - usePersonnel()
-   - usePlanning()
-   - useConges()
-
-4. **Utiliser React Query**
-   - Pour la gestion du cache
-   - Pour les mutations optimistes
+- `ROLE_COLORS` - Couleurs par rôle
+- `JOURS_SEMAINE` - Jours de la semaine
 
 ## Notes importantes
 
-- Le fichier `App.js` reste le point d'entrée principal
-- Les contextes (AuthContext, PlanningContext) sont déjà extraits
-- Les composants UI (shadcn/ui) sont dans `/components/ui/`
+- Le fichier `App.js` contient encore certains composants (pour compatibilité)
+- Les composants extraits peuvent être importés directement
 - Utiliser les imports depuis les fichiers index.js
+
+## Utilisation
+
+```javascript
+// Import des composants
+import LoginPage from './components/auth/LoginPage';
+import { Navigation } from './components/layout';
+import { NotificationBadge } from './components/notifications';
+
+// Import des utilitaires
+import { BACKEND_URL, API } from './utils/api';
+import { getPhotoUrl, formatDate } from './utils/helpers';
+import { ROLES, STATUTS } from './utils/constants';
+```
