@@ -297,6 +297,9 @@ async def send_push_to_multiple(fcm_tokens: list, title: str, body: str, data: d
         logger.warning("Firebase non initialisé, notifications push non envoyées")
         return 0
     
+    # Import lazy pour avoir messaging
+    _, _, messaging = _lazy_import_firebase()
+    
     try:
         # Récupérer l'URL frontend pour le lien de la notification
         frontend_url = os.environ.get('FRONTEND_URL', '').strip()
