@@ -163,40 +163,59 @@ async def send_morning_planning_notifications():
     except Exception as e:
         print(f"❌ [CRON 7h] Erreur: {e}")
 
-# Lifecycle events
+# Lifecycle events - OPTIMISÉ pour démarrage rapide
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
-    print("🚀 [LIFESPAN] Démarrage du serveur...", flush=True)
+    """
+    Lifecycle optimisé pour cold start rapide:
+    - Le serveur démarre IMMÉDIATEMENT et écoute sur le port
+    - MongoDB et Firebase sont initialisés EN ARRIÈRE-PLAN
+    - Les connexions sont établies à la demande (lazy)
+    """
+    global _mongo_connected
     
-    # Test MongoDB connection
-    try:
-        await client.admin.command('ping')
-        print("✅ [LIFESPAN] MongoDB connecté!", flush=True)
-    except Exception as e:
-        print(f"⚠️ [LIFESPAN] MongoDB: {e}", flush=True)
+    # Startup IMMÉDIAT - pas de blocage
+    print("🚀 [LIFESPAN] Démarrage rapide du serveur...", flush=True)
+    print(f"⏱️  Temps de démarrage: {(datetime.now(timezone.utc) - _startup_time).total_seconds():.2f}s", flush=True)
     
-    # Scheduler
-    try:
-        scheduler.add_job(
-            send_morning_planning_notifications,
-            CronTrigger(hour=7, minute=0, timezone="Europe/Paris"),
-            id="daily_planning_notification",
-            replace_existing=True
-        )
-        scheduler.start()
-        print("⏰ [LIFESPAN] Scheduler activé", flush=True)
-    except Exception as e:
-        print(f"⚠️ [LIFESPAN] Scheduler: {e}", flush=True)
+    # Lancer l'initialisation en arrière-plan (non-bloquant)
+    async def background_init():
+        global _mongo_connected
+        await asyncio.sleep(0.1)  # Laisser le serveur répondre d'abord
+        
+        # Test MongoDB connection en arrière-plan
+        try:
+            await get_mongo_client().admin.command('ping')
+            _mongo_connected = True
+            print("✅ [BACKGROUND] MongoDB connecté!", flush=True)
+        except Exception as e:
+            print(f"⚠️ [BACKGROUND] MongoDB: {e} - sera reconnecté à la demande", flush=True)
+        
+        # Démarrer le scheduler en arrière-plan
+        try:
+            sched = get_scheduler()
+            sched.add_job(
+                send_morning_planning_notifications,
+                CronTrigger(hour=7, minute=0, timezone="Europe/Paris"),
+                id="daily_planning_notification",
+                replace_existing=True
+            )
+            sched.start()
+            print("⏰ [BACKGROUND] Scheduler activé", flush=True)
+        except Exception as e:
+            print(f"⚠️ [BACKGROUND] Scheduler: {e}", flush=True)
     
-    print("✅ [LIFESPAN] Serveur prêt!", flush=True)
+    # Lancer en arrière-plan sans attendre
+    asyncio.create_task(background_init())
+    
+    print("✅ [LIFESPAN] Serveur prêt à recevoir des requêtes!", flush=True)
     
     yield
     
     # Shutdown - ne pas attendre
     print("🛑 [LIFESPAN] Arrêt...", flush=True)
     try:
-        if scheduler.running:
+        if scheduler and scheduler.running:
             scheduler.shutdown(wait=False)
     except:
         pass
