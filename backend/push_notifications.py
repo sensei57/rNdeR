@@ -128,11 +128,17 @@ def initialize_firebase():
 
 
 def get_firebase_status():
-    """Retourne le statut de Firebase pour diagnostic"""
+    """Retourne le statut de Firebase pour diagnostic - initialise si nécessaire"""
     global _firebase_app
     
     has_env_var = bool(os.environ.get('FIREBASE_CREDENTIALS'))
     has_file = os.path.exists(os.path.join(os.path.dirname(__file__), 'firebase-credentials.json'))
+    
+    # Tenter l'initialisation si credentials disponibles mais pas encore initialisé
+    if _firebase_app is None and (has_env_var or has_file):
+        print("🔄 [FIREBASE STATUS] Tentative d'initialisation...")
+        initialize_firebase()
+    
     is_initialized = _firebase_app is not None
     
     return {
