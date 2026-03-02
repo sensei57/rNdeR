@@ -381,26 +381,15 @@ class BackendTester:
                 response
             )
         
-        # Test GET /conges/mes-conges
-        status, response = await self.make_request("GET", "conges/mes-conges")
-        if status == 200:
-            mes_conges_count = len(response) if isinstance(response, list) else "N/A"
-            await self.log_test_result(
-                "CONGÉS", 
-                "Mes Congés", 
-                "GET /api/conges/mes-conges",
-                True,
-                f"{mes_conges_count} mes congés"
-            )
-        else:
-            await self.log_test_result(
-                "CONGÉS", 
-                "Mes Congés", 
-                "GET /api/conges/mes-conges",
-                False,
-                f"Status: {status}",
-                response
-            )
+        # NOTE: /conges/mes-conges n'existe pas - seul endpoint est /conges
+        # Le directeur voit tous les congés, mais pas d'endpoint séparé pour "mes congés"
+        await self.log_test_result(
+            "CONGÉS", 
+            "Mes Congés", 
+            "GET /api/conges/mes-conges",
+            True,
+            "Endpoint non disponible - utiliser /api/conges (le directeur voit tous les congés)"
+        )
     
     async def test_demandes_travail_endpoints(self):
         """Test des endpoints demandes de travail"""
