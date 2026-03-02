@@ -5,6 +5,8 @@ Supporte les credentials via:
 2. Fichier firebase-credentials.json (fallback)
 
 Inclut aussi Firebase Storage pour les uploads d'images
+
+IMPORTANT: Tous les imports Firebase sont LAZY pour permettre un démarrage rapide du serveur
 """
 import os
 import json
@@ -13,17 +15,39 @@ import tempfile
 import time
 import uuid
 from datetime import datetime, timezone
-import firebase_admin
-from firebase_admin import credentials, messaging
 
-# Import conditionnel de storage pour éviter les erreurs si google-cloud-storage n'est pas installé
-try:
-    from firebase_admin import storage
-    STORAGE_AVAILABLE = True
-except ImportError as e:
-    print(f"⚠️ Firebase Storage non disponible: {e}")
-    storage = None
-    STORAGE_AVAILABLE = False
+# IMPORTS FIREBASE LAZY - Ne pas importer au niveau module pour éviter de bloquer le démarrage
+_firebase_admin = None
+_credentials = None
+_messaging = None
+_storage = None
+STORAGE_AVAILABLE = True  # On assume que c'est disponible, on vérifiera au runtime
+
+def _lazy_import_firebase():
+    """Import lazy de firebase_admin et ses modules"""
+    global _firebase_admin, _credentials, _messaging, _storage, STORAGE_AVAILABLE
+    if _firebase_admin is None:
+        try:
+            import firebase_admin as fb_admin
+            from firebase_admin import credentials as fb_creds, messaging as fb_msg
+            _firebase_admin = fb_admin
+            _credentials = fb_creds
+            _messaging = fb_msg
+            print("✅ [LAZY] firebase_admin importé")
+            
+            # Import storage séparément car optionnel
+            try:
+                from firebase_admin import storage as fb_storage
+                _storage = fb_storage
+                print("✅ [LAZY] firebase storage importé")
+            except ImportError as e:
+                print(f"⚠️ Firebase Storage non disponible: {e}")
+                _storage = None
+                STORAGE_AVAILABLE = False
+        except ImportError as e:
+            print(f"❌ [LAZY] Erreur import firebase_admin: {e}")
+            raise
+    return _firebase_admin, _credentials, _messaging
 
 logger = logging.getLogger(__name__)
 
