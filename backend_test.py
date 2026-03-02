@@ -231,29 +231,26 @@ class BackendTester:
                 f"{len(response)} utilisateurs trouvés"
             )
             
-            # Test GET /users/{user_id} avec le premier utilisateur
-            if response:
-                first_user = response[0]
-                user_id = first_user.get("id")
-                if user_id:
-                    status2, response2 = await self.make_request("GET", f"users/{user_id}")
-                    if status2 == 200:
-                        await self.log_test_result(
-                            "UTILISATEURS", 
-                            "Détail Utilisateur", 
-                            f"GET /api/users/{user_id}",
-                            True,
-                            f"Utilisateur: {response2.get('prenom', '')} {response2.get('nom', '')}"
-                        )
-                    else:
-                        await self.log_test_result(
-                            "UTILISATEURS", 
-                            "Détail Utilisateur", 
-                            f"GET /api/users/{user_id}",
-                            False,
-                            f"Status: {status2}",
-                            response2
-                        )
+            # Endpoint /users/{user_id} n'existe pas - test par rôle à la place
+            status2, response2 = await self.make_request("GET", "users/by-role/Directeur")
+            if status2 == 200:
+                users_by_role_count = len(response2) if isinstance(response2, list) else "N/A"
+                await self.log_test_result(
+                    "UTILISATEURS", 
+                    "Utilisateurs par Rôle", 
+                    "GET /api/users/by-role/Directeur",
+                    True,
+                    f"{users_by_role_count} directeurs trouvés"
+                )
+            else:
+                await self.log_test_result(
+                    "UTILISATEURS", 
+                    "Utilisateurs par Rôle", 
+                    "GET /api/users/by-role/Directeur",
+                    False,
+                    f"Status: {status2}",
+                    response2
+                )
         else:
             await self.log_test_result(
                 "UTILISATEURS", 
