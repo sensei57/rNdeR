@@ -32,6 +32,7 @@ const ChatManager = ({ user }) => {
   const [groupes, setGroupes] = useState([]);
   const [chatType, setChatType] = useState('GENERAL');
   const [showGroupModal, setShowGroupModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [newGroupe, setNewGroupe] = useState({
     nom: '',
     description: '',
@@ -207,26 +208,39 @@ const ChatManager = ({ user }) => {
             <div className="chat-tabs">
               <button 
                 className={`chat-tab ${chatType === 'GENERAL' ? 'active' : ''}`}
-                onClick={() => { setChatType('GENERAL'); setSelectedUser(null); setSelectedGroupe(null); }}
+                onClick={() => { setChatType('GENERAL'); setSelectedUser(null); setSelectedGroupe(null); setSearchQuery(''); }}
               >
                 Général
               </button>
               <button 
                 className={`chat-tab ${chatType === 'PRIVE' ? 'active' : ''}`}
-                onClick={() => { setChatType('PRIVE'); setSelectedGroupe(null); }}
+                onClick={() => { setChatType('PRIVE'); setSelectedGroupe(null); setSearchQuery(''); }}
               >
                 Privé
               </button>
               <button 
                 className={`chat-tab ${chatType === 'GROUPE' ? 'active' : ''}`}
-                onClick={() => { setChatType('GROUPE'); setSelectedUser(null); }}
+                onClick={() => { setChatType('GROUPE'); setSelectedUser(null); setSearchQuery(''); }}
               >
                 Groupes
               </button>
             </div>
+            
+            {/* Barre de recherche */}
+            {chatType === 'PRIVE' && (
+              <div className="p-3 border-b border-gray-200">
+                <Input
+                  type="text"
+                  placeholder="🔍 Rechercher un utilisateur..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full text-sm"
+                />
+              </div>
+            )}
           </div>
           
-          <div className="chat-list">
+          <div className="chat-list" style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}>
             {chatType === 'GENERAL' && (
               <div className="chat-list-item active">
                 <div className="chat-list-avatar">
@@ -239,7 +253,14 @@ const ChatManager = ({ user }) => {
               </div>
             )}
             
-            {chatType === 'PRIVE' && users.map(u => (
+            {chatType === 'PRIVE' && users
+              .filter(u => {
+                if (!searchQuery.trim()) return true;
+                const fullName = `${u.prenom} ${u.nom}`.toLowerCase();
+                const query = searchQuery.toLowerCase();
+                return fullName.includes(query) || u.role?.toLowerCase().includes(query);
+              })
+              .map(u => (
               <div 
                 key={u.id} 
                 className={`chat-list-item ${selectedUser?.id === u.id ? 'active' : ''}`}
