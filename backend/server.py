@@ -3601,12 +3601,54 @@ async def scinder_conge(
                 
                 return {"message": "Congé supprimé", "action": "deleted", "creneaux_crees": request.creer_creneau_travail}
         else:
-            # Modifier le type du congé entier
-            await db.demandes_conges.update_one(
-                {"id": demande_id},
-                {"$set": {"type_conge": request.nouveau_type, "date_modification": datetime.now(timezone.utc)}}
-            )
-            return {"message": f"Type de congé modifié en '{request.nouveau_type}'", "action": "modified"}
+            # On veut changer le type pour ce créneau spécifique
+            
+            # Cas 1: Congé journée complète, on veut changer le type d'un seul créneau
+            # → Il faut créer 2 congés séparés avec types différents
+            if conge_creneau_actuel in [None, "JOURNEE_COMPLETE"] and request.creneau in ["MATIN", "APRES_MIDI"]:
+                ancien_type = demande.get("type_conge", "CONGE_PAYE")
+                creneau_oppose = "APRES_MIDI" if request.creneau == "MATIN" else "MATIN"
+                
+                # Modifier le congé existant pour le créneau qu'on modifie
+                await db.demandes_conges.update_one(
+                    {"id": demande_id},
+                    {"$set": {
+                        "creneau": request.creneau,
+                        "type_conge": request.nouveau_type,
+                        "date_modification": datetime.now(timezone.utc)
+                    }}
+                )
+                
+                # Créer un nouveau congé pour le créneau opposé avec l'ancien type
+                nouveau_conge = {
+                    "id": str(uuid.uuid4()),
+                    "utilisateur_id": demande["utilisateur_id"],
+                    "type_conge": ancien_type,
+                    "date_debut": date_a_modifier,
+                    "date_fin": date_a_modifier,
+                    "creneau": creneau_oppose,
+                    "statut": demande.get("statut", "APPROUVE"),
+                    "centre_id": demande.get("centre_id"),
+                    "commentaire": demande.get("commentaire", ""),
+                    "date_demande": datetime.now(timezone.utc),
+                    "date_modification": datetime.now(timezone.utc),
+                    "heures_conge": demande.get("heures_conge", 4)
+                }
+                await db.demandes_conges.insert_one(nouveau_conge)
+                
+                return {
+                    "message": f"Congé scindé: {request.creneau}={request.nouveau_type}, {creneau_oppose}={ancien_type}",
+                    "action": "split_types",
+                    "nouveau_conge_id": nouveau_conge["id"]
+                }
+            
+            # Cas 2: Congé demi-journée - on modifie simplement son type
+            else:
+                await db.demandes_conges.update_one(
+                    {"id": demande_id},
+                    {"$set": {"type_conge": request.nouveau_type, "date_modification": datetime.now(timezone.utc)}}
+                )
+                return {"message": f"Type de congé modifié en '{request.nouveau_type}'", "action": "modified"}
     
     # Congé multi-jours: on doit le scinder
     from datetime import datetime as dt, timedelta
