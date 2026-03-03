@@ -121,11 +121,35 @@ async def send_morning_planning_notifications():
                 employees_planning[emp_id] = []
             employees_planning[emp_id].append(creneau)
         
+        if not employees_planning:
+            print(f"ℹ️ [CRON 7h] Aucun créneau trouvé pour {today}")
+            return
+        
+        # OPTIMISATION N+1: Batch fetch tous les utilisateurs concernés
+        emp_ids = list(employees_planning.keys())
+        users = await db.users.find(
+            {"id": {"$in": emp_ids}, "actif": True},
+            {"_id": 0}
+        ).to_list(1000)
+        users_map = {u["id"]: u for u in users}
+        
+        # OPTIMISATION N+1: Batch fetch tous les centres
+        centre_ids = set()
+        for u in users:
+            cid = u.get("centre_id") or (u.get("centre_ids", [None])[0] if u.get("centre_ids") else None)
+            if cid:
+                centre_ids.add(cid)
+        
+        centres = await db.centres.find(
+            {"id": {"$in": list(centre_ids)}},
+            {"_id": 0, "id": 1, "nom": 1}
+        ).to_list(100) if centre_ids else []
+        centres_map = {c["id"]: c for c in centres}
+        
         notifications_sent = 0
         
         for emp_id, emp_creneaux in employees_planning.items():
-            # Récupérer l'utilisateur
-            user = await db.users.find_one({"id": emp_id, "actif": True})
+            user = users_map.get(emp_id)
             if not user:
                 continue
             
@@ -136,9 +160,9 @@ async def send_morning_planning_notifications():
                 creneau_type = "Matin" if c.get("creneau") == "MATIN" else "Après-midi"
                 creneaux_text.append(f"{creneau_type}: Salle {salle}")
             
-            # Récupérer le centre
-            centre_id = user.get("centre_id") or (user.get("centre_ids", [None])[0])
-            centre = await db.centres.find_one({"id": centre_id}) if centre_id else None
+            # Récupérer le centre (depuis le map)
+            centre_id = user.get("centre_id") or (user.get("centre_ids", [None])[0] if user.get("centre_ids") else None)
+            centre = centres_map.get(centre_id) if centre_id else None
             centre_nom = centre.get("nom", "") if centre else ""
             
             message = f"Votre planning du jour:\n" + "\n".join(creneaux_text)
@@ -2608,9 +2632,20 @@ async def get_inscriptions(
     
     inscriptions = await db.inscriptions.find(query, {"_id": 0}).sort("date_demande", -1).to_list(100)
     
+    if not inscriptions:
+        return {"inscriptions": inscriptions}
+    
+    # OPTIMISATION N+1: Récupérer tous les centres en une seule requête
+    centre_ids = list(set(i.get("centre_id") for i in inscriptions if i.get("centre_id")))
+    centres = await db.centres.find(
+        {"id": {"$in": centre_ids}},
+        {"_id": 0, "id": 1, "nom": 1}
+    ).to_list(len(centre_ids)) if centre_ids else []
+    centres_map = {c["id"]: c for c in centres}
+    
     # Enrichir avec les noms des centres
     for inscription in inscriptions:
-        centre = await db.centres.find_one({"id": inscription.get("centre_id")}, {"_id": 0, "nom": 1})
+        centre = centres_map.get(inscription.get("centre_id"))
         inscription["centre_nom"] = centre["nom"] if centre else "Centre inconnu"
     
     return {"inscriptions": inscriptions}
@@ -4132,11 +4167,16 @@ async def create_groupe_chat(
     groupe_data: GroupeChatCreate,
     current_user: User = Depends(get_current_user)
 ):
-    # Vérifier que tous les membres existent
-    for membre_id in groupe_data.membres:
-        membre = await db.users.find_one({"id": membre_id})
-        if not membre:
-            raise HTTPException(status_code=404, detail=f"Utilisateur {membre_id} non trouvé")
+    # OPTIMISATION N+1: Vérifier tous les membres en une seule requête
+    if groupe_data.membres:
+        existing_users = await db.users.find(
+            {"id": {"$in": groupe_data.membres}},
+            {"_id": 0, "id": 1}
+        ).to_list(len(groupe_data.membres))
+        found_ids = {u["id"] for u in existing_users}
+        missing_ids = set(groupe_data.membres) - found_ids
+        if missing_ids:
+            raise HTTPException(status_code=404, detail=f"Utilisateurs non trouvés: {', '.join(missing_ids)}")
     
     # Ajouter le créateur aux membres s'il n'y est pas déjà
     if current_user.id not in groupe_data.membres:
@@ -4158,29 +4198,40 @@ async def get_groupes_chat(current_user: User = Depends(get_current_user)):
         "membres": current_user.id
     }).sort("date_creation", -1).to_list(1000)
     
+    if not groupes:
+        return []
+    
+    # OPTIMISATION N+1: Collecter tous les IDs uniques (membres + créateurs)
+    all_user_ids = set()
+    for groupe in groupes:
+        all_user_ids.update(groupe.get("membres", []))
+        if groupe.get("createur_id"):
+            all_user_ids.add(groupe["createur_id"])
+    
+    # Une seule requête pour tous les utilisateurs
+    users = await db.users.find(
+        {"id": {"$in": list(all_user_ids)}},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(1000)
+    users_map = {u["id"]: User(**u) for u in users}
+    
     # Enrichir avec les détails des membres
     enriched_groupes = []
     for groupe in groupes:
-        if '_id' in groupe:
-            del groupe['_id']
+        groupe.pop('_id', None)
             
-        # Récupérer les détails des membres
-        membres_details = []
-        for membre_id in groupe.get("membres", []):
-            membre = await db.users.find_one({"id": membre_id})
-            if membre and '_id' in membre:
-                del membre['_id']
-            if membre:
-                membres_details.append(User(**membre))
+        # Récupérer les détails des membres (depuis le map)
+        membres_details = [
+            users_map[mid] for mid in groupe.get("membres", []) 
+            if mid in users_map
+        ]
         
-        createur = await db.users.find_one({"id": groupe["createur_id"]})
-        if createur and '_id' in createur:
-            del createur['_id']
+        createur = users_map.get(groupe.get("createur_id"))
         
         enriched_groupes.append({
             **groupe,
             "membres_details": membres_details,
-            "createur": User(**createur) if createur else None
+            "createur": createur
         })
     
     return enriched_groupes
@@ -4318,25 +4369,34 @@ async def get_messages(
     
     messages = await db.messages.find(query).sort("date_envoi", -1).limit(limit).to_list(limit)
     
+    if not messages:
+        return []
+    
+    # OPTIMISATION N+1: Collecter tous les IDs uniques
+    all_user_ids = set()
+    for msg in messages:
+        all_user_ids.add(msg["expediteur_id"])
+        if msg.get("destinataire_id"):
+            all_user_ids.add(msg["destinataire_id"])
+    
+    # Une seule requête pour tous les utilisateurs
+    users = await db.users.find(
+        {"id": {"$in": list(all_user_ids)}},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(len(all_user_ids))
+    users_map = {u["id"]: User(**u) for u in users}
+    
     enriched_messages = []
     for message in messages:
-        if '_id' in message:
-            del message['_id']
-            
-        expediteur = await db.users.find_one({"id": message["expediteur_id"]})
-        if expediteur and '_id' in expediteur:
-            del expediteur['_id']
-            
-        destinataire = None
-        if message.get("destinataire_id"):
-            destinataire = await db.users.find_one({"id": message["destinataire_id"]})
-            if destinataire and '_id' in destinataire:
-                del destinataire['_id']
+        message.pop('_id', None)
+        
+        expediteur = users_map.get(message["expediteur_id"])
+        destinataire = users_map.get(message.get("destinataire_id")) if message.get("destinataire_id") else None
         
         enriched_messages.append({
             **message,
-            "expediteur": User(**expediteur) if expediteur else None,
-            "destinataire": User(**destinataire) if destinataire else None
+            "expediteur": expediteur,
+            "destinataire": destinataire
         })
     
     return enriched_messages
@@ -4363,24 +4423,37 @@ async def get_conversation(
         {"$set": {"lu": True}}
     )
     
+    if not messages:
+        return []
+    
+    # OPTIMISATION N+1: Collecter tous les IDs uniques
+    all_user_ids = set()
+    for msg in messages:
+        all_user_ids.add(msg["expediteur_id"])
+        if msg.get("destinataire_id"):
+            all_user_ids.add(msg["destinataire_id"])
+    
+    # Une seule requête pour tous les utilisateurs
+    users = await db.users.find(
+        {"id": {"$in": list(all_user_ids)}},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(len(all_user_ids))
+    users_map = {u["id"]: User(**u) for u in users}
+    
     enriched_messages = []
     for message in messages:
-        if '_id' in message:
-            del message['_id']
-            
-        expediteur = await db.users.find_one({"id": message["expediteur_id"]})
-        if expediteur and '_id' in expediteur:
-            del expediteur['_id']
-            
-        destinataire = await db.users.find_one({"id": message["destinataire_id"]})
-        if destinataire and '_id' in destinataire:
-            del destinataire['_id']
+        message.pop('_id', None)
+        
+        expediteur = users_map.get(message["expediteur_id"])
+        destinataire = users_map.get(message.get("destinataire_id")) if message.get("destinataire_id") else None
         
         enriched_messages.append({
             **message,
-            "expediteur": User(**expediteur) if expediteur else None,
-            "destinataire": User(**destinataire) if destinataire else None
+            "expediteur": expediteur,
+            "destinataire": destinataire
         })
+    
+    return enriched_messages
     
     return enriched_messages
 
@@ -4393,20 +4466,38 @@ async def generate_daily_notifications(
     # Générer les notifications pour tous les employés pour une date donnée
     creneaux = await db.planning.find({"date": date}).to_list(1000)
     
+    if not creneaux:
+        return {"message": f"0 notifications générées pour le {date} (aucun créneau)"}
+    
+    # OPTIMISATION N+1: Récupérer tous les employés et médecins en une seule requête
+    all_user_ids = set()
+    for creneau in creneaux:
+        all_user_ids.add(creneau["employe_id"])
+        if creneau.get("medecin_attribue_id"):
+            all_user_ids.add(creneau["medecin_attribue_id"])
+    
+    users = await db.users.find(
+        {"id": {"$in": list(all_user_ids)}},
+        {"_id": 0}
+    ).to_list(len(all_user_ids))
+    users_map = {u["id"]: u for u in users}
+    
+    # Récupérer les notifications existantes pour cette date
+    existing_notifs = await db.notifications.find(
+        {"date": date},
+        {"_id": 0, "employe_id": 1}
+    ).to_list(1000)
+    existing_employe_ids = {n["employe_id"] for n in existing_notifs}
+    
     notifications_created = 0
     
     for creneau in creneaux:
-        employe = await db.users.find_one({"id": creneau["employe_id"]})
+        employe = users_map.get(creneau["employe_id"])
         if not employe:
             continue
         
         # Vérifier si une notification existe déjà
-        existing_notif = await db.notifications.find_one({
-            "employe_id": creneau["employe_id"],
-            "date": date
-        })
-        
-        if existing_notif:
+        if creneau["employe_id"] in existing_employe_ids:
             continue
         
         # Construire le contenu de la notification
@@ -4420,7 +4511,7 @@ async def generate_daily_notifications(
             contenu_parts.append(f"🚪 Salle d'attente : {creneau['salle_attente']}")
         
         if creneau.get('medecin_attribue_id'):
-            medecin = await db.users.find_one({"id": creneau['medecin_attribue_id']})
+            medecin = users_map.get(creneau['medecin_attribue_id'])
             if medecin:
                 contenu_parts.append(f"👨‍⚕️ Travail avec : Dr. {medecin['prenom']} {medecin['nom']}")
         
@@ -4439,6 +4530,7 @@ async def generate_daily_notifications(
         )
         
         await db.notifications.insert_one(notification.dict())
+        existing_employe_ids.add(creneau["employe_id"])  # Éviter les doublons dans la même boucle
         notifications_created += 1
     
     return {"message": f"{notifications_created} notifications générées pour le {date}"}
@@ -4458,18 +4550,26 @@ async def get_notifications_by_date(
             "employe_id": current_user.id
         }).to_list(1000)
     
+    if not notifications:
+        return []
+    
+    # OPTIMISATION N+1: Récupérer tous les employés en une seule requête
+    employe_ids = list(set(n["employe_id"] for n in notifications))
+    users = await db.users.find(
+        {"id": {"$in": employe_ids}},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(len(employe_ids))
+    users_map = {u["id"]: User(**u) for u in users}
+    
     enriched_notifications = []
     for notif in notifications:
-        if '_id' in notif:
-            del notif['_id']
+        notif.pop('_id', None)
         
-        employe = await db.users.find_one({"id": notif["employe_id"]})
-        if employe and '_id' in employe:
-            del employe['_id']
+        employe = users_map.get(notif["employe_id"])
         
         enriched_notifications.append({
             **notif,
-            "employe": User(**employe) if employe else None
+            "employe": employe
         })
     
     return enriched_notifications
@@ -4964,19 +5064,27 @@ async def get_demandes_jour_travail(
     
     demandes = await db.demandes_travail.find(query).sort("date_demandee", 1).to_list(1000)
     
+    if not demandes:
+        return []
+    
+    # OPTIMISATION N+1: Récupérer tous les médecins en une seule requête
+    medecin_ids = list(set(d["medecin_id"] for d in demandes))
+    users = await db.users.find(
+        {"id": {"$in": medecin_ids}},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(len(medecin_ids))
+    users_map = {u["id"]: User(**u) for u in users}
+    
     # Enrichir avec les données des médecins
     enriched_demandes = []
     for demande in demandes:
-        if '_id' in demande:
-            del demande['_id']
-            
-        medecin = await db.users.find_one({"id": demande["medecin_id"]})
-        if medecin and '_id' in medecin:
-            del medecin['_id']
+        demande.pop('_id', None)
+        
+        medecin = users_map.get(demande["medecin_id"])
         
         enriched_demandes.append({
             **demande,
-            "medecin": User(**medecin) if medecin else None
+            "medecin": medecin
         })
     
     return enriched_demandes
@@ -5613,27 +5721,39 @@ async def get_planning_semaine(
     # Récupérer le planning pour toute la semaine avec filtre
     planning = await db.planning.find(query).sort("date", 1).to_list(1000)
     
+    if not planning:
+        return {
+            "dates": dates_semaine,
+            "planning": {date: {"MATIN": [], "APRES_MIDI": []} for date in dates_semaine}
+        }
+    
+    # OPTIMISATION N+1: Collecter tous les IDs d'utilisateurs
+    all_user_ids = set()
+    for creneau in planning:
+        all_user_ids.add(creneau["employe_id"])
+        if creneau.get("medecin_attribue_id"):
+            all_user_ids.add(creneau["medecin_attribue_id"])
+    
+    # Une seule requête pour tous les utilisateurs
+    users = await db.users.find(
+        {"id": {"$in": list(all_user_ids)}},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(len(all_user_ids))
+    users_map = {u["id"]: User(**u) for u in users}
+    
     # Organiser par jour
     planning_par_jour = {date: {"MATIN": [], "APRES_MIDI": []} for date in dates_semaine}
     
     for creneau in planning:
-        if '_id' in creneau:
-            del creneau['_id']
+        creneau.pop('_id', None)
             
-        employe = await db.users.find_one({"id": creneau["employe_id"]})
-        if employe and '_id' in employe:
-            del employe['_id']
-            
-        medecin_attribue = None
-        if creneau.get("medecin_attribue_id"):
-            medecin_attribue = await db.users.find_one({"id": creneau["medecin_attribue_id"]})
-            if medecin_attribue and '_id' in medecin_attribue:
-                del medecin_attribue['_id']
+        employe = users_map.get(creneau["employe_id"])
+        medecin_attribue = users_map.get(creneau.get("medecin_attribue_id")) if creneau.get("medecin_attribue_id") else None
         
         enriched_creneau = {
             **creneau,
-            "employe": User(**employe) if employe else None,
-            "medecin_attribue": User(**medecin_attribue) if medecin_attribue else None
+            "employe": employe,
+            "medecin_attribue": medecin_attribue
         }
         
         if creneau["date"] in planning_par_jour:
@@ -5699,14 +5819,24 @@ async def get_planning_mois(
     # Récupérer tout le planning du mois en une seule requête
     planning = await db.planning.find(query).sort("date", 1).to_list(5000)
     
+    if not planning:
+        return []
+    
+    # OPTIMISATION N+1: Récupérer tous les employés en une seule requête
+    employe_ids = list(set(c["employe_id"] for c in planning))
+    users = await db.users.find(
+        {"id": {"$in": employe_ids}},
+        {"_id": 0, "id": 1, "role": 1}
+    ).to_list(len(employe_ids))
+    users_map = {u["id"]: u for u in users}
+    
     # Supprimer _id et enrichir avec le rôle de l'employé
     result = []
     for creneau in planning:
-        if '_id' in creneau:
-            del creneau['_id']
+        creneau.pop('_id', None)
         
-        # Récupérer le rôle de l'employé
-        employe = await db.users.find_one({"id": creneau["employe_id"]})
+        # Récupérer le rôle de l'employé (depuis le map)
+        employe = users_map.get(creneau["employe_id"])
         creneau["employe_role"] = employe.get("role") if employe else None
         result.append(creneau)
     
@@ -5754,22 +5884,39 @@ async def get_plan_cabinet(
     }
     planning = await db.planning.find(planning_query).to_list(1000)
     
+    if not planning:
+        # Nettoyer les salles sans occupation
+        salles_clean = []
+        for salle in salles:
+            salle.pop('_id', None)
+            salle_data = Salle(**salle).dict()
+            salle_data["occupation"] = None
+            salles_clean.append(salle_data)
+        return {"salles": salles_clean, "date": date, "creneau": creneau}
+    
+    # OPTIMISATION N+1: Collecter tous les IDs d'utilisateurs
+    all_user_ids = set()
+    for creneau_planning in planning:
+        all_user_ids.add(creneau_planning["employe_id"])
+        if creneau_planning.get("medecin_attribue_id"):
+            all_user_ids.add(creneau_planning["medecin_attribue_id"])
+    
+    # Une seule requête pour tous les utilisateurs
+    users = await db.users.find(
+        {"id": {"$in": list(all_user_ids)}},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(len(all_user_ids))
+    users_map = {u["id"]: User(**u) for u in users}
+    
     # Créer un mapping salle -> employé
     occupation_salles = {}
     for creneau_planning in planning:
-        employe = await db.users.find_one({"id": creneau_planning["employe_id"]})
-        if employe and '_id' in employe:
-            del employe['_id']
-            
-        medecin_attribue = None
-        if creneau_planning.get("medecin_attribue_id"):
-            medecin_attribue = await db.users.find_one({"id": creneau_planning["medecin_attribue_id"]})
-            if medecin_attribue and '_id' in medecin_attribue:
-                del medecin_attribue['_id']
+        employe = users_map.get(creneau_planning["employe_id"])
+        medecin_attribue = users_map.get(creneau_planning.get("medecin_attribue_id")) if creneau_planning.get("medecin_attribue_id") else None
         
         occupation_data = {
-            "employe": User(**employe) if employe else None,
-            "medecin_attribue": User(**medecin_attribue) if medecin_attribue else None,
+            "employe": employe,
+            "medecin_attribue": medecin_attribue,
             "notes": creneau_planning.get("notes")
         }
         
@@ -5784,8 +5931,7 @@ async def get_plan_cabinet(
     # Nettoyer les salles
     salles_clean = []
     for salle in salles:
-        if '_id' in salle:
-            del salle['_id']
+        salle.pop('_id', None)
         salle_data = Salle(**salle).dict()
         salle_data["occupation"] = occupation_salles.get(salle["nom"])
         salles_clean.append(salle_data)
@@ -5838,17 +5984,25 @@ async def get_notes_generales(current_user: User = Depends(get_current_user)):
     
     notes = await db.notes_generales.find(query).sort("date_creation", -1).to_list(100)
     
+    if not notes:
+        return []
+    
+    # OPTIMISATION N+1: Récupérer tous les auteurs en une seule requête
+    auteur_ids = list(set(n["auteur_id"] for n in notes if n.get("auteur_id")))
+    users = await db.users.find(
+        {"id": {"$in": auteur_ids}},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(len(auteur_ids)) if auteur_ids else []
+    users_map = {u["id"]: User(**u) for u in users}
+    
     # Enrich with author details
     enriched_notes = []
     for note in notes:
-        if '_id' in note:
-            del note['_id']
-        auteur = await db.users.find_one({"id": note["auteur_id"]})
-        if auteur and '_id' in auteur:
-            del auteur['_id']
+        note.pop('_id', None)
+        auteur = users_map.get(note.get("auteur_id"))
         enriched_notes.append({
             **note,
-            "auteur": User(**auteur) if auteur else None
+            "auteur": auteur
         })
     
     return enriched_notes
@@ -5888,19 +6042,27 @@ async def get_quotas_semaine(
 ):
     quotas = await db.quotas_employes.find({"semaine_debut": semaine_debut}).to_list(1000)
     
+    if not quotas:
+        return []
+    
+    # OPTIMISATION N+1: Récupérer tous les employés en une seule requête
+    employe_ids = list(set(q["employe_id"] for q in quotas))
+    users = await db.users.find(
+        {"id": {"$in": employe_ids}},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(len(employe_ids))
+    users_map = {u["id"]: User(**u) for u in users}
+    
     # Enrichir avec les données des employés
     enriched_quotas = []
     for quota in quotas:
-        if '_id' in quota:
-            del quota['_id']
-            
-        employe = await db.users.find_one({"id": quota["employe_id"]})
-        if employe and '_id' in employe:
-            del employe['_id']
+        quota.pop('_id', None)
+        
+        employe = users_map.get(quota["employe_id"])
         
         enriched_quotas.append({
             **quota,
-            "employe": User(**employe) if employe else None
+            "employe": employe
         })
     
     return enriched_quotas
@@ -6063,18 +6225,26 @@ async def get_permissions_document(
         "actif": True
     }).to_list(1000)
     
+    if not permissions:
+        return []
+    
+    # OPTIMISATION N+1: Récupérer tous les utilisateurs autorisés en une seule requête
+    user_ids = list(set(p["utilisateur_autorise_id"] for p in permissions))
+    users = await db.users.find(
+        {"id": {"$in": user_ids}},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(len(user_ids))
+    users_map = {u["id"]: User(**u) for u in users}
+    
     enriched_permissions = []
     for perm in permissions:
-        if '_id' in perm:
-            del perm['_id']
-            
-        utilisateur = await db.users.find_one({"id": perm["utilisateur_autorise_id"]})
-        if utilisateur and '_id' in utilisateur:
-            del utilisateur['_id']
+        perm.pop('_id', None)
+        
+        utilisateur = users_map.get(perm["utilisateur_autorise_id"])
         
         enriched_permissions.append({
             **perm,
-            "utilisateur_autorise": User(**utilisateur) if utilisateur else None
+            "utilisateur_autorise": utilisateur
         })
     
     return enriched_permissions
@@ -6133,18 +6303,26 @@ async def get_documents_personnels(
             documents.extend(shared_docs)
     
     # Enrichir avec les données des propriétaires
+    if not documents:
+        return []
+    
+    # OPTIMISATION N+1: Récupérer tous les propriétaires en une seule requête
+    proprietaire_ids = list(set(d["proprietaire_id"] for d in documents))
+    users = await db.users.find(
+        {"id": {"$in": proprietaire_ids}},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(len(proprietaire_ids))
+    users_map = {u["id"]: User(**u) for u in users}
+    
     enriched_documents = []
     for doc in documents:
-        if '_id' in doc:
-            del doc['_id']
-            
-        proprietaire = await db.users.find_one({"id": doc["proprietaire_id"]})
-        if proprietaire and '_id' in proprietaire:
-            del proprietaire['_id']
+        doc.pop('_id', None)
+        
+        proprietaire = users_map.get(doc["proprietaire_id"])
         
         enriched_documents.append({
             **doc,
-            "proprietaire": User(**proprietaire) if proprietaire else None,
+            "proprietaire": proprietaire,
             "est_proprietaire": doc["proprietaire_id"] == current_user.id
         })
     
@@ -7908,7 +8086,7 @@ print("🔧 [DEBUG] Dossier uploads monté")
 CORS_ORIGINS_DEFAULT = [
     "https://ope-francis.onrender.com",
     "https://ope-francis-app.onrender.com", 
-    "https://mongo-render-deploy.preview.emergentagent.com",
+    "https://med-cabinet-fix.preview.emergentagent.com",
     "http://localhost:3000",
     "http://localhost:8001"
 ]

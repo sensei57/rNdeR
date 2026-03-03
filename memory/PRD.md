@@ -66,23 +66,19 @@ Application full-stack de gestion de cabinet médical multi-centres permettant l
 ## Problèmes Connus (Issues)
 
 ### P0 - Critiques
-1. **Backend Render ne démarre pas**
-   - Logs: "No open HTTP ports detected"
-   - Cause suspectée: Initialisation Firebase bloquante
-   - Tentative: Initialisation "lazy" ajoutée
-
-2. **Notifications Push non fiables**
-   - Une seule notification reçue au lieu de plusieurs
-   - Message incorrect (cache SW)
-   - Erreur "Requested entity was not found" (tokens invalides)
+1. ~~**Requêtes N+1 dans le backend**~~ (RÉSOLU - 3 Mars 2026)
+   - Optimisé 15+ endpoints avec batch queries via `$in`
+   - Réduction significative des appels MongoDB
 
 ### P1 - Importants
+2. **Frontend App.js monolithique** (~20,000 lignes)
+   - Extraire: PlanningManager, PersonnelManager, DemandesTravailManager, AdminManager, StocksManager
+
 3. **Composant PlanningManager monolithique** (~9000 lignes)
-4. **Téléchargements PDF/Image** - Erreur `n.autoTable is not a function`
 
 ### P2 - Mineurs
-5. Interface de gestion des logos de centre (backend prêt)
-6. Affichage anniversaires/congés (filtrage par centre)
+4. Interface de gestion des logos de centre (backend prêt)
+5. Affichage anniversaires/congés (filtrage par centre)
 
 ## API Endpoints Clés
 
@@ -141,10 +137,11 @@ Application full-stack de gestion de cabinet médical multi-centres permettant l
 - Password: `admin123`
 
 ## Dernière Mise à Jour
-- Date: 2 Mars 2026
-- Session: Optimisation cold start backend (démarrage lazy < 1s)
+- Date: 3 Mars 2026
+- Session: Correction des requêtes N+1 dans le backend (15+ endpoints optimisés)
 
 ## Historique des Sessions
+- **3 Mars 2026**: Optimisation N+1 queries (batch fetch avec `$in` operator) - 15+ endpoints corrigés
 - **2 Mars 2026**: Optimisation du démarrage serveur pour cold start rapide (MongoDB et Scheduler en arrière-plan)
 - **1er Mars 2026**: Carrousel actualités, correction bugs congés (centre_id), permissions Super-Admin
 - **Sessions précédentes**: Migration Firebase Storage, scission des congés, corrections bugs API

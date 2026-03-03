@@ -7,7 +7,7 @@ import requests
 import json
 
 def reactivate_marie():
-    base_url = "https://mongo-render-deploy.preview.emergentagent.com"
+    base_url = "https://med-cabinet-fix.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     # Login as directeur first
