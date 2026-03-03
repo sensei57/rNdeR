@@ -5192,55 +5192,126 @@ const PlanningManager = () => {
     try {
       const promises = [];
       
-      // Créer un congé si demandé pour les secrétaires
+      // NE PAS créer un nouveau congé si un congé existant a été modifié
+      // Les modifications de type sont déjà gérées par handleScinderConge
+      if (journeeData.congeExistant) {
+        // Si le congé a été modifié, fermer simplement le modal
+        // Les changements ont déjà été appliqués via handleScinderConge ou handleModifierTypeConge
+        toast.success('Modifications enregistrées !');
+        setShowJourneeModal(false);
+        fetchPlanningTableau(selectedWeek);
+        return;
+      }
+      
+      // Créer un NOUVEAU congé seulement s'il n'y avait pas de congé existant
+      // et que des cases congé sont cochées
       if (journeeData.employe?.role === 'Secrétaire' && (journeeData.matin.conge || journeeData.apresMidi.conge)) {
         // Déterminer le type de congé et la durée
-        const typeConge = journeeData.matin.type_conge || journeeData.apresMidi.type_conge || 'CONGE_PAYE';
         let duree = 'JOURNEE_COMPLETE';
-        if (journeeData.matin.conge && !journeeData.apresMidi.conge) duree = 'MATIN';
-        if (!journeeData.matin.conge && journeeData.apresMidi.conge) duree = 'APRES_MIDI';
+        let typeConge = journeeData.matin.type_conge || journeeData.apresMidi.type_conge || 'CONGE_PAYE';
         
-        // Utiliser les heures personnalisées si définies
-        const heuresConge = journeeData.matin.heures_conge || journeeData.apresMidi.heures_conge || null;
+        if (journeeData.matin.conge && !journeeData.apresMidi.conge) {
+          duree = 'MATIN';
+          typeConge = journeeData.matin.type_conge || 'CONGE_PAYE';
+        }
+        if (!journeeData.matin.conge && journeeData.apresMidi.conge) {
+          duree = 'APRES_MIDI';
+          typeConge = journeeData.apresMidi.type_conge || 'CONGE_PAYE';
+        }
         
-        const congePayload = {
-          utilisateur_id: journeeData.employe_id, // ID de la secrétaire
-          date_debut: journeeData.date,
-          date_fin: journeeData.date,
-          type_conge: typeConge,
-          duree: duree,
-          heures_conge: heuresConge,
-          motif: `Congé ajouté depuis le planning`
-        };
+        // Si les deux types sont différents, créer 2 congés séparés
+        if (journeeData.matin.conge && journeeData.apresMidi.conge && 
+            journeeData.matin.type_conge !== journeeData.apresMidi.type_conge) {
+          // Créer congé matin
+          await axios.post(`${API}/conges/direct`, {
+            utilisateur_id: journeeData.employe_id,
+            date_debut: journeeData.date,
+            date_fin: journeeData.date,
+            type_conge: journeeData.matin.type_conge || 'CONGE_PAYE',
+            duree: 'MATIN',
+            heures_conge: journeeData.matin.heures_conge || null,
+            motif: `Congé ajouté depuis le planning`
+          });
+          // Créer congé après-midi
+          await axios.post(`${API}/conges/direct`, {
+            utilisateur_id: journeeData.employe_id,
+            date_debut: journeeData.date,
+            date_fin: journeeData.date,
+            type_conge: journeeData.apresMidi.type_conge || 'CONGE_PAYE',
+            duree: 'APRES_MIDI',
+            heures_conge: journeeData.apresMidi.heures_conge || null,
+            motif: `Congé ajouté depuis le planning`
+          });
+        } else {
+          // Types identiques ou un seul créneau - créer un seul congé
+          const heuresConge = journeeData.matin.heures_conge || journeeData.apresMidi.heures_conge || null;
+          
+          await axios.post(`${API}/conges/direct`, {
+            utilisateur_id: journeeData.employe_id,
+            date_debut: journeeData.date,
+            date_fin: journeeData.date,
+            type_conge: typeConge,
+            duree: duree,
+            heures_conge: heuresConge,
+            motif: `Congé ajouté depuis le planning`
+          });
+        }
         
-        await axios.post(`${API}/conges/direct`, congePayload);
         toast.success('Congé/Repos créé avec succès !');
         setShowJourneeModal(false);
         fetchPlanningTableau(selectedWeek);
         return;
       }
       
-      // Créer un congé si demandé pour les assistants
+      // Même logique pour les assistants
       if (journeeData.employe?.role === 'Assistant' && (journeeData.matin.conge || journeeData.apresMidi.conge)) {
-        const typeConge = journeeData.matin.type_conge || journeeData.apresMidi.type_conge || 'CONGE_PAYE';
         let duree = 'JOURNEE_COMPLETE';
-        if (journeeData.matin.conge && !journeeData.apresMidi.conge) duree = 'MATIN';
-        if (!journeeData.matin.conge && journeeData.apresMidi.conge) duree = 'APRES_MIDI';
+        let typeConge = journeeData.matin.type_conge || journeeData.apresMidi.type_conge || 'CONGE_PAYE';
         
-        // Utiliser les heures personnalisées si définies
-        const heuresConge = journeeData.matin.heures_conge || journeeData.apresMidi.heures_conge || null;
+        if (journeeData.matin.conge && !journeeData.apresMidi.conge) {
+          duree = 'MATIN';
+          typeConge = journeeData.matin.type_conge || 'CONGE_PAYE';
+        }
+        if (!journeeData.matin.conge && journeeData.apresMidi.conge) {
+          duree = 'APRES_MIDI';
+          typeConge = journeeData.apresMidi.type_conge || 'CONGE_PAYE';
+        }
         
-        const congePayload = {
-          utilisateur_id: journeeData.employe_id,
-          date_debut: journeeData.date,
-          date_fin: journeeData.date,
-          type_conge: typeConge,
-          duree: duree,
-          heures_conge: heuresConge,
-          motif: `Congé ajouté depuis le planning`
-        };
+        // Si les deux types sont différents, créer 2 congés séparés
+        if (journeeData.matin.conge && journeeData.apresMidi.conge && 
+            journeeData.matin.type_conge !== journeeData.apresMidi.type_conge) {
+          await axios.post(`${API}/conges/direct`, {
+            utilisateur_id: journeeData.employe_id,
+            date_debut: journeeData.date,
+            date_fin: journeeData.date,
+            type_conge: journeeData.matin.type_conge || 'CONGE_PAYE',
+            duree: 'MATIN',
+            heures_conge: journeeData.matin.heures_conge || null,
+            motif: `Congé ajouté depuis le planning`
+          });
+          await axios.post(`${API}/conges/direct`, {
+            utilisateur_id: journeeData.employe_id,
+            date_debut: journeeData.date,
+            date_fin: journeeData.date,
+            type_conge: journeeData.apresMidi.type_conge || 'CONGE_PAYE',
+            duree: 'APRES_MIDI',
+            heures_conge: journeeData.apresMidi.heures_conge || null,
+            motif: `Congé ajouté depuis le planning`
+          });
+        } else {
+          const heuresConge = journeeData.matin.heures_conge || journeeData.apresMidi.heures_conge || null;
+          
+          await axios.post(`${API}/conges/direct`, {
+            utilisateur_id: journeeData.employe_id,
+            date_debut: journeeData.date,
+            date_fin: journeeData.date,
+            type_conge: typeConge,
+            duree: duree,
+            heures_conge: heuresConge,
+            motif: `Congé ajouté depuis le planning`
+          });
+        }
         
-        await axios.post(`${API}/conges/direct`, congePayload);
         toast.success('Congé/Repos créé avec succès !');
         setShowJourneeModal(false);
         fetchPlanningTableau(selectedWeek);
