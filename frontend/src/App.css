@@ -3200,7 +3200,14 @@ p {
 /* Tableau Planning Semaine - Largeurs fixes pour mobile */
 .planning-semaine-table {
   table-layout: fixed;
-  min-width: 800px;
+  min-width: 1000px;
+}
+
+/* Wrapper avec scroll horizontal */
+.planning-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
 }
 
 .planning-semaine-table th,
@@ -3220,8 +3227,22 @@ p {
 }
 
 .planning-semaine-table .col-recap {
-  width: 30px !important;
-  min-width: 30px !important;
+  width: 45px !important;
+  min-width: 45px !important;
+  max-width: 55px !important;
+  font-size: 0.65rem !important;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+/* Sur écran large, plus d'espace */
+@media (min-width: 1400px) {
+  .planning-semaine-table .col-recap {
+    width: 55px !important;
+    min-width: 55px !important;
+    font-size: 0.7rem !important;
+  }
 }
 
 
