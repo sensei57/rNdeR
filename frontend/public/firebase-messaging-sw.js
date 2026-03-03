@@ -1,7 +1,9 @@
 // firebase-messaging-sw.js - Service Worker pour notifications push
+// VERSION 2.0 - 2026-03-03 - Force la mise à jour du cache
 // Version simplifiée sans SDK Firebase pour garantir l'affichage
 
-console.log('🚀 [SW] Chargement du Service Worker...');
+const SW_VERSION = '2.0.3';
+console.log(`🚀 [SW] Chargement du Service Worker v${SW_VERSION}...`);
 
 // ============================================================
 // LISTENER PUSH - Gère TOUTES les notifications entrantes
@@ -98,13 +100,28 @@ self.addEventListener('notificationclick', function(event) {
 // INSTALLATION ET ACTIVATION
 // ============================================================
 self.addEventListener('install', function(event) {
-  console.log('🔧 [SW] Installation');
+  console.log(`🔧 [SW] Installation v${SW_VERSION}`);
+  // FORCE la mise à jour immédiate sans attendre
   self.skipWaiting();
 });
 
 self.addEventListener('activate', function(event) {
-  console.log('✅ [SW] Activation');
-  event.waitUntil(clients.claim());
+  console.log(`✅ [SW] Activation v${SW_VERSION}`);
+  // Prendre le contrôle immédiatement de tous les clients
+  event.waitUntil(
+    Promise.all([
+      clients.claim(),
+      // Supprimer les anciens caches si existants
+      caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(cacheName => {
+            console.log(`🗑️ [SW] Suppression cache: ${cacheName}`);
+            return caches.delete(cacheName);
+          })
+        );
+      })
+    ])
+  );
 });
 
 self.addEventListener('message', function(event) {
@@ -113,4 +130,4 @@ self.addEventListener('message', function(event) {
   }
 });
 
-console.log('✅ [SW] Service Worker prêt pour les notifications');
+console.log(`✅ [SW] Service Worker v${SW_VERSION} prêt pour les notifications`);
