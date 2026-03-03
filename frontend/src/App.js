@@ -1661,37 +1661,75 @@ const PushNotificationManager = () => {
         <DevicesList />
         
         {/* Boutons d'action */}
-        <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-green-200">
-          <Button 
-            onClick={subscribeToPush} 
-            size="sm" 
-            variant="outline"
-            className="flex-1 text-xs border-green-300 text-green-700 hover:bg-green-100"
-          >
-            ➕ Ajouter cet appareil
-          </Button>
+        <div className="flex flex-col gap-2 pt-2 border-t border-green-200">
+          {/* BOUTON PRINCIPAL - Forcer réactivation */}
           <Button 
             onClick={async () => {
+              toast.loading('Réactivation en cours...', { id: 'reactivate' });
               try {
-                // Désabonner de Firebase
-                const registration = await navigator.serviceWorker.ready;
-                const subscription = await registration.pushManager.getSubscription();
-                if (subscription) {
-                  await subscription.unsubscribe();
+                // 1. Nettoyer tous les Service Workers
+                console.log('🧹 Nettoyage complet...');
+                const regs = await navigator.serviceWorker.getRegistrations();
+                for (const reg of regs) {
+                  await reg.unregister();
                 }
-                setSubscribed(false);
-                toast.success('Notifications désactivées sur cet appareil');
+                
+                // 2. Supprimer les caches
+                const cacheNames = await caches.keys();
+                for (const name of cacheNames) {
+                  await caches.delete(name);
+                }
+                
+                // 3. Attendre
+                await new Promise(r => setTimeout(r, 1000));
+                
+                // 4. Ré-inscrire
+                await subscribeToPush();
+                
+                toast.success('✅ Notifications réactivées avec succès !', { id: 'reactivate' });
               } catch (error) {
-                console.error('Erreur désabonnement:', error);
-                toast.error('Erreur lors de la désactivation');
+                console.error('Erreur réactivation:', error);
+                toast.error('Erreur: ' + error.message, { id: 'reactivate' });
               }
             }} 
-            size="sm" 
-            variant="outline"
-            className="flex-1 text-xs border-red-300 text-red-700 hover:bg-red-100"
+            size="sm"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
           >
-            🔕 Désactiver sur cet appareil
+            🔄 Forcer la réactivation des notifications
           </Button>
+          
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button 
+              onClick={subscribeToPush} 
+              size="sm" 
+              variant="outline"
+              className="flex-1 text-xs border-green-300 text-green-700 hover:bg-green-100"
+            >
+              ➕ Ajouter cet appareil
+            </Button>
+            <Button 
+              onClick={async () => {
+                try {
+                  // Désabonner de Firebase
+                  const registration = await navigator.serviceWorker.ready;
+                  const subscription = await registration.pushManager.getSubscription();
+                  if (subscription) {
+                    await subscription.unsubscribe();
+                  }
+                  setSubscribed(false);
+                  toast.success('Notifications désactivées sur cet appareil');
+                } catch (error) {
+                  console.error('Erreur désabonnement:', error);
+                  toast.error('Erreur lors de la désactivation');
+                }
+              }} 
+              size="sm" 
+              variant="outline"
+              className="flex-1 text-xs border-red-300 text-red-700 hover:bg-red-100"
+            >
+              🔕 Désactiver sur cet appareil
+            </Button>
+          </div>
         </div>
       </div>
     );
