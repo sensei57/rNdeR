@@ -11977,10 +11977,12 @@ const PlanningManager = () => {
                         checked={journeeData.matin.conge || false}
                         onChange={async (e) => {
                           if (!e.target.checked && journeeData.congeExistant) {
-                            // Décocher matin = scinder le congé si multi-jours
+                            // Décocher matin = modifier ou supprimer le congé
                             const isMultiJours = journeeData.congeExistant.date_debut !== journeeData.congeExistant.date_fin;
-                            if (isMultiJours) {
-                              // Scinder le congé : supprimer ce créneau spécifique
+                            const congeCreneauActuel = journeeData.congeExistant.creneau || 'JOURNEE_COMPLETE';
+                            
+                            // Si c'est un congé journée complète (mono ou multi-jours), on peut scinder
+                            if (congeCreneauActuel === 'JOURNEE_COMPLETE' || isMultiJours) {
                               await handleScinderConge(
                                 journeeData.congeExistant.id,
                                 journeeData.date,
@@ -11988,10 +11990,12 @@ const PlanningManager = () => {
                                 null, // pas de nouveau type = retirer ce créneau du congé
                                 true  // créer un créneau de travail
                               );
-                            } else {
-                              // Congé d'un jour : supprimer complètement
+                            } else if (congeCreneauActuel === 'MATIN') {
+                              // Congé seulement le matin → supprimer entièrement
                               await handleSupprimerCongeExistant(journeeData.congeExistant.id);
                             }
+                            // Si le congé est seulement l'après-midi, décocher matin ne fait rien
+                            
                             setJourneeData(prev => ({
                               ...prev,
                               matin: { ...prev.matin, conge: false, type_conge: '' }
@@ -12081,9 +12085,12 @@ const PlanningManager = () => {
                         checked={journeeData.apresMidi.conge || false}
                         onChange={async (e) => {
                           if (!e.target.checked && journeeData.congeExistant) {
-                            // Décocher après-midi = scinder le congé si multi-jours
+                            // Décocher après-midi = modifier ou supprimer le congé
                             const isMultiJours = journeeData.congeExistant.date_debut !== journeeData.congeExistant.date_fin;
-                            if (isMultiJours) {
+                            const congeCreneauActuel = journeeData.congeExistant.creneau || 'JOURNEE_COMPLETE';
+                            
+                            // Si c'est un congé journée complète (mono ou multi-jours), on peut scinder
+                            if (congeCreneauActuel === 'JOURNEE_COMPLETE' || isMultiJours) {
                               await handleScinderConge(
                                 journeeData.congeExistant.id,
                                 journeeData.date,
@@ -12091,9 +12098,12 @@ const PlanningManager = () => {
                                 null,
                                 true
                               );
-                            } else {
+                            } else if (congeCreneauActuel === 'APRES_MIDI') {
+                              // Congé seulement l'après-midi → supprimer entièrement
                               await handleSupprimerCongeExistant(journeeData.congeExistant.id);
                             }
+                            // Si le congé est seulement le matin, décocher après-midi ne fait rien
+                            
                             setJourneeData(prev => ({
                               ...prev,
                               apresMidi: { ...prev.apresMidi, conge: false, type_conge: '' }

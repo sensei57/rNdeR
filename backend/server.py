@@ -3538,27 +3538,68 @@ async def scinder_conge(
     
     # Si c'est un congé d'un seul jour
     if date_debut == date_fin:
+        conge_creneau_actuel = demande.get("creneau", "JOURNEE_COMPLETE")
+        
         if request.nouveau_type is None:
-            # Supprimer le congé entier
-            await db.demandes_conges.delete_one({"id": demande_id})
+            # On veut retirer le congé pour ce créneau spécifique
             
-            # Créer un créneau de travail si demandé
-            if request.creer_creneau_travail:
-                creneaux_a_creer = ["MATIN", "APRES_MIDI"] if request.creneau == "JOURNEE_COMPLETE" else [request.creneau]
-                for creneau in creneaux_a_creer:
+            # Cas 1: Congé journée complète, on retire juste un créneau → garder l'autre
+            if conge_creneau_actuel in [None, "JOURNEE_COMPLETE"] and request.creneau in ["MATIN", "APRES_MIDI"]:
+                creneau_a_garder = "APRES_MIDI" if request.creneau == "MATIN" else "MATIN"
+                
+                # Modifier le congé pour ne garder que le créneau opposé
+                await db.demandes_conges.update_one(
+                    {"id": demande_id},
+                    {"$set": {
+                        "creneau": creneau_a_garder,
+                        "date_modification": datetime.now(timezone.utc)
+                    }}
+                )
+                
+                # Créer un créneau de travail pour le créneau retiré si demandé
+                if request.creer_creneau_travail:
+                    employe = await db.users.find_one({"id": demande["utilisateur_id"]})
                     nouveau_creneau = {
                         "id": str(uuid.uuid4()),
                         "date": date_a_modifier,
-                        "creneau": creneau,
+                        "creneau": request.creneau,
                         "employe_id": demande["utilisateur_id"],
-                        "employe_role": (await db.users.find_one({"id": demande["utilisateur_id"]}))["role"],
+                        "employe_role": employe["role"] if employe else None,
                         "centre_id": demande.get("centre_id"),
                         "notes": "Converti depuis congé",
                         "date_creation": datetime.now(timezone.utc)
                     }
                     await db.planning.insert_one(nouveau_creneau)
+                
+                return {
+                    "message": f"Congé modifié: maintenant seulement {creneau_a_garder}",
+                    "action": "modified_creneau",
+                    "creneau_restant": creneau_a_garder,
+                    "creneaux_crees": request.creer_creneau_travail
+                }
             
-            return {"message": "Congé supprimé", "action": "deleted", "creneaux_crees": request.creer_creneau_travail}
+            # Cas 2: Congé demi-journée qu'on veut supprimer entièrement, ou journée complète à supprimer
+            else:
+                await db.demandes_conges.delete_one({"id": demande_id})
+                
+                # Créer un créneau de travail si demandé
+                if request.creer_creneau_travail:
+                    creneaux_a_creer = ["MATIN", "APRES_MIDI"] if request.creneau in [None, "JOURNEE_COMPLETE"] else [request.creneau]
+                    employe = await db.users.find_one({"id": demande["utilisateur_id"]})
+                    for creneau in creneaux_a_creer:
+                        nouveau_creneau = {
+                            "id": str(uuid.uuid4()),
+                            "date": date_a_modifier,
+                            "creneau": creneau,
+                            "employe_id": demande["utilisateur_id"],
+                            "employe_role": employe["role"] if employe else None,
+                            "centre_id": demande.get("centre_id"),
+                            "notes": "Converti depuis congé",
+                            "date_creation": datetime.now(timezone.utc)
+                        }
+                        await db.planning.insert_one(nouveau_creneau)
+                
+                return {"message": "Congé supprimé", "action": "deleted", "creneaux_crees": request.creer_creneau_travail}
         else:
             # Modifier le type du congé entier
             await db.demandes_conges.update_one(
