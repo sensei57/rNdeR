@@ -275,6 +275,15 @@ async def root():
         "version": "2.0-lazy"
     }
 
+@app.get("/api/ping")
+@app.get("/ping")
+async def ping():
+    """
+    Route de réveil pour Cron-job.org - Ultra-légère.
+    Maintient le serveur Render éveillé sans consommer de ressources.
+    """
+    return {"status": "awake", "time": datetime.now(timezone.utc).isoformat()}
+
 @app.get("/api/status")
 async def status_check():
     """
