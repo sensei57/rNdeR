@@ -12017,19 +12017,21 @@ const PlanningManager = () => {
                         value={journeeData.matin.type_conge || 'CONGE_PAYE'}
                         onChange={async (e) => {
                           const nouveauType = e.target.value;
+                          const ancienType = journeeData.matin.type_conge;
+                          
                           setJourneeData(prev => ({
                             ...prev,
                             matin: { ...prev.matin, type_conge: nouveauType }
                           }));
                           
-                          // Si congé existant, mettre à jour le type pour cette demi-journée
-                          if (journeeData.congeExistant) {
-                            const isMultiJours = journeeData.congeExistant.date_debut !== journeeData.congeExistant.date_fin;
+                          // Si congé existant et type différent, mettre à jour
+                          if (journeeData.congeExistant && nouveauType !== ancienType) {
                             const congeCreneauActuel = journeeData.congeExistant.creneau || 'JOURNEE_COMPLETE';
                             
-                            // Si congé multi-jours OU journée complète avec type différent pour matin
-                            if (isMultiJours || (congeCreneauActuel === 'JOURNEE_COMPLETE' && journeeData.apresMidi.type_conge && journeeData.apresMidi.type_conge !== nouveauType)) {
-                              // Scinder pour créer un congé matin avec le nouveau type
+                            // TOUJOURS appeler scinder pour un congé journée complète
+                            // Cela créera 2 congés séparés si les types sont différents
+                            if (congeCreneauActuel === 'JOURNEE_COMPLETE' || !congeCreneauActuel) {
+                              console.log('[DEBUG] Scinder congé journée complète - matin:', nouveauType);
                               await handleScinderConge(
                                 journeeData.congeExistant.id,
                                 journeeData.date,
@@ -12038,8 +12040,9 @@ const PlanningManager = () => {
                                 false
                               );
                             } else {
-                              // Modifier le type du congé entier
-                              handleModifierTypeConge(journeeData.congeExistant.id, nouveauType);
+                              // Congé demi-journée existant, modifier son type
+                              console.log('[DEBUG] Modifier type congé existant:', nouveauType);
+                              await handleModifierTypeConge(journeeData.congeExistant.id, nouveauType);
                             }
                           }
                         }}
@@ -12101,19 +12104,20 @@ const PlanningManager = () => {
                         value={journeeData.apresMidi.type_conge || 'CONGE_PAYE'}
                         onChange={async (e) => {
                           const nouveauType = e.target.value;
+                          const ancienType = journeeData.apresMidi.type_conge;
+                          
                           setJourneeData(prev => ({
                             ...prev,
                             apresMidi: { ...prev.apresMidi, type_conge: nouveauType }
                           }));
                           
-                          // Si congé existant, mettre à jour le type pour cette demi-journée
-                          if (journeeData.congeExistant) {
-                            const isMultiJours = journeeData.congeExistant.date_debut !== journeeData.congeExistant.date_fin;
+                          // Si congé existant et type différent, mettre à jour
+                          if (journeeData.congeExistant && nouveauType !== ancienType) {
                             const congeCreneauActuel = journeeData.congeExistant.creneau || 'JOURNEE_COMPLETE';
                             
-                            // Si congé multi-jours OU journée complète avec type différent pour après-midi
-                            if (isMultiJours || (congeCreneauActuel === 'JOURNEE_COMPLETE' && journeeData.matin.type_conge && journeeData.matin.type_conge !== nouveauType)) {
-                              // Scinder pour créer un congé après-midi avec le nouveau type
+                            // TOUJOURS appeler scinder pour un congé journée complète
+                            if (congeCreneauActuel === 'JOURNEE_COMPLETE' || !congeCreneauActuel) {
+                              console.log('[DEBUG] Scinder congé journée complète - après-midi:', nouveauType);
                               await handleScinderConge(
                                 journeeData.congeExistant.id,
                                 journeeData.date,
@@ -12122,8 +12126,9 @@ const PlanningManager = () => {
                                 false
                               );
                             } else {
-                              // Modifier le type du congé entier
-                              handleModifierTypeConge(journeeData.congeExistant.id, nouveauType);
+                              // Congé demi-journée existant, modifier son type
+                              console.log('[DEBUG] Modifier type congé existant:', nouveauType);
+                              await handleModifierTypeConge(journeeData.congeExistant.id, nouveauType);
                             }
                           }
                         }}
