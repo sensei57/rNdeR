@@ -231,9 +231,10 @@ const CabinetPlanWithPopup = ({ user, centreActif }) => {
           }}
           style={{
             display: 'grid',
-            gridTemplateColumns: `repeat(${numCols}, minmax(70px, 1fr))`,
-            gap: '8px',
-            cursor: isFullscreen ? 'default' : 'pointer'
+            gridTemplateColumns: `repeat(${numCols}, minmax(55px, 1fr))`,
+            gap: window.innerWidth < 768 ? '4px' : '8px',
+            cursor: isFullscreen ? 'default' : 'pointer',
+            minWidth: `${numCols * 60}px`
           }}
         >
           {validSalles.map(salle => {

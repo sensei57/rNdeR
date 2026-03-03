@@ -1524,6 +1524,8 @@ p {
   border-radius: var(--radius-lg);
   padding: 20px;
   border: 1px solid var(--gray-100);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .cabinet-plan-period-header {
@@ -2562,6 +2564,23 @@ p {
   padding: 8px 4px;
 }
 
+/* Responsive pour mobile */
+@media (max-width: 768px) {
+  .room-card-grid {
+    min-height: 55px;
+    min-width: 55px;
+    padding: 4px 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .room-card-grid {
+    min-height: 50px;
+    min-width: 50px;
+    padding: 3px 2px;
+  }
+}
+
 .room-card-grid:hover {
   transform: scale(1.05);
   z-index: 10;
@@ -2601,6 +2620,19 @@ p {
   text-align: center;
   line-height: 1.1;
   z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .room-card-grid .room-card-name {
+    font-size: 8px;
+    letter-spacing: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .room-card-grid .room-card-name {
+    font-size: 7px;
+  }
 }
 
 .room-card-grid .room-card-status {
@@ -2687,6 +2719,38 @@ p {
   border-radius: var(--radius-lg);
   padding: 12px;
   background: var(--gray-50);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Sur mobile, permettre le scroll horizontal */
+@media (max-width: 768px) {
+  .cabinet-plan-grid-responsive {
+    padding: 8px;
+    min-width: min-content;
+  }
+  
+  .cabinet-plan-grid-responsive .room-card-grid {
+    min-width: 60px !important;
+    max-width: 80px !important;
+    padding: 6px 4px !important;
+    font-size: 0.65rem !important;
+  }
+  
+  .cabinet-plan-grid-responsive .room-card-name {
+    font-size: 0.55rem !important;
+  }
+  
+  .cabinet-plan-grid-responsive .room-card-status,
+  .cabinet-plan-grid-responsive .room-card-employee-name {
+    font-size: 0.5rem !important;
+  }
+  
+  .cabinet-plan-grid-responsive .room-card-initials-full {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 0.55rem !important;
+  }
 }
 
 /* ============================================
