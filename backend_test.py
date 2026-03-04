@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 TEST COMPLET DE TOUS LES ENDPOINTS BACKEND - Cabinet Medical
-URL Backend: https://med-cabinet-fix.preview.emergentagent.com/api  
+URL Backend: https://push-stable.preview.emergentagent.com/api  
 IDENTIFIANTS: directeur@cabinet.fr / admin123
 
 Tests à effectuer selon la demande utilisateur:
@@ -28,7 +28,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
 # Configuration
-BACKEND_URL = "https://med-cabinet-fix.preview.emergentagent.com/api"
+BACKEND_URL = "https://push-stable.preview.emergentagent.com/api"
 USERNAME = "directeur@cabinet.fr"
 PASSWORD = "admin123"
 

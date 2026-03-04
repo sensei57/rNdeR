@@ -52,11 +52,15 @@ Application full-stack de gestion de cabinet médical multi-centres permettant l
   - Indicateur du nombre d'actualités non lues avec animation
   - Persistance de l'état de lecture dans localStorage par utilisateur
 
-### Notifications Push
+### Notifications Push (Simplifié - 4 Mars 2026)
 - [x] Intégration Firebase Cloud Messaging
 - [x] Support multi-appareils par utilisateur
-- [x] Notifications automatiques à 7h (planning du jour)
-- [x] Notifications de test personnalisées
+- [x] Notifications automatiques à 7h (planning du jour) - PUSH uniquement
+- [x] Notifications lors de nouveaux messages - PUSH uniquement
+- [x] Notifications admin (Directeur peut envoyer des notifications personnalisées)
+- [x] **Supprimé**: Centre de notifications in-app (icône cloche)
+- [x] **Supprimé**: Stockage des notifications en base de données
+- [x] **Supprimé**: Endpoints GET/DELETE/PUT pour les notifications in-app
 
 ### Migration Multi-Centres
 - [x] API `/api/admin/migrate-data-to-centre`
@@ -98,7 +102,10 @@ Application full-stack de gestion de cabinet médical multi-centres permettant l
 
 ### Notifications
 - `POST /api/notifications/subscribe` - Enregistrer token FCM
-- `POST /api/notifications/test` - Envoyer notification test
+- `POST /api/notifications/test` - Envoyer notification test (Directeur)
+- `GET /api/notifications/employees-for-test` - Liste employés pour test
+- `POST /api/notifications/send-daily-planning` - Déclencher notification planning
+- `GET /api/notifications/scheduler-status` - Statut du scheduler
 
 ## Schéma DB Clé
 
@@ -137,10 +144,11 @@ Application full-stack de gestion de cabinet médical multi-centres permettant l
 - Password: `admin123`
 
 ## Dernière Mise à Jour
-- Date: 3 Mars 2026
-- Session: Correction des requêtes N+1 dans le backend (15+ endpoints optimisés)
+- Date: 4 Mars 2026
+- Session: Simplification du système de notifications (suppression de l'in-app, conservation du push uniquement)
 
 ## Historique des Sessions
+- **4 Mars 2026**: Simplification notifications - suppression centre de notifications in-app, conservation push uniquement (planning matin, messages, admin)
 - **3 Mars 2026**: Optimisation N+1 queries (batch fetch avec `$in` operator) - 15+ endpoints corrigés
 - **2 Mars 2026**: Optimisation du démarrage serveur pour cold start rapide (MongoDB et Scheduler en arrière-plan)
 - **1er Mars 2026**: Carrousel actualités, correction bugs congés (centre_id), permissions Super-Admin

@@ -1046,25 +1046,12 @@ class NotificationRequest(BaseModel):
     data: Optional[Dict] = None
 
 async def send_notification_to_user(user_id: str, title: str, body: str, data: Optional[Dict] = None):
-    """Envoie une notification à un utilisateur spécifique (in-app + push)"""
+    """Envoie une notification push à un utilisateur spécifique (push uniquement, pas de stockage in-app)"""
     try:
-        # 1. Préparer la notification
-        notification = {
-            "id": str(uuid.uuid4()),
-            "user_id": user_id,
-            "title": title,
-            "body": body,
-            "data": data or {},
-            "sent_at": datetime.now(timezone.utc),
-            "read": False,
-            "push_status": "pending"  # pending, sent, failed, no_token
-        }
-        
-        # 2. Envoyer notification push si l'utilisateur a un token FCM
         push_sent = False
-        user = await db.users.find_one({"id": user_id}, {"fcm_token": 1, "fcm_devices": 1, "device_info": 1})
+        user = await db.users.find_one({"id": user_id}, {"fcm_token": 1, "fcm_devices": 1})
         
-        # Récupérer tous les tokens FCM de l'utilisateur (nouveau format: fcm_devices, ancien: fcm_token)
+        # Récupérer tous les tokens FCM de l'utilisateur
         fcm_tokens = []
         
         if user:
@@ -1072,7 +1059,6 @@ async def send_notification_to_user(user_id: str, title: str, body: str, data: O
             if user.get("fcm_devices"):
                 for device in user["fcm_devices"]:
                     token = device.get("fcm_token")
-                    # Ignorer les tokens locaux (générés quand Firebase échoue)
                     if token and not token.startswith("local_"):
                         fcm_tokens.append(token)
             
@@ -1084,9 +1070,8 @@ async def send_notification_to_user(user_id: str, title: str, body: str, data: O
             try:
                 from push_notifications import send_push_notification
                 
-                # Envoyer à tous les appareils de l'utilisateur
                 for fcm_token in fcm_tokens:
-                    print(f"📱 [PUSH] Tentative d'envoi à token: {fcm_token[:40]}...")
+                    print(f"📱 [PUSH] Envoi à token: {fcm_token[:40]}...")
                     push_result = await send_push_notification(
                         fcm_token=fcm_token,
                         title=title,
@@ -1095,27 +1080,15 @@ async def send_notification_to_user(user_id: str, title: str, body: str, data: O
                     )
                     if push_result:
                         push_sent = True
-                        print(f"✅ [PUSH] Notification envoyée avec succès à {user_id}")
+                        print(f"✅ [PUSH] Notification envoyée à {user_id}")
                 
-                if push_sent:
-                    notification["push_status"] = "sent"
-                    notification["push_sent_at"] = datetime.now(timezone.utc)
-                else:
-                    notification["push_status"] = "failed"
-                    notification["push_error"] = "Tous les envois ont échoué"
-                    print(f"⚠️ [PUSH] Tous les envois ont échoué pour {user_id}")
+                if not push_sent:
+                    print(f"⚠️ [PUSH] Échec pour {user_id}")
                     
             except Exception as push_error:
-                notification["push_status"] = "failed"
-                notification["push_error"] = str(push_error)
                 print(f"❌ [PUSH] Erreur pour {user_id}: {push_error}")
         else:
-            notification["push_status"] = "no_token"
-            print(f"⚠️ [PUSH] Aucun token FCM valide pour {user_id}")
-        
-        # 3. Sauvegarder en base pour la notification in-app (avec statut push)
-        await db.notifications.insert_one(notification)
-        print(f"📤 Notification in-app enregistrée pour {user_id}: {title} (push_status: {notification['push_status']})")
+            print(f"⚠️ [PUSH] Aucun token FCM pour {user_id}")
         
         return push_sent
         
@@ -1457,55 +1430,7 @@ async def get_firebase_status_endpoint(current_user: User = Depends(require_role
             "message": f"Erreur: {str(e)}"
         }
 
-# Endpoints pour les notifications
-@api_router.get("/notifications")
-async def get_user_notifications(
-    current_user: User = Depends(get_current_user),
-    limit: int = 20
-):
-    """Récupère les notifications de l'utilisateur actuel"""
-    notifications = await db.notifications.find(
-        {"user_id": current_user.id}
-    ).sort("sent_at", -1).limit(limit).to_list(limit)
-    
-    # Supprimer les _id de MongoDB
-    for notif in notifications:
-        if '_id' in notif:
-            del notif['_id']
-    
-    return notifications
-
-@api_router.put("/notifications/{notification_id}/read")
-async def mark_notification_read(
-    notification_id: str,
-    current_user: User = Depends(get_current_user)
-):
-    """Marque une notification comme lue"""
-    result = await db.notifications.update_one(
-        {"id": notification_id, "user_id": current_user.id},
-        {"$set": {"read": True}}
-    )
-    
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Notification non trouvée")
-    
-    return {"message": "Notification marquée comme lue"}
-
-@api_router.delete("/notifications/{notification_id}")
-async def delete_notification(
-    notification_id: str,
-    current_user: User = Depends(get_current_user)
-):
-    """Supprime une notification"""
-    result = await db.notifications.delete_one(
-        {"id": notification_id, "user_id": current_user.id}
-    )
-    
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Notification non trouvée")
-    
-    return {"message": "Notification supprimée"}
-
+# Endpoint pour déclencher manuellement le planning quotidien
 @api_router.post("/notifications/send-daily-planning")
 async def trigger_daily_planning(
     background_tasks: BackgroundTasks,
@@ -8178,7 +8103,7 @@ print("🔧 [DEBUG] Dossier uploads monté")
 CORS_ORIGINS_DEFAULT = [
     "https://ope-francis.onrender.com",
     "https://ope-francis-app.onrender.com", 
-    "https://med-cabinet-fix.preview.emergentagent.com",
+    "https://push-stable.preview.emergentagent.com",
     "http://localhost:3000",
     "http://localhost:8001"
 ]
