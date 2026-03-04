@@ -568,152 +568,148 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
         )}
       </div>
 
-      {/* Planning du jour - Qui travaille aujourd'hui */}
+      {/* Planning du jour - Vue personnalisée pour l'employé connecté */}
       <div className="bg-gradient-to-r from-blue-50 to-emerald-50 rounded-2xl p-6 mb-6 border border-blue-100 shadow-sm">
         <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <span className="text-2xl">📋</span> Planning du jour
+          <span className="text-2xl">📋</span> Mon planning du jour
         </h2>
         
-        {/* Matin */}
-        {planningDuJour.matin.length > 0 && (
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Sun className="h-5 w-5 text-amber-500" />
-              <span className="font-semibold text-amber-700">Matin</span>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {planningDuJour.matin.map((item, idx) => (
-                <div key={`matin-${idx}`} className="bg-white rounded-xl p-4 shadow-sm border border-amber-100 hover:shadow-md transition-shadow">
-                  <div className="flex items-start gap-3">
-                    <Avatar className="h-12 w-12 ring-2 ring-amber-200">
-                      {item.employe.photo_url && <AvatarImage src={getPhotoUrl(item.employe.photo_url)} />}
-                      <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white font-bold">
-                        {item.employe.prenom?.[0]}{item.employe.nom?.[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 truncate">
-                        {item.employe.role === 'Médecin' ? 'Dr. ' : ''}{item.employe.prenom} {item.employe.nom}
+        {(() => {
+          // Trouver le planning de l'utilisateur connecté
+          const monPlanningMatin = planningDuJour.matin.find(p => p.employe?.id === user?.id);
+          const monPlanningAM = planningDuJour.apresMidi.find(p => p.employe?.id === user?.id);
+          const enRepos = !monPlanningMatin && !monPlanningAM;
+          
+          // Titre de civilité
+          const titre = user?.role === 'Médecin' ? 'Docteur ' : '';
+          const prenom = user?.prenom || 'vous';
+          
+          return (
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-blue-100">
+              <div className="flex items-start gap-4">
+                {/* Photo de l'employé */}
+                <Avatar className="h-16 w-16 ring-2 ring-blue-200 ring-offset-2 flex-shrink-0">
+                  {user?.photo_url && <AvatarImage src={getPhotoUrl(user.photo_url)} />}
+                  <AvatarFallback className="bg-gradient-to-br from-blue-400 to-emerald-500 text-white font-bold text-xl">
+                    {user?.prenom?.[0]}{user?.nom?.[0]}
+                  </AvatarFallback>
+                </Avatar>
+                
+                <div className="flex-1">
+                  {/* Message de bienvenue */}
+                  <p className="text-lg font-semibold text-gray-800 mb-3">
+                    Bonjour {titre}{prenom} !
+                  </p>
+                  
+                  {enRepos ? (
+                    /* En repos */
+                    <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                      <p className="text-green-700 flex items-center gap-2">
+                        <Coffee className="h-5 w-5" />
+                        <span>Aujourd'hui tu es en <strong>repos</strong> ! Profite bien de ta journée.</span>
                       </p>
-                      {item.salle && (
-                        <p className="text-sm text-gray-600">
-                          <span className="font-medium">Salle:</span> {item.salle}
-                        </p>
-                      )}
-                      {item.collegues.length > 0 && (
-                        <div className="mt-2 flex items-center gap-1 flex-wrap">
-                          <span className="text-xs text-gray-500">Avec:</span>
-                          {item.collegues.slice(0, 3).map((collegue, cIdx) => (
-                            <div key={cIdx} className="flex items-center gap-1 bg-blue-50 rounded-full px-2 py-0.5">
-                              <Avatar className="h-5 w-5">
-                                {collegue.photo_url && <AvatarImage src={getPhotoUrl(collegue.photo_url)} />}
-                                <AvatarFallback className="text-[8px] bg-blue-200">
-                                  {collegue.prenom?.[0]}{collegue.nom?.[0]}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-xs font-medium text-blue-700">{collegue.prenom}</span>
+                    </div>
+                  ) : (
+                    /* Planning de travail */
+                    <div className="space-y-3">
+                      {/* Matin */}
+                      {monPlanningMatin && (
+                        <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+                          <div className="flex items-start gap-2">
+                            <Sun className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                            <div>
+                              <p className="text-gray-700">
+                                <strong className="text-amber-700">Ce matin</strong>, tu es en{' '}
+                                <strong className="text-gray-900">{monPlanningMatin.salle || 'salle non attribuée'}</strong>
+                                {monPlanningMatin.salleAttente && (
+                                  <span> avec la salle d'attente <strong>{monPlanningMatin.salleAttente}</strong></span>
+                                )}
+                                {monPlanningMatin.collegues && monPlanningMatin.collegues.length > 0 && (
+                                  <span>
+                                    . Tu travailles avec{' '}
+                                    {monPlanningMatin.collegues.map((collegue, idx) => (
+                                      <span key={collegue.id}>
+                                        {idx > 0 && (idx === monPlanningMatin.collegues.length - 1 ? ' et ' : ', ')}
+                                        <span className="inline-flex items-center gap-1">
+                                          <Avatar className="h-5 w-5 inline-flex">
+                                            {collegue.photo_url && <AvatarImage src={getPhotoUrl(collegue.photo_url)} />}
+                                            <AvatarFallback className="text-[8px] bg-amber-200">
+                                              {collegue.prenom?.[0]}{collegue.nom?.[0]}
+                                            </AvatarFallback>
+                                          </Avatar>
+                                          <strong>{collegue.role === 'Médecin' ? 'Dr ' : ''}{collegue.prenom}</strong>
+                                        </span>
+                                      </span>
+                                    ))}
+                                  </span>
+                                )}.
+                              </p>
                             </div>
-                          ))}
-                          {item.collegues.length > 3 && (
-                            <span className="text-xs text-gray-400">+{item.collegues.length - 3}</span>
-                          )}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Après-midi */}
+                      {monPlanningAM && (
+                        <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
+                          <div className="flex items-start gap-2">
+                            <Moon className="h-5 w-5 text-indigo-500 flex-shrink-0 mt-0.5" />
+                            <div>
+                              <p className="text-gray-700">
+                                <strong className="text-indigo-700">Cet après-midi</strong>, tu es en{' '}
+                                <strong className="text-gray-900">{monPlanningAM.salle || 'salle non attribuée'}</strong>
+                                {monPlanningAM.salleAttente && (
+                                  <span> avec la salle d'attente <strong>{monPlanningAM.salleAttente}</strong></span>
+                                )}
+                                {monPlanningAM.collegues && monPlanningAM.collegues.length > 0 && (
+                                  <span>
+                                    . Tu travailles avec{' '}
+                                    {monPlanningAM.collegues.map((collegue, idx) => (
+                                      <span key={collegue.id}>
+                                        {idx > 0 && (idx === monPlanningAM.collegues.length - 1 ? ' et ' : ', ')}
+                                        <span className="inline-flex items-center gap-1">
+                                          <Avatar className="h-5 w-5 inline-flex">
+                                            {collegue.photo_url && <AvatarImage src={getPhotoUrl(collegue.photo_url)} />}
+                                            <AvatarFallback className="text-[8px] bg-indigo-200">
+                                              {collegue.prenom?.[0]}{collegue.nom?.[0]}
+                                            </AvatarFallback>
+                                          </Avatar>
+                                          <strong>{collegue.role === 'Médecin' ? 'Dr ' : ''}{collegue.prenom}</strong>
+                                        </span>
+                                      </span>
+                                    ))}
+                                  </span>
+                                )}.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Si travaille seulement le matin ou l'après-midi */}
+                      {monPlanningMatin && !monPlanningAM && (
+                        <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+                          <p className="text-green-700 text-sm flex items-center gap-2">
+                            <Coffee className="h-4 w-4" />
+                            Cet après-midi, tu es en repos.
+                          </p>
+                        </div>
+                      )}
+                      {!monPlanningMatin && monPlanningAM && (
+                        <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+                          <p className="text-green-700 text-sm flex items-center gap-2">
+                            <Coffee className="h-4 w-4" />
+                            Ce matin, tu es en repos.
+                          </p>
                         </div>
                       )}
                     </div>
-                  </div>
+                  )}
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
-        )}
-        
-        {/* Après-midi */}
-        {planningDuJour.apresMidi.length > 0 && (
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Moon className="h-5 w-5 text-indigo-500" />
-              <span className="font-semibold text-indigo-700">Après-midi</span>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {planningDuJour.apresMidi.map((item, idx) => (
-                <div key={`am-${idx}`} className="bg-white rounded-xl p-4 shadow-sm border border-indigo-100 hover:shadow-md transition-shadow">
-                  <div className="flex items-start gap-3">
-                    <Avatar className="h-12 w-12 ring-2 ring-indigo-200">
-                      {item.employe.photo_url && <AvatarImage src={getPhotoUrl(item.employe.photo_url)} />}
-                      <AvatarFallback className="bg-gradient-to-br from-indigo-400 to-purple-500 text-white font-bold">
-                        {item.employe.prenom?.[0]}{item.employe.nom?.[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 truncate">
-                        {item.employe.role === 'Médecin' ? 'Dr. ' : ''}{item.employe.prenom} {item.employe.nom}
-                      </p>
-                      {item.salle && (
-                        <p className="text-sm text-gray-600">
-                          <span className="font-medium">Salle:</span> {item.salle}
-                        </p>
-                      )}
-                      {item.collegues.length > 0 && (
-                        <div className="mt-2 flex items-center gap-1 flex-wrap">
-                          <span className="text-xs text-gray-500">Avec:</span>
-                          {item.collegues.slice(0, 3).map((collegue, cIdx) => (
-                            <div key={cIdx} className="flex items-center gap-1 bg-indigo-50 rounded-full px-2 py-0.5">
-                              <Avatar className="h-5 w-5">
-                                {collegue.photo_url && <AvatarImage src={getPhotoUrl(collegue.photo_url)} />}
-                                <AvatarFallback className="text-[8px] bg-indigo-200">
-                                  {collegue.prenom?.[0]}{collegue.nom?.[0]}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-xs font-medium text-indigo-700">{collegue.prenom}</span>
-                            </div>
-                          ))}
-                          {item.collegues.length > 3 && (
-                            <span className="text-xs text-gray-400">+{item.collegues.length - 3}</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {/* En repos */}
-        {planningDuJour.repos.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Coffee className="h-5 w-5 text-green-500" />
-              <span className="font-semibold text-green-700">En repos aujourd'hui</span>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              {planningDuJour.repos.map((employe, idx) => (
-                <div key={`repos-${idx}`} className="bg-white/80 rounded-xl px-4 py-3 shadow-sm border border-green-100 flex items-center gap-3">
-                  <Avatar className="h-10 w-10 ring-2 ring-green-200">
-                    {employe.photo_url && <AvatarImage src={getPhotoUrl(employe.photo_url)} />}
-                    <AvatarFallback className="bg-gradient-to-br from-green-400 to-emerald-500 text-white font-bold text-sm">
-                      {employe.prenom?.[0]}{employe.nom?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Bonjour <span className="font-semibold">{employe.role === 'Médecin' ? 'Docteur ' : ''}{employe.prenom}</span>,
-                    </p>
-                    <p className="text-xs text-green-600 font-medium">aujourd'hui tu es en repos !</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {/* Message si personne ne travaille */}
-        {planningDuJour.matin.length === 0 && planningDuJour.apresMidi.length === 0 && planningDuJour.repos.length === 0 && (
-          <div className="text-center py-6 text-gray-500">
-            <p className="text-sm">Aucun planning configuré pour aujourd'hui</p>
-          </div>
-        )}
+          );
+        })()}
       </div>
 
       {/* Bannière Anniversaires - Toujours visible */}
