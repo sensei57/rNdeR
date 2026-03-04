@@ -5192,113 +5192,149 @@ const PlanningManager = () => {
     try {
       const promises = [];
       
-      // NE PAS créer un nouveau congé si un congé existant a été modifié
-      // Les modifications de type sont déjà gérées par handleScinderConge
+      // Gérer les modifications de congé existant
       if (journeeData.congeExistant) {
-        // Si le congé a été modifié, fermer simplement le modal
-        // Les changements ont déjà été appliqués via handleScinderConge ou handleModifierTypeConge
-        toast.success('Modifications enregistrées !');
-        setShowJourneeModal(false);
-        fetchPlanningTableau(selectedWeek);
-        return;
+        const congeInitial = journeeData.congeExistant;
+        const congeCreneauActuel = congeInitial.creneau || 'JOURNEE_COMPLETE';
+        const isMultiJours = congeInitial.date_debut !== congeInitial.date_fin;
+        
+        // État initial du congé
+        const avaitCongeMatin = congeCreneauActuel === 'JOURNEE_COMPLETE' || congeCreneauActuel === 'MATIN';
+        const avaitCongeAM = congeCreneauActuel === 'JOURNEE_COMPLETE' || congeCreneauActuel === 'APRES_MIDI';
+        
+        // État souhaité
+        const veutCongeMatin = journeeData.matin.conge;
+        const veutCongeAM = journeeData.apresMidi.conge;
+        const typeMatin = journeeData.matin.type_conge || 'CONGE_PAYE';
+        const typeAM = journeeData.apresMidi.type_conge || 'CONGE_PAYE';
+        
+        // Cas 1: On retire tout le congé (matin et après-midi décochés)
+        if (!veutCongeMatin && !veutCongeAM) {
+          await handleSupprimerCongeExistant(congeInitial.id);
+          toast.success('Congé supprimé !');
+          setShowJourneeModal(false);
+          fetchPlanningTableau(selectedWeek);
+          return;
+        }
+        
+        // Cas 2: On garde les deux avec types différents (scinder en 2 congés)
+        if (veutCongeMatin && veutCongeAM && typeMatin !== typeAM) {
+          // Supprimer l'ancien congé
+          await axios.delete(`${API}/conges/${congeInitial.id}`);
+          
+          // Créer congé matin
+          await axios.post(`${API}/conges/direct`, {
+            utilisateur_id: congeInitial.utilisateur_id,
+            date_debut: journeeData.date,
+            date_fin: journeeData.date,
+            type_conge: typeMatin,
+            duree: 'MATIN',
+            motif: 'Modifié depuis le planning'
+          });
+          
+          // Créer congé après-midi
+          await axios.post(`${API}/conges/direct`, {
+            utilisateur_id: congeInitial.utilisateur_id,
+            date_debut: journeeData.date,
+            date_fin: journeeData.date,
+            type_conge: typeAM,
+            duree: 'APRES_MIDI',
+            motif: 'Modifié depuis le planning'
+          });
+          
+          toast.success('Congé modifié : types différents matin/après-midi !');
+          setShowJourneeModal(false);
+          fetchPlanningTableau(selectedWeek);
+          return;
+        }
+        
+        // Cas 3: On garde les deux avec même type → modifier le type si différent
+        if (veutCongeMatin && veutCongeAM && typeMatin === typeAM) {
+          if (typeMatin !== congeInitial.type_conge) {
+            await handleModifierTypeConge(congeInitial.id, typeMatin);
+          }
+          toast.success('Congé modifié !');
+          setShowJourneeModal(false);
+          fetchPlanningTableau(selectedWeek);
+          return;
+        }
+        
+        // Cas 4: On garde seulement le matin (décoché après-midi)
+        if (veutCongeMatin && !veutCongeAM) {
+          if (isMultiJours) {
+            // Pour congé multi-jours, utiliser scinder
+            await handleScinderConge(congeInitial.id, journeeData.date, 'APRES_MIDI', null, false);
+          } else {
+            // Pour congé 1 jour, modifier le créneau
+            await axios.put(`${API}/conges/${congeInitial.id}`, {
+              creneau: 'MATIN',
+              type_conge: typeMatin
+            });
+          }
+          toast.success('Congé modifié : matin seulement !');
+          setShowJourneeModal(false);
+          fetchPlanningTableau(selectedWeek);
+          return;
+        }
+        
+        // Cas 5: On garde seulement l'après-midi (décoché matin)
+        if (!veutCongeMatin && veutCongeAM) {
+          if (isMultiJours) {
+            await handleScinderConge(congeInitial.id, journeeData.date, 'MATIN', null, false);
+          } else {
+            await axios.put(`${API}/conges/${congeInitial.id}`, {
+              creneau: 'APRES_MIDI',
+              type_conge: typeAM
+            });
+          }
+          toast.success('Congé modifié : après-midi seulement !');
+          setShowJourneeModal(false);
+          fetchPlanningTableau(selectedWeek);
+          return;
+        }
       }
       
       // Créer un NOUVEAU congé seulement s'il n'y avait pas de congé existant
-      // et que des cases congé sont cochées
-      if (journeeData.employe?.role === 'Secrétaire' && (journeeData.matin.conge || journeeData.apresMidi.conge)) {
-        // Déterminer le type de congé et la durée
-        let duree = 'JOURNEE_COMPLETE';
-        let typeConge = journeeData.matin.type_conge || journeeData.apresMidi.type_conge || 'CONGE_PAYE';
+      if ((journeeData.employe?.role === 'Secrétaire' || journeeData.employe?.role === 'Assistant') && 
+          (journeeData.matin.conge || journeeData.apresMidi.conge)) {
         
-        if (journeeData.matin.conge && !journeeData.apresMidi.conge) {
-          duree = 'MATIN';
-          typeConge = journeeData.matin.type_conge || 'CONGE_PAYE';
-        }
-        if (!journeeData.matin.conge && journeeData.apresMidi.conge) {
-          duree = 'APRES_MIDI';
-          typeConge = journeeData.apresMidi.type_conge || 'CONGE_PAYE';
-        }
+        const typeMatin = journeeData.matin.type_conge || 'CONGE_PAYE';
+        const typeAM = journeeData.apresMidi.type_conge || 'CONGE_PAYE';
         
         // Si les deux types sont différents, créer 2 congés séparés
-        if (journeeData.matin.conge && journeeData.apresMidi.conge && 
-            journeeData.matin.type_conge !== journeeData.apresMidi.type_conge) {
-          // Créer congé matin
+        if (journeeData.matin.conge && journeeData.apresMidi.conge && typeMatin !== typeAM) {
           await axios.post(`${API}/conges/direct`, {
             utilisateur_id: journeeData.employe_id,
             date_debut: journeeData.date,
             date_fin: journeeData.date,
-            type_conge: journeeData.matin.type_conge || 'CONGE_PAYE',
+            type_conge: typeMatin,
             duree: 'MATIN',
             heures_conge: journeeData.matin.heures_conge || null,
             motif: `Congé ajouté depuis le planning`
           });
-          // Créer congé après-midi
           await axios.post(`${API}/conges/direct`, {
             utilisateur_id: journeeData.employe_id,
             date_debut: journeeData.date,
             date_fin: journeeData.date,
-            type_conge: journeeData.apresMidi.type_conge || 'CONGE_PAYE',
+            type_conge: typeAM,
             duree: 'APRES_MIDI',
             heures_conge: journeeData.apresMidi.heures_conge || null,
             motif: `Congé ajouté depuis le planning`
           });
         } else {
-          // Types identiques ou un seul créneau - créer un seul congé
-          const heuresConge = journeeData.matin.heures_conge || journeeData.apresMidi.heures_conge || null;
+          // Types identiques ou un seul créneau
+          let duree = 'JOURNEE_COMPLETE';
+          let typeConge = typeMatin;
           
-          await axios.post(`${API}/conges/direct`, {
-            utilisateur_id: journeeData.employe_id,
-            date_debut: journeeData.date,
-            date_fin: journeeData.date,
-            type_conge: typeConge,
-            duree: duree,
-            heures_conge: heuresConge,
-            motif: `Congé ajouté depuis le planning`
-          });
-        }
-        
-        toast.success('Congé/Repos créé avec succès !');
-        setShowJourneeModal(false);
-        fetchPlanningTableau(selectedWeek);
-        return;
-      }
-      
-      // Même logique pour les assistants
-      if (journeeData.employe?.role === 'Assistant' && (journeeData.matin.conge || journeeData.apresMidi.conge)) {
-        let duree = 'JOURNEE_COMPLETE';
-        let typeConge = journeeData.matin.type_conge || journeeData.apresMidi.type_conge || 'CONGE_PAYE';
-        
-        if (journeeData.matin.conge && !journeeData.apresMidi.conge) {
-          duree = 'MATIN';
-          typeConge = journeeData.matin.type_conge || 'CONGE_PAYE';
-        }
-        if (!journeeData.matin.conge && journeeData.apresMidi.conge) {
-          duree = 'APRES_MIDI';
-          typeConge = journeeData.apresMidi.type_conge || 'CONGE_PAYE';
-        }
-        
-        // Si les deux types sont différents, créer 2 congés séparés
-        if (journeeData.matin.conge && journeeData.apresMidi.conge && 
-            journeeData.matin.type_conge !== journeeData.apresMidi.type_conge) {
-          await axios.post(`${API}/conges/direct`, {
-            utilisateur_id: journeeData.employe_id,
-            date_debut: journeeData.date,
-            date_fin: journeeData.date,
-            type_conge: journeeData.matin.type_conge || 'CONGE_PAYE',
-            duree: 'MATIN',
-            heures_conge: journeeData.matin.heures_conge || null,
-            motif: `Congé ajouté depuis le planning`
-          });
-          await axios.post(`${API}/conges/direct`, {
-            utilisateur_id: journeeData.employe_id,
-            date_debut: journeeData.date,
-            date_fin: journeeData.date,
-            type_conge: journeeData.apresMidi.type_conge || 'CONGE_PAYE',
-            duree: 'APRES_MIDI',
-            heures_conge: journeeData.apresMidi.heures_conge || null,
-            motif: `Congé ajouté depuis le planning`
-          });
-        } else {
+          if (journeeData.matin.conge && !journeeData.apresMidi.conge) {
+            duree = 'MATIN';
+            typeConge = typeMatin;
+          }
+          if (!journeeData.matin.conge && journeeData.apresMidi.conge) {
+            duree = 'APRES_MIDI';
+            typeConge = typeAM;
+          }
+          
           const heuresConge = journeeData.matin.heures_conge || journeeData.apresMidi.heures_conge || null;
           
           await axios.post(`${API}/conges/direct`, {
@@ -12047,36 +12083,16 @@ const PlanningManager = () => {
                       <input
                         type="checkbox"
                         checked={journeeData.matin.conge || false}
-                        onChange={async (e) => {
-                          if (!e.target.checked && journeeData.congeExistant) {
-                            // Décocher matin = retirer le congé pour cette demi-journée
-                            const isMultiJours = journeeData.congeExistant.date_debut !== journeeData.congeExistant.date_fin;
-                            const congeCreneauActuel = journeeData.congeExistant.creneau || 'JOURNEE_COMPLETE';
-                            
-                            if (congeCreneauActuel === 'JOURNEE_COMPLETE' || isMultiJours) {
-                              // Scinder pour garder seulement l'après-midi
-                              await handleScinderConge(
-                                journeeData.congeExistant.id,
-                                journeeData.date,
-                                'MATIN',
-                                null,
-                                false // Ne pas créer de créneau de travail automatiquement
-                              );
-                            } else if (congeCreneauActuel === 'MATIN') {
-                              // Congé seulement le matin → supprimer entièrement
-                              await handleSupprimerCongeExistant(journeeData.congeExistant.id);
+                        onChange={(e) => {
+                          // Ne modifie que l'état local - les changements seront appliqués à l'enregistrement
+                          setJourneeData(prev => ({
+                            ...prev,
+                            matin: { 
+                              ...prev.matin, 
+                              conge: e.target.checked, 
+                              type_conge: e.target.checked ? (prev.matin.type_conge || 'CONGE_PAYE') : '' 
                             }
-                            
-                            setJourneeData(prev => ({
-                              ...prev,
-                              matin: { ...prev.matin, conge: false, type_conge: '' }
-                            }));
-                          } else {
-                            setJourneeData(prev => ({
-                              ...prev,
-                              matin: { ...prev.matin, conge: e.target.checked, type_conge: e.target.checked ? (prev.matin.type_conge || 'CONGE_PAYE') : '' }
-                            }));
-                          }
+                          }));
                         }}
                         className="w-4 h-4 accent-primary-600"
                       />
@@ -12086,36 +12102,12 @@ const PlanningManager = () => {
                       <select
                         className="w-full p-2 border rounded text-sm"
                         value={journeeData.matin.type_conge || 'CONGE_PAYE'}
-                        onChange={async (e) => {
-                          const nouveauType = e.target.value;
-                          const ancienType = journeeData.matin.type_conge;
-                          
+                        onChange={(e) => {
+                          // Ne modifie que l'état local
                           setJourneeData(prev => ({
                             ...prev,
-                            matin: { ...prev.matin, type_conge: nouveauType }
+                            matin: { ...prev.matin, type_conge: e.target.value }
                           }));
-                          
-                          // Si congé existant et type différent, mettre à jour
-                          if (journeeData.congeExistant && nouveauType !== ancienType) {
-                            const congeCreneauActuel = journeeData.congeExistant.creneau || 'JOURNEE_COMPLETE';
-                            
-                            // TOUJOURS appeler scinder pour un congé journée complète
-                            // Cela créera 2 congés séparés si les types sont différents
-                            if (congeCreneauActuel === 'JOURNEE_COMPLETE' || !congeCreneauActuel) {
-                              console.log('[DEBUG] Scinder congé journée complète - matin:', nouveauType);
-                              await handleScinderConge(
-                                journeeData.congeExistant.id,
-                                journeeData.date,
-                                'MATIN',
-                                nouveauType,
-                                false
-                              );
-                            } else {
-                              // Congé demi-journée existant, modifier son type
-                              console.log('[DEBUG] Modifier type congé existant:', nouveauType);
-                              await handleModifierTypeConge(journeeData.congeExistant.id, nouveauType);
-                            }
-                          }
                         }}
                       >
                         <option value="CONGE_PAYE">Congé payé (CP)</option>
@@ -12134,36 +12126,16 @@ const PlanningManager = () => {
                       <input
                         type="checkbox"
                         checked={journeeData.apresMidi.conge || false}
-                        onChange={async (e) => {
-                          if (!e.target.checked && journeeData.congeExistant) {
-                            // Décocher après-midi = retirer le congé pour cette demi-journée
-                            const isMultiJours = journeeData.congeExistant.date_debut !== journeeData.congeExistant.date_fin;
-                            const congeCreneauActuel = journeeData.congeExistant.creneau || 'JOURNEE_COMPLETE';
-                            
-                            if (congeCreneauActuel === 'JOURNEE_COMPLETE' || isMultiJours) {
-                              // Scinder pour garder seulement le matin
-                              await handleScinderConge(
-                                journeeData.congeExistant.id,
-                                journeeData.date,
-                                'APRES_MIDI',
-                                null,
-                                false
-                              );
-                            } else if (congeCreneauActuel === 'APRES_MIDI') {
-                              // Congé seulement l'après-midi → supprimer entièrement
-                              await handleSupprimerCongeExistant(journeeData.congeExistant.id);
+                        onChange={(e) => {
+                          // Ne modifie que l'état local
+                          setJourneeData(prev => ({
+                            ...prev,
+                            apresMidi: { 
+                              ...prev.apresMidi, 
+                              conge: e.target.checked, 
+                              type_conge: e.target.checked ? (prev.apresMidi.type_conge || 'CONGE_PAYE') : '' 
                             }
-                            
-                            setJourneeData(prev => ({
-                              ...prev,
-                              apresMidi: { ...prev.apresMidi, conge: false, type_conge: '' }
-                            }));
-                          } else {
-                            setJourneeData(prev => ({
-                              ...prev,
-                              apresMidi: { ...prev.apresMidi, conge: e.target.checked, type_conge: e.target.checked ? (prev.apresMidi.type_conge || 'CONGE_PAYE') : '' }
-                            }));
-                          }
+                          }));
                         }}
                         className="w-4 h-4 accent-primary-600"
                       />
@@ -12173,35 +12145,12 @@ const PlanningManager = () => {
                       <select
                         className="w-full p-2 border rounded text-sm"
                         value={journeeData.apresMidi.type_conge || 'CONGE_PAYE'}
-                        onChange={async (e) => {
-                          const nouveauType = e.target.value;
-                          const ancienType = journeeData.apresMidi.type_conge;
-                          
+                        onChange={(e) => {
+                          // Ne modifie que l'état local
                           setJourneeData(prev => ({
                             ...prev,
-                            apresMidi: { ...prev.apresMidi, type_conge: nouveauType }
+                            apresMidi: { ...prev.apresMidi, type_conge: e.target.value }
                           }));
-                          
-                          // Si congé existant et type différent, mettre à jour
-                          if (journeeData.congeExistant && nouveauType !== ancienType) {
-                            const congeCreneauActuel = journeeData.congeExistant.creneau || 'JOURNEE_COMPLETE';
-                            
-                            // TOUJOURS appeler scinder pour un congé journée complète
-                            if (congeCreneauActuel === 'JOURNEE_COMPLETE' || !congeCreneauActuel) {
-                              console.log('[DEBUG] Scinder congé journée complète - après-midi:', nouveauType);
-                              await handleScinderConge(
-                                journeeData.congeExistant.id,
-                                journeeData.date,
-                                'APRES_MIDI',
-                                nouveauType,
-                                false
-                              );
-                            } else {
-                              // Congé demi-journée existant, modifier son type
-                              console.log('[DEBUG] Modifier type congé existant:', nouveauType);
-                              await handleModifierTypeConge(journeeData.congeExistant.id, nouveauType);
-                            }
-                          }
                         }}
                       >
                         <option value="CONGE_PAYE">Congé payé (CP)</option>
