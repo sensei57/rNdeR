@@ -3469,14 +3469,14 @@ async def supprimer_conge(
     
     return {"message": "Congé supprimé avec succès"}
 
-class ModifierCongeRequest(BaseModel):
+class ModifierCongeCompletRequest(BaseModel):
     creneau: Optional[str] = None  # MATIN, APRES_MIDI, JOURNEE_COMPLETE
     type_conge: Optional[str] = None
 
-@api_router.put("/conges/{demande_id}")
-async def modifier_conge(
+@api_router.put("/conges/{demande_id}/modifier")
+async def modifier_conge_complet(
     demande_id: str,
-    request: ModifierCongeRequest,
+    request: ModifierCongeCompletRequest,
     current_user: User = Depends(require_role([ROLES["DIRECTEUR"], ROLES["SUPER_ADMIN"]]))
 ):
     """Modifier un congé (créneau et/ou type) - Directeur/Super-Admin uniquement"""
