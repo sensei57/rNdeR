@@ -24,7 +24,6 @@ import asyncio
 scheduler = None
 AsyncIOScheduler = None
 CronTrigger = None
-IntervalTrigger = None
 
 def get_scheduler():
     """Lazy load du scheduler"""
@@ -32,11 +31,8 @@ def get_scheduler():
     if scheduler is None:
         from apscheduler.schedulers.asyncio import AsyncIOScheduler as _AsyncIOScheduler
         from apscheduler.triggers.cron import CronTrigger as _CronTrigger
-        from apscheduler.triggers.interval import IntervalTrigger as _IntervalTrigger
         AsyncIOScheduler = _AsyncIOScheduler
         CronTrigger = _CronTrigger
-        global IntervalTrigger
-        IntervalTrigger = _IntervalTrigger
         scheduler = AsyncIOScheduler(timezone="Europe/Paris")
     return scheduler
 
@@ -105,26 +101,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 security = HTTPBearer()
-
-# Fonction auto-ping pour maintenir le serveur Render éveillé
-async def auto_ping_self():
-    """
-    Auto-ping vers notre propre URL publique toutes les 10 minutes.
-    Maintient le serveur Render éveillé en simulant du trafic.
-    """
-    import httpx
-    
-    RENDER_PUBLIC_URL = "https://ope-francis.onrender.com/api/ping"
-    
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(RENDER_PUBLIC_URL)
-            if response.status_code == 200:
-                print(f"🏓 [AUTO-PING] OK - {response.json()}", flush=True)
-            else:
-                print(f"⚠️ [AUTO-PING] Status: {response.status_code}", flush=True)
-    except Exception as e:
-        print(f"❌ [AUTO-PING] Erreur: {e}", flush=True)
 
 # Fonction de notification automatique à 7h
 async def send_morning_planning_notifications():
@@ -244,7 +220,7 @@ async def lifespan(app: FastAPI):
         try:
             sched = get_scheduler()
             
-            # Tâche 1: Notifications du planning à 7h du matin
+            # Tâche: Notifications du planning à 7h du matin
             sched.add_job(
                 send_morning_planning_notifications,
                 CronTrigger(hour=7, minute=0, timezone="Europe/Paris"),
@@ -252,16 +228,8 @@ async def lifespan(app: FastAPI):
                 replace_existing=True
             )
             
-            # Tâche 2: Auto-ping toutes les 10 minutes pour garder Render éveillé
-            sched.add_job(
-                auto_ping_self,
-                IntervalTrigger(minutes=10),
-                id="auto_ping_render",
-                replace_existing=True
-            )
-            
             sched.start()
-            print("⏰ [BACKGROUND] Scheduler activé (planning 7h + auto-ping 10min)", flush=True)
+            print("⏰ [BACKGROUND] Scheduler activé (planning 7h)", flush=True)
         except Exception as e:
             print(f"⚠️ [BACKGROUND] Scheduler: {e}", flush=True)
     
