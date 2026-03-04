@@ -150,9 +150,10 @@ Application full-stack de gestion de cabinet médical multi-centres permettant l
 
 ## Dernière Mise à Jour
 - Date: 4 Mars 2026
-- Session: Correction synchronisation congés Planning ↔ Demandes de congés
+- Session: Ajout section "Planning du jour" dans Actualités
 
 ## Historique des Sessions
+- **4 Mars 2026 (5)**: Nouvelle section "Planning du jour" dans la page Actualités - affiche qui travaille (matin/après-midi) avec salles, collègues et photos, plus les employés en repos
 - **4 Mars 2026 (4)**: Refonte complète de la logique congés dans le Planning - gestion correcte des congés multiples (MATIN + APRES_MIDI séparés), synchronisation avec la base de données
 - **4 Mars 2026 (3)**: Correction bug modification congés - l'initialisation du modal prend maintenant en compte le créneau (MATIN/APRES_MIDI/JOURNEE_COMPLETE) du congé existant
 - **4 Mars 2026 (2)**: Système anti-sommeil Render - endpoint /api/ping avec headers anti-cache + auto-ping toutes les 10 minutes

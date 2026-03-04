@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { Bell, Plus, Edit, Trash2, FileText, Upload, CheckCircle, Users, Eye, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Bell, Plus, Edit, Trash2, FileText, Upload, CheckCircle, Users, Eye, X, ChevronLeft, ChevronRight, Coffee, Sun, Moon } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -32,6 +32,8 @@ const getPhotoUrl = (photoUrl) => {
 const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
   const [actualites, setActualites] = useState([]);
   const [anniversaires, setAnniversaires] = useState([]);
+  const [planningDuJour, setPlanningDuJour] = useState({ matin: [], apresMidi: [], repos: [] });
+  const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showSignaturesModal, setShowSignaturesModal] = useState(false);
@@ -101,16 +103,67 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
         }
       };
 
-      const [actusRes, annivRes] = await Promise.all([
+      const today = new Date().toISOString().split('T')[0];
+
+      const [actusRes, annivRes, usersRes, planningRes] = await Promise.all([
         fetchWithTimeout(`${API}/actualites`).catch((err) => { console.log('Erreur actualites:', err); return { data: [] }; }),
-        fetchWithTimeout(`${API}/anniversaires`).catch((err) => { console.log('Erreur anniversaires:', err); return { data: [] }; })
+        fetchWithTimeout(`${API}/anniversaires`).catch((err) => { console.log('Erreur anniversaires:', err); return { data: [] }; }),
+        fetchWithTimeout(`${API}/users`).catch((err) => { console.log('Erreur users:', err); return { data: [] }; }),
+        fetchWithTimeout(`${API}/planning?date_debut=${today}`).catch((err) => { console.log('Erreur planning:', err); return { data: [] }; })
       ]);
       
       // Debug log
       console.log('[ActualitesManager] Actualités reçues:', actusRes.data?.length || 0, actusRes.data);
+      console.log('[ActualitesManager] Planning reçu:', planningRes.data?.length || 0, planningRes.data);
       
       setActualites(Array.isArray(actusRes.data) ? actusRes.data : []);
       setAnniversaires(Array.isArray(annivRes.data) ? annivRes.data : []);
+      
+      // Stocker tous les utilisateurs
+      const users = Array.isArray(usersRes.data) ? usersRes.data.filter(u => u.actif) : [];
+      setAllUsers(users);
+      
+      // Traiter le planning du jour
+      const creneauxAujourdhui = Array.isArray(planningRes.data) 
+        ? planningRes.data.filter(c => c.date === today && !c.est_repos)
+        : [];
+      
+      // Séparer par créneau (MATIN / APRES_MIDI)
+      const creneauxMatin = creneauxAujourdhui.filter(c => c.creneau === 'MATIN');
+      const creneauxAM = creneauxAujourdhui.filter(c => c.creneau === 'APRES_MIDI');
+      
+      // Transformer les créneaux en format d'affichage
+      const transformerCreneaux = (creneaux, tousCreneaux) => {
+        return creneaux.map(creneau => {
+          // Trouver les collègues (autres personnes qui travaillent en même temps)
+          const collegues = creneaux
+            .filter(autre => autre.employe_id !== creneau.employe_id && autre.employe)
+            .map(autre => autre.employe);
+          
+          return {
+            employe: creneau.employe,
+            salle: creneau.salle_attribuee || '',
+            salleAttente: creneau.salle_attente || '',
+            medecin: creneau.medecin_attribue,
+            collegues: collegues
+          };
+        });
+      };
+      
+      // Identifier les employés qui travaillent
+      const idsQuiTravaillentMatin = new Set(creneauxMatin.map(c => c.employe_id));
+      const idsQuiTravaillentAM = new Set(creneauxAM.map(c => c.employe_id));
+      const idsQuiTravaillent = new Set([...idsQuiTravaillentMatin, ...idsQuiTravaillentAM]);
+      
+      // Employés en repos = actifs mais pas dans le planning du jour
+      const employesEnRepos = users.filter(u => !idsQuiTravaillent.has(u.id));
+      
+      setPlanningDuJour({
+        matin: transformerCreneaux(creneauxMatin, creneauxMatin),
+        apresMidi: transformerCreneaux(creneauxAM, creneauxAM),
+        repos: employesEnRepos
+      });
+      
     } catch (error) {
       console.error('Erreur chargement actualités:', error);
     } finally {
@@ -512,6 +565,154 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
             <Plus className="h-5 w-5" />
             Nouvelle Actualité
           </button>
+        )}
+      </div>
+
+      {/* Planning du jour - Qui travaille aujourd'hui */}
+      <div className="bg-gradient-to-r from-blue-50 to-emerald-50 rounded-2xl p-6 mb-6 border border-blue-100 shadow-sm">
+        <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <span className="text-2xl">📋</span> Planning du jour
+        </h2>
+        
+        {/* Matin */}
+        {planningDuJour.matin.length > 0 && (
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Sun className="h-5 w-5 text-amber-500" />
+              <span className="font-semibold text-amber-700">Matin</span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {planningDuJour.matin.map((item, idx) => (
+                <div key={`matin-${idx}`} className="bg-white rounded-xl p-4 shadow-sm border border-amber-100 hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-12 w-12 ring-2 ring-amber-200">
+                      {item.employe.photo_url && <AvatarImage src={getPhotoUrl(item.employe.photo_url)} />}
+                      <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white font-bold">
+                        {item.employe.prenom?.[0]}{item.employe.nom?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 truncate">
+                        {item.employe.role === 'Médecin' ? 'Dr. ' : ''}{item.employe.prenom} {item.employe.nom}
+                      </p>
+                      {item.salle && (
+                        <p className="text-sm text-gray-600">
+                          <span className="font-medium">Salle:</span> {item.salle}
+                        </p>
+                      )}
+                      {item.collegues.length > 0 && (
+                        <div className="mt-2 flex items-center gap-1 flex-wrap">
+                          <span className="text-xs text-gray-500">Avec:</span>
+                          {item.collegues.slice(0, 3).map((collegue, cIdx) => (
+                            <div key={cIdx} className="flex items-center gap-1 bg-blue-50 rounded-full px-2 py-0.5">
+                              <Avatar className="h-5 w-5">
+                                {collegue.photo_url && <AvatarImage src={getPhotoUrl(collegue.photo_url)} />}
+                                <AvatarFallback className="text-[8px] bg-blue-200">
+                                  {collegue.prenom?.[0]}{collegue.nom?.[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-xs font-medium text-blue-700">{collegue.prenom}</span>
+                            </div>
+                          ))}
+                          {item.collegues.length > 3 && (
+                            <span className="text-xs text-gray-400">+{item.collegues.length - 3}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Après-midi */}
+        {planningDuJour.apresMidi.length > 0 && (
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Moon className="h-5 w-5 text-indigo-500" />
+              <span className="font-semibold text-indigo-700">Après-midi</span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {planningDuJour.apresMidi.map((item, idx) => (
+                <div key={`am-${idx}`} className="bg-white rounded-xl p-4 shadow-sm border border-indigo-100 hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-12 w-12 ring-2 ring-indigo-200">
+                      {item.employe.photo_url && <AvatarImage src={getPhotoUrl(item.employe.photo_url)} />}
+                      <AvatarFallback className="bg-gradient-to-br from-indigo-400 to-purple-500 text-white font-bold">
+                        {item.employe.prenom?.[0]}{item.employe.nom?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 truncate">
+                        {item.employe.role === 'Médecin' ? 'Dr. ' : ''}{item.employe.prenom} {item.employe.nom}
+                      </p>
+                      {item.salle && (
+                        <p className="text-sm text-gray-600">
+                          <span className="font-medium">Salle:</span> {item.salle}
+                        </p>
+                      )}
+                      {item.collegues.length > 0 && (
+                        <div className="mt-2 flex items-center gap-1 flex-wrap">
+                          <span className="text-xs text-gray-500">Avec:</span>
+                          {item.collegues.slice(0, 3).map((collegue, cIdx) => (
+                            <div key={cIdx} className="flex items-center gap-1 bg-indigo-50 rounded-full px-2 py-0.5">
+                              <Avatar className="h-5 w-5">
+                                {collegue.photo_url && <AvatarImage src={getPhotoUrl(collegue.photo_url)} />}
+                                <AvatarFallback className="text-[8px] bg-indigo-200">
+                                  {collegue.prenom?.[0]}{collegue.nom?.[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-xs font-medium text-indigo-700">{collegue.prenom}</span>
+                            </div>
+                          ))}
+                          {item.collegues.length > 3 && (
+                            <span className="text-xs text-gray-400">+{item.collegues.length - 3}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* En repos */}
+        {planningDuJour.repos.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Coffee className="h-5 w-5 text-green-500" />
+              <span className="font-semibold text-green-700">En repos aujourd'hui</span>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {planningDuJour.repos.map((employe, idx) => (
+                <div key={`repos-${idx}`} className="bg-white/80 rounded-xl px-4 py-3 shadow-sm border border-green-100 flex items-center gap-3">
+                  <Avatar className="h-10 w-10 ring-2 ring-green-200">
+                    {employe.photo_url && <AvatarImage src={getPhotoUrl(employe.photo_url)} />}
+                    <AvatarFallback className="bg-gradient-to-br from-green-400 to-emerald-500 text-white font-bold text-sm">
+                      {employe.prenom?.[0]}{employe.nom?.[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      Bonjour <span className="font-semibold">{employe.role === 'Médecin' ? 'Docteur ' : ''}{employe.prenom}</span>,
+                    </p>
+                    <p className="text-xs text-green-600 font-medium">aujourd'hui tu es en repos !</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Message si personne ne travaille */}
+        {planningDuJour.matin.length === 0 && planningDuJour.apresMidi.length === 0 && planningDuJour.repos.length === 0 && (
+          <div className="text-center py-6 text-gray-500">
+            <p className="text-sm">Aucun planning configuré pour aujourd'hui</p>
+          </div>
         )}
       </div>
 
