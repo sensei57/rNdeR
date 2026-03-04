@@ -3469,6 +3469,36 @@ async def supprimer_conge(
     
     return {"message": "Congé supprimé avec succès"}
 
+class ModifierCongeRequest(BaseModel):
+    creneau: Optional[str] = None  # MATIN, APRES_MIDI, JOURNEE_COMPLETE
+    type_conge: Optional[str] = None
+
+@api_router.put("/conges/{demande_id}")
+async def modifier_conge(
+    demande_id: str,
+    request: ModifierCongeRequest,
+    current_user: User = Depends(require_role([ROLES["DIRECTEUR"], ROLES["SUPER_ADMIN"]]))
+):
+    """Modifier un congé (créneau et/ou type) - Directeur/Super-Admin uniquement"""
+    demande = await db.demandes_conges.find_one({"id": demande_id})
+    if not demande:
+        raise HTTPException(status_code=404, detail="Demande de congé non trouvée")
+    
+    update_data = {"date_modification": datetime.now(timezone.utc)}
+    
+    if request.creneau is not None:
+        update_data["creneau"] = request.creneau
+    
+    if request.type_conge is not None:
+        update_data["type_conge"] = request.type_conge
+    
+    await db.demandes_conges.update_one(
+        {"id": demande_id},
+        {"$set": update_data}
+    )
+    
+    return {"message": "Congé modifié avec succès", "updated_fields": list(update_data.keys())}
+
 class ModifierTypeCongeRequest(BaseModel):
     type_conge: str
 
