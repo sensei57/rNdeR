@@ -52,6 +52,11 @@ Application full-stack de gestion de cabinet médical multi-centres permettant l
   - Indicateur du nombre d'actualités non lues avec animation
   - Persistance de l'état de lecture dans localStorage par utilisateur
 
+### Système Anti-Sommeil Render (4 Mars 2026)
+- [x] Endpoint GET `/api/ping` avec headers anti-cache (Cache-Control: no-cache, no-store, must-revalidate)
+- [x] Auto-ping scheduler toutes les 10 minutes vers https://ope-francis-app.onrender.com/api/ping
+- [x] Utilisation de httpx pour les requêtes HTTP asynchrones
+
 ### Notifications Push (Simplifié - 4 Mars 2026)
 - [x] Intégration Firebase Cloud Messaging
 - [x] Support multi-appareils par utilisateur
@@ -145,9 +150,10 @@ Application full-stack de gestion de cabinet médical multi-centres permettant l
 
 ## Dernière Mise à Jour
 - Date: 4 Mars 2026
-- Session: Simplification du système de notifications (suppression de l'in-app, conservation du push uniquement)
+- Session: Système anti-sommeil Render (endpoint /api/ping + auto-ping scheduler 10min)
 
 ## Historique des Sessions
+- **4 Mars 2026 (2)**: Système anti-sommeil Render - endpoint /api/ping avec headers anti-cache + auto-ping toutes les 10 minutes
 - **4 Mars 2026**: Simplification notifications - suppression centre de notifications in-app, conservation push uniquement (planning matin, messages, admin)
 - **3 Mars 2026**: Optimisation N+1 queries (batch fetch avec `$in` operator) - 15+ endpoints corrigés
 - **2 Mars 2026**: Optimisation du démarrage serveur pour cold start rapide (MongoDB et Scheduler en arrière-plan)
