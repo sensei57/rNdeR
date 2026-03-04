@@ -114,7 +114,7 @@ async def auto_ping_self():
     """
     import httpx
     
-    RENDER_PUBLIC_URL = "https://ope-francis-app.onrender.com/api/ping"
+    RENDER_PUBLIC_URL = "https://ope-francis.onrender.com/api/ping"
     
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
