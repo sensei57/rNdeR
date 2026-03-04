@@ -150,9 +150,10 @@ Application full-stack de gestion de cabinet médical multi-centres permettant l
 
 ## Dernière Mise à Jour
 - Date: 4 Mars 2026
-- Session: Système anti-sommeil Render (endpoint /api/ping + auto-ping scheduler 10min)
+- Session: Correction bug congés demi-journée + Système anti-sommeil Render
 
 ## Historique des Sessions
+- **4 Mars 2026 (3)**: Correction bug modification congés - l'initialisation du modal prend maintenant en compte le créneau (MATIN/APRES_MIDI/JOURNEE_COMPLETE) du congé existant
 - **4 Mars 2026 (2)**: Système anti-sommeil Render - endpoint /api/ping avec headers anti-cache + auto-ping toutes les 10 minutes
 - **4 Mars 2026**: Simplification notifications - suppression centre de notifications in-app, conservation push uniquement (planning matin, messages, admin)
 - **3 Mars 2026**: Optimisation N+1 queries (batch fetch avec `$in` operator) - 15+ endpoints corrigés

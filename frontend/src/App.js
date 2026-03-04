@@ -4662,8 +4662,17 @@ const PlanningManager = () => {
       c.date_fin >= date
     );
     
-    // Pré-cocher les cases congé si un congé existe
-    const hasConge = !!congeExistant;
+    // Déterminer quel créneau est en congé (MATIN, APRES_MIDI, JOURNEE_COMPLETE ou aucun)
+    const congeCreneauType = congeExistant?.creneau || (congeExistant ? 'JOURNEE_COMPLETE' : null);
+    const hasCongeMatinOnly = congeCreneauType === 'MATIN';
+    const hasCongeAMOnly = congeCreneauType === 'APRES_MIDI';
+    const hasCongeJourneeComplete = congeCreneauType === 'JOURNEE_COMPLETE';
+    
+    // Le matin est en congé si: congé MATIN ou JOURNEE_COMPLETE
+    const matinEnConge = hasCongeMatinOnly || hasCongeJourneeComplete;
+    // L'après-midi est en congé si: congé APRES_MIDI ou JOURNEE_COMPLETE
+    const amEnConge = hasCongeAMOnly || hasCongeJourneeComplete;
+    
     const typeCongeExistant = congeExistant?.type_conge || 'CONGE_PAYE';
     
     setJourneeData({
@@ -4682,8 +4691,8 @@ const PlanningManager = () => {
         // Ne pré-remplir les horaires QUE si un créneau existe
         horaire_debut: creneauMatin?.horaire_debut || '',
         horaire_fin: creneauMatin?.horaire_fin || '',
-        conge: hasConge,
-        type_conge: hasConge ? typeCongeExistant : '',
+        conge: matinEnConge,
+        type_conge: matinEnConge ? typeCongeExistant : '',
         heures_conge: employe.heures_demi_journee_conge || 4
       },
       apresMidi: {
@@ -4697,8 +4706,8 @@ const PlanningManager = () => {
         // Ne pré-remplir les horaires QUE si un créneau existe
         horaire_debut: creneauAM?.horaire_debut || '',
         horaire_fin: creneauAM?.horaire_fin || '',
-        conge: hasConge,
-        type_conge: hasConge ? typeCongeExistant : '',
+        conge: amEnConge,
+        type_conge: amEnConge ? typeCongeExistant : '',
         heures_conge: employe.heures_demi_journee_conge || 4
       },
       heures_supp_jour: 0,
