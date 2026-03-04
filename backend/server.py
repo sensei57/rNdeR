@@ -8145,11 +8145,10 @@ print("🔧 [DEBUG] Dossier uploads monté")
 # Configuration CORS - Liste complète des origines autorisées
 # Inclut les URLs de production (Render) et de preview (Emergent)
 CORS_ORIGINS_DEFAULT = [
-    "https://ope-francis.onrender.com",
-    "https://ope-francis-app.onrender.com", 
-    "https://push-stable.preview.emergentagent.com",
-    "http://localhost:3000",
-    "http://localhost:8001"
+    "https://ope-francis-app.onrender.com",  # Frontend production
+    "https://push-stable.preview.emergentagent.com",  # Preview Emergent
+    "http://localhost:3000",  # Dev local frontend
+    "http://localhost:8001"  # Dev local backend
 ]
 
 # Ajouter les origines depuis la variable d'environnement si présente
