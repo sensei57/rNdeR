@@ -5265,10 +5265,15 @@ const PlanningManager = () => {
             // Pour congé multi-jours, utiliser scinder
             await handleScinderConge(congeInitial.id, journeeData.date, 'APRES_MIDI', null, false);
           } else {
-            // Pour congé 1 jour, modifier le créneau via le nouvel endpoint
-            await axios.put(`${API}/conges/${congeInitial.id}/modifier`, {
-              creneau: 'MATIN',
-              type_conge: typeMatin
+            // Pour congé 1 jour: supprimer l'ancien et créer un nouveau pour le matin
+            await axios.delete(`${API}/conges/${congeInitial.id}`);
+            await axios.post(`${API}/conges/direct`, {
+              utilisateur_id: congeInitial.utilisateur_id,
+              date_debut: journeeData.date,
+              date_fin: journeeData.date,
+              type_conge: typeMatin,
+              duree: 'MATIN',
+              motif: 'Modifié depuis le planning'
             });
           }
           toast.success('Congé modifié : matin seulement !');
@@ -5282,9 +5287,15 @@ const PlanningManager = () => {
           if (isMultiJours) {
             await handleScinderConge(congeInitial.id, journeeData.date, 'MATIN', null, false);
           } else {
-            await axios.put(`${API}/conges/${congeInitial.id}/modifier`, {
-              creneau: 'APRES_MIDI',
-              type_conge: typeAM
+            // Pour congé 1 jour: supprimer l'ancien et créer un nouveau pour l'après-midi
+            await axios.delete(`${API}/conges/${congeInitial.id}`);
+            await axios.post(`${API}/conges/direct`, {
+              utilisateur_id: congeInitial.utilisateur_id,
+              date_debut: journeeData.date,
+              date_fin: journeeData.date,
+              type_conge: typeAM,
+              duree: 'APRES_MIDI',
+              motif: 'Modifié depuis le planning'
             });
           }
           toast.success('Congé modifié : après-midi seulement !');
