@@ -4654,32 +4654,37 @@ const PlanningManager = () => {
     const creneauMatin = getCreneauForEmploye(employe.id, date, 'MATIN');
     const creneauAM = getCreneauForEmploye(employe.id, date, 'APRES_MIDI');
     
-    // Vérifier si un congé existe pour cette date
-    const congeExistant = congesApprouves.find(c => 
+    // Trouver TOUS les congés pour cette date (il peut y en avoir plusieurs: un MATIN et un APRES_MIDI)
+    const congesPourDate = congesApprouves.filter(c => 
       c.utilisateur_id === employe.id && 
       c.statut === 'APPROUVE' && 
       c.date_debut <= date && 
       c.date_fin >= date
     );
     
-    // Déterminer quel créneau est en congé (MATIN, APRES_MIDI, JOURNEE_COMPLETE ou aucun)
-    const congeCreneauType = congeExistant?.creneau || (congeExistant ? 'JOURNEE_COMPLETE' : null);
-    const hasCongeMatinOnly = congeCreneauType === 'MATIN';
-    const hasCongeAMOnly = congeCreneauType === 'APRES_MIDI';
-    const hasCongeJourneeComplete = congeCreneauType === 'JOURNEE_COMPLETE';
+    // Chercher les congés par créneau
+    const congeMatin = congesPourDate.find(c => c.creneau === 'MATIN');
+    const congeAM = congesPourDate.find(c => c.creneau === 'APRES_MIDI');
+    const congeJournee = congesPourDate.find(c => !c.creneau || c.creneau === 'JOURNEE_COMPLETE');
     
-    // Le matin est en congé si: congé MATIN ou JOURNEE_COMPLETE
-    const matinEnConge = hasCongeMatinOnly || hasCongeJourneeComplete;
-    // L'après-midi est en congé si: congé APRES_MIDI ou JOURNEE_COMPLETE
-    const amEnConge = hasCongeAMOnly || hasCongeJourneeComplete;
+    // Déterminer l'état des congés pour chaque créneau
+    const matinEnConge = !!congeMatin || !!congeJournee;
+    const amEnConge = !!congeAM || !!congeJournee;
     
-    const typeCongeExistant = congeExistant?.type_conge || 'CONGE_PAYE';
+    // Le congé existant principal (pour la logique de modification)
+    // Priorité: journée complète > matin > après-midi
+    const congeExistant = congeJournee || congeMatin || congeAM || null;
+    
+    // Types de congé pour chaque créneau
+    const typeCongeMatinExistant = congeJournee?.type_conge || congeMatin?.type_conge || 'CONGE_PAYE';
+    const typeCongeAMExistant = congeJournee?.type_conge || congeAM?.type_conge || 'CONGE_PAYE';
     
     setJourneeData({
       employe_id: employe.id,
       employe: employe,
       date: date,
-      congeExistant: congeExistant || null,
+      congeExistant: congeExistant,
+      congesPourDate: congesPourDate, // Garder tous les congés pour la logique de submit
       matin: {
         id: creneauMatin?.id || null,
         exists: !!creneauMatin,
@@ -4688,11 +4693,11 @@ const PlanningManager = () => {
         salle_attribuee: creneauMatin?.salle_attribuee || '',
         salle_attente: creneauMatin?.salle_attente || '',
         medecin_ids: creneauMatin?.medecin_ids || [],
-        // Ne pré-remplir les horaires QUE si un créneau existe
         horaire_debut: creneauMatin?.horaire_debut || '',
         horaire_fin: creneauMatin?.horaire_fin || '',
         conge: matinEnConge,
-        type_conge: matinEnConge ? typeCongeExistant : '',
+        type_conge: matinEnConge ? typeCongeMatinExistant : '',
+        conge_id: congeMatin?.id || congeJournee?.id || null,
         heures_conge: employe.heures_demi_journee_conge || 4
       },
       apresMidi: {
@@ -4703,11 +4708,11 @@ const PlanningManager = () => {
         salle_attribuee: creneauAM?.salle_attribuee || '',
         salle_attente: creneauAM?.salle_attente || '',
         medecin_ids: creneauAM?.medecin_ids || [],
-        // Ne pré-remplir les horaires QUE si un créneau existe
         horaire_debut: creneauAM?.horaire_debut || '',
         horaire_fin: creneauAM?.horaire_fin || '',
         conge: amEnConge,
-        type_conge: amEnConge ? typeCongeExistant : '',
+        type_conge: amEnConge ? typeCongeAMExistant : '',
+        conge_id: congeAM?.id || congeJournee?.id || null,
         heures_conge: employe.heures_demi_journee_conge || 4
       },
       heures_supp_jour: 0,
@@ -4893,174 +4898,92 @@ const PlanningManager = () => {
     try {
       const promises = [];
       
-      // Gérer les modifications de congé existant
-      if (journeeData.congeExistant) {
-        const congeInitial = journeeData.congeExistant;
-        const congeCreneauActuel = congeInitial.creneau || 'JOURNEE_COMPLETE';
-        const isMultiJours = congeInitial.date_debut !== congeInitial.date_fin;
+      // ===== GESTION DES CONGÉS =====
+      // Récupérer l'état actuel et souhaité des congés
+      const congesPourDate = journeeData.congesPourDate || [];
+      const veutCongeMatin = journeeData.matin.conge;
+      const veutCongeAM = journeeData.apresMidi.conge;
+      const typeMatin = journeeData.matin.type_conge || 'CONGE_PAYE';
+      const typeAM = journeeData.apresMidi.type_conge || 'CONGE_PAYE';
+      
+      // Identifier les congés existants par type
+      const congeMatin = congesPourDate.find(c => c.creneau === 'MATIN');
+      const congeAM = congesPourDate.find(c => c.creneau === 'APRES_MIDI');
+      const congeJournee = congesPourDate.find(c => !c.creneau || c.creneau === 'JOURNEE_COMPLETE');
+      
+      // État initial
+      const avaitCongeMatin = !!congeMatin || !!congeJournee;
+      const avaitCongeAM = !!congeAM || !!congeJournee;
+      
+      // Si l'employé est un Assistant ou Secrétaire avec des changements de congé
+      if ((journeeData.employe?.role === 'Secrétaire' || journeeData.employe?.role === 'Assistant') &&
+          (avaitCongeMatin || avaitCongeAM || veutCongeMatin || veutCongeAM)) {
         
-        // État initial du congé
-        const avaitCongeMatin = congeCreneauActuel === 'JOURNEE_COMPLETE' || congeCreneauActuel === 'MATIN';
-        const avaitCongeAM = congeCreneauActuel === 'JOURNEE_COMPLETE' || congeCreneauActuel === 'APRES_MIDI';
-        
-        // État souhaité
-        const veutCongeMatin = journeeData.matin.conge;
-        const veutCongeAM = journeeData.apresMidi.conge;
-        const typeMatin = journeeData.matin.type_conge || 'CONGE_PAYE';
-        const typeAM = journeeData.apresMidi.type_conge || 'CONGE_PAYE';
-        
-        // Cas 1: On retire tout le congé (matin et après-midi décochés)
-        if (!veutCongeMatin && !veutCongeAM) {
-          await handleSupprimerCongeExistant(congeInitial.id);
-          toast.success('Congé supprimé !');
-          setShowJourneeModal(false);
-          fetchPlanningTableau(selectedWeek);
-          return;
+        // Supprimer tous les anciens congés pour cette date
+        for (const conge of congesPourDate) {
+          const isMultiJours = conge.date_debut !== conge.date_fin;
+          if (isMultiJours) {
+            // Pour les congés multi-jours, on doit scinder
+            await handleScinderConge(conge.id, journeeData.date, 'JOURNEE_COMPLETE', null, false);
+          } else {
+            // Supprimer le congé
+            try {
+              await axios.delete(`${API}/conges/${conge.id}`);
+            } catch (err) {
+              console.log('Congé déjà supprimé ou inexistant:', conge.id);
+            }
+          }
         }
         
-        // Cas 2: On garde les deux avec types différents (scinder en 2 congés)
-        if (veutCongeMatin && veutCongeAM && typeMatin !== typeAM) {
-          // Supprimer l'ancien congé
-          await axios.delete(`${API}/conges/${congeInitial.id}`);
-          
-          // Créer congé matin
+        // Créer les nouveaux congés selon l'état souhaité
+        if (veutCongeMatin && veutCongeAM && typeMatin === typeAM) {
+          // Journée complète avec même type
           await axios.post(`${API}/conges/direct`, {
-            utilisateur_id: congeInitial.utilisateur_id,
+            utilisateur_id: journeeData.employe_id,
             date_debut: journeeData.date,
             date_fin: journeeData.date,
             type_conge: typeMatin,
-            duree: 'MATIN',
+            duree: 'JOURNEE_COMPLETE',
+            heures_conge: journeeData.matin.heures_conge || null,
             motif: 'Modifié depuis le planning'
           });
-          
-          // Créer congé après-midi
-          await axios.post(`${API}/conges/direct`, {
-            utilisateur_id: congeInitial.utilisateur_id,
-            date_debut: journeeData.date,
-            date_fin: journeeData.date,
-            type_conge: typeAM,
-            duree: 'APRES_MIDI',
-            motif: 'Modifié depuis le planning'
-          });
-          
-          toast.success('Congé modifié : types différents matin/après-midi !');
-          setShowJourneeModal(false);
-          fetchPlanningTableau(selectedWeek);
-          return;
-        }
-        
-        // Cas 3: On garde les deux avec même type → modifier le type si différent
-        if (veutCongeMatin && veutCongeAM && typeMatin === typeAM) {
-          if (typeMatin !== congeInitial.type_conge) {
-            await handleModifierTypeConge(congeInitial.id, typeMatin);
-          }
-          toast.success('Congé modifié !');
-          setShowJourneeModal(false);
-          fetchPlanningTableau(selectedWeek);
-          return;
-        }
-        
-        // Cas 4: On garde seulement le matin (décoché après-midi)
-        if (veutCongeMatin && !veutCongeAM) {
-          if (isMultiJours) {
-            // Pour congé multi-jours, utiliser scinder
-            await handleScinderConge(congeInitial.id, journeeData.date, 'APRES_MIDI', null, false);
-          } else {
-            // Pour congé 1 jour: supprimer l'ancien et créer un nouveau pour le matin
-            await axios.delete(`${API}/conges/${congeInitial.id}`);
+        } else {
+          // Créer les congés séparément si nécessaire
+          if (veutCongeMatin) {
             await axios.post(`${API}/conges/direct`, {
-              utilisateur_id: congeInitial.utilisateur_id,
+              utilisateur_id: journeeData.employe_id,
               date_debut: journeeData.date,
               date_fin: journeeData.date,
               type_conge: typeMatin,
               duree: 'MATIN',
+              heures_conge: journeeData.matin.heures_conge || null,
               motif: 'Modifié depuis le planning'
             });
           }
-          toast.success('Congé modifié : matin seulement !');
-          setShowJourneeModal(false);
-          fetchPlanningTableau(selectedWeek);
-          return;
-        }
-        
-        // Cas 5: On garde seulement l'après-midi (décoché matin)
-        if (!veutCongeMatin && veutCongeAM) {
-          if (isMultiJours) {
-            await handleScinderConge(congeInitial.id, journeeData.date, 'MATIN', null, false);
-          } else {
-            // Pour congé 1 jour: supprimer l'ancien et créer un nouveau pour l'après-midi
-            await axios.delete(`${API}/conges/${congeInitial.id}`);
+          if (veutCongeAM) {
             await axios.post(`${API}/conges/direct`, {
-              utilisateur_id: congeInitial.utilisateur_id,
+              utilisateur_id: journeeData.employe_id,
               date_debut: journeeData.date,
               date_fin: journeeData.date,
               type_conge: typeAM,
               duree: 'APRES_MIDI',
+              heures_conge: journeeData.apresMidi.heures_conge || null,
               motif: 'Modifié depuis le planning'
             });
           }
-          toast.success('Congé modifié : après-midi seulement !');
-          setShowJourneeModal(false);
-          fetchPlanningTableau(selectedWeek);
-          return;
-        }
-      }
-      
-      // Créer un NOUVEAU congé seulement s'il n'y avait pas de congé existant
-      if ((journeeData.employe?.role === 'Secrétaire' || journeeData.employe?.role === 'Assistant') && 
-          (journeeData.matin.conge || journeeData.apresMidi.conge)) {
-        
-        const typeMatin = journeeData.matin.type_conge || 'CONGE_PAYE';
-        const typeAM = journeeData.apresMidi.type_conge || 'CONGE_PAYE';
-        
-        // Si les deux types sont différents, créer 2 congés séparés
-        if (journeeData.matin.conge && journeeData.apresMidi.conge && typeMatin !== typeAM) {
-          await axios.post(`${API}/conges/direct`, {
-            utilisateur_id: journeeData.employe_id,
-            date_debut: journeeData.date,
-            date_fin: journeeData.date,
-            type_conge: typeMatin,
-            duree: 'MATIN',
-            heures_conge: journeeData.matin.heures_conge || null,
-            motif: `Congé ajouté depuis le planning`
-          });
-          await axios.post(`${API}/conges/direct`, {
-            utilisateur_id: journeeData.employe_id,
-            date_debut: journeeData.date,
-            date_fin: journeeData.date,
-            type_conge: typeAM,
-            duree: 'APRES_MIDI',
-            heures_conge: journeeData.apresMidi.heures_conge || null,
-            motif: `Congé ajouté depuis le planning`
-          });
-        } else {
-          // Types identiques ou un seul créneau
-          let duree = 'JOURNEE_COMPLETE';
-          let typeConge = typeMatin;
-          
-          if (journeeData.matin.conge && !journeeData.apresMidi.conge) {
-            duree = 'MATIN';
-            typeConge = typeMatin;
-          }
-          if (!journeeData.matin.conge && journeeData.apresMidi.conge) {
-            duree = 'APRES_MIDI';
-            typeConge = typeAM;
-          }
-          
-          const heuresConge = journeeData.matin.heures_conge || journeeData.apresMidi.heures_conge || null;
-          
-          await axios.post(`${API}/conges/direct`, {
-            utilisateur_id: journeeData.employe_id,
-            date_debut: journeeData.date,
-            date_fin: journeeData.date,
-            type_conge: typeConge,
-            duree: duree,
-            heures_conge: heuresConge,
-            motif: `Congé ajouté depuis le planning`
-          });
         }
         
-        toast.success('Congé/Repos créé avec succès !');
+        // Message de succès adapté
+        if (!veutCongeMatin && !veutCongeAM) {
+          toast.success('Congé(s) supprimé(s) !');
+        } else if (veutCongeMatin && veutCongeAM) {
+          toast.success('Congé journée complète enregistré !');
+        } else if (veutCongeMatin) {
+          toast.success('Congé matin enregistré !');
+        } else if (veutCongeAM) {
+          toast.success('Congé après-midi enregistré !');
+        }
+        
         setShowJourneeModal(false);
         fetchPlanningTableau(selectedWeek);
         return;
