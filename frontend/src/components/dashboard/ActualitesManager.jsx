@@ -132,20 +132,43 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
       const creneauxMatin = creneauxAujourdhui.filter(c => c.creneau === 'MATIN');
       const creneauxAM = creneauxAujourdhui.filter(c => c.creneau === 'APRES_MIDI');
       
-      // Transformer les créneaux en format d'affichage
-      const transformerCreneaux = (creneaux, tousCreneaux) => {
+      // Transformer les créneaux en format d'affichage avec relations médecin-assistant
+      const transformerCreneaux = (creneaux) => {
         return creneaux.map(creneau => {
-          // Trouver les collègues (autres personnes qui travaillent en même temps)
-          const collegues = creneaux
-            .filter(autre => autre.employe_id !== creneau.employe_id && autre.employe)
-            .map(autre => autre.employe);
+          // Trouver les médecins attribués à cet employé (si c'est un assistant)
+          const medecinsAttribues = [];
+          if (creneau.medecin_ids && creneau.medecin_ids.length > 0) {
+            creneau.medecin_ids.forEach(medecinId => {
+              // Trouver le créneau du médecin pour avoir sa salle d'attente
+              const creneauMedecin = creneaux.find(c => c.employe_id === medecinId);
+              const medecinUser = users.find(u => u.id === medecinId);
+              if (medecinUser) {
+                medecinsAttribues.push({
+                  ...medecinUser,
+                  salleAttente: creneauMedecin?.salle_attente || ''
+                });
+              }
+            });
+          }
+          
+          // Trouver les assistants attribués à ce médecin
+          const assistantsAttribues = [];
+          if (creneau.employe?.role === 'Médecin') {
+            creneaux.forEach(autreCreneau => {
+              if (autreCreneau.medecin_ids && autreCreneau.medecin_ids.includes(creneau.employe_id)) {
+                if (autreCreneau.employe) {
+                  assistantsAttribues.push(autreCreneau.employe);
+                }
+              }
+            });
+          }
           
           return {
             employe: creneau.employe,
             salle: creneau.salle_attribuee || '',
             salleAttente: creneau.salle_attente || '',
-            medecin: creneau.medecin_attribue,
-            collegues: collegues
+            medecinsAttribues: medecinsAttribues,
+            assistantsAttribues: assistantsAttribues
           };
         });
       };
@@ -159,8 +182,8 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
       const employesEnRepos = users.filter(u => !idsQuiTravaillent.has(u.id));
       
       setPlanningDuJour({
-        matin: transformerCreneaux(creneauxMatin, creneauxMatin),
-        apresMidi: transformerCreneaux(creneauxAM, creneauxAM),
+        matin: transformerCreneaux(creneauxMatin),
+        apresMidi: transformerCreneaux(creneauxAM),
         repos: employesEnRepos
       });
       
@@ -580,9 +603,68 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
           const monPlanningAM = planningDuJour.apresMidi.find(p => p.employe?.id === user?.id);
           const enRepos = !monPlanningMatin && !monPlanningAM;
           
-          // Titre de civilité
-          const titre = user?.role === 'Médecin' ? 'Docteur ' : '';
-          const prenom = user?.prenom || 'vous';
+          // Nom d'affichage selon le rôle
+          const isMedecin = user?.role === 'Médecin';
+          const isAssistant = user?.role === 'Assistant';
+          const nomAffiche = isMedecin ? user?.nom : user?.prenom;
+          const titre = isMedecin ? 'Docteur ' : '';
+          
+          // Fonction pour afficher les collègues selon le rôle
+          const renderCollegues = (planning) => {
+            if (!planning) return null;
+            
+            // Pour les médecins : afficher seulement les assistants attribués
+            if (isMedecin && planning.assistantsAttribues?.length > 0) {
+              return (
+                <span>
+                  . Tu travailles avec{' '}
+                  {planning.assistantsAttribues.map((assistant, idx) => (
+                    <span key={assistant.id}>
+                      {idx > 0 && (idx === planning.assistantsAttribues.length - 1 ? ' et ' : ', ')}
+                      <span className="inline-flex items-center gap-1">
+                        <Avatar className="h-5 w-5 inline-flex">
+                          {assistant.photo_url && <AvatarImage src={getPhotoUrl(assistant.photo_url)} />}
+                          <AvatarFallback className="text-[8px] bg-amber-200">
+                            {assistant.prenom?.[0]}{assistant.nom?.[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <strong>{assistant.prenom}</strong>
+                      </span>
+                    </span>
+                  ))}
+                </span>
+              );
+            }
+            
+            // Pour les assistants : afficher les médecins attribués avec leur salle d'attente
+            if (isAssistant && planning.medecinsAttribues?.length > 0) {
+              return (
+                <span>
+                  . Tu travailles avec{' '}
+                  {planning.medecinsAttribues.map((medecin, idx) => (
+                    <span key={medecin.id}>
+                      {idx > 0 && (idx === planning.medecinsAttribues.length - 1 ? ' et ' : ', ')}
+                      <span className="inline-flex items-center gap-1">
+                        <Avatar className="h-5 w-5 inline-flex">
+                          {medecin.photo_url && <AvatarImage src={getPhotoUrl(medecin.photo_url)} />}
+                          <AvatarFallback className="text-[8px] bg-amber-200">
+                            {medecin.prenom?.[0]}{medecin.nom?.[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <strong>Dr {medecin.nom}</strong>
+                        {medecin.salleAttente && (
+                          <span className="text-gray-500">(salle d'attente: {medecin.salleAttente})</span>
+                        )}
+                      </span>
+                    </span>
+                  ))}
+                </span>
+              );
+            }
+            
+            // Pour secrétaires/directeur : pas de collègues affichés
+            return null;
+          };
           
           return (
             <div className="bg-white rounded-xl p-5 shadow-sm border border-blue-100">
@@ -598,7 +680,7 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
                 <div className="flex-1">
                   {/* Message de bienvenue */}
                   <p className="text-lg font-semibold text-gray-800 mb-3">
-                    Bonjour {titre}{prenom} !
+                    Bonjour {titre}{nomAffiche} !
                   </p>
                   
                   {enRepos ? (
@@ -624,25 +706,7 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
                                 {monPlanningMatin.salleAttente && (
                                   <span> avec la salle d'attente <strong>{monPlanningMatin.salleAttente}</strong></span>
                                 )}
-                                {monPlanningMatin.collegues && monPlanningMatin.collegues.length > 0 && (
-                                  <span>
-                                    . Tu travailles avec{' '}
-                                    {monPlanningMatin.collegues.map((collegue, idx) => (
-                                      <span key={collegue.id}>
-                                        {idx > 0 && (idx === monPlanningMatin.collegues.length - 1 ? ' et ' : ', ')}
-                                        <span className="inline-flex items-center gap-1">
-                                          <Avatar className="h-5 w-5 inline-flex">
-                                            {collegue.photo_url && <AvatarImage src={getPhotoUrl(collegue.photo_url)} />}
-                                            <AvatarFallback className="text-[8px] bg-amber-200">
-                                              {collegue.prenom?.[0]}{collegue.nom?.[0]}
-                                            </AvatarFallback>
-                                          </Avatar>
-                                          <strong>{collegue.role === 'Médecin' ? 'Dr ' : ''}{collegue.prenom}</strong>
-                                        </span>
-                                      </span>
-                                    ))}
-                                  </span>
-                                )}.
+                                {renderCollegues(monPlanningMatin)}.
                               </p>
                             </div>
                           </div>
@@ -661,25 +725,7 @@ const ActualitesManager = ({ user, centreActif, CabinetPlanWithPopup }) => {
                                 {monPlanningAM.salleAttente && (
                                   <span> avec la salle d'attente <strong>{monPlanningAM.salleAttente}</strong></span>
                                 )}
-                                {monPlanningAM.collegues && monPlanningAM.collegues.length > 0 && (
-                                  <span>
-                                    . Tu travailles avec{' '}
-                                    {monPlanningAM.collegues.map((collegue, idx) => (
-                                      <span key={collegue.id}>
-                                        {idx > 0 && (idx === monPlanningAM.collegues.length - 1 ? ' et ' : ', ')}
-                                        <span className="inline-flex items-center gap-1">
-                                          <Avatar className="h-5 w-5 inline-flex">
-                                            {collegue.photo_url && <AvatarImage src={getPhotoUrl(collegue.photo_url)} />}
-                                            <AvatarFallback className="text-[8px] bg-indigo-200">
-                                              {collegue.prenom?.[0]}{collegue.nom?.[0]}
-                                            </AvatarFallback>
-                                          </Avatar>
-                                          <strong>{collegue.role === 'Médecin' ? 'Dr ' : ''}{collegue.prenom}</strong>
-                                        </span>
-                                      </span>
-                                    ))}
-                                  </span>
-                                )}.
+                                {renderCollegues(monPlanningAM)}.
                               </p>
                             </div>
                           </div>
